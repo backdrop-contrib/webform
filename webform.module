@@ -38,6 +38,8 @@ function webform_help($section = "admin/help#webform") {
  <li>Select which roles who should have submission access to this form (roles that have the &quot;use all webforms&quot; permision can allways use a webform).</li>
  <li>Add one or more components to your form.</li>
  <li>Optionaly add a email address to which submissions will be send. If no email address is specified no email will be send when submissions are made through the form.</li>
+ <li>Optionally select an email component that will be used to populate the return email address on any sent email.</ul>
+ <li>Optionally select a textfield component that will be used to populate the subject email field on any sent email.</ul>
 </ul>
 Help on adding and how to configure the components will be shown after adding your first component.
 </p>
