@@ -1085,6 +1085,10 @@ function webform_results() {
       case 'clear':
         $content = _webform_results_clear($nid);
         break;
+      case 'delete':
+        $sid = arg(4);
+        $content = _webform_submission_delete($nid, $sid);
+        break;
       case 'table':
         $content = _webform_results_table($nid);
         break;

@@ -54,6 +54,28 @@ function _webform_results_clear($nid) {
   }
 }
 
+/*
+* Delete one form submission
+* @param	integer	ID of node for which this webform was submitted
+* @param	integer	ID of submission to be deleted (from webform_submitted_data)
+*/
+function _webform_submission_delete($nid, $sid) {
+  if (arg(5) == "confirm") {
+    $query = 'DELETE FROM {webform_submitted_data} WHERE nid = %d AND sid = %d';
+    $res = db_query($query, $nid, $sid);
+
+    drupal_goto('webform');
+  }
+  else {
+    $content = "<p>Do you really want to delete this form submission?</p>".
+    l(t('yes'), "node/$nid/results/delete/$sid/confirm")." | ".
+    l(t('no'), "webform")
+    ."</p>";
+
+    return $content;
+  }
+}
+
 function _webform_results_download($nid) {
 
       /**
@@ -297,7 +319,7 @@ function _webform_records_string($title_string,$nid,$mode = 'file',$new_line = "
           $print_sid = "sid=".$record_array[1]['sid'];
 
           $print_view_ref = l(t('View'),"node/$nid",NULL,$print_sid,NULL,FALSE);
-          $print_delete_ref = l(t('Delete'),"webform/delete/" . $record_array[1]['sid'],NULL,NULL,NULL,FALSE);
+          $print_delete_ref = l(t('Delete'),"node/$nid/results/delete/" . $record_array[1]['sid'],NULL,NULL,NULL,FALSE);
           $submission_list_array[] = array($record_count,$record_array[1]['sid'],$record_array[1]['__timestamp'],$record_array[1]['__userid'],$record_array[1]['__remotehost'],$print_view_ref,$print_delete_ref);
           break;
 
@@ -366,7 +388,7 @@ function _webform_records_string($title_string,$nid,$mode = 'file',$new_line = "
         $print_sid = "sid=".$record_array[1]['sid'];
 
         $print_view_ref = l(t('View'),"node/$nid",NULL,$print_sid,NULL,FALSE);
-        $print_delete_ref = l(t('Delete'),"webform/delete/" . $record_array[1]['sid'],NULL,NULL,NULL,FALSE);
+        $print_delete_ref = l(t('Delete'),"node/$nid/results/delete/" . $record_array[1]['sid'],NULL,NULL,NULL,FALSE);
         $submission_list_array[] = array($record_count,$record_array[1]['sid'],$record_array[1]['__timestamp'],$record_array[1]['__userid'],$record_array[1]['__remotehost'],$print_view_ref,$print_delete_ref);
         break;
       case 'print':
