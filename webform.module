@@ -615,13 +615,14 @@ function _webform_save_submission($node, $reply) {
   $reply['__timestamp'] = time();
   $reply['__remotehost'] = $_SERVER['REMOTE_ADDR'];
   $reply['__useragent'] = $_SERVER['HTTP_USER_AGENT'];
-  
+
+  $sid = db_next_id('{webform_submissions}_id');
 
   foreach($reply as $key => $value) {
-    $sid = db_next_id('{webform_submissions}_id');
-    db_query("INSERT INTO {webform_submited_data} (nid, sid, name, data) ".
-	     "VALUES (%d, %d, '%s', '%s') ", $node->nid, $sid, $key, $value);
+    $values[] = sprintf("(%d, %d, '%s', '%s')", $node->nid, $sid, $key, $value);
   }
+  db_query("INSERT INTO {webform_submited_data} (nid, sid, name, data) ".
+           "VALUES ".implode(', ', $values));
 }
 
 function _webform_role_node_delete($nid) {

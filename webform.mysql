@@ -23,7 +23,7 @@ CREATE TABLE webform_role_node
 CREATE TABLE webform_submited_data
   ( nid int(10) unsigned not null, 
     sid int(10) unsigned not null, 
-    name varchar(255),
+    name varchar(255) not null,
     data blob,
-    PRIMARY KEY(nid, sid));
+    PRIMARY KEY(nid, sid, name));
 
