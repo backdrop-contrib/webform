@@ -10,9 +10,6 @@
    * @package module_webform
    * @copyright Pontus Ullgren 2003
    * 
-   * This version contains some prototype additions for more control over the email output by jnt.  It is not
-   * yet part of CVS.  jnt Prototype v2
-   *
    **/
 
 
@@ -489,11 +486,27 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
   $doSubmit = true;
 
   $node->body = check_output($node->body, $node->format);
-
-	//$output .= _webform_database_lazy_update();
-
   $submitted = $_POST['edit']['submitted'];
+
+  $sid_to_display = $_GET['sid'];  // Will be NULL if no sid
+
+  if($sid_to_display){
+    if(user_access('maintain webforms')){
+      $output .= '<H2 class="warning">Submission #' . $sid_to_display . '</H2><br>';
+      // TODO: Expand the information block
+      //$submitting_user = user_load(array('uid' => 2));
+      //$output .= 'User: ' . $submitting_user->name . ' from IP' . $_GET['ipaddr'] . '<br>';
+      //$output .= 'Date: ' . $_GET['dated'] . '<br>';
+      //$output .= 'Read Only<br>';
+    }else
+    {
+      $sid_to_display = 0;  // This user is not allowed to access a submitted node. Deny the attempt without alert.
+      watchdog('user', t('Unauthorized webform access attempt', array('%name' => "<em>$user->name</em>"))); // and log the attempt
+    }
+  }
+
   if( is_array($node->webformcomponents_name) && !empty($node->webformcomponents_name)) {
+
     foreach($node->webformcomponents_name as $key => $name) {
       $extra = unserialize ($node->webformcomponents_extra[$key]);
       if ( $_POST['webform_send'] ) {
@@ -506,16 +519,27 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
         }
       }
       
+      if($sid_to_display){
+        // It is view only so we append the tag HTML attributes to disable the input
+         $extra['attributes'] = array('dummy' => '0" DISABLED dummy="0');  // Rather ugly string required to workaround a bug in common.inc
+      }else
+      {
+        $extra['attributes'] = array();
+      }
       $output .= _webform_create_widget(
                    $name, $node->webformcomponents_type[$key], 
                    $node->webformcomponents_mandatory[$key],
                    (isset($submitted[$name])?
                     $submitted[$name]:
                     _webform_filtervalues($node->webformcomponents_value[$key])), 
-                   $extra, $error);
+                   $extra, $error, $node->nid, $sid_to_display);
     }
+    
     if ( (!isset($_POST['op']) || ($_POST['op'] != t('Preview'))) ) {
-      $output .= form_button(t('Submit'), 'webform_send', 'submit');
+      if(!$sid_to_display){
+        // Do not show the submit button if we are viewing a previously submitted form
+        $output .= form_button(t('Submit'), 'webform_send', 'submit');
+      }
     }
     $output = form($output);
   }
@@ -527,8 +551,8 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
         drupal_goto(trim($node->confirm));
       }
       else {
-      // Submission was successfully redirected to webform/done/<nid>
-      drupal_goto('webform/done/'.$node->nid);
+        // Submission was successfully redirected to webform/done/<nid>
+        drupal_goto('webform/done/'.$node->nid);
       }
       return;
     }
@@ -673,7 +697,8 @@ function _webform_editfield() {
   }
   
   $form .= form_button(t('Done'),  'webform_edit_done');
-  
+  $form .= t("<br>Warning: This button will accept your changes as sub-part of the edit.  You will still have to select <b>'submit'</b> on the next screen to make your changes permanent.");
+
   print theme('page', form($form));
 }
 
@@ -762,6 +787,8 @@ function _webform_process_submit(&$node, &$errors) {
   if (variable_get('webform_debug', 0) >= 1) {
     watchdog('special', 
              t('Submission posted to ')."'$node->title'.<br />\n".nl2br(htmlentities($message)));
+
+    //TODO: Add reference back to submitted webform
   }
 
   return true;
@@ -783,14 +810,54 @@ function _webform_thanks() {
   }
 }
 
-function _webform_create_widget($name, $type, $mandatory, $value, $extra, $err = '') {
+/**
+ * function _webform_create_widget Constructs a widget out of form items.  A widget may have multiple form items
+ * as in the case of a select component.
+ * @param $name The name of the component as used for the database table and the display
+ * @param $type
+ * @param $mandatory A boolean indicating that entry is mandatory ad will be policed.
+ * @param $value
+ * @param $extra
+ * @param $err
+ * @param $nid ???
+ * @param $sid The Session ID to get the default values from or 0 or NULL to use the component defaults
+ * @returns An HTML string sufficient to render the widget
+ */
+function _webform_create_widget($name, $type, $mandatory, $value, $extra, $err = '', $nid = 0, $sid = 0) {
   global $user;
   $componentname = "submitted][$name";
-  
+
+  if($sid && $nid){
+    // This widget is to be set with data that is a reflection of a current sid therefore we must harvest the data
+    //$sid_record = _webform_print_csv_string($title_string,arg(2),'record',NULL,$sid);
+
+    $sid_query = 'SELECT sd.sid as sid, sd.name as name, sd.data as data '.
+      'FROM {webform_submitted_data} sd '.
+      "WHERE sd.nid = %d AND sd.sid = %d AND sd.name = '%s'";
+
+    $main_result = db_query($sid_query, $nid, $sid, $name);
+
+    // Most components will return only a single entry from this query
+    // multiple choice objects may not however, and require a linear array of default values
+
+    //print "<p>Found " . db_num_rows($main_result) . " records for component: $name.";
+
+    $recs = db_num_rows($main_result);
+    if($recs > 1){
+      // Error! Can occur if component types are changed by editing after data has been submitted.
+      // This error is currently ignored and only the first of such multiple values
+      // will be used.
+    }
+
+    $record = db_fetch_object($main_result);
+    $value = ($extra['multiple'] == 'Y') ? unserialize($record->data):$record->data;
+  }
+
   switch($type) {
   case 'textarea':
+
     return form_textarea($name, $componentname, $value, $extra['cols'], $extra['rows'], 
-                         _webform_filtervalues($extra['description']), NULL, $mandatory);
+                         _webform_filtervalues($extra['description']), $extra['attributes'], $mandatory);
     break;
   case 'select':
     $items = explode("\n", _webform_filtervalues($extra['items']));
@@ -805,7 +872,7 @@ function _webform_create_widget($name, $type, $mandatory, $value, $extra, $err =
       }
       return form_select($name,  $componentname,
                          $value, $options,
-                         _webform_filtervalues($extra['description']), 0, 
+                         _webform_filtervalues($extra['description']), $extra['attributes']['dummy'], 
                          ($extra['multiple'] == 'Y'), $mandatory);
     }
     else {
@@ -814,7 +881,7 @@ function _webform_create_widget($name, $type, $mandatory, $value, $extra, $err =
           $value = array($value);
         }
         return form_checkboxes($name, $componentname, $value, $options, 
-                               _webform_filtervalues($extra['description']), NULL, $mandatory);      
+                               _webform_filtervalues($extra['description']), $extra['attributes'], $mandatory);      
       }
       else {
         return form_radios($name, $componentname, $value, $options, 
@@ -837,7 +904,7 @@ function _webform_create_widget($name, $type, $mandatory, $value, $extra, $err =
     }
     return form_textfield($name, $componentname, $value, ($extra['width']?$extra['width']:50),
                           $maxsize, _webform_filtervalues($extra['description']), 
-                          NULL, ($mandatory==1?TRUE:FALSE));
+                          $extra['attributes'], ($mandatory==1?TRUE:FALSE));
     break;
   }
 }

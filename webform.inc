@@ -229,9 +229,15 @@ function _webform_print_csv_string($title_string,$nid,$mode = 'file',$new_line =
   
   $main_result = db_query($main_query, $nid);
   $current_sid = 0;
+  $record_count = 0;
   $serial = 0;
   
   switch($mode){
+  case 'submission_list':
+    // The list view needs to know how many records are being displayed
+    $submission_list_header = array('#','SID',t('Date'),t('User'),'IPAddr',t('Action'),'');
+    $submission_list_array = array();
+    break;
   case 'print':
     print $header[0] . $header[1] . $header[2];
     break;
@@ -255,9 +261,20 @@ function _webform_print_csv_string($title_string,$nid,$mode = 'file',$new_line =
   while ($record = db_fetch_object($main_result)) {
     
     if($record->sid != $current_sid){
+
       $current_sid = $record->sid;
+
       if($serial != 0){
+        $record_count++;
         switch($mode){
+        case 'submission_list':
+          $print_sid = "sid=".$record_array[1]['sid'];
+
+          $print_view_ref = l(t('View'),"./node/$nid",NULL,$print_sid,NULL,FALSE);
+          $print_delete_ref = l(t('Delete'),"./webform/delete/" . $record_array[1]['sid'],NULL,NULL,NULL,FALSE);
+          $submission_list_array[] = array($record_count,$record_array[1]['sid'],$record_array[1]['__timestamp'],$record_array[1]['__userid'],$record_array[1]['__remotehost'],$print_view_ref,$print_delete_ref);
+          break;
+
         case 'print':
           print _webform_make_record_csv_string($record_array,$new_line);
           break;
@@ -314,23 +331,38 @@ function _webform_print_csv_string($title_string,$nid,$mode = 'file',$new_line =
   }
   // Get the last one
   if($current_sid > 0){
-    $record = _webform_make_record_csv_string($record_array,$new_line);
-    switch($mode){
-    case 'print':
-      print $record;
-      break;
-    case 'string':
-      $records .= $record;
-      break;
-    case 'file':
-    default:
-      $file_record = $record;
-      @fwrite($handle,$file_record);
-    }
+    if($serial != 0){
+      $record_count++;
+      switch($mode){
+      case 'record':
+        break;
+      case 'submission_list':
+        $print_sid = "sid=".$record_array[1]['sid'];
+
+        $print_view_ref = l(t('View'),"./node/$nid",NULL,$print_sid,NULL,FALSE);
+        $print_delete_ref = l(t('Delete'),"./webform/delete/" . $record_array[1]['sid'],NULL,NULL,NULL,FALSE);
+        $submission_list_array[] = array($record_count,$record_array[1]['sid'],$record_array[1]['__timestamp'],$record_array[1]['__userid'],$record_array[1]['__remotehost'],$print_view_ref,$print_delete_ref);
+        break;
+      case 'print':
+        print _webform_make_record_csv_string($record_array,$new_line);
+        break;
+      case 'string':
+        $records .= _webform_make_record_csv_string($record_array,$new_line);
+        break;
+      case 'file':
+      default:
+        $file_record = _webform_make_record_csv_string($record_array,$new_line);
+        @fwrite($handle,$file_record);
+      }
+    } // end if ($serial != 0)
   }
   
   //print "Main result = " . count($record_array) . " records.";
   switch($mode){
+  case 'submission_list':
+    return (theme('table', $submission_list_header, $submission_list_array));
+    //print
+    return true;
   case 'print':
     return true;
   case 'string':
