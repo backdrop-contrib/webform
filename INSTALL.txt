@@ -17,6 +17,9 @@ Installation
  
 4. Enable the module in the admin interface.
 
+5. To upgrade from a previous version go to "admin" -> "settings" -> 
+   "webform" and select the upgrade link.
+
 ------
 
-Pontus Ullgren <ullgren@user.sourceforge.net>
+Pontus Ullgren <ullgren@users.sourceforge.net>
