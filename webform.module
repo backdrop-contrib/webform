@@ -21,8 +21,8 @@ function webform_help($section = "admin/help#page") {
   $output = "";
   
   switch ($section) {
-  case 'admin/system/modules/webfrom':
-    $output = t("Webforms are forms and qustionaries that can be added as nodes. To add one select <strong>create content</strong>");
+  case 'admin/settings/webform':
+    $output = t("Webforms are forms and qustionaries that can be added as nodes. To add one select <strong>create content -&gt; webform</strong>");
     break;
   case 'admin/help#webform':
     $output = t("<p>The webform module is used to create forms or questionaries.</p>
@@ -39,13 +39,12 @@ Help on adding and how to configure the components will be shown after adding yo
 </p>
 ");
     break;
-  case 'admin/system/modules#description':
+  case 'admin/modules#description':
     $output = t("Enables the creation of forms and questionnaires that can be added to the navigation system.");
     break;
   case 'node/add#webform':
     $output = t("A webform can be a questionnaires, contact or request form. These can be used by visitor to make contact or to enable a more complex survey that the type polls enable.");
     break;
-    
   }
   return $output;
 }
@@ -71,12 +70,14 @@ function webform_access($op, $node) {
     if ( user_access("use all webforms") ) {
       return $node->status;
     }
-    else if( (is_array($node->roles) && in_array($user->rid, $node->roles)) ) {
-      return $node->status;
+    else if ( is_array($node->roles) ) {
+      foreach ($node->roles as $rid) {
+        if( isset($user->roles[$rid]) ) {
+          return $node->status;
+        }
+      }
     }
-    else {
-      return false;
-    }
+    return false;
   }
   
   if ($op == "create") {
@@ -254,6 +255,17 @@ function webform_menu() {
     'access' => user_access('maintain webforms'));
 
   return $items;
+}
+
+/** 
+ * Implementation of hook_link().
+ * Always add a "view form" link
+ **/
+function webform_link($type, $node = 0, $main = 0) {
+  if ($main == 1) {
+    $links[] = l(t('read more'), "node/$node->nid", array('title' => t('Read the rest of this posting.'), 'class' => 'read-more'));
+  }
+  return $links;
 }
 
 function webform_form(&$node, &$error) {
