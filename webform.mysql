@@ -28,4 +28,4 @@ CREATE TABLE webform_submited_data
     PRIMARY KEY(nid, sid, name));
 
 -- Setting default variables
-INSERT INTO variable VALUES ('webform_version', 'a:2:{s:4:"text";s:5:"4.5.0";s:5:"build";i:2004102500;}');
+INSERT INTO variable VALUES ('webform_version', 'a:2:{s:4:"text";s:5:"4.6.0";s:5:"build";i:460;}');
