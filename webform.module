@@ -36,7 +36,7 @@ function webform_help($section = "admin/help#webform") {
 </ul>
 Help on adding and how to configure the components will be shown after adding your first component.
 </p>
-<p>On user submissions the form content is stored in the database table <i>webform_submited_data</i> as key-value pairs. Apart from the form fields the following &quot;special&quot; fields are added:
+<p>On user submissions the form content is stored in the database table <i>webform_submitted_data</i> as key-value pairs. Apart from the form fields the following &quot;special&quot; fields are added:
 <ul>
   <li> __userid : UID of the submiting user.</li>
   <li> __timestamp : UNIX timestamp for when the submission occured.</li>
@@ -408,14 +408,14 @@ function webform_form(&$node, &$error) {
 function webform_view(&$node, $teaser = 0, $page = 0) {
   $doSubmit = true;
 
-  $submited = $_POST['edit']['submited'];
+  $submitted = $_POST['edit']['submitted'];
   if( is_array($node->webformcomponents_name) && !empty($node->webformcomponents_name)) {
     foreach($node->webformcomponents_name as $key => $name) {
       $extra = unserialize ($node->webformcomponents_extra[$key]);
       if ( $_POST['webform_send'] ) {
         $error = _webform_submission_ok($name, 
                                         $node->webformcomponents_type[$key],
-                                        $submited[$name], 
+                                        $submitted[$name], 
                                         $node->webformcomponents_mandatory[$key]);
         if ( $error !== 0 ) {
           $doSubmit = false;
@@ -425,8 +425,8 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
       $output .= _webform_create_widget(
                    $name, $node->webformcomponents_type[$key], 
                    $node->webformcomponents_mandatory[$key],
-                   (isset($submited[$name])?
-                    $submited[$name]:
+                   (isset($submitted[$name])?
+                    $submitted[$name]:
                     _webform_filtervalues($node->webformcomponents_value[$key])), 
                    $extra, $error);
     }
@@ -603,7 +603,7 @@ function _webform_process_submit(&$node, &$errors) {
   // Handle posting to the form and output status.
   $confirm = $node->confirm;
   
-  $reply = $_POST['edit']['submited'];
+  $reply = $_POST['edit']['submitted'];
   _webform_save_submission($node, $reply);
   $message = _webform_create_mailmessage($reply);
   
@@ -651,7 +651,7 @@ function _webform_thanks() {
 
 function _webform_create_widget($name, $type, $mandatory, $value, $extra, $err = '') {
   global $user;
-  $componentname = "submited][$name";
+  $componentname = "submitted][$name";
   
   switch($type) {
   case 'textarea':
@@ -700,7 +700,7 @@ function _webform_create_widget($name, $type, $mandatory, $value, $extra, $err =
 function _webform_submission_ok($name, $type, $value, $mandatory) {
   // Check if it is mandatory and if so that it exists and have a value
   if($mandatory && empty($value)) {
-    form_set_error('submited]['.$name, t('You have not completed the form. %s is a mandatory field.', array('%s' => $name)));
+    form_set_error('submitted]['.$name, t('You have not completed the form. %s is a mandatory field.', array('%s' => $name)));
     return 1;
   }
   return 0;
@@ -790,7 +790,7 @@ function _webform_save_submission($node, $reply) {
     $values[] = sprintf("(%d, %d, '%s', '%s')", 
         $node->nid, $sid, check_query($key), check_query($value));
   }
-  db_query("INSERT INTO {webform_submited_data} (nid, sid, name, data) ".
+  db_query("INSERT INTO {webform_submitted_data} (nid, sid, name, data) ".
            "VALUES ".implode(', ', $values));
 }
 
@@ -996,8 +996,8 @@ function _webform_update() {
     // Upgrading from original version    
     if ( $installed_version['build'] <= 1 ) {
       $ret[] = array(1 => "<strong>Build 1</strong><br />\n", 2 => "");
-      // Add the table webform_submited_data
-      $ret[] = update_sql("CREATE TABLE {webform_submited_data} ".
+      // Add the table webform_submitted_data
+      $ret[] = update_sql("CREATE TABLE {webform_submitted_data} ".
                           "( nid int(10) unsigned not null, ".
                           "sid int(10) unsigned not null, ".
                           "name varchar(255) not null, ".
@@ -1011,8 +1011,13 @@ function _webform_update() {
       $ret[] = array(1 => "<strong>Build 4.5.0</strong><br />\n", 2 => "");
       // Change webform_component.extra from varchar(128) -> text
       $ret[] = update_sql("ALTER TABLE {webform_component} MODIFY extra TEXT");
-      // TODO: Change webform_submited_data.data blob -> longtext
+      // Change webform_submited_data.data blob -> longtext
       $ret[] = update_sql("ALTER TABLE {webform_submited_data} MODIFY data LONGTEXT");
+    }
+    if ( $installed_version['build'] < 460 ) {
+      $ret[] = array(1 => "<strong>Build 4.6.0</strong><br />\n", 2 => "");
+      // Update webform_submited_data to webform_submitted_data
+      $ret[] = update_sql("ALTER TABLE {webform_submited_data} RENAME TO {webform_submitted_data}");
     }
     // Set the $current_version
     variable_set("webform_version", $current_version);
