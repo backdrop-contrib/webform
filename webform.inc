@@ -301,7 +301,8 @@ function _webform_print_csv_string($title_string,$nid,$mode = 'file',$new_line =
         break;
       case 'textarea':
       case 'hidden':
-      case 'textentry':
+      case 'textfield':
+      case 'email':
         //print "<br>Setting $record->data on $record->name at CIX:$index";
         $record_array[1]['components'][$index]['data'][0] = $record->data;
         break;
