@@ -305,6 +305,16 @@ function webform_menu() {
                    'type' => MENU_CALLBACK, 
                    'access' => ($user->uid == 1)); // Access only for the "admin" user.
   
+  // Submission listning 
+  $items[] = array('path' => 'webform', 'title' => t('webform'),
+                   'callback' => 'webform_page',
+                   'type' => MENU_NORMAL_ITEM,
+                   'access' => user_access('maintain webforms'));
+
+  $items[] = array('path' => 'webform/table', 'title' => t('table'),
+                   'callback' => 'webform_reporttable',
+                   'type' => MENU_NORMAL_ITEM,
+                   'access' => user_access('maintain webforms'));
   return $items;
 }
 
@@ -594,7 +604,8 @@ function _webform_process_submit(&$node, &$errors) {
   
   // Check to see if the user has right to use the webform
   if ( !user_access('use all webforms') ){
-    if( !(is_array($node->roles) && in_array($user->rid, $node->roles)) ) {
+    if( !(is_array($node->roles) && 
+          array_intersect($node->roles, array_keys($user->roles)) ) ) {
       $message = t("You are not allowed to submit data using this form.");
       drupal_set_message($message, 'error');
       return false;
@@ -923,6 +934,17 @@ function _webform_encodeHeader ($string) {
     $string = implode('',$aRet);
   }
   return $string;
+}
+
+function webform_page() {
+  include_once('webform.inc');
+  // _webform_page();
+  print theme('page', 'Not implemented yet', 'Webform');
+}
+
+function webform_reporttable() {
+  include_once('webform.inc');
+  _webform_reporttable();
 }
 
 /** 
