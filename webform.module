@@ -190,7 +190,7 @@ function webform_load($node) {
   $result = db_query('SELECT cid, name, type, value, extra, mandatory, weight '.
                      ' FROM {webform_component} '.
                      ' WHERE nid = %d '.
-                     ' ORDER BY weight', $node->nid);
+                     ' ORDER BY weight, name', $node->nid);
   while($c = db_fetch_array($result)) {
     $page->webformcomponents_name[$c['cid']] = $c['name'];
     $page->webformcomponents_type[$c['cid']] = $c['type'];
@@ -338,7 +338,7 @@ function webform_form(&$node, &$error) {
   $component_types = array('textfield' => t('textfield'),
                            'textarea' => t('textarea'),
                            'select' => t('select'),
-                           'lable' => t('lable'),
+                           'label' => t('label'),
                            'hidden' => t('hidden'),
                            'email' => t('e-mail address'));
   
@@ -366,6 +366,7 @@ function webform_form(&$node, &$error) {
   
   // List all form components.
   if( is_array($node->webformcomponents_name) && !empty($node->webformcomponents_name)) {
+    $nocomponents = count($node->webformcomponents_name);
     foreach($node->webformcomponents_name as $key => $name) {
       $other = form_hidden("webformcomponents_type][".$key.']', $node->webformcomponents_type[$key]).
         form_hidden("webformcomponents_extra][".$key, $node->webformcomponents_extra[$key]);
@@ -378,8 +379,10 @@ function webform_form(&$node, &$error) {
                                           $node->webformcomponents_value[$key], 20, 255),
                       form_checkbox('', "webformcomponents_mandatory][".$key, 
                                     '1', ($node->webformcomponents_mandatory[$key]?1:0)),                      
-                      form_weight('', "webformcomponents_weight][".$key,
-                                  ($node->webformcomponents_weight[$key]?$node->webformcomponents_weight[$key]:0)).
+                      form_weight('', 
+                                  "webformcomponents_weight][".$key,
+                                  ($node->webformcomponents_weight[$key]?$node->webformcomponents_weight[$key]:0),
+                                  (($nocomponents>10)?$nocomponents:10)).
                       $other);
     }
 
@@ -388,7 +391,8 @@ function webform_form(&$node, &$error) {
                                        t('To delete a component, check its "selected" box and press "Delete selected".'),
                                        t('Use "value" to enter a default value.'),
                                        t('Check "mandatory" box if the field should be mandatory.'),
-                                       t('Remember to set weight on the components or they will be added to the form in a random order.')
+                                       t('Remember to set weight on the components or they will be added to the form in a random order.'),
+                                       t('The components are sorted first by weight and then by name.')
                                        )
                                  );
     $output .= form_item(t('Form components'), $help_text);
@@ -419,6 +423,8 @@ function webform_form(&$node, &$error) {
 
 function webform_view(&$node, $teaser = 0, $page = 0) {
   $doSubmit = true;
+
+  $node->body = check_output($node->body, $node->format);
 
   $submitted = $_POST['edit']['submitted'];
   if( is_array($node->webformcomponents_name) && !empty($node->webformcomponents_name)) {
@@ -457,7 +463,6 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
   }
   
   $node->body .= $output;
-  $node->body = check_output($node->body);
 }
 
 function _webform_editfield() {
@@ -497,7 +502,7 @@ function _webform_editfield() {
   $form .= form_hidden('webform_edited_type', $currfield['type']);
   $form .= form_hidden('webform_edited_key', $currfield['key']);
   $form .= form_textfield(t("Name"), "webform_edited_name", $currfield['name'], 60,
-			    127, t('Name of the field. This is used as a descriptive lable and as the key when saving data in the database.').($error['webform_edited_name'] ? $error['webform_edited_name'] : ''));
+			    127, t('Name of the field. This is used as a descriptive label and as the key when saving data in the database.').($error['webform_edited_name'] ? $error['webform_edited_name'] : ''));
   $form .= form_textfield(t("Description"), "webform_edited_extra][description", $currfield['extra']['description'], 
                           60, 127, 
                           t('A short description of the field used as help for the user when he/she uses the form.').'<br />'.
@@ -652,7 +657,7 @@ function _webform_thanks() {
   if ( arg(2) ) {
     $node = node_load(array('nid' => arg(2)));
     if ( node_access('view', $node) ) {
-      $node->body = $node->confirm;
+      $node->body = check_output($node->confirm, $node->format);
       print theme('page', theme('node', $node, FALSE, TRUE), $node->title);
     }
     else {
@@ -692,7 +697,7 @@ function _webform_create_widget($name, $type, $mandatory, $value, $extra, $err =
                          _webform_filtervalues($extra['description']), $mandatory, NULL);
     }
     break;
-  case 'lable':
+  case 'label':
     return form_item($name, NULL, _webform_filtervalues($extra['description']));
   case 'hidden':
     return form_hidden($componentname, $value);
@@ -801,13 +806,14 @@ function _webform_save_submission($node, $reply) {
     if (is_array($value)) {
       $value = serialize($value);
     }
-    
+ 
     $sqlstring[] = " (%d, %d, '%s', '%s') ";
     $values[] = $node->nid;
     $values[] = $sid;
     $values[] = $key;
     $values[] = $value;
   }
+
   db_query("INSERT INTO {webform_submitted_data} (nid, sid, name, data) ".
            "VALUES ".implode(', ', $sqlstring), $values);
 }
@@ -839,7 +845,8 @@ function _webform_version() {
    * to determine newer/older versions for upgrade and installation
    * purposes.
    */
-  return array("text" => "4.6.0", "build" => 460);
+
+  return array("text" => "4.6.1", "build" => 461);
 } // function _webform_version
 
 /**
@@ -862,7 +869,7 @@ function _webform_update() {
     if ( $installed_version['build'] <= 1 ) {
       $ret[] = array(1 => "<strong>Build 1</strong><br />\n", 2 => "");
       // Add the table webform_submitted_data
-      $ret[] = update_sql("CREATE TABLE {webform_submitted_data} ".
+      $ret[] = update_sql("CREATE TABLE {webform_submited_data} ".
                           "( nid int(10) unsigned not null, ".
                           "sid int(10) unsigned not null, ".
                           "name varchar(255) not null, ".
@@ -884,6 +891,12 @@ function _webform_update() {
       // Update webform_submited_data to webform_submitted_data
       $ret[] = update_sql("ALTER TABLE {webform_submited_data} RENAME TO {webform_submitted_data}");
     }
+    if ( $installed_version['build'] < 461 ) {
+      // Update webform.confirm varchar(255) -> text
+      $ret[] = update_sql(" ALTER TABLE {webform} CHANGE confirm confirm text");
+      // Update from lable to label in webform_component
+      $ret[] = update_sql(" UPDATE {webform_component} SET type = 'label' WHERE type = 'lable'");
+    }
     // Set the $current_version
     variable_set("webform_version", $current_version);
 
@@ -904,6 +917,8 @@ function _webform_update() {
  **/
 function _webform_convert_old_submissions() {
   // Select all from webform_submissions.
+  
+  /* 
   $result = db_query("SELECT nid, sid, uid, UNIX_TIMESTAMP(created) as created, data ".
                    "FROM {webform_submissions}");
   
@@ -911,6 +926,7 @@ function _webform_convert_old_submissions() {
     // TODO: Parse each XML string ...
     // ... and insert the data into the new table.
   }
+  */
   return array('1', "Converting old submissions", "<div style=\"color: red;\">Not implemented!</div>\n");
 } // end function _webform_convert_old_submissions
 
