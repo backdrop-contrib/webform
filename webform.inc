@@ -502,7 +502,7 @@ function _webform_reportanalysis() {
   
   // Pull the title of the form from node and make a nice heading for the page
   $node_info = _webform_get_node_info(arg(2));
-  $title = "$node_info->title <br>Results Analysis<p>";
+  $title = "Results Analysis of $node_info->title";
   
   // Do the main query
   $query = 'SELECT sd.name as name, sd.sid as sid, c.cid as cid, c.type as type, sd.data as data, c.extra as extra, c.value as value '.

@@ -629,6 +629,9 @@ function _webform_editfield() {
     $form .= form_checkbox(t('Multiple'), "webform_edited_extra][multiple", 'Y',
                            ($currfield['extra']['multiple']=='Y'?TRUE:FALSE), 
                            t('Check this option if the user should be allowed to choose multiple values.'));
+    $form .= form_checkbox(t('Listbox'), "webform_edited_extra][aslist", 'Y',
+                           ($currfield['extra']['aslist']=='Y'?TRUE:FALSE), 
+                           t('Check this option if you want the select component to be of listbox type instead of radiobuttons or checkboxes.'));
     break;
     
 	/*
@@ -786,16 +789,27 @@ function _webform_create_widget($name, $type, $mandatory, $value, $extra, $err =
       if ( strlen($v) )
         $options[$v] = $v;
     }
-    if ( $extra['multiple'] == 'Y' ) {
+    if ( $extra['aslist'] == 'Y' ) {
       if ( !is_array($value) ) {
         $value = array($value);
       }
-      return form_checkboxes($name, $componentname, $value, $options, 
-                             _webform_filtervalues($extra['description']), NULL, $mandatory);
+      return form_select($name,  $componentname,
+                         $value, $options,
+                         _webform_filtervalues($extra['description']), 0, 
+                         ($extra['multiple'] == 'Y'), $mandatory);
     }
     else {
-      return form_radios($name, $componentname, $value, $options, 
-                         _webform_filtervalues($extra['description']), $mandatory, NULL);
+      if ( $extra['multiple'] == 'Y' ) {
+        if ( !is_array($value) ) {
+          $value = array($value);
+        }
+        return form_checkboxes($name, $componentname, $value, $options, 
+                               _webform_filtervalues($extra['description']), NULL, $mandatory);      
+      }
+      else {
+        return form_radios($name, $componentname, $value, $options, 
+                           _webform_filtervalues($extra['description']), $mandatory, NULL);
+      }
     }
     break;
   case 'label':
