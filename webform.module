@@ -6,26 +6,44 @@
    * Karlstad University Library.
    *
    * @author Pontus Ullgren <ullgren@user.sourceforge.net>
+   * @package module_webform
    * @copyright Pontus Ullgren 2003
    * @version 0.1
    * 
    **/
 include_once("misc/htmltags.inc");
 
-/** Help text
+/** Hook Help - displayes help and general infomation about the module
+ * @param section specifies the section to display help for.
+ * @return a formated string containing the help output.
  **/
 function webform_help($section = "admin/help#page") {
   $output = "";
   
   switch ($section) {
+  case 'admin/system/modules/webfrom':
+    $output = t("Webforms are forms and qustionaries that can be added as nodes. To add one select <strong>create content</strong>");
+    break;
   case 'admin/help#webform':
-    $output = "";
+    $output = t("<p>The webform module is used to create forms or questionaries.</p>
+<p>Here is how it works:
+<ul>
+ <li>Go to Create Content and add a webform</li>
+ <li>Add a description that is displayed as a teaser and above the acctual form.</li>
+ <li>Add a confirmation message that are displayed after a successfull submission.</li>
+ <li>Select which roles who should have submission access to this form (roles that have the &quot;use all webforms&quot; permision can allways use a webform).</li>
+ <li>Add one or more components to your form.</li>
+ <li>You can also add a email address to which submissions will be send. If no email address is specified no email will be send when submissions are made through the form.</li>
+</ul>
+Help on adding and how to configure the components will be shown after adding your first component.
+</p>
+");
     break;
   case 'admin/system/modules#description':
     $output = t("Enables the creation of forms and questionnaires that can be added to the navigation system.");
     break;
   case 'node/add#webform':
-    $output = t("A webform can be a questionnaires, contact or request form. These can be used by visitor to make contact.");
+    $output = t("A webform can be a questionnaires, contact or request form. These can be used by visitor to make contact or to enable a more complex survey that the type polls enable.");
     break;
     
   }
@@ -182,7 +200,7 @@ function webform_settings(){
 			 variable_get("webform_debug", 0),
 			 array(0 => "FALSE", 1 => "TRUE"),
 			 html_br().t("DEBUG for the webform module") . html_br() .
-			 t("Set to true to send debug information in the email and to print debug info on submision."));
+			 t("Set to true to send debug information in the email and to print debug info on submision. Set this option to <b>FALSE</b> if you don't really know you need to enable it."));
   return $output;
 } // End webform_settings
 
@@ -458,12 +476,11 @@ function _webform_create_widget($name, $type, $value, $extra, $err = '') {
       ($err?html_br().$err:'');
     break;
   case 'combobox':
-    $items = explode(';', $value);
-    $first = $items[0];
+    $items = explode(';', $extra);
     foreach ($items as $it) {
       $options[$it] = $it;
     }
-    $output .= html_form_select($name, $first, $options);
+    $output .= html_form_select($name, $value, $options);
     return $output.
       ($err?html_br().$err:'');
     break;
