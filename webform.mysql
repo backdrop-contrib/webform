@@ -1,6 +1,6 @@
 CREATE TABLE webform 
   ( nid int(10) unsigned not null,
-    confirm text, 
+    confirmation text, 
     email varchar(255),
     primary key(nid));
 
@@ -28,4 +28,4 @@ CREATE TABLE webform_submitted_data
     PRIMARY KEY(nid, sid, name));
 
 -- Setting default variables
-INSERT INTO variable VALUES ('webform_version', 'a:2:{s:4:"text";s:5:"4.6.1";s:5:"build";i:461;}');
+INSERT INTO variable VALUES ('webform_version', 'a:2:{s:4:"text";s:5:"4.6.2";s:5:"build";i:462;}');

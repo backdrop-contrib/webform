@@ -118,7 +118,7 @@ function webform_insert($node) {
   _webform_database_lazy_update();
   // Lazy Initializer
 
-  db_query("INSERT INTO {webform} (nid, confirm, email, email_from, email_subject) VALUES (%d, '%s', '%s', '%s', '%s')",
+  db_query("INSERT INTO {webform} (nid, confirmation, email, email_from, email_subject) VALUES (%d, '%s', '%s', '%s', '%s')",
            $node->nid, $node->confirmation, $node->email, $node->email_from, $node->email_subject);
   
   if( is_array($node->webformcomponents_name) && !empty($node->webformcomponents_name)) {
@@ -161,7 +161,7 @@ function webform_update($node) {
   // Lazy Initializer
   _webform_database_lazy_update();
   
-  db_query("UPDATE {webform} SET confirm = '%s', email = '%s', email_from = '%s', email_subject = '%s' ".
+  db_query("UPDATE {webform} SET confirmation = '%s', email = '%s', email_from = '%s', email_subject = '%s' ".
            "WHERE nid = %d", $node->confirmation, $node->email, trim($node->email_from), trim($node->email_subject), $node->nid);
   
   db_query("DELETE FROM {webform_component} WHERE nid = %d", $node->nid);
@@ -204,7 +204,7 @@ function webform_load($node) {
   
   _webform_database_lazy_update();
   
-  $page = db_fetch_object(db_query("SELECT confirm as confirmation, email, email_from, email_subject FROM {webform} WHERE nid = %d", $node->nid));
+  $page = db_fetch_object(db_query("SELECT confirmation, email, email_from, email_subject FROM {webform} WHERE nid = %d", $node->nid));
   
   $result = db_query('SELECT cid, name, type, value, extra, mandatory, weight '.
                      ' FROM {webform_component} '.
@@ -306,7 +306,7 @@ function webform_validate(&$node) {
   // Validate confirm field
   if (isset($node->confirmation)) {
     if (!$node->confirmation) {
-      form_set_error('confirmation', t('You have to specify a confimation message.'));
+      form_set_error('confirmation', t('You have to specify a confirmation message.'));
       return $false;
     }
   }
@@ -441,7 +441,7 @@ function webform_form(&$node, &$error) {
                            $error["body"]. " ". t('Text to be shown as teaser and before the form.'), NULL, TRUE);
   $output .= filter_form('format', $node->format);
 			   
-  $output .= form_textarea(t("Confirmation message or redirect URL"), "confirm", $node->confirm, 20, 10,
+  $output .= form_textarea(t("Confirmation message or redirect URL"), "confirmation", $node->confirmation, 20, 10,
               $error["confirmation"]." ".
               t("Message to be shown upon successful submission or a relative path to redirect page (must start with ./)"), 
               NULL, TRUE);
@@ -777,7 +777,7 @@ function _webform_process_submit(&$node, &$errors) {
     }
   }
   // Handle posting to the form and output status.
-  $confirmation = $node->confirmation;   // What is this doing? Slated for removal.
+  //$confirmation = $node->confirm;   // What is this doing? Slated for removal.
   
   $reply = $_POST['edit']['submitted'];
   _webform_save_submission($node, $reply);
@@ -1116,7 +1116,7 @@ function _webform_version() {
    * purposes.
    */
 
-  return array("text" => "4.6.1", "build" => 461);
+  return array("text" => "4.6.2", "build" => 462);
 } // function _webform_version
 
 /**
@@ -1135,7 +1135,7 @@ function _webform_database_lazy_update() {
   $table_altered = false;
 
   // {webform}
-	$required_fields = array('nid' => false,'confirm' => false,'email' => false,'email_from' => false,'email_subject' => false);
+	$required_fields = array('nid' => false,'confirmation' => false,'email' => false,'email_from' => false,'email_subject' => false);
   $result = db_query("SHOW FIELDS FROM {webform}");
 
 	// Mark fields that exist in table as true
@@ -1209,12 +1209,14 @@ function _webform_update() {
       $ret[] = update_sql("ALTER TABLE {webform_submited_data} RENAME TO {webform_submitted_data}");
     }
     if ( $installed_version['build'] < 461 ) {
-      // Update webform.confirm varchar(255) -> text
-      $ret[] = update_sql(" ALTER TABLE {webform} CHANGE confirm confirm text");
       // Update webform.email varchar(50) -> varchar(255)
       $ret[] = update_sql(" ALTER TABLE {webform} MODIFY email varchar(255)");
       // Update from lable to label in webform_component
       $ret[] = update_sql(" UPDATE {webform_component} SET type = 'label' WHERE type = 'lable'");
+    }
+    if ( $installed_version['build'] < 462 ) {
+      // Update webform.confirm varchar(255) -> text and change name to "confirmation"
+      $ret[] = update_sql(" ALTER TABLE {webform} CHANGE confirm confirmation text");
     }
     // Set the $current_version
     variable_set("webform_version", $current_version);
