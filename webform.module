@@ -10,7 +10,12 @@
    * @package module_webform
    * @copyright Pontus Ullgren 2003
    * 
+   * This version contains some prototype additions for more control over the email output by jnt.  It is not
+   * yet part of CVS.  jnt Prototype v2
+   *
    **/
+
+
 
 /** Hook Help - displayes help and general infomation about the module
  * @param section specifies the section to display help for.
@@ -28,7 +33,7 @@ function webform_help($section = "admin/help#webform") {
 <p>Here is how to create one:
 <ul>
  <li>Go to Create Content and add a webform</li>
- <li>Add a description that is displayed as a teaser and above the acctual form.</li>
+ <li>Add a description that is displayed as a teaser and above the actual form.</li>
  <li>Add a confirmation message that are displayed after a successfull submission.</li>
  <li>Select which roles who should have submission access to this form (roles that have the &quot;use all webforms&quot; permision can allways use a webform).</li>
  <li>Add one or more components to your form.</li>
@@ -109,8 +114,12 @@ function webform_access($op, $node) {
 function webform_insert($node) {
   global $user;
   // insert
-  db_query("INSERT INTO {webform} (nid, confirm, email) VALUES (%d, '%s', '%s')", 
-           $node->nid, $node->confirm, $node->email);
+  
+  _webform_database_lazy_update();
+  // Lazy Initializer
+
+  db_query("INSERT INTO {webform} (nid, confirm, email, email_from, email_subject) VALUES (%d, '%s', '%s', '%s', '%s')",
+           $node->nid, $node->confirm, $node->email, $node->email_from, $node->email_subject);
   
   if( is_array($node->webformcomponents_name) && !empty($node->webformcomponents_name)) {
     foreach($node->webformcomponents_name as $key => $name) {
@@ -148,11 +157,15 @@ function webform_insert($node) {
 
 function webform_update($node) {
   // Update 
-  db_query("UPDATE {webform} SET confirm = '%s', email = '%s' ".
-           "WHERE nid = %d", $node->confirm, $node->email, $node->nid);
+  
+  // Lazy Initializer
+  _webform_database_lazy_update();
+  
+  db_query("UPDATE {webform} SET confirm = '%s', email = '%s', email_from = '%s', email_subject = '%s' ".
+           "WHERE nid = %d", $node->confirm, $node->email, trim($node->email_from), trim($node->email_subject), $node->nid);
   
   db_query("DELETE FROM {webform_component} WHERE nid = %d", $node->nid);
-
+  
   if( is_array($node->webformcomponents_name) && !empty($node->webformcomponents_name)) {
     foreach($node->webformcomponents_name as $key => $name) {   
       db_query("INSERT INTO {webform_component} (nid, cid, name, type, value, extra, mandatory, weight) ".
@@ -183,9 +196,15 @@ function webform_delete(&$node) {
   _webform_role_node_delete($node->nid);
 }
 
+
 function webform_load($node) {
   // load 
-  $page = db_fetch_object(db_query("SELECT confirm, email FROM {webform} WHERE nid = %d", $node->nid));
+  
+  // Lazy initializer
+  
+  _webform_database_lazy_update();
+  
+  $page = db_fetch_object(db_query("SELECT confirm, email, email_from, email_subject FROM {webform} WHERE nid = %d", $node->nid));
   
   $result = db_query('SELECT cid, name, type, value, extra, mandatory, weight '.
                      ' FROM {webform_component} '.
@@ -209,17 +228,21 @@ function webform_load($node) {
 }
 
 function webform_settings(){
+  
   $installed_version  = variable_get('webform_version', array('text'=> 'Unknown', 'build' => 1));
   $current_version = _webform_version();
+  
   if ( $installed_version['build'] < $current_version['build'] ) {
     $output .= '<div>'.l(t('Update from version %a to version %b', 
                            array( '%a' => $installed_version['text'], '%b' => $current_version['text']) ), 
                          'webform/upgrade').'</div>';
   }
+  
   $output .= form_select(t("Allow cross site posting"), "webform_allow_cross_site_posting",
                          variable_get("webform_allow_cross_site_posting", 0),
                          array(0 => t('Yes'), 1 => t('No')),
                          t("Allow postings to your webforms that do not originating from your sites domain."));
+  
   $output .= form_select(t("Webforms Debug"), "webform_debug",
                          variable_get("webform_debug", 0),
                          array(0 => "OFF", 1 => "Log submissions", 2 => "Full debug"),
@@ -241,7 +264,7 @@ function webform_validate(&$node) {
     _webform_editfield();
     exit(0);
   }
-
+  
   if( isset($_POST['webform_edit_done']) ) {
     $old_edit = unserialize($_POST['old_edit']);
     $edit = array_merge($_POST['edit'], $old_edit);
@@ -249,7 +272,7 @@ function webform_validate(&$node) {
     // we have to do what the framework would do for us so we don't loose 
     // information.
     $node = array2object($edit);
-
+    
     // We have just edited component add it to the node
     $node->webformcomponents_name[$node->webform_edited_key] = $node->webform_edited_name;
     $node->webformcomponents_type[$node->webform_edited_key] = $node->webform_edited_type;
@@ -262,7 +285,7 @@ function webform_validate(&$node) {
     unset($node->webformcomponents_name[$_POST['edit']['webform_checked_component']]);
     drupal_set_message(t('The form component has been deleted. Remember to press Submit on the bottom of this form to save your changes.'));
   }
-
+  
   // Validate the body field.
   if (isset($node->body)) {
     if (!$node->body) {
@@ -270,7 +293,7 @@ function webform_validate(&$node) {
       return false;
     }
   }
-
+  
   // Validate confirm field
   if (isset($node->confirm)) {
     if (!$node->confirm) {
@@ -278,6 +301,8 @@ function webform_validate(&$node) {
       return $false;
     }
   }
+  
+  // TODO: Put email validates here
   
   return true;
 }
@@ -287,13 +312,13 @@ function webform_validate(&$node) {
  */
 function webform_menu() {
   global $user;
-
+  
   $items = array();
-
+  
   // create content -> webfor
   $items[] = array('path' => 'node/add/webform', 'title' => t('webform'),
                    'access' => user_access('maintain webforms'));
-
+  
   $items[] = array('path' => 'webform/done', 'title' => t('webform'),
                    'callback' => '_webform_thanks',
                    'type' => MENU_CALLBACK,
@@ -310,15 +335,17 @@ function webform_menu() {
                    'callback' => 'webform_page',
                    'type' => MENU_NORMAL_ITEM,
                    'access' => user_access('maintain webforms'));
-
+  
   $items[] = array('path' => 'webform/table', 'title' => t('table'),
                    'callback' => 'webform_reporttable',
                    'type' => MENU_CALLBACK,
                    'access' => user_access('maintain webforms'));
+  
   $items[] = array('path' => 'webform/analysis', 'title' => t('analysis'),
                    'callback' => 'webform_reportanalysis',
                    'type' => MENU_CALLBACK,
                    'access' => user_access('maintain webforms')); 
+  
   return $items;
 }
 
@@ -339,12 +366,17 @@ function webform_link($type, $node = 0, $main = 0) {
 }
 
 function webform_form(&$node, &$error) {
+  
+  $output .= _webform_database_lazy_update();
+  
   $component_types = array('textfield' => t('textfield'),
                            'textarea' => t('textarea'),
                            'select' => t('select'),
                            'label' => t('label'),
                            'hidden' => t('hidden'),
                            'email' => t('e-mail address'));
+  
+  //'explanation' => t('explanation'));
   
   // User access stuff
   $roles = user_roles(0); // Get all roles including anonymous users
@@ -389,7 +421,7 @@ function webform_form(&$node, &$error) {
                                   (($nocomponents>10)?$nocomponents:10)).
                       $other);
     }
-
+    
     $help_text = theme_item_list(array(
                                        t('To edit a component, check its "selected" box and press "Edit selected".'),
                                        t('To delete a component, check its "selected" box and press "Delete selected".'),
@@ -419,9 +451,32 @@ function webform_form(&$node, &$error) {
                          $component_types, t('Select a component type to add.'));
   $output .= form_button(t('Add'), 'edit_component');
 
-  $output .= form_textfield(t("E-mail address"), "email", $node->email, 
+  $output .= form_textfield(t("E-mail to address"), "email", $node->email,
                             60, 250, 
-                            t('Form submissions will be e-mailed to this address.').($error["email"] ? $error["email"] : ''));
+                            t('Form submissions will be e-mailed to this address. Leave blank for none.').($error["email"] ? $error["email"] : ''));
+
+
+	// Build arrays of possible return email addresses and email subject lines from elements on the form
+	$possible_email_from = array('Automatic' => 'Automatic');
+	$possible_email_subject = array('Automatic' => 'Automatic');
+
+  if( is_array($node->webformcomponents_name) && !empty($node->webformcomponents_name)) {
+    foreach($node->webformcomponents_name as $key => $name) {
+    	$type = $node->webformcomponents_type[$key];
+			if( $type == 'email' || $type == 'hidden' ){
+				$possible_email_from[$name] = $name;
+			}
+			if( $type == 'textfield' || $type == 'hidden' ){
+				$possible_email_subject[$name] = $name;
+			}
+		}
+	}
+
+  $output .= form_select(t('E-mail from address'), 'email_from', $node->email_from,
+                         $possible_email_from, t('Form e-mails will have this return address. Choose Automatic for the default'));
+
+  $output .= form_select(t('E-mail subject'), 'email_subject', $node->email_subject,
+                         $possible_email_subject, t('Form e-mails will have this subject line. Choose Automatic for the default'));
   
   return $output;
 }
@@ -430,6 +485,8 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
   $doSubmit = true;
 
   $node->body = check_output($node->body, $node->format);
+
+	//$output .= _webform_database_lazy_update();
 
   $submitted = $_POST['edit']['submitted'];
   if( is_array($node->webformcomponents_name) && !empty($node->webformcomponents_name)) {
@@ -471,7 +528,7 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
 }
 
 function _webform_editfield() {
-  // we have to do what the framework would do for us so we don't loose 
+  // we have to do what the framework would do for us so we don't lose
   // information.
   if( isset($_POST['edit']) ) {
     $node = array2object($_POST['edit']);
@@ -574,6 +631,17 @@ function _webform_editfield() {
                            t('Check this option if the user should be allowed to choose multiple values.'));
     break;
     
+	/*
+	case 'explanation':
+    $form .= form_textarea(t("Options"), "webform_edited_extra][items", $currfield['extra']['items'],
+                            60, 5,
+                            t('Enter the explaination text.').'<br />'.
+                            webform_help('webform/helptext#variables').
+                            ($error['webform_edited_default'] ? $error['webform_edited_default'] : ''));
+
+		break;
+  */
+
   } // End switch
 
   if( isset($_POST['edit']) ) {
@@ -635,23 +703,52 @@ function _webform_process_submit(&$node, &$errors) {
   if (isset($node->email)) {
     $node->email = strip_tags($node->email);
     if (!empty($node->email)) {
-      $headers = "From: "._webform_encodeHeader( variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\r\n".
-	"Date: ".date("r")."\r\n".
+
+			// Build arrays of possible return email addresses and email subject lines from elements on the form
+			// This is a duplicate of the code that creates the arrays for selection.
+
+			// Set the default or 'Automatic' values
+
+			$email_from_string = "From: "._webform_encodeHeader( variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\r\n";
+			$email_subject_string = _webform_encodeHeader( t('Form submission from: ').' '.$node->title );
+
+		  if( is_array($node->webformcomponents_name) && !empty($node->webformcomponents_name)) {
+		    foreach($node->webformcomponents_name as $key => $name) {
+		    	$type = $node->webformcomponents_type[$key];
+		    	//$value = $node->webformcomponents_value[$key];
+					if( $type == 'email' || $type == 'hidden' ){
+						if($name == $node->email_from){
+							$email_from_string = "From: "._webform_encodeHeader(strip_tags("$reply[$name]"))."\r\n";
+						}
+					}
+
+					if( $type == 'textfield' || $type == 'hidden' ){
+						if($name == $node->email_subject){
+							$email_subject_string = _webform_encodeHeader(strip_tags("$reply[$name]"));
+						}
+					}
+				}
+			}
+
+			$headers = $email_from_string;
+      $headers .= "Date: ".date("r")."\r\n".
         "MIME-Version: 1.0\r\n".
 	"Content-Type: text/plain; charset=UTF-8\r\n".
 	"Content-Disposition: inline\r\n".
 	"Content-Transfer-Encoding: quoted-printable\r\n".
 	"X-Mailer: Drupal Webform (PHP/" . phpversion().")";
-      $subject = _webform_encodeHeader( t('Form submission from').' '.$node->title );
-      mail($node->email, $subject, $message, _webform_encodeHeader($headers));
+
+      mail($node->email, $email_subject_string, $message, _webform_encodeHeader($headers));
     }
   }
 
   if (variable_get('webform_debug', 0) >= 2) {
     drupal_set_message("<pre>$message</pre>");
   }
+
   if (variable_get('webform_debug', 0) >= 1) {
-    watchdog('special', t('Submission posted to ')."'$node->title'.<br />\n<pre>$message</pre>");
+    watchdog('special', 
+             t('Submission posted to ')."'$node->title'.<br />\n".nl2br(htmlentities($message)));
   }
 
   return true;
@@ -686,7 +783,7 @@ function _webform_create_widget($name, $type, $mandatory, $value, $extra, $err =
     $items = explode("\n", _webform_filtervalues($extra['items']));
     foreach($items as $k => $v) {
       $v = trim($v);
-      if ( !empty($v) ) 
+      if ( strlen($v) )
         $options[$v] = $v;
     }
     if ( $extra['multiple'] == 'Y' ) {
@@ -761,22 +858,22 @@ function _webform_create_mailmessage($reply) {
   $message .=  t('Submited on').' '.format_date(time(), 'small')."\r\n";
   
   if($user->uid) {
-    $message .= t('Submited by user').": $user->name"."\r\n";
+    $message .= t('Submited by user').": $user->name"."\n";
   }
   else {
-    $message .= t('Submited by anonymous user').'['.$_SERVER['REMOTE_ADDR'].']'."\r\n";
+    $message .= t('Submited by anonymous user').'['.$_SERVER['REMOTE_ADDR'].']'."\n";
   }
-  $message .= t('Submited values are:')."\r\n";
+  $message .= t('Submited values are:')."\n";
   foreach($reply as $key => $value) {
     if (is_array($value)) {
       $message .=  "$key :";
       foreach($value as $k => $v) {
-        $message .= "\r\n\t"."$k = $v";
+        $message .= "\n\t\t"."$k = $v";
       }
-      $message .= "\r\n";
+      $message .= "\n";
     }
     else {
-      $message .=  "$key : $value"."\r\n";
+      $message .=  "$key : $value"."\n";
     }
   }
   
@@ -792,7 +889,6 @@ function _webform_create_mailmessage($reply) {
   }
 
   return _webform_qp_enc($message, 79);
-  // return $message;
 }
 
 function _webform_save_submission($node, $reply) {
@@ -836,13 +932,11 @@ function webform_reporttable() {
   _webform_reporttable();
 }
 
-/** 
- * Report analysis showsbasic tally statistics on checkboxes and radio buttons.
- */
 function webform_reportanalysis() {
   include_once('webform.inc');
   _webform_reportanalysis();
 }
+
 
 /**
  * Returns the version of this release of the webform module.
@@ -860,6 +954,36 @@ function _webform_version() {
 
   return array("text" => "4.6.1", "build" => 461);
 } // function _webform_version
+
+/**
+ * _webform_database_lazy_update - Lazy field adder for extra email fields
+ */
+function _webform_database_lazy_update() {
+
+	$lazy_update_output = '';
+
+  // {webform}
+	$required_fields = array('nid' => false,'confirm' => false,'email' => false,'email_from' => false,'email_subject' => false);
+  $result = db_query("SHOW FIELDS FROM {webform}");
+
+	// Mark fields that exist in table as true
+	while ($record = db_fetch_object($result)){
+		$required_fields[$record->Field] = true;
+	}
+
+	foreach($required_fields as $field_name => $required_field){
+		if(!$required_field){
+			// Field does not exist so we need to create it.
+			switch($field_name){
+				case 'email_subject':
+				case 'email_from':
+					db_query("ALTER TABLE {webform} ADD COLUMN %s varchar(255)",$field_name);
+					break;
+				default:
+			}
+		}
+	}
+}
 
 /**
  * Makes updates to the database structure.
@@ -933,6 +1057,7 @@ function _webform_convert_old_submissions() {
   // Select all from webform_submissions.
   
   /* 
+
   $result = db_query("SELECT nid, sid, uid, UNIX_TIMESTAMP(created) as created, data ".
                    "FROM {webform_submissions}");
   
