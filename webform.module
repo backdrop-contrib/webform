@@ -10,7 +10,7 @@
    * @version 0.1
    * 
    **/
-include_once('misc/htmltags.inc');
+include_once("misc/htmltags.inc");
 
 /** Help text
  **/
@@ -86,6 +86,7 @@ function webform_save($op, $node) {
 }
 
 function webform_insert($node) {
+  global $user;
   // insert
   db_query("INSERT INTO {webform} (nid, confirm, email) VALUES (%d, '%s', '%s')", 
            $node->nid, $node->confirm, $node->email);
@@ -108,8 +109,8 @@ function webform_insert($node) {
 	$roles[] = $rid;
     }
     // Add the users group if it isn't allready checked.
-    if(!in_array($user->rid, $roles)) {
-      $roles[] = $user->rid;
+    if(!is_array($roles) || !in_array($user->rid, $roles)) {
+        $roles[] = $user->rid;
     }
     
     if (!empty($roles)) {
@@ -240,7 +241,7 @@ function webform_link($type) {
 function webform_form(&$node, &$error, &$param) {
   
   $component_types = array('textfield' => t('textfield'),
-                           // 'textarea' => t('textarea'),
+                           'textarea' => t('textarea'),
                            'radiobutton' => t('radiobutton'),
                            'checkbox' => t('checkbox'),
                            'combobox' => t('combobox'),
@@ -283,11 +284,15 @@ function webform_form(&$node, &$error, &$param) {
     }
     $output .= html_br().
       html_div(t('Please specify data for the components.').
-	       html_ul(array(t('Check "M" if the field should be manatory.'),
+	       html_ul(array(
 			     t('To delete a component, check the "X" box and press "Delete selected".'),
-			     t('Use the "extra" field to enter maxlength for textfields.'),
-			     t('Extra is also used to enter multiple choices for comboboxes, radio buttons and checkboxes. Seperate the choices with a ;'),
 			     t('Use "value" to enter a default value.'),
+			     t('Use the "extra" field to:').
+			     html_ul(array(t('Specify maxlength for textfields.'),
+					   t('Specify width and height for textareas in the format: WIDTHxHEIGHT'),
+					   t('Enter multiple choices for comboboxes, radio buttons and checkboxes. Seperate the choices with a ;'),
+					   )),
+			     t('Check "M" if the field should be manatory.'),
 			     t('Remember to set weight on the components or they will be added randomly to the form.')
 			     ))
                );
@@ -362,8 +367,7 @@ function _webform_process_submit(&$node, &$errors) {
     $base = parse_url( urldecode($base_url.'/'));
     
     if ( $referer['scheme'] != $base['scheme']
-	 || $referer['host'] != $base['host']
-	 || $referer['path'] != $base['path'] 
+         || $referer['host'] != $base['host']
 	 ) {
       // The submission didn't originate from our own domain, return false
       return false;    
@@ -390,7 +394,8 @@ function _webform_process_submit(&$node, &$errors) {
     $node->email = strip_tags($node->email);
     if (!empty($node->email)) {
       $headers = "From: "._webform_encodeHeader( variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\r\n".
-	"Content-Type: text/plain; charset=utf-8\r\n".
+        "MIME-Version: 1.0\r\n".
+	"Content-Type: text/plain; charset=UTF-8\r\n".
 	"Content-Disposition: inline\r\n".
 	"Content-Transfer-Encoding: quoted-printable\r\n".
 	"X-Mailer: Drupal Webform (PHP/" . phpversion().")";
@@ -411,9 +416,18 @@ function _webform_create_widget($name, $type, $value, $extra, $err = '') {
   
   switch($type) {
   case 'textarea':
+    $items = explode('x', $extra);
     // TODO: Make textarea
-    return html_form_textfield('', $name, $value, 20, 125).
+    //    return html_form_textfield('', $name, $value, 20, 125).
+    //      ($err?html_br().$err:'');
+    $string = "<textarea name=\"$name\"".
+      (empty($items[0])?"":" cols=\"$items[0]\" ").
+      (empty($items[1])?"":" rows=\"$items[1]\" ").
+       "\">".
+      $value.
+      "</textarea>".
       ($err?html_br().$err:'');
+    return $string;
     break;
   case 'radiobutton':
     $items = explode(';', $extra);
@@ -510,7 +524,9 @@ function _webform_create_mailmessage($reply) {
     $message .= "\$_POST is\r\n";
     $message .= print_r($_POST, true);
   }
-  return $message;
+
+  return _webform_qp_enc($message, 79);
+  // return $message;
 }
 
 function _webform_save_submission($node, $reply) {
@@ -674,4 +690,41 @@ function _webform_encodeHeader ($string) {
   }
   return $string;
 }
+
+/** 
+ * Create quoted_printable text.
+ * Nicked from the PHP manual.
+ **/
+function _webform_qp_enc($input, $line_max = 79) {
+
+  $hex = array('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F');
+  $lines = preg_split("/(?:\r\n|\r|\n)/", $input);
+  $eol = "\r\n";
+  $escape = "=";
+  $output = "";
+  
+  while( list(, $line) = each($lines) ) {
+    //$line = rtrim($line); // remove trailing white space -> no =20\r\n necessary
+    $linlen = strlen($line);
+    $newline = "";
+    for($i = 0; $i < $linlen; $i++) {
+      $c = substr($line, $i, 1);
+      $dec = ord($c);
+      if ( ($dec == 32) && ($i == ($linlen - 1)) ) { // convert space at eol only
+	$c = "=20";
+      } elseif ( ($dec == 61) || ($dec < 32 ) || ($dec > 126) ) { // always encode "\t", which is *not* required
+	$h2 = floor($dec/16); $h1 = floor($dec%16);
+	$c = $escape.$hex["$h2"].$hex["$h1"];
+      }
+      if ( (strlen($newline) + strlen($c)) >= $line_max ) { // CRLF is not counted
+	$output .= $newline.$escape.$eol; // soft line break; " =\r\n" is okay
+	$newline = "";
+      }
+      $newline .= $c;
+    } // end of for
+    $output .= $newline.$eol;
+  }
+  return trim($output);  
+} 
+
 ?>
