@@ -58,7 +58,7 @@ Help on adding and how to configure the components will be shown after adding yo
     break;
   case 'webform/helptext#variables':
     $output = t('Available variables are: %username, %useremail, %site, %date.');
-    $output .= t(' '.'You can also use %server[key] to add any of the special PHP $_SERVER variables and %get[key] to create prefilled forms from from the URL.');
+    $output .= ' '.t('You can also use %server[key] to add any of the special PHP $_SERVER variables and %get[key] to create prefilled forms from from the URL.');
     if ( module_exist('profile') ) {
       $output .= t('If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the varible %profile[profile_city].');
     }

@@ -1,19 +1,21 @@
 Requirements
 ------------
 
-Drupal CVS HEAD
+Drupal 4.6
 
 
 Installation
 ------------
 1. If you use as DB prefix in the site configuration you need to update the
    webform.mysql file and add the prefix to all tablenames.
+   This can be done by using the scripts/prefix.sh available in the Drupal 
+   main distribution.
 
 2. Create the SQL tables. This depends a little on your system, but the most
    common method is:
      mysql -u username -ppassword drupal < webform.mysql
 
-3. Copy the webform.module to the Drupal modules/ directory.
+3. Copy the webform.module and webform.inc to the Drupal modules/ directory.
 
 4. Enable the module in the admin interface.
 
@@ -22,7 +24,7 @@ Installation
 Upgrading from previous version
 -------------------------------
 
-1. Copy the new webform.module to the Drupal modules/ directory.
+1. Copy the new webform.module and webform.inc to the Drupal modules/ directory.
 
 2. Go to "admin" -> "settings" ->  "webform" and select the upgrade link.
 

@@ -1,0 +1,113 @@
+# LANGUAGE translation of Drupal (webform.inc)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from file: webform.inc,v 1.15 2005/04/02 17:50:24 ullgren
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2005-04-03 12:55+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: webform.inc:11
+msgid "Title"
+msgstr ""
+
+#: webform.inc:12;321;390
+msgid "View"
+msgstr ""
+
+#: webform.inc:14
+msgid "Operations"
+msgstr ""
+
+#: webform.inc:51;52
+msgid "Do you really want to delete the submissions for this form?"
+msgstr ""
+
+#: webform.inc:52;72
+msgid "This action cannot be undone."
+msgstr ""
+
+#: webform.inc:71;72
+msgid "Do you really want to delete this form submission?"
+msgstr ""
+
+#: webform.inc:149
+msgid "#"
+msgstr ""
+
+#: webform.inc:286
+msgid "Date"
+msgstr ""
+
+#: webform.inc:286
+msgid "User"
+msgstr ""
+
+#: webform.inc:286
+msgid "Action"
+msgstr ""
+
+#: webform.inc:322;391
+msgid "Delete"
+msgstr ""
+
+#: webform.inc:502
+msgid "Unique Users Only"
+msgstr ""
+
+#: webform.inc:502
+msgid "Unique IPs Only"
+msgstr ""
+
+#: webform.inc:503
+msgid "Analog Bar"
+msgstr ""
+
+#: webform.inc:503
+msgid "Percentage"
+msgstr ""
+
+#: webform.inc:503
+msgid "Tallies"
+msgstr ""
+
+#: webform.inc:503
+msgid "Covariance Matrix"
+msgstr ""
+
+#: webform.inc:605
+msgid "Q"
+msgstr ""
+
+#: webform.inc:605
+msgid "choice"
+msgstr ""
+
+#: webform.inc:605
+msgid "responses"
+msgstr ""
+
+#: webform.inc:661
+msgid "Left Blank"
+msgstr ""
+
+#: webform.inc:661
+msgid "Default"
+msgstr ""
+
+#: webform.inc:661
+msgid "User entered value"
+msgstr ""
+
+#: webform.inc:661
+msgid "Average submission length in words (ex blanks)"
+msgstr ""
+
