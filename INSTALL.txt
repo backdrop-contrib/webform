@@ -13,12 +13,22 @@ Installation
 
 2. Copy the webform.module to the Drupal modules/ directory.
 
-3. Copy htmltags.inc under misc directory.
- 
-4. Enable the module in the admin interface.
+3. Enable the module in the admin interface.
 
-5. To upgrade from a previous version go to "admin" -> "settings" -> 
-   "webform" and select the upgrade link.
+4. (Optional) Edit the settings under "admin" -> "settings" -> "webform"
+
+Upgrading from previous version
+-------------------------------
+
+1. Copy the new webform.module to the Drupal modules/ directory.
+
+2. Go to "admin" -> "settings" ->  "webform" and select the upgrade link.
+
+The .POT file
+-------------
+The .POT file is a template file for translating the module into non-english languages.
+If you are not interested in helping with translation you can safely remove this file 
+(and the po directory).
 
 ------
 
