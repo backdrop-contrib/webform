@@ -442,9 +442,9 @@ function webform_form(&$node, &$error) {
   $output .= filter_form('format', $node->format);
 			   
   $output .= form_textarea(t("Confirmation message or redirect URL"), "confirmation", $node->confirmation, 20, 10,
-              $error["confirmation"]." ".
-              t("Message to be shown upon successful submission or a relative path to redirect page (must start with ./)"), 
-              NULL, TRUE);
+            $error["confirmation"]." ".
+            t("Message to be shown upon successful submission or an absolute path to a redirect page (must start with http://)"), 
+            NULL, TRUE);
 
   // List all form components.
   if( is_array($node->webformcomponents_name) && !empty($node->webformcomponents_name)) {
@@ -592,8 +592,8 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
   if ( $doSubmit && $_POST['webform_send']) {
     if(_webform_process_submit($node, $errors)) {
       // Check confirmation field to see if redirect should be to another node or a message
-      if(valid_url(trim($node->confirmation))){
-        drupal_goto(trim($node->confirmation));
+      if(valid_url(trim($node->confirmation),true)) {
+        header("Location: " . trim($node->confirmation));
       }
       else {
         // Submission was successfully redirected to webform/done/<nid>
