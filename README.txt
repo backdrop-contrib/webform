@@ -11,6 +11,13 @@ Open Source City (www.opensourcecity.org) and Karlstad University Library
 (www.bib.kau.se).
 Also many thanks to the Dupal community for all bughunting.
 
+Code Contributions
+------------------
+jnt - Analysis report statistics.
+
+(if you feel left out please send me a message thru the contact form 
+on http://drupal.org/user/6096/contact)
+
 
 Translation
 -----------

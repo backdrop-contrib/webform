@@ -315,6 +315,10 @@ function webform_menu() {
                    'callback' => 'webform_reporttable',
                    'type' => MENU_CALLBACK,
                    'access' => user_access('maintain webforms'));
+  $items[] = array('path' => 'webform/analysis', 'title' => t('analysis'),
+                   'callback' => 'webform_reportanalysis',
+                   'type' => MENU_CALLBACK,
+                   'access' => user_access('maintain webforms')); 
   return $items;
 }
 
@@ -831,6 +835,14 @@ function webform_page() {
 function webform_reporttable() {
   include_once('webform.inc');
   _webform_reporttable();
+}
+
+/** 
+ * Report analysis showsbasic tally statistics on checkboxes and radio buttons.
+ */
+function webform_reportanalysis() {
+  include_once('webform.inc');
+  _webform_reportanalysis();
 }
 
 /**
