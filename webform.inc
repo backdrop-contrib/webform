@@ -296,8 +296,8 @@ function _webform_records_string($title_string,$nid,$mode = 'file',$new_line = "
         case 'submission_list':
           $print_sid = "sid=".$record_array[1]['sid'];
 
-          $print_view_ref = l(t('View'),"./node/$nid",NULL,$print_sid,NULL,FALSE);
-          $print_delete_ref = l(t('Delete'),"./webform/delete/" . $record_array[1]['sid'],NULL,NULL,NULL,FALSE);
+          $print_view_ref = l(t('View'),"node/$nid",NULL,$print_sid,NULL,FALSE);
+          $print_delete_ref = l(t('Delete'),"webform/delete/" . $record_array[1]['sid'],NULL,NULL,NULL,FALSE);
           $submission_list_array[] = array($record_count,$record_array[1]['sid'],$record_array[1]['__timestamp'],$record_array[1]['__userid'],$record_array[1]['__remotehost'],$print_view_ref,$print_delete_ref);
           break;
 
@@ -365,8 +365,8 @@ function _webform_records_string($title_string,$nid,$mode = 'file',$new_line = "
       case 'submission_list':
         $print_sid = "sid=".$record_array[1]['sid'];
 
-        $print_view_ref = l(t('View'),"./node/$nid",NULL,$print_sid,NULL,FALSE);
-        $print_delete_ref = l(t('Delete'),"./webform/delete/" . $record_array[1]['sid'],NULL,NULL,NULL,FALSE);
+        $print_view_ref = l(t('View'),"node/$nid",NULL,$print_sid,NULL,FALSE);
+        $print_delete_ref = l(t('Delete'),"webform/delete/" . $record_array[1]['sid'],NULL,NULL,NULL,FALSE);
         $submission_list_array[] = array($record_count,$record_array[1]['sid'],$record_array[1]['__timestamp'],$record_array[1]['__userid'],$record_array[1]['__remotehost'],$print_view_ref,$print_delete_ref);
         break;
       case 'print':
