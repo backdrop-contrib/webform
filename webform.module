@@ -415,8 +415,9 @@ function webform_form(&$node, &$error) {
                          $component_types, t('Select a component type to add.'));
   $output .= form_button(t('Add'), 'edit_component');
 
-  $output .= form_textfield(t("E-mail address"), "email", $node->email, 60,
-			    127, t('Form submissions will be e-mailed to this address.').($error["email"] ? $error["email"] : ''));
+  $output .= form_textfield(t("E-mail address"), "email", $node->email, 
+                            60, 250, 
+                            t('Form submissions will be e-mailed to this address.').($error["email"] ? $error["email"] : ''));
   
   return $output;
 }
@@ -894,6 +895,8 @@ function _webform_update() {
     if ( $installed_version['build'] < 461 ) {
       // Update webform.confirm varchar(255) -> text
       $ret[] = update_sql(" ALTER TABLE {webform} CHANGE confirm confirm text");
+      // Update webform.email varchar(50) -> varchar(255)
+      $ret[] = update_sql(" ALTER TABLE {webform} MODIFY email varchar(255)");
       // Update from lable to label in webform_component
       $ret[] = update_sql(" UPDATE {webform_component} SET type = 'label' WHERE type = 'lable'");
     }

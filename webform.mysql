@@ -1,7 +1,7 @@
 CREATE TABLE webform 
   ( nid int(10) unsigned not null,
     confirm text, 
-    email varchar(50),
+    email varchar(255),
     primary key(nid));
 
 CREATE TABLE webform_component 
