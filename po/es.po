@@ -1,0 +1,383 @@
+# translation of es.po to Spanish
+# LANGUAGE translation of Drupal (webform.module)
+# $Id$
+# Copyright YEAR NAME <EMAIL@ADDRESS>.
+# Sergio González González <sergio.gonzalez@hispalinux.es>, 2004.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: es\n"
+"POT-Creation-Date: 2004-10-24 21:31+0200\n"
+"PO-Revision-Date: 2004-11-14 04:10+0000\n"
+"Last-Translator: Sergio González González <sergio.gonzalez@hispalinux.es>\n"
+"Language-Team: Spanish <sergio.gonzalez@hispalinux.es>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"X-Generator: KBabel 1.9.1\n"
+
+#: webform.module:24
+msgid "Webforms are forms and questionnaires. To add one select <strong>create content -&gt; webform</strong>. Below you can set diffrent security and debug options."
+msgstr "Los formularios web son formularios y cuestionarios. Para añadir uno, seleccione <strong>crear nuevo contenido -&gt; formulario web</strong>. Debajo podrá establecer distintas opciones de seguridad y depurado."
+
+#: webform.module:27
+msgid "<p>This module lets you create forms or questionnaires and define there content. Submissions from these forms are stored in the database and optionaly also send by e-mail to a predefined address.</p>\n<p>Here is how to create one:\n<ul>\n <li>Go to Create Content and add a webform</li>\n <li>Add a description that is displayed as a teaser and above the acctual form.</li>\n <li>Add a confirmation message that are displayed after a successfull submission.</li>\n <li>Select which roles who should have submission access to this form (roles that have the &quot;use all webforms&quot; permision can allways use a webform).</li>\n <li>Add one or more components to your form.</li>\n <li>Optionaly add a email address to which submissions will be send. If no email address is specified no email will be send when submissions are made through the form.</li>\n</ul>\nHelp on adding and how to configure the components will be shown after adding your first component.\n</p>\n<p>On user submissions the form content is stored in the database table <i>webform_submited_data</i> as key-value pairs. Apart from the form fields the following &quot;special&quot; fields are added:\n<ul>\n  <li> __userid : UID of the submiting user.</li>\n  <li> __timestamp : UNIX timestamp for when the submission occured.</li>\n  <li> __remotehost : IP or name of the remote host from which the submission came.</li>\n  <li> __useragent : What user agent (browser) the user used upon submitting the data.</li>\n</ul>\n"
+msgstr "<p>Este módulo le permite crear formularios o cuestionarios y definir su contenido. Los envíos realizados desde estos formularios se almacenarán en la base de datos y, opcionalmente, serán enviados por correo electrónico a la dirección predefinida.</p>\n<p>Aquí se muestra como crear uno:\n<ul>\n <li>Vaya a «Crear nuevo contenido» y añada un formulario web</li>\n <li>Añada una descripción que se mostrará en la parte superior del formulario.</li>\n <li>Añada un mensaje de confirmación, que se mostrará después de haber enviado correctamente los datos</li>\n <li>Seleccione los roles que tendrán acceso al envío de datos desde este formulario (los roles que posean el permiso «usar todos los formularios web», pueden utilizar un formulario web siempre).</li>\n <li>Añada uno o más componentes a su formulario.</li>\n <li>Opcionalmente, añada una dirección de correo electrónico, a la cual se enviarán los datos recibidos. Si no se especifica una dirección de correo electrónico, no se enviará ningún correo cuando se realice un envío desde el formulario.</li>\n</ul>\nAyuda sobre añadir y como configurar los componentes se mostrará después de añadir su primer componente.\n</p>\n<p>Cuando un usuario realice un envío, el contenido del formulario se almacenará en la tabla «webform_submited_data» de la base de datos como pares llave-valor. Además de los campos del formulario, se añadirán los siguientes campos «especiales»:\n<ul>\n  <li> __userid : UID del usuario que ha enviado la información.</li>\n  <li> __timestamp : tiempo UNIX de cuando se ha producido el envío.</li>\n  <li> __remotehost : IP o nombre del host remoto desde el que se ha efectuado el envío.</li>\n  <li> __useragent : navegador utilizado por el usuario cuando ha enviado los datos.</li>\n</ul>\n"
+
+#: webform.module:49
+msgid "Enables the creation of forms and questionnaires."
+msgstr "Activar la creación de formularios y cuestionarios."
+
+#: webform.module:52
+msgid "A webform can be a questionnaires, contact or request forms. It can be used to let visitors make contact, register for a event or to enable a complex survey."
+msgstr "Un formulario web puede ser un cuestionario, contacto o formulario de peticiones. Se puede emplear para permitir a los visitantes realizar un contacto, registrarse para un evento o activar una encuesta compleja."
+
+#: webform.module:55
+msgid "Available variables are: %username, %useremail, %site, %date."
+msgstr "Las variables disponibles son: %username, %useremail, %site, %date."
+
+#: webform.module:57
+msgid "If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the varible %profile[profile_city]."
+msgstr "Si está utilizando el módulo de perfiles, puede acceder a todos los datos del perfil haciendo uso de la sintaxis %profile[nombre_formulario]. Si tiene, por ejemplo, un valor en el perfil denominado perfil_ciudad, añada la variable %profile[perfil_ciudad]."
+
+#: webform.module:74;294;297;0
+msgid "webform"
+msgstr "formulario web"
+
+#: webform.module:215
+msgid "Update from version %a to version %b"
+msgstr "Actualizar desde la versión %a a la versión %b"
+
+#: webform.module:219
+msgid "Allow cross site posting"
+msgstr "Permitir la publicación cruzada desde otros sitios"
+
+#: webform.module:221
+msgid "Yes"
+msgstr "Sí"
+
+#: webform.module:221
+msgid "No"
+msgstr "No"
+
+#: webform.module:222
+msgid "Allow postings to your webforms that do not originating from your sites domain."
+msgstr "Permitir la publicación en sus formularios web desde ubicaciones no originadas desde su dominio."
+
+#: webform.module:223
+msgid "Webforms Debug"
+msgstr "Depurado de los formularios web"
+
+#: webform.module:226
+msgid "DEBUG for the webform module"
+msgstr "DEPURADO para el módulo formulario web"
+
+#: webform.module:227
+msgid "Set this option to \"Log submissions\" to log all submissions in the watchdog. Set it to \"Full debug\" to print debug info on submission. You probably want to leave this option on \"OFF\"."
+msgstr "Establezca esta opción a «Log submissions» para registrar todos los envíos en el módulo watchdog. Establézcala a «Full debug» para imprimir la información de depurado en los envíos. Probablemente deseará dejar esta opción en «OFF»."
+
+#: webform.module:258
+msgid "The form component has been changed. Remember to press Submit on the bottom of this form to save your changes."
+msgstr "El componente del formulario se ha cambiado. Recuerde pulsar sobre Enviar, en la parte inferior de este formulario, para guardar sus cambios."
+
+#: webform.module:263
+msgid "The form component has been deleted. Remember to press Submit on the bottom of this form to save your changes."
+msgstr "El componente del formulario se ha eliminado. Recuerde pulsar sobre Enviar, en la parte inferior de este formulario, para guardar sus cambios."
+
+#: webform.module:269
+msgid "You have to specify a form description."
+msgstr "Ha de especificar una descripción del formulario."
+
+#: webform.module:277
+msgid "You have to specify a confimation message."
+msgstr "Ha de especificar un mensaje de confirmación."
+
+#: webform.module:303
+msgid "Webform upgrade page"
+msgstr "Página de actualización del formulario web"
+
+#: webform.module:318
+msgid "view form"
+msgstr "ver formulario"
+
+#: webform.module:318
+msgid "View this form."
+msgstr "Ver este formulario."
+
+#: webform.module:321
+msgid "Go back to the form"
+msgstr "Volver atrás, al formulario"
+
+#: webform.module:328
+msgid "textfield"
+msgstr "campodetexto"
+
+#: webform.module:329
+msgid "textarea"
+msgstr "areadetexto"
+
+#: webform.module:330;384
+msgid "select"
+msgstr "seleccionar"
+
+#: webform.module:331
+msgid "lable"
+msgstr "etiqueta"
+
+#: webform.module:332
+msgid "hidden"
+msgstr "oculto"
+
+#: webform.module:333
+msgid "e-mail address"
+msgstr "dirección de correo electrónico"
+
+#: webform.module:343
+msgid "Use access"
+msgstr "Usar acceso"
+
+#: webform.module:343
+msgid "Roles that should be able to submit data using this form."
+msgstr "Roles a los que se les permitirá enviar datos desde este formulario."
+
+#: webform.module:349;488
+msgid "Description"
+msgstr "Descripción"
+
+#: webform.module:350
+msgid "Text to be shown as teaser and before the form."
+msgstr "Texto que se mostrará antes del formulario."
+
+#: webform.module:352
+msgid "Confirmation message"
+msgstr "Mensaje de confirmación"
+
+#: webform.module:353
+msgid "Message to be shown upon successfull submission."
+msgstr "Mensaje que se mostrará después de un envío satisfactorio."
+
+#: webform.module:375
+msgid "To edit a component, check its \"selected\" box and press \"Edit selected\"."
+msgstr "Para editar un componente, marque el cuadro «seleccionar» y pulse sobre «Editar seleccionado»."
+
+#: webform.module:376
+msgid "To delete a component, check its \"selected\" box and press \"Delete selected\"."
+msgstr "Para eliminar un componente, marque el cuadro «seleccionar» y pulse sobre «Eliminar seleccionado»."
+
+#: webform.module:377
+msgid "Use \"value\" to enter a default value."
+msgstr "Utilice «valor» para introducir un valor por defecto."
+
+#: webform.module:378
+msgid "Check \"mandatory\" box if the field should be mandatory."
+msgstr "Marque el cuadro «obligatorio» si el campo ha de ser obligatorio."
+
+#: webform.module:379
+msgid "Remember to set weight on the components or they will be added to the form in a random order."
+msgstr "Recuerde establecer el peso en los componentes o estos se añadirán al formulario en un orden aleatorio."
+
+#: webform.module:382
+msgid "Form components"
+msgstr "Componentes del formulario"
+
+#: webform.module:385
+msgid "name"
+msgstr "nombre"
+
+#: webform.module:386
+msgid "type"
+msgstr "tipo"
+
+#: webform.module:387
+msgid "value"
+msgstr "valor"
+
+#: webform.module:388
+msgid "mandatory"
+msgstr "obligatorio"
+
+#: webform.module:389
+msgid "weight"
+msgstr "peso"
+
+#: webform.module:393
+msgid "Edit selected"
+msgstr "Editar seleccionado"
+
+#: webform.module:394
+msgid "Delete selected"
+msgstr "Eliminar seleccionado"
+
+#: webform.module:398
+msgid "Add a new component"
+msgstr "Añadir un componente nuevo"
+
+#: webform.module:399
+msgid "Select a component type to add."
+msgstr "Seleccionar un tipo de componente para añadir."
+
+#: webform.module:400;466
+msgid "Add"
+msgstr "Añadir"
+
+#: webform.module:402
+msgid "E-mail address"
+msgstr "Dirección de correo electrónico"
+
+#: webform.module:403
+msgid "Form submissions will be e-mailed to this address."
+msgstr "Los envíos desde este formulario se enviarán a esta dirección."
+
+#: webform.module:433
+msgid "Preview"
+msgstr "Previsualizar"
+
+#: webform.module:434
+msgid "Submit"
+msgstr "Enviar"
+
+#: webform.module:459
+msgid "Page called out of order"
+msgstr "Página llamada sin orden"
+
+#: webform.module:486
+msgid "Name"
+msgstr "Nombre"
+
+#: webform.module:487
+msgid "Name of the field. This is used as a descriptive lable and as the key when saving data in the database."
+msgstr "Nombre del campo. Este se utiliza como una etiqueta descriptiva y como el valor llave cuando se almacenan los datos en la base de datos."
+
+#: webform.module:490
+msgid "A short description of the field used as help for the user when he/she uses the form."
+msgstr "Una breve descripción del campo, utilizada como ayuda para el usuario cuando este/a utiliza el formulario."
+
+#: webform.module:497;504;516;523;544
+msgid "Default value"
+msgstr "Valor por defecto"
+
+#: webform.module:497
+msgid "The default value of a email field is always the users email address if he/she is logged in."
+msgstr "El valor por defecto del campo de correo electrónico es siempre la dirección de correo electrónico del usuario, si este está autentificado."
+
+#: webform.module:498;510;529
+msgid "Width"
+msgstr "Anchura"
+
+#: webform.module:500;512
+msgid "Width of the textfield."
+msgstr "Anchura del campodetexto."
+
+#: webform.module:506
+msgid "The default value of the field."
+msgstr "El valor por defecto del campo."
+
+#: webform.module:518
+msgid "The value of the field."
+msgstr "El valor del campo."
+
+#: webform.module:525
+msgid "The default value of the area."
+msgstr "El valor por defecto del área."
+
+#: webform.module:531
+msgid "Width of the textarea."
+msgstr "Anchura del areadetexto."
+
+#: webform.module:533
+msgid "Height"
+msgstr "Altura"
+
+#: webform.module:535
+msgid "Height of the textarea."
+msgstr "Altura del areadetexto."
+
+#: webform.module:539
+msgid "Options"
+msgstr "Opciones"
+
+#: webform.module:541
+msgid "Enter one option per line."
+msgstr "Introduzca una opción por línea."
+
+#: webform.module:546
+msgid "The preselected value."
+msgstr "El valor preseleccionado."
+
+#: webform.module:549
+msgid "Multiple"
+msgstr "Múltiple"
+
+#: webform.module:551
+msgid "Check this option if the user should be allowed to choose multiple values."
+msgstr "Seleccione esta opción si está permitido que el usuario elija entre múltiples valores."
+
+#: webform.module:571
+msgid "Done"
+msgstr "Hecho"
+
+#: webform.module:588
+msgid "Trying to post to webform from external domain."
+msgstr "Intentando una publicación de datos en el formulario desde un dominio externo."
+
+#: webform.module:589
+msgid "Visit referer"
+msgstr "Remitente del visitante"
+
+#: webform.module:590
+msgid "You are not allowed to post to this form from an external domain."
+msgstr "No le está permitido publicar información en este formulario desde un dominio externo."
+
+#: webform.module:598
+msgid "You are not allowed to submit data using this form."
+msgstr "No tiene permiso para enviar datos desde este formulario."
+
+#: webform.module:620
+msgid "Form submission from"
+msgstr "Envío del formulario desde"
+
+#: webform.module:629
+msgid "Submission posted to "
+msgstr "Envío publicado a"
+
+#: webform.module:630
+msgid "view node"
+msgstr "ver nodo"
+
+#: webform.module:703
+msgid "You have not completed the form. %s is a mandatory field."
+msgstr "No ha completado el formulario. El campo %s es obligatorio."
+
+#: webform.module:737
+msgid "Submited on"
+msgstr "Enviado en"
+
+#: webform.module:740
+msgid "Submited by user"
+msgstr "Enviado por el usuario"
+
+#: webform.module:743
+msgid "Submited by anonymous user"
+msgstr "Enviado por un usuario anónimo"
+
+#: webform.module:745
+msgid "Submited values are:"
+msgstr "Los valores enviados son:"
+
+#: webform.module:1017
+msgid "Go back"
+msgstr "Vuelva atrás"
+
+#: webform.module:66
+msgid "maintain webforms"
+msgstr "administrar el formulario web"
+
+#: webform.module:66
+msgid "create webforms"
+msgstr "crear un formulario web"
+
+#: webform.module:66
+msgid "use all webforms"
+msgstr "utilizar todos los formularios web"
+

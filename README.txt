@@ -9,6 +9,12 @@ can optionaly also be mailed to an e-mail address upon submission.
 It was developed with fundings from AF Indurstri AB (www.af.se), 
 Open Source City (www.opensourcecity.org) and Karlstad University Library 
 (www.bib.kau.se).
+Also many thanks to the Dupal community for all bughunting.
+
+
+Translation
+-----------
+Spanish translation is made by Sergio González González.
 
 Todo:
 -----
