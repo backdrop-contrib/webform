@@ -313,7 +313,7 @@ function webform_menu() {
 
   $items[] = array('path' => 'webform/table', 'title' => t('table'),
                    'callback' => 'webform_reporttable',
-                   'type' => MENU_NORMAL_ITEM,
+                   'type' => MENU_CALLBACK,
                    'access' => user_access('maintain webforms'));
   return $items;
 }
@@ -370,7 +370,7 @@ function webform_form(&$node, &$error) {
 
       $rows[] = array(
                       form_radio('', 'webform_checked_component', $key),
-                      form_textfield('', "webformcomponents_name][".$key, $name, 20, 50),
+                      form_textfield('', "webformcomponents_name][".$key, $name, 20, 127),
                       $node->webformcomponents_type[$key],
                       form_textfield('', "webformcomponents_value][".$key, 
                                           $node->webformcomponents_value[$key], 20, 255),
@@ -585,6 +585,7 @@ function _webform_editfield() {
 
 function _webform_process_submit(&$node, &$errors) {
   global $user, $base_url;
+  include_once "webform.inc";
   
   // Check referer to deny posting from of sites.
   if ( variable_get('webform_allow_cross_site_posting', 0) == 1) {
@@ -676,10 +677,10 @@ function _webform_create_widget($name, $type, $mandatory, $value, $extra, $err =
       if ( !empty($v) ) 
         $options[$v] = $v;
     }
-    if ( !is_array($value) ) {
-      $value = array($value);
-    }
     if ( $extra['multiple'] == 'Y' ) {
+      if ( !is_array($value) ) {
+        $value = array($value);
+      }
       return form_checkboxes($name, $componentname, $value, $options, 
                              _webform_filtervalues($extra['description']), NULL, $mandatory);
     }
@@ -809,178 +810,14 @@ function _webform_role_node_delete($nid) {
   db_query("DELETE FROM {webform_role_node} WHERE nid = $nid");
 }
 
-/**
- * Encode a string according to RFC 1522 for use in headers if it
- * contains 8-bit characters or anything that looks like it should
- * be encoded.
- * Nicked from the SquirrelMail project.
- * @param $string
- */
-function _webform_encodeHeader ($string) {
-  $charset = 'utf-8';
-  
-  if (strtolower($charset) == 'iso-8859-1') {
-    $string = str_replace("\240",' ',$string);
-  }
-  
-  // Encode only if the string contains 8-bit characters or =?
-  $j = strlen($string);
-  $max_l = 75 - strlen($charset) - 7;
-  $aRet = array();
-  $ret = '';
-  $iEncStart = $enc_init = false;
-  $cur_l = $iOffset = 0;
-  for($i = 0; $i < $j; ++$i) {
-    switch($string{$i})
-      {
-      case '=':
-      case '<':
-      case '>':
-      case ',':
-      case '?':
-      case '_':
-	if ($iEncStart === false) {
-	  $iEncStart = $i;
-	}
-	$cur_l+=3;
-	if ($cur_l > ($max_l-2)) {
-	  /* if there is an stringpart that doesn't need encoding, add it */
-	  $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
-	  $aRet[] = "=?$charset?Q?$ret?=";
-	  $iOffset = $i;
-	  $cur_l = 0;
-	  $ret = '';
-	  $iEncStart = false;
-	} else {
-	  $ret .= sprintf("=%02X",ord($string{$i}));
-	}
-	break;
-      case '(':
-      case ')':
-	if ($iEncStart !== false) {
-	  $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
-	  $aRet[] = "=?$charset?Q?$ret?=";
-	  $iOffset = $i;
-	  $cur_l = 0;
-	  $ret = '';
-	  $iEncStart = false;
-	}
-	break;
-      case ' ':
-	if ($iEncStart !== false) {
-	  $cur_l++;
-	  if ($cur_l > $max_l) {
-	    $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
-	    $aRet[] = "=?$charset?Q?$ret?=";
-	    $iOffset = $i;
-	    $cur_l = 0;
-	    $ret = '';
-	    $iEncStart = false;
-	  } else {
-	    $ret .= '_';
-	  }
-	}
-	break;
-      default:
-	$k = ord($string{$i});
-	if ($k > 126) {
-	  if ($iEncStart === false) {
-	    // do not start encoding in the middle of a string, also take the rest of the word.
-	    $sLeadString = substr($string,0,$i);
-	    $aLeadString = explode(' ',$sLeadString);
-	    $sToBeEncoded = array_pop($aLeadString);
-	    $iEncStart = $i - strlen($sToBeEncoded);
-	    $ret .= $sToBeEncoded;
-	    $cur_l += strlen($sToBeEncoded);
-	  }
-	  $cur_l += 3;
-	  /* first we add the encoded string that reached it's max size */
-	  if ($cur_l > ($max_l-2)) {
-	    $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
-	    $aRet[] = "=?$charset?Q?$ret?= "; /* the next part is also encoded => separate by space */
-	    $cur_l = 3;
-	    $ret = '';
-	    $iOffset = $i;
-	    $iEncStart = $i;
-	  }
-	  $enc_init = true;
-	  $ret .= sprintf("=%02X", $k);
-	} else {
-	  if ($iEncStart !== false) {
-	    $cur_l++;
-	    if ($cur_l > $max_l) {
-	      $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
-	      $aRet[] = "=?$charset?Q?$ret?=";
-	      $iEncStart = false;
-	      $iOffset = $i;
-	      $cur_l = 0;
-	      $ret = '';
-	    } else {
-	      $ret .= $string{$i};
-	    }
-	  }
-	}
-	break;
-      }
-  }
-  
-  if ($enc_init) {
-    if ($iEncStart !== false) {
-      $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
-      $aRet[] = "=?$charset?Q?$ret?=";
-    } else {
-      $aRet[] = substr($string,$iOffset);
-    }
-    $string = implode('',$aRet);
-  }
-  return $string;
-}
-
 function webform_page() {
   include_once('webform.inc');
-  // _webform_page();
-  print theme('page', 'Not implemented yet', 'Webform');
+  _webform_page();
 }
 
 function webform_reporttable() {
   include_once('webform.inc');
   _webform_reporttable();
-}
-
-/** 
- * Create quoted_printable text.
- * Nicked from the PHP manual.
- **/
-function _webform_qp_enc($input, $line_max = 79) {
-
-  $hex = array('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F');
-  $lines = preg_split("/(?:\r\n|\r|\n)/", $input);
-  $eol = "\r\n";
-  $escape = "=";
-  $output = "";
-  
-  while( list(, $line) = each($lines) ) {
-    //$line = rtrim($line); // remove trailing white space -> no =20\r\n necessary
-    $linlen = strlen($line);
-    $newline = "";
-    for($i = 0; $i < $linlen; $i++) {
-      $c = substr($line, $i, 1);
-      $dec = ord($c);
-      if ( ($dec == 32) && ($i == ($linlen - 1)) ) { // convert space at eol only
-	$c = "=20";
-      } elseif ( ($dec == 61) || ($dec < 32 ) || ($dec > 126) ) { // always encode "\t", which is *not* required
-	$h2 = floor($dec/16); $h1 = floor($dec%16);
-	$c = $escape.$hex["$h2"].$hex["$h1"];
-      }
-      if ( (strlen($newline) + strlen($c)) >= $line_max ) { // CRLF is not counted
-	$output .= $newline.$escape.$eol; // soft line break; " =\r\n" is okay
-	$newline = "";
-      }
-      $newline .= $c;
-    } // end of for
-    $output .= $newline.$eol;
-  }
-  return trim($output);  
 }
 
 /**
