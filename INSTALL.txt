@@ -1,12 +1,7 @@
-Readme
-------
-
-This module lets you add forms and questionares to your drupal site.
-
 Requirements
 ------------
 
-Drupal 4.4.0
+Drupal CVS HEAD
 
 
 Installation

@@ -1,0 +1,16 @@
+Description:
+------------
+This module adds a webform nodetype to your Drupal site.
+A webform can be a questionnaires, contact or request form. These can be used 
+by visitor to make contact or to enable a more complex survey that the type 
+polls enable. Submissions from a webform are saved in a database table and 
+can optionaly also be mailed to an e-mail address upon submission.
+
+It was developed with fundings from AF Indurstri AB (www.af.se), 
+Open Source City (www.opensourcecity.org) and Karlstad University Library 
+(www.bib.kau.se).
+
+Todo:
+-----
+For an up to date todo list look at the issue tracker at:
+http://drupal.org/project/issues/webform
