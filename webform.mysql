@@ -27,3 +27,5 @@ CREATE TABLE webform_submited_data
     data blob,
     PRIMARY KEY(nid, sid, name));
 
+-- Setting default variables
+INSERT INTO variables VALUES ('webform_version', 'a:2:{s:4:"text";s:5:"1.1.0";s:5:"build";i:2004062100;}');

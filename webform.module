@@ -203,14 +203,22 @@ function webform_load($node) {
 }
 
 function webform_settings(){
+  $installed_version  = variable_get('webform_version', array('text'=> 'Unknown', 'build' => -1));
+  $current_version = _webform_version();
+  if ( $installed_version['build'] < $current_version['build'] ) {
+    $output .= '<div>'.l(t('Update from version %a to version %b', 
+                   array( '%a' => $installed_version['text'], '%b' => $current_version['text']) ), 
+                 'webform/update').'</div>';
+  }
+
   $output .= form_select(t("Webforms Debug"), "webform_debug",
 			 variable_get("webform_debug", 0),
 			 array(0 => "FALSE", 1 => "TRUE"),
 			 html_br().t("DEBUG for the webform module") . html_br() .
 			 t("Set to true to send debug information in the email and to print debug info on submision. Set this option to <b>FALSE</b> if you don't really know you need to enable it."));
-  return $output;
-} // End webform_settings
 
+  return $output;
+} // end function webform_settings
 
 function webform_validate(&$node) {
   $error = array();
@@ -271,10 +279,17 @@ function webform_validate(&$node) {
  * Implementation of hook_menu().
  */
 function webform_menu() {
+  global $user;
+
   $items = array();
 
   $items[] = array('path' => 'node/add/webform', 'title' => t('webform'),
     'access' => user_access('maintain webforms'));
+
+  $items[] = array('path' => 'webform/update', 'title' => t('Webform update page'),
+                   'callback' => '_webform_update',
+                   'type' => MENU_CALLBACK, 
+                   'access' => ($user->uid == 1)); // Access only for the GOD user.
 
   return $items;
 }
@@ -790,6 +805,80 @@ function _webform_qp_enc($input, $line_max = 79) {
     $output .= $newline.$eol;
   }
   return trim($output);  
-} 
+}
+
+/**
+ * Returns the version of this release of the webform module.
+ *
+ * @return array An array with keys 'text' and 'build' containing the
+ *         text version and build ID of this release, respectively.
+ */
+function _webform_version() {
+  /* Why text and an ID?  Well, the text is easier for the user to
+   * read and understand while the build ID, being a number (a date
+   * with a serial, specifically), is easier for the developer to use
+   * to determine newer/older versions for upgrade and installation
+   * purposes.
+   */
+  return array("text" => "1.1.0", "build" => 2004062100);
+} // function _webform_version
+
+/**
+ * Makes updates to the database structure.
+ **/
+function _webform_update() {
+  $installed_version  = variable_get('webform_version', array('text'=> 'Unknown', 'build' => -1));
+  $current_version =  _webform_version();
+
+  if ( $installed_version['build'] < $current_version['build']) {  
+    include_once('database/updates.inc');
+    include_once('includes/bootstrap.inc');
+    include_once('includes/common.inc');
+
+    // Check to see if we should do a update.
+    print "<strong>Upgrading webform from ".$installed_version['build'] .
+      " to ". $current_version['build']."</strong><br />\n";
+
+    // Upgrading from original version    
+    if ( $installed_version['build'] <= -1 ) {
+      // Add the table webform_submited_data
+      $ret[] = update_sql("CREATE TABLE webform_submited_data ".
+                          "( nid int(10) unsigned not null, ".
+                          "sid int(10) unsigned not null, ".
+                          "name varchar(255) not null, ".
+                          "data blob, ".
+                          "PRIMARY KEY(nid, sid, name))");
+      // Converting data from old submission table.
+      $ret[] = _webform_convert_old_submissions();
+
+      print "<strong>Build -1</strong><br />\n<pre>\n";
+      foreach ( $ret as $return ) {
+        print $return[1];
+        print $return[2];
+      }
+      print "</pre>\n";
+    }
+
+    // Set the $current_version
+    print "<strong>Done!</strong><br/>\n";
+    print l(t('Go back'), 'admin/settings/webform')."<br/>\n";
+    variable_set("webform_version", $current_version);
+  } // end if ( $installed_version['build'] < $current_version['build'])
+} // end function _webform_update 
+
+/** 
+ * Function to convert the old XML formated submissions into the newer format.
+ **/
+function _webform_convert_old_submissions() {
+  // Select all from webform_submissions.
+  $result = db_query("SELECT nid, sid, uid, UNIX_TIMESTAMP(created) as created, data ".
+                   "FROM webform_submissions");
+  
+  while ($row = db_fetch_object($result) ) {
+    // Parse each XML string ...
+    // ... and insert the data into the new table.
+  }
+  return array('1', "Converting old submissions", "<div style=\"color: green;\">OK</div>\n");
+} // end function _webform_convert_old_submissions
 
 ?>
