@@ -435,12 +435,12 @@ function webform_form(&$node, &$error) {
                                  );
     $output .= form_item(t('Form components'), $help_text);
     $headers = array(
-                     '<span>&nbsp;&nbsp;'.t('select').'</span>',
-                     '<span>'.t('name').'</span>',
-                     t('type'),
-                     '<span>'.t('value').'</span>',
-                     '<span>'.t('mandatory').'</span>',
-                     '<span>'.t('weight').'</span>'
+                     '<span>&nbsp;&nbsp;'.t('Select').'</span>',
+                     '<span>'.t('Name').'</span>',
+                     t('Type'),
+                     '<span>'.t('Value').'</span>',
+                     '<span>'.t('Mandatory').'</span>',
+                     '<span>'.t('Weight').'</span>'
                      );
     $output .= theme('table', $headers, $rows);
 
@@ -871,15 +871,15 @@ function _webform_filtervalues($string) {
 function _webform_create_mailmessage($reply) {
   global $user;
   
-  $message .=  t('Submited on').' '.format_date(time(), 'small')."\r\n";
+  $message .=  t('Submitted on').' '.format_date(time(), 'small')."\r\n";
   
   if($user->uid) {
-    $message .= t('Submited by user').": $user->name"."\n";
+    $message .= t('Submitted by user').": $user->name"."\n";
   }
   else {
-    $message .= t('Submited by anonymous user').'['.$_SERVER['REMOTE_ADDR'].']'."\n";
+    $message .= t('Submitted by anonymous user').'['.$_SERVER['REMOTE_ADDR'].']'."\n";
   }
-  $message .= t('Submited values are:')."\n";
+  $message .= t('Submitted values are:')."\n";
   foreach($reply as $key => $value) {
     if (is_array($value)) {
       $message .=  "$key :";
