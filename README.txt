@@ -13,7 +13,8 @@ Also many thanks to the Dupal community for all bughunting.
 
 Code Contributions
 ------------------
-jnt - Analysis report statistics.
+jnt
+townxelliot
 
 (if you feel left out please send me a message thru the contact form 
 on http://drupal.org/user/6096/contact)

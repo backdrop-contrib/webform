@@ -195,7 +195,7 @@ function webform_delete(&$node) {
   db_query("DELETE FROM {webform} WHERE nid = %d", $node->nid);
   db_query("DELETE FROM {webform_component} WHERE nid = %d", $node->nid);
   _webform_role_node_delete($node->nid);
-  watchdog('webform','webform "' . $node->title . '" deleted');
+  watchdog('webform','webform "' . $node->title . '" deleted', WATCHDOG_NOTICE);
 }
 
 function webform_load($node) {
@@ -362,7 +362,7 @@ function webform_menu() {
 
   if (arg(0) == 'node' && is_numeric(arg(1))) {
     $node = node_load(array('nid' => arg(1)));
-    if ($node->nid) {
+    if ($node->nid && $node->type == 'webform') {
 
 
       $items[] = array('path' => 'node/' . $node->nid . '/results', 'title' => t('results'),
@@ -547,7 +547,9 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
     }else
     {
       $sid_to_display = 0;  // This user is not allowed to access a submitted node. Deny the attempt without alert.
-      watchdog('webform', t('Unauthorized webform access attempt', array('%name' => "<em>$user->name</em>"))); // and log the attempt
+      watchdog('webform', 
+               t('Unauthorized webform access attempt', array('%name' => "<em>$user->name</em>")),
+               WATCHDOG_WARNING); // and log the attempt
     }
   }
 
@@ -762,6 +764,7 @@ function _webform_process_submit(&$node, &$errors) {
 	 ) {
       // The submission didn't originate from our own domain, return false
       watchdog('webform', t('Trying to post to webform from external domain.'),
+               WATCHDOG_WARNING,
                '<a href="'.$_SERVER['HTTP_REFERER'].'">'.t('Visit referer').'</a>');
       drupal_set_message(t('You are not allowed to post to this form from an external domain.'), 'error');
       return false;    
@@ -832,7 +835,8 @@ function _webform_process_submit(&$node, &$errors) {
 
   if (variable_get('webform_debug', 0) >= 1) {
     watchdog('webform', 
-             t('Submission posted to ')."'$node->title'.<br />\n".nl2br(htmlentities($message)));
+             t('Submission posted to ')."'$node->title'.<br />\n".nl2br(htmlentities($message)),
+             WATCHDOG_NOTICE);
 
     //TODO: Add reference back to submitted webform
   }
@@ -845,7 +849,8 @@ function _webform_thanks() {
     $node = node_load(array('nid' => arg(2)));
     if ( node_access('view', $node) ) {
       $node->body = check_output($node->confirmation, $node->format);
-      print theme('page', theme('node', $node, FALSE, TRUE), $node->title);
+      drupal_set_title($node->title);
+      print theme('page', theme('node', $node, FALSE, TRUE));
     }
     else {
       drupal_access_denied();
@@ -973,8 +978,8 @@ function _webform_filtervalues($string) {
   $replace = array($user->name, $user->mail, variable_get('site_name', 'drupal'),  
                    format_date(time(), 'large'));
 
-  if (module_exist('profile')) {
-    profile_load_profile($user);
+  if (module_exist('profile') ) {
+    module_invoke('profile', 'load_profile', $user);
     foreach($user as $k => $v) {
       $find[] = "%profile[$k]";
       $replace[] = $v;
@@ -1120,7 +1125,8 @@ function webform_results() {
         break;
 }
 
-    print theme('page', $content, $title);
+    drupal_set_title($title);
+    print theme('page', $content);
 
   }
 }
@@ -1183,7 +1189,7 @@ function _webform_database_lazy_update() {
 
 	if($table_altered){
 	  $lazy_update_output = 'Database {webform} updated. Fields added: ' . $field_list;
-	  watchdog('webform',$lazy_update_output);
+	  watchdog('webform',$lazy_update_output, WATCHDOG_NOTICE);
 	}
 
 	return $lazy_update_output;

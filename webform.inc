@@ -28,28 +28,29 @@ function _webform_page() {
 
   }
   $content = theme('table', $header, $rows);
-  print theme('page', $content, $title);
+  drupal_set_title($title);
+  print theme('page', $content);
 } // end function _webform_page
 
+
+/*
+ * Delete all submission for a form
+ * @param      integer ID of node for which to clear submissions
+ */
 function _webform_results_clear($nid) {
-
-  if (arg(4) == "confirm") {
-
+  if ($_POST['edit']['confirm']) {
     $query = 'DELETE FROM {webform_submitted_data} WHERE nid = %d';
     $res = db_query($query, $nid);
     $node = node_load(array('nid' => $nid));
     $title = $node->title;
 
-    watchdog('webform','webform "' . $title . '" entries cleared.');
-   drupal_goto('webform');
+    watchdog('webform','webform "' . $title . '" entries cleared.', WATCHDOG_NOTICE);
+    drupal_goto('webform');
   }
   else {
-    $content = "<p>Do you really want to delete the submissions of this form?</p>".
-    l(t('yes'), "node/".$nid."/results/clear/confirm")." | ".
-    l(t('no'), "webform")
-    ."</p>";
-
-    //print theme('page', $content, $title);
+    $content = theme('confirm', t('Do you really want to delete the submissions for this form?'), 'webform',
+                     t('Do you really want to delete the submissions for this form?'). '<br>'.t('This action cannot be undone.'), 
+                     'yes', 'no', NULL);
     return $content;
   }
 }
@@ -60,18 +61,16 @@ function _webform_results_clear($nid) {
 * @param	integer	ID of submission to be deleted (from webform_submitted_data)
 */
 function _webform_submission_delete($nid, $sid) {
-  if (arg(5) == "confirm") {
+  if ($_POST['edit']['confirm']) {
     $query = 'DELETE FROM {webform_submitted_data} WHERE nid = %d AND sid = %d';
     $res = db_query($query, $nid, $sid);
 
     drupal_goto('webform');
   }
   else {
-    $content = "<p>Do you really want to delete this form submission?</p>".
-    l(t('yes'), "node/$nid/results/delete/$sid/confirm")." | ".
-    l(t('no'), "webform")
-    ."</p>";
-
+    $content = theme('confirm', t('Do you really want to delete this form submission?'), 'node/'.$nid.'/results', 
+                     t('Do you really want to delete this form submission?').'<br>'.t('This action cannot be undone.'), 
+                     'yes', 'no', NULL);
     return $content;
   }
 }
