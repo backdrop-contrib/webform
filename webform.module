@@ -16,23 +16,23 @@
  * @param section specifies the section to display help for.
  * @return a formated string containing the help output.
  **/
-function webform_help($section = "admin/help#page") {
+function webform_help($section = "admin/help#webform") {
   $output = "";
   
   switch ($section) {
   case 'admin/settings/webform':
-    $output = t("Webforms are forms and qustionaries that can be added as nodes. To add one select <strong>create content -&gt; webform</strong>");
+    $output = t("Webforms are forms and questionnaires. To add one select <strong>create content -&gt; webform</strong>. Below you can set diffrent security and debug options.");
     break;
   case 'admin/help#webform':
-    $output = t("<p>The webform module is used to create forms or questionaries.</p>
-<p>Here is how it works:
+    $output = t("<p>This module lets you create forms or questionnaires and define there content. Submissions from these forms are stored in the database and optionaly also send by e-mail to a predefined address.</p>
+<p>Here is how to create one:
 <ul>
  <li>Go to Create Content and add a webform</li>
  <li>Add a description that is displayed as a teaser and above the acctual form.</li>
  <li>Add a confirmation message that are displayed after a successfull submission.</li>
  <li>Select which roles who should have submission access to this form (roles that have the &quot;use all webforms&quot; permision can allways use a webform).</li>
  <li>Add one or more components to your form.</li>
- <li>You can also add a email address to which submissions will be send. If no email address is specified no email will be send when submissions are made through the form.</li>
+ <li>Optionaly add a email address to which submissions will be send. If no email address is specified no email will be send when submissions are made through the form.</li>
 </ul>
 Help on adding and how to configure the components will be shown after adding your first component.
 </p>
@@ -46,13 +46,16 @@ Help on adding and how to configure the components will be shown after adding yo
 ");
     break;
   case 'admin/modules#description':
-    $output = t("Enables the creation of forms and questionnaires that can be added to the navigation system.");
+    $output = t("Enables the creation of forms and questionnaires.");
     break;
   case 'node/add#webform':
-    $output = t("A webform can be a questionnaires, contact or request form. These can be used by visitor to make contact or to enable a more complex survey that the type polls enable.");
+    $output = t("A webform can be a questionnaires, contact or request forms. It can be used to let visitors make contact, register for a event or to enable a complex survey.");
     break;
   case 'webform/helptext#variables':
-    $output = t('Available variables are: %username, %useremail, %site, %date. If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the varible %profile[profile_city].');
+    $output = t('Available variables are: %username, %useremail, %site, %date.');
+    if ( module_exist('profile') ) {
+      $output .= t('If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the varible %profile[profile_city].');
+    }
     break;
   }
   return $output;
@@ -215,13 +218,13 @@ function webform_settings(){
   }
   $output .= form_select(t("Allow cross site posting"), "webform_allow_cross_site_posting",
                          variable_get("webform_allow_cross_site_posting", 0),
-                         array(0 => 'OFF', 1 => 'ON'),
-                         t("Allow postings to webforms not originating from the domain specified by the config file."));
+                         array(0 => t('Yes'), 1 => t('No')),
+                         t("Allow postings to your webforms that do not originating from your sites domain."));
   $output .= form_select(t("Webforms Debug"), "webform_debug",
                          variable_get("webform_debug", 0),
                          array(0 => "OFF", 1 => "Log submissions", 2 => "Full debug"),
                          '<br />'.t("DEBUG for the webform module") . '<br />' .
-                         t("Set to true to send debug information in the email and to print debug info on submision. Set this option to <b>FALSE</b> if you don't really know you need to enable it."));
+                         t('Set this option to "Log submissions" to log all submissions in the watchdog. Set it to "Full debug" to print debug info on submission. You probably want to leave this option on "OFF".'));
   
   return $output;
 } // end function webform_settings
@@ -252,12 +255,12 @@ function webform_validate(&$node) {
     $node->webformcomponents_type[$node->webform_edited_key] = $node->webform_edited_type;
     $node->webformcomponents_value[$node->webform_edited_key] = $node->webform_edited_default;
     $node->webformcomponents_extra[$node->webform_edited_key] = serialize($node->webform_edited_extra);
-    drupal_set_message(t('The form component has been edited. Remember to press submit on the bottom of this form to save your changes.'));
+    drupal_set_message(t('The form component has been changed. Remember to press Submit on the bottom of this form to save your changes.'));
   }
   
   if(isset($_POST['delete_component']) && isset($_POST['edit']['webform_checked_component']) ) {
     unset($node->webformcomponents_name[$_POST['edit']['webform_checked_component']]);
-    drupal_set_message(t('The form component has been deleted. Remember to press submit on the bottom of this form to save your changes.'));
+    drupal_set_message(t('The form component has been deleted. Remember to press Submit on the bottom of this form to save your changes.'));
   }
 
   // Validate the body field.
@@ -300,7 +303,7 @@ function webform_menu() {
   $items[] = array('path' => 'webform/upgrade', 'title' => t('Webform upgrade page'),
                    'callback' => '_webform_update',
                    'type' => MENU_CALLBACK, 
-                   'access' => ($user->uid == 1)); // Access only for the GOD user.
+                   'access' => ($user->uid == 1)); // Access only for the "admin" user.
   
   return $items;
 }
@@ -310,11 +313,13 @@ function webform_menu() {
  * Always add a "view form" link
  **/
 function webform_link($type, $node = 0, $main = 0) {
-  if ($node->type == 'webform' && $main == 1) {
-    $links[] = l(t('read more'), "node/$node->nid", array('title' => t('Read the rest of this posting.'), 'class' => 'read-more'));
-  }
-  if (!$main && arg(0) == 'webform') {
-    $links[] = l(t('Go back to the form'), 'node/'.$node->nid);
+  if ( $node->type == 'webform' ) {
+    if ( $main == 1) {
+      $links[] = l(t('view form'), "node/$node->nid", array('title' => t('View this form.'), 'class' => 'read-more'));
+    }
+    if (!$main && arg(0) == 'webform' && arg(1) == 'done') {
+      $links[] = l(t('Go back to the form'), 'node/'.$node->nid);
+    }
   }
   return $links;
 }
@@ -335,7 +340,7 @@ function webform_form(&$node, &$error) {
     $checkboxes .= form_checkbox($role, "roles][", $rid, (is_array($node->roles) && in_array($rid, $node->roles)?1:0));
   }
   if(!empty($checkboxes))
-    $output .= form_item(t('Use access'),$checkboxes, t('Check roles that should be able to submit data with this form.'));
+    $output .= form_item(t('Use access'),$checkboxes, t('Roles that should be able to submit data using this form.'));
   
   if (function_exists("taxonomy_node_form")) {
     $output .= implode("", taxonomy_node_form("webform", $node));
@@ -367,11 +372,11 @@ function webform_form(&$node, &$error) {
     }
 
     $help_text = theme_item_list(array(
-                                       t('To edit a component, check the "selected" box and press "Edit selected".'),
-                                       t('To delete a component, check the "selected" box and press "Delete selected".'),
+                                       t('To edit a component, check its "selected" box and press "Edit selected".'),
+                                       t('To delete a component, check its "selected" box and press "Delete selected".'),
                                        t('Use "value" to enter a default value.'),
                                        t('Check "mandatory" box if the field should be mandatory.'),
-                                       t('Remember to set weight on the components or they will be added randomly to the form.')
+                                       t('Remember to set weight on the components or they will be added to the form in a random order.')
                                        )
                                  );
     $output .= form_item(t('Form components'), $help_text);
@@ -479,10 +484,10 @@ function _webform_editfield() {
   $form .= form_hidden('webform_edited_type', $currfield['type']);
   $form .= form_hidden('webform_edited_key', $currfield['key']);
   $form .= form_textfield(t("Name"), "webform_edited_name", $currfield['name'], 60,
-			    127, t('Name of the filed. This is used as a descriptive lable and as the key when saving data in the database..').($error['webform_edited_name'] ? $error['webform_edited_name'] : ''));
+			    127, t('Name of the field. This is used as a descriptive lable and as the key when saving data in the database.').($error['webform_edited_name'] ? $error['webform_edited_name'] : ''));
   $form .= form_textfield(t("Description"), "webform_edited_extra][description", $currfield['extra']['description'], 
                           60, 127, 
-                          t('A short description of the field.').'<br />'.
+                          t('A short description of the field used as help for the user when he/she uses the form.').'<br />'.
                           webform_help('webform/helptext#variables').
                           ($error['webform_edited_extra'] ? $error['webform_edited_extra'] : ''));
 
@@ -510,7 +515,7 @@ function _webform_editfield() {
   case 'hidden':
     $form .= form_textfield(t("Default value"), "webform_edited_default", $currfield['default'], 
                             60, 127, 
-                            t('The default value of the field.').'<br />'.
+                            t('The value of the field.').'<br />'.
                             webform_help('webform/helptext#variables').
                             ($error['webform_edited_default'] ? $error['webform_edited_default'] : ''));
     break;
@@ -538,12 +543,12 @@ function _webform_editfield() {
                             ($error['webform_edited_default'] ? $error['webform_edited_default'] : ''));
     $form .= form_textfield(t("Default value"), "webform_edited_default", $currfield['default'], 
                             60, 127, 
-                            t('The default value of the field.').'<br />'.
+                            t('The preselected value.').'<br />'.
                             webform_help('webform/helptext#variables').
                             ($error['webform_edited_default'] ? $error['webform_edited_default'] : ''));
     $form .= form_checkbox(t('Multiple'), "webform_edited_extra][multiple", 'Y',
                            ($currfield['extra']['multiple']=='Y'?TRUE:FALSE), 
-                           t('Is the user allowed to choose multiple values.'));
+                           t('Check this option if the user should be allowed to choose multiple values.'));
     break;
     
   } // End switch
@@ -572,7 +577,7 @@ function _webform_process_submit(&$node, &$errors) {
   global $user, $base_url;
   
   // Check referer to deny posting from of sites.
-  if ( variable_get('webform_allow_cross_site_posting', 0) == 0) {
+  if ( variable_get('webform_allow_cross_site_posting', 0) == 1) {
     $referer = parse_url( urldecode($_SERVER['HTTP_REFERER']));
     $base = parse_url( urldecode($base_url.'/'));
     
@@ -582,6 +587,7 @@ function _webform_process_submit(&$node, &$errors) {
       // The submission didn't originate from our own domain, return false
       watchdog('error', t('Trying to post to webform from external domain.'),
                '<a href="'.$_SERVER['HTTP_REFERER'].'">'.t('Visit referer').'</a>');
+      drupal_set_message(t('You are not allowed to post to this form from an external domain.'), 'error');
       return false;    
     }
   }
@@ -589,7 +595,7 @@ function _webform_process_submit(&$node, &$errors) {
   // Check to see if the user has right to use the webform
   if ( !user_access('use all webforms') ){
     if( !(is_array($node->roles) && in_array($user->rid, $node->roles)) ) {
-      $message = t("You are not allowed to submit data to this form.");
+      $message = t("You are not allowed to submit data using this form.");
       drupal_set_message($message, 'error');
       return false;
     }
@@ -616,6 +622,9 @@ function _webform_process_submit(&$node, &$errors) {
     }
   }
 
+  if (variable_get('webform_debug', 0) >= 2) {
+    drupal_set_message("<pre>$message</pre>");
+  }
   if (variable_get('webform_debug', 0) >= 1) {
     watchdog('special', t('Submission posted to ')."'$node->title'.<br />\n<pre>$message</pre>",
              l(t('view node'),'node/view/'.$node->nid));
