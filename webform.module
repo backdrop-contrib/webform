@@ -23,7 +23,7 @@ function webform_help($section = "admin/help#webform") {
   
   switch ($section) {
   case 'admin/settings/webform':
-    $output = t("Webforms are forms and questionnaires. To add one select <strong>create content -&gt; webform</strong>. Below you can set diffrent security and debug options.");
+    $output = t("Webforms are forms and questionnaires. To add one select <strong>create content -&gt; webform</strong>. Below you can set different security and debug options.");
     break;
   case 'admin/help#webform':
     $output = t("<p>This module lets you create forms or questionnaires and define there content. Submissions from these forms are stored in the database and optionaly also send by e-mail to a predefined address.</p>
@@ -119,7 +119,7 @@ function webform_insert($node) {
   // Lazy Initializer
 
   db_query("INSERT INTO {webform} (nid, confirm, email, email_from, email_subject) VALUES (%d, '%s', '%s', '%s', '%s')",
-           $node->nid, $node->confirm, $node->email, $node->email_from, $node->email_subject);
+           $node->nid, $node->confirmation, $node->email, $node->email_from, $node->email_subject);
   
   if( is_array($node->webformcomponents_name) && !empty($node->webformcomponents_name)) {
     foreach($node->webformcomponents_name as $key => $name) {
@@ -162,7 +162,7 @@ function webform_update($node) {
   _webform_database_lazy_update();
   
   db_query("UPDATE {webform} SET confirm = '%s', email = '%s', email_from = '%s', email_subject = '%s' ".
-           "WHERE nid = %d", $node->confirm, $node->email, trim($node->email_from), trim($node->email_subject), $node->nid);
+           "WHERE nid = %d", $node->confirmation, $node->email, trim($node->email_from), trim($node->email_subject), $node->nid);
   
   db_query("DELETE FROM {webform_component} WHERE nid = %d", $node->nid);
   
@@ -194,8 +194,8 @@ function webform_delete(&$node) {
   db_query("DELETE FROM {webform} WHERE nid = %d", $node->nid);
   db_query("DELETE FROM {webform_component} WHERE nid = %d", $node->nid);
   _webform_role_node_delete($node->nid);
+  watchdog('webform','webform "' . $node->title . '" deleted');
 }
-
 
 function webform_load($node) {
   // load 
@@ -204,7 +204,7 @@ function webform_load($node) {
   
   _webform_database_lazy_update();
   
-  $page = db_fetch_object(db_query("SELECT confirm, email, email_from, email_subject FROM {webform} WHERE nid = %d", $node->nid));
+  $page = db_fetch_object(db_query("SELECT confirm as confirmation, email, email_from, email_subject FROM {webform} WHERE nid = %d", $node->nid));
   
   $result = db_query('SELECT cid, name, type, value, extra, mandatory, weight '.
                      ' FROM {webform_component} '.
@@ -249,6 +249,15 @@ function webform_settings(){
                          '<br />'.t("DEBUG for the webform module") . '<br />' .
                          t('Set this option to "Log submissions" to log all submissions in the watchdog. Set it to "Full debug" to print debug info on submission. You probably want to leave this option on "OFF".'));
   
+  $output .= form_checkbox(t("Show main webform menu"), "webform_show_main_menu",1,
+                         variable_get("webform_show_main_menu", true),
+                         t('Select the visibility of the main webform item on the main menu'));
+/*
+  $output .= form_checkbox(t("Show node analysis menu"), "webform_show_node_analysis_menu",1,
+                         variable_get("webform_show_node_analysis_menu", true),
+                         t('Select the visibility of the webform node analysis menu'));
+*/
+
   return $output;
 } // end function webform_settings
 
@@ -256,7 +265,7 @@ function webform_validate(&$node) {
   
   if( isset($_POST['edit_component']) ) {
     // If we are adding a new componenet or removing a old one 
-    // we have to do what the framework would do for us so we don't loose 
+    // we have to do what the framework would do for us so we don't lose 
     // information.
     if( isset($_POST['edit']) ) {
       $node = array2object($_POST['edit']);
@@ -295,9 +304,9 @@ function webform_validate(&$node) {
   }
   
   // Validate confirm field
-  if (isset($node->confirm)) {
-    if (!$node->confirm) {
-      form_set_error('confirm', t('You have to specify a confimation message.'));
+  if (isset($node->confirmation)) {
+    if (!$node->confirmation) {
+      form_set_error('confirmation', t('You have to specify a confimation message.'));
       return $false;
     }
   }
@@ -315,7 +324,6 @@ function webform_menu() {
   
   $items = array();
   
-  // create content -> webfor
   $items[] = array('path' => 'node/add/webform', 'title' => t('webform'),
                    'access' => user_access('maintain webforms'));
   
@@ -330,22 +338,59 @@ function webform_menu() {
                    'type' => MENU_CALLBACK, 
                    'access' => ($user->uid == 1)); // Access only for the "admin" user.
   
+
   // Submission listning 
-  $items[] = array('path' => 'webform', 'title' => t('webform'),
-                   'callback' => 'webform_page',
-                   'type' => MENU_NORMAL_ITEM,
-                   'access' => user_access('maintain webforms'));
+
+  if(variable_get("webform_show_main_menu",true)) {
+    $items[] = array('path' => 'webform', 'title' => t('webform'),
+                     'callback' => 'webform_page',
+                     'type' => MENU_NORMAL_ITEM,
+                     'access' => user_access('maintain webforms'));
+  }
+  /*
+   $items[] = array('path' => 'webform/table', 'title' => t('table'),
+                    'callback' => 'webform_reporttable',
+                    'type' => MENU_CALLBACK,
+                    'access' => user_access('maintain webforms'));
   
-  $items[] = array('path' => 'webform/table', 'title' => t('table'),
-                   'callback' => 'webform_reporttable',
-                   'type' => MENU_CALLBACK,
-                   'access' => user_access('maintain webforms'));
-  
-  $items[] = array('path' => 'webform/analysis', 'title' => t('analysis'),
-                   'callback' => 'webform_reportanalysis',
-                   'type' => MENU_CALLBACK,
-                   'access' => user_access('maintain webforms')); 
-  
+   $items[] = array('path' => 'webform/analysis', 'title' => t('analysis'),
+                    'callback' => 'webform_reportanalysis',
+                    'type' => MENU_CALLBACK,
+                    'access' => user_access('maintain webforms'));   
+  */
+
+  if (arg(0) == 'node' && is_numeric(arg(1))) {
+    $node = node_load(array('nid' => arg(1)));
+    if ($node->nid) {
+
+
+      $items[] = array('path' => 'node/' . $node->nid . '/results', 'title' => t('results'),
+                             'callback' => 'webform_results', 'access' => user_access('view webforms'),
+                             'type' => MENU_LOCAL_TASK, 'weight' => 3);
+
+      $items[] = array('path' => 'node/' . $node->nid . '/results/clear', 'title' => t('clear'),
+                             'callback' => 'webform_results',
+                             'type' => MENU_CALLBACK,
+                             'access' => ($user->uid == 1)); // Access only for the "admin" user.
+
+      $items[] = array('path' => 'node/'.$node->nid.'/results/submissions', 'title' => t('submissions'),
+                             'callback' => 'webform_results', 'access' => user_access('maintain webforms'),
+                             'type' => MENU_DEFAULT_LOCAL_TASK, 'weight' => 4);
+
+      $items[] = array('path' => 'node/'.$node->nid.'/results/analysis', 'title' => t('analysis'),
+                             'callback' => 'webform_results', 'access' => user_access('maintain webforms'),
+                             'type' => MENU_LOCAL_TASK, 'weight' => 5);
+
+      $items[] = array('path' => 'node/'.$node->nid.'/results/table', 'title' => t('table'),
+                             'callback' => 'webform_results', 'access' => user_access('maintain webforms'),
+                             'type' => MENU_LOCAL_TASK, 'weight' => 6);
+
+      $items[] = array('path' => 'node/'.$node->nid.'/results/download', 'title' => t('download'),
+                             'callback' => 'webform_results', 'access' => user_access('maintain webforms'),
+                             'type' => MENU_LOCAL_TASK, 'weight' => 7);
+    }
+  }
+
   return $items;
 }
 
@@ -356,7 +401,7 @@ function webform_menu() {
 function webform_link($type, $node = 0, $main = 0) {
   if ( $node->type == 'webform' ) {
     if ( $main == 1) {
-      $links[] = l(t('view form'), "node/$node->nid", array('title' => t('View this form.'), 'class' => 'read-more'));
+      $links[] = l(t('go to form'), "node/$node->nid", array('title' => t('View this form.'), 'class' => 'read-more'));
     }
     if (!$main && arg(0) == 'webform' && arg(1) == 'done') {
       $links[] = l(t('Go back to the form'), 'node/'.$node->nid);
@@ -397,7 +442,7 @@ function webform_form(&$node, &$error) {
   $output .= filter_form('format', $node->format);
 			   
   $output .= form_textarea(t("Confirmation message or redirect URL"), "confirm", $node->confirm, 20, 10,
-              $error["confirm"]." ".
+              $error["confirmation"]." ".
               t("Message to be shown upon successful submission or a relative path to redirect page (must start with ./)"), 
               NULL, TRUE);
 
@@ -501,7 +546,7 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
     }else
     {
       $sid_to_display = 0;  // This user is not allowed to access a submitted node. Deny the attempt without alert.
-      watchdog('user', t('Unauthorized webform access attempt', array('%name' => "<em>$user->name</em>"))); // and log the attempt
+      watchdog('webform', t('Unauthorized webform access attempt', array('%name' => "<em>$user->name</em>"))); // and log the attempt
     }
   }
 
@@ -521,7 +566,7 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
       
       if($sid_to_display){
         // It is view only so we append the tag HTML attributes to disable the input
-         $extra['attributes'] = array('dummy' => '0" DISABLED dummy="0');  // Rather ugly string required to workaround a bug in common.inc
+      	$extra['attributes'] = array('disabled' => 'disabled');  // Rather ugly string required to workaround a bug in common.inc
       }else
       {
         $extra['attributes'] = array();
@@ -547,8 +592,8 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
   if ( $doSubmit && $_POST['webform_send']) {
     if(_webform_process_submit($node, $errors)) {
       // Check confirmation field to see if redirect should be to another node or a message
-      if(valid_url(trim($node->confirm))){
-        drupal_goto(trim($node->confirm));
+      if(valid_url(trim($node->confirmation))){
+        drupal_goto(trim($node->confirmation));
       }
       else {
         // Submission was successfully redirected to webform/done/<nid>
@@ -715,7 +760,7 @@ function _webform_process_submit(&$node, &$errors) {
          || $referer['host'] != $base['host']
 	 ) {
       // The submission didn't originate from our own domain, return false
-      watchdog('error', t('Trying to post to webform from external domain.'),
+      watchdog('webform', t('Trying to post to webform from external domain.'),
                '<a href="'.$_SERVER['HTTP_REFERER'].'">'.t('Visit referer').'</a>');
       drupal_set_message(t('You are not allowed to post to this form from an external domain.'), 'error');
       return false;    
@@ -732,7 +777,7 @@ function _webform_process_submit(&$node, &$errors) {
     }
   }
   // Handle posting to the form and output status.
-  $confirm = $node->confirm;
+  $confirmation = $node->confirmation;   // What is this doing? Slated for removal.
   
   $reply = $_POST['edit']['submitted'];
   _webform_save_submission($node, $reply);
@@ -785,7 +830,7 @@ function _webform_process_submit(&$node, &$errors) {
   }
 
   if (variable_get('webform_debug', 0) >= 1) {
-    watchdog('special', 
+    watchdog('webform', 
              t('Submission posted to ')."'$node->title'.<br />\n".nl2br(htmlentities($message)));
 
     //TODO: Add reference back to submitted webform
@@ -798,7 +843,7 @@ function _webform_thanks() {
   if ( arg(2) ) {
     $node = node_load(array('nid' => arg(2)));
     if ( node_access('view', $node) ) {
-      $node->body = check_output($node->confirm, $node->format);
+      $node->body = check_output($node->confirmation, $node->format);
       print theme('page', theme('node', $node, FALSE, TRUE), $node->title);
     }
     else {
@@ -819,7 +864,7 @@ function _webform_thanks() {
  * @param $value
  * @param $extra
  * @param $err
- * @param $nid ???
+ * @param $nid
  * @param $sid The Session ID to get the default values from or 0 or NULL to use the component defaults
  * @returns An HTML string sufficient to render the widget
  */
@@ -874,8 +919,8 @@ function _webform_create_widget($name, $type, $mandatory, $value, $extra, $err =
                          $value, $options,
                          _webform_filtervalues($extra['description']), $extra['attributes']['dummy'], 
                          ($extra['multiple'] == 'Y'), $mandatory);
-    }
-    else {
+      }else
+      {
       if ( $extra['multiple'] == 'Y' ) {
         if ( !is_array($value) ) {
           $value = array($value);
@@ -953,7 +998,7 @@ function _webform_create_mailmessage($reply) {
     $message .= t('Submitted by user').": $user->name [$ip_address] \n";
   }
   else {
-    $message .= t('Submitted by anonymous user')." [$ip_address] \n";
+    $message .= t('Submitted by anonymous user').": [$ip_address] \n";
   }
   $message .= t('Submitted values are:')."\n";
   foreach($reply as $key => $value) {
@@ -1011,7 +1056,7 @@ function _webform_save_submission($node, $reply) {
 }
 
 function _webform_role_node_delete($nid) {
-  db_query("DELETE FROM {webform_role_node} WHERE nid = $nid");
+  db_query("DELETE FROM {webform_role_node} WHERE nid = %d",$nid);
 }
 
 function webform_page() {
@@ -1019,16 +1064,43 @@ function webform_page() {
   _webform_page();
 }
 
-function webform_reporttable() {
+/**
+ * function webform_results() is an allocator function that builds the page under the 'results' sub menu
+ * The function uses the URL tail to nominate internal content.
+ */
+function webform_results() {
   include_once('webform.inc');
-  _webform_reporttable();
+
+  $nid = arg(1);
+  $node = node_load(array('nid' => $nid));
+
+  $title = $node->title;
+
+  if( arg(2) == 'results') {
+
+    switch ( arg(3) ) {
+      case 'analysis':
+        $content = _webform_results_analysis($nid);
+        break;
+      case 'clear':
+        $content = _webform_results_clear($nid);
+        break;
+      case 'table':
+        $content = _webform_results_table($nid);
+        break;
+      case 'download':
+        $content = _webform_results_download($nid);
+        break;
+      case 'submissions':
+      default:
+        $content = _webform_results_submissions($nid);
+        break;
 }
 
-function webform_reportanalysis() {
-  include_once('webform.inc');
-  _webform_reportanalysis();
-}
+    print theme('page', $content, $title);
 
+  }
+}
 
 /**
  * Returns the version of this release of the webform module.
@@ -1049,10 +1121,18 @@ function _webform_version() {
 
 /**
  * _webform_database_lazy_update - Lazy field adder for extra email fields
+ * The lazy update function adds any columns in the database that are not
+ * listed in its internal magic array.
+ * It was purpose constructed to add fields 'email_from' and 'email_subject' as part of the
+ * enhanced email patch.
+ * The function does not add or delete any data and the upgraded database is backwardly
+ * compatible with previous versions of webform.module
  */
 function _webform_database_lazy_update() {
 
 	$lazy_update_output = '';
+	$field_list = '';
+  $table_altered = false;
 
   // {webform}
 	$required_fields = array('nid' => false,'confirm' => false,'email' => false,'email_from' => false,'email_subject' => false);
@@ -1067,14 +1147,23 @@ function _webform_database_lazy_update() {
 		if(!$required_field){
 			// Field does not exist so we need to create it.
 			switch($field_name){
-				case 'email_subject':
-				case 'email_from':
+				case 'email_subject':		// Contains the component name of the source field for the email subject
+				case 'email_from':			// Contains the component name of the source field for the email from address.
 					db_query("ALTER TABLE {webform} ADD COLUMN %s varchar(255)",$field_name);
+					$table_altered = true;
+          $field_list .= " $field_name ";
 					break;
 				default:
 			}
 		}
 	}
+
+	if($table_altered){
+	  $lazy_update_output = 'Database {webform} updated. Fields added: ' . $field_list;
+	  watchdog('webform',$lazy_update_output);
+	}
+
+	return $lazy_update_output;
 }
 
 /**

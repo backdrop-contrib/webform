@@ -19,35 +19,43 @@ function _webform_page() {
    
   while ($node = db_fetch_object($result)) {
     $rows[] = array($node->title,
-                    l(t('analysis'),'webform/analysis/'.$node->nid),
-                    l(t('table'),'webform/table/'.$node->nid),
-                    l(t('download'),'webform/table/'.$node->nid . '/download'),
-                    l(t('edit'), 'node/'.$node->nid.'/edit'),
-                    l(t('clear'), 'webform/clear/'.$node->nid));
+                    l(t('submissions'),'node/' . $node->nid . '/results'),
+                    l(t('analysis'),'node/' . $node->nid . '/results/analysis'),
+                    l(t('table'),'node/' . $node->nid . '/results/table'),
+                    l(t('download'),'node/' . $node->nid . '/results/download'),
+                    //l(t('edit'), 'node/'.$node->nid.'/edit'),
+                    l(t('clear'), 'node/' . $node->nid . '/results/clear'));
+
   }
   $content = theme('table', $header, $rows);
   print theme('page', $content, $title);
 } // end function _webform_page
 
-function _webform_reporttable() {
-  $title = t('webform submissions');
+function _webform_results_clear($nid) {
 
-  if ( arg(2) ) {
-    // Get all the submitted values for the node
-    $query = 'SELECT sd.sid as sid, c.cid as cid, sd.name as name, sd.data as data'.
-      ' FROM '.
-      ' {webform_submitted_data} sd, {webform_component} c '.
-      ' WHERE sd.nid = c.nid '.
-      ' AND sd.nid = %d '.
-      ' GROUP BY sd.sid, sd.name '.
-      ' ORDER BY sd.sid, c.cid ';
+  if (arg(4) == "confirm") {
 
+    $query = 'DELETE FROM {webform_submitted_data} WHERE nid = %d';
+    $res = db_query($query, $nid);
+    $node = node_load(array('nid' => $nid));
+    $title = $node->title;
 
-    $res = db_query($query, arg(2));
+    watchdog('webform','webform "' . $title . '" entries cleared.');
+   drupal_goto('webform');
+  }
+  else {
+    $content = "<p>Do you really want to delete the submissions of this form?</p>".
+    l(t('yes'), "node/".$nid."/results/clear/confirm")." | ".
+    l(t('no'), "webform")
+    ."</p>";
 
-    if(arg(3) == 'download') {
+    //print theme('page', $content, $title);
+    return $content;
+  }
+}
 
-      // TODO: Download the values as a CSV file.
+function _webform_results_download($nid) {
+
       /**
        * The CSV requires that the data be presented in a flat file.  In order 
        * to maximize useability to the Excel community and minimize subsequent 
@@ -77,25 +85,44 @@ function _webform_reporttable() {
        *   ...............................................................................................................
        *   27 Feb 2005       ,1035,56 ,212   ,Yes       ,No      ,No      ,..,No      ,Yes       ,No      ,Yes     ,..,Yes     ,How is this?
        **/
-       $node_info = _webform_get_node_info(arg(2));
+  $node_info = _webform_get_node_info($nid);
        $title_string = $node_info->title;
 
-       $file_name = _webform_print_csv_string($title_string,arg(2),'file'); // This will default to printing the output which saves stack space
-
-  	  //$header_array = array("Content-type: text/html; charset=utf-8","Content-Disposition: attachment; filename=" . $title_string);
-	  //file_transfer($title_string,$header_array);
+  $file_name = _webform_records_string($title_string,$nid,'file'); // This will default to printing the output which saves stack space
 
        drupal_set_header("Content-type: text/plain; charset=utf-8");
        drupal_set_header("Content-Disposition: attachment; filename=" . $title_string . ".csv");
 
-       @readfile($file_name);
+  @readfile($file_name);  // The @ makes it silent
        exit(0);
     }
-    else {
-      // TODO: View the submitted entries as a table.
+
+/** function _webform_results_submissions() is a database accessor function designed to return lists
+ *  of submissions and data.
+ * @param $nid the node id of the webform
+ */
+function _webform_results_submissions($nid) {
+  $node_info = _webform_get_node_info($nid);
+  $title_string = $node_info->title;
+  $content = _webform_records_string($title_string,$nid,'submission_list');
+  return $content;
+}
+
+function _webform_results_table($nid) {
       $first = true;
       $previous = -1;
       $cell = array();
+
+  // Get all the submitted values for the node
+  $query = 'SELECT sd.sid as sid, c.cid as cid, sd.name as name, sd.data as data'.
+    ' FROM '.
+    ' {webform_submitted_data} sd, {webform_component} c '.
+    ' WHERE sd.nid = c.nid '.
+    ' AND sd.nid = %d '.
+    ' GROUP BY sd.sid, sd.name '.
+    ' ORDER BY sd.sid, c.cid ';
+
+  $res = db_query($query, $nid);
 
       $header[] = t('#');
       while ($field = db_fetch_object($res)) {
@@ -125,26 +152,25 @@ function _webform_reporttable() {
       // and the last one ...
       $rows[] = array_merge(array($previous), $cell);
 
-      $content = theme('table', $header, $rows);
+  return theme('table', $header, $rows);
 
-  		//print theme('page', $content, $title);
-  		print theme('page', $content, $title);
-    }
-  }
+
 }
 
-/** _webform_print_csv_string - Decomposes the database to a flat file for a given SID.
- * @param $title - Title for this report. Will be printed as a heading.
+/** _webform_records_string - Decomposes the database to a flat file for a given SID.
+ * @param $title - Title for this report. Will be printed as a heading if appropriate.
  * @param $nid - The drupal node id representing the webform data that is to be extracted.
  * @param $print_now Whether to print the result as it is formed or store it to a string and return it.
  * @param $new_line - A string to be used to render a new line.  Defaults for print on windows based systems
  * @return a reference to a string representing the file in csv format.
  **/
 
-function _webform_print_csv_string($title_string,$nid,$mode = 'file',$new_line = "\r\n"){
+function _webform_records_string($title_string,$nid,$mode = 'file',$new_line = "\r\n"){
+
   // Because the components may have changed during the lifestyle of the form
   // and because we may be using a low version of MySQL et al. The query is done in two
-  // passes.  This would be more efficiently done using a VIEW or SUB-SELECT
+  // passes.  This would be more efficiently done using a VIEW or SUB-SELECT but we cannot guarantee
+  // that it is available.
 
   // The first query identifies the characteristics of components that are in the data set
   $component_query = 'SELECT wc.cid as cid, wc.name as name, wc.type as type, wc.value as value, '.
@@ -360,9 +386,8 @@ function _webform_print_csv_string($title_string,$nid,$mode = 'file',$new_line =
   //print "Main result = " . count($record_array) . " records.";
   switch($mode){
   case 'submission_list':
-    return (theme('table', $submission_list_header, $submission_list_array));
-    //print
-    return true;
+    $content = theme('table', $submission_list_header, $submission_list_array);
+    return $content;
   case 'print':
     return true;
   case 'string':
@@ -424,6 +449,7 @@ function _webform_make_record_csv_string(&$ra,$new_line){
  * Pulls the information block for a given node
  * @param $nid - The node requested
  * @return - A structure containing the node info.
+ * TODO: Remove this function in favour of the core drupal alternative
  **/
 function _webform_get_node_info($nid){
   $node_search_result = db_query("SELECT nid, title FROM {node} WHERE type='webform' AND nid=%d",$nid);
@@ -432,11 +458,10 @@ function _webform_get_node_info($nid){
 }
 
 
-/** _webform_reportanalysis - Provides simple analysis of a series of webform submission.
+/** _webform_results_analysis - Provides simple analysis of a series of webform submission.
  * @return to stdio a themeatic HTML rendering of the page.
  **/
-
-function _webform_reportanalysis() { 
+function _webform_results_analysis($nid) { 
   
   // The current defaults
   // TODO: Move some of these variables to the settings page.
@@ -513,7 +538,7 @@ function _webform_reportanalysis() {
                                            "WHERE sd.nid = %d AND (sd.name LIKE '%s' OR sd.name LIKE '%s') ".
                                            'GROUP By sd.data '.
                                            'ORDER BY sd.sid DESC',
-                                           arg(2), $uniqueid_query, $uniqueip_query);
+                                           $nid, $uniqueid_query, $uniqueip_query);
   
   // Set them up in a keyed array so we can find them quickly.
   
@@ -534,8 +559,8 @@ function _webform_reportanalysis() {
   unset($uniqueid_query,$uniqueip_query);	
   
   // Pull the title of the form from node and make a nice heading for the page
-  $node_info = _webform_get_node_info(arg(2));
-  $title = "Results Analysis of $node_info->title";
+  //$node_info = _webform_get_node_info($nid);
+  //$title = $node_info->title";
   
   // Do the main query
   $query = 'SELECT sd.name as name, sd.sid as sid, c.cid as cid, c.type as type, sd.data as data, c.extra as extra, c.value as value '.
@@ -544,7 +569,7 @@ function _webform_reportanalysis() {
     '  AND sd.name = c.name '.
     '  AND sd.nid = %d '.
     'ORDER BY c.cid, sd.data';
-  $res = db_query($query, arg(2));
+  $res = db_query($query, $nid);
   
   // View the submitted entries as a list with tallies.
   $question_number = 0;
@@ -674,8 +699,14 @@ function _webform_reportanalysis() {
           // Check it is set because some may not exist by design, ie when the default is blank
           switch($subkey){
           case 'average':
+            $divisor = ($valid_records - $shadow_rows[$skey]['blank']);
+            if ($divisor !== 0) {
             $av = round($shadow_rows[$skey]['word_count'] / ($valid_records - $shadow_rows[$skey]['blank']),1);	// 1 decimal place
-            $rows[$rkey][2] = _build_tally(&$views_switches,&$view_settings,$av);
+            }
+            else {
+              $av = 0;
+            }
+            $rows[$rkey][2] = _build_tally($views_switches,$view_settings,$av);
             $rows[$rkey][3] = '';		// No percentages or bars on average wordcounts
             break;
           default:
@@ -895,7 +926,7 @@ function _webform_reportanalysis() {
     
   }
   
-  print theme('page', $content, $title);
+  return $content;
 }
 
 /** _build_tally - Creates an HTML string sufficient to render the current tally as
