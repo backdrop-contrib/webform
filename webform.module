@@ -638,7 +638,7 @@ function _webform_thanks() {
     $node = node_load(array('nid' => arg(2)));
     if ( node_access('view', $node) ) {
       $node->body = $node->confirm;
-      print theme('page', theme('node', $node), false, false);
+      print theme('page', theme('node', $node, FALSE, TRUE), $node->title);
     }
     else {
       drupal_access_denied();
