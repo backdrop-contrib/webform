@@ -1,0 +1,30 @@
+CREATE TABLE webform 
+  ( nid int(10) unsigned,
+    confirm varchar(255), 
+    email varchar(50),
+    primary key(nid));
+
+CREATE TABLE webform_component 
+  ( nid int(10) unsigned, 
+    cid int(10) unsigned, 
+    name varchar(128), 
+    type varchar(16), 
+    value varchar(128),
+    extra varchar(128), 
+    mandatory int(2) unsigned, 
+    weight int(2),
+    PRIMARY KEY(nid, cid));
+
+CREATE TABLE webform_role_node 
+  ( nid int(10) unsigned,
+    rid int(10) unsigned,
+    PRIMARY KEY(nid, rid));
+
+CREATE TABLE webform_submissions 
+  ( nid int(10) unsigned, 
+    sid int(10) unsigned, 
+    uid int(10) unsigned, 
+    created date, 
+    data text,
+    PRIMARY KEY(nid, sid));
+

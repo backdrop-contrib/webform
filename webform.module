@@ -1,0 +1,660 @@
+<?php
+  // $Id$
+  /** This module provides a simple way to create forms and questionnaires 
+   * for your website.
+   * The development of this module was sponsered by Open Source City and 
+   * Karlstad University Library.
+   *
+   * @author Pontus Ullgren <ullgren@user.sourceforge.net>
+   * @copyright Pontus Ullgren 2003
+   * @version 0.1
+   * 
+   **/
+include_once('misc/htmltags.inc');
+
+/** Help text
+ **/
+function webform_help($section = "admin/help#page") {
+  $output = "";
+
+  switch ($section) {
+  case 'admin/help#webform':
+    $output = "";
+    break;
+  case 'admin/system/modules#description':
+    $output = t("Enables the creation of forms and questionnaires that can be added to the navigation system.");
+    break;
+  case 'node/add#webform':
+    $output = t("A webform can be a questionnaires, contact or request form. These can be used by visitor to make contact.");
+    break;
+    
+  }
+  return $output;
+}
+   
+
+function webform_perm() {
+  return array("maintain webforms", "create webforms", "use all webforms");
+}
+
+
+/**
+ * Define the human-readable name of a node type.
+ */
+function webform_node_name($node) {
+  return t('webform');
+}
+
+
+function webform_access($op, $node) {
+  global $user;
+  
+  if ($op == "view") {
+    if ( user_access("use all webforms") ) {
+      return $node->status;
+    }
+    else if( (is_array($node->roles) && in_array($user->rid, $node->roles)) ) {
+      return $node->status;
+    }
+    else {
+      return false;
+    }
+  }
+  
+  if ($op == "create") {
+    return user_access("create webforms");
+  }
+  
+  if ($op == "update") {
+    return user_access("maintain webforms");
+  }
+  
+  if ($op == "delete") {
+    return user_access("maintain webforms");
+  }
+  return false;
+}
+
+function webform_save($op, $node) {
+  if ($op == "approve") {
+    return array("status" => 1);
+  }
+  
+  if ($op == "decline") {
+    return array("status" => 0);
+  }
+}
+
+function webform_insert($node) {
+  // insert
+  db_query("INSERT INTO {webform} (nid, confirm, email) VALUES (%d, '%s', '%s')", 
+           $node->nid, $node->confirm, $node->email);
+  
+  if( is_array($node->formcomponents) && !empty($node->formcomponents)) {
+    foreach($node->formcomponents as $key => $component) {   
+      db_query("INSERT INTO {webform_component} (nid, cid, name, type, value, extra, mandatory, weight) VALUES (%d, %d, '%s', '%s', '%s', '%s', %d, %d)",
+	       $node->nid, $key, $component['name'], $component['type'], $component['value'], 
+	       $component['extra'], ($component['mandatory']?1:0), $component['weight']);
+    }
+  }
+  
+  _webform_role_node_delete($node->nid);
+  
+  if (is_array($node->roles)) {
+    // Filter all empty roles
+    foreach ($node->roles as $rid) {
+      if($rid != 0)
+	$roles[] = $rid;
+    }
+    // Add the users group if it isn't allready checked.
+    if(!in_array($user->rid, $roles)) {
+      $roles[] = $user->rid;
+    }
+    
+    if (!empty($roles)) {
+      foreach ($roles as $rid) {
+	db_query("INSERT INTO {webform_role_node} (nid, rid) VALUES (%d, %d)", $node->nid, $rid);
+      }
+    }
+  }
+}
+
+function webform_update($node) {
+  // Update 
+  db_query("UPDATE {webform} SET confirm = '%s', email = '%s' ".
+	   "WHERE nid = %d", $node->confirm, $node->email, $node->nid);
+  
+  db_query("DELETE FROM {webform_component} WHERE nid = %d", $node->nid);
+  if( is_array($node->formcomponents) && !empty($node->formcomponents)) {
+    foreach($node->formcomponents as $key => $component) {   
+      db_query("INSERT INTO {webform_component} (nid, cid, name, type, value, extra, mandatory, weight) VALUES (%d, %d, '%s', '%s', '%s', '%s', %d, '%s')",
+	       $node->nid, $key, $component['name'], $component['type'], $component['value'], $component['extra'], ($component['mandatory']?1:0), $component['weight']);
+    }
+  }  
+  
+  _webform_role_node_delete($node->nid);
+  
+  if ($node->roles) {
+    foreach ($node->roles as $rid) {
+      if($rid != 0)
+        db_query("INSERT INTO {webform_role_node} (nid, rid) VALUES (%d, %d)", $node->nid, $rid);
+    }
+  } 
+}
+
+function webform_delete(&$node) {
+  // delete 
+  db_query("DELETE FROM {webform} WHERE nid = %d", $node->nid);
+  db_query("DELETE FROM {webform_component} WHERE nid = %d", $node->nid);
+  _webform_role_node_delete($node->nid);
+}
+
+function webform_load($node) {
+  // load 
+  $page = db_fetch_object(db_query("SELECT confirm, email FROM {webform} WHERE nid = %d", $node->nid));
+  
+  $result = db_query('SELECT cid, name, type, value, extra, mandatory, weight '.
+                     ' FROM {webform_component} '.
+                     ' WHERE nid = %d '.
+                     ' ORDER BY weight', $node->nid);
+  while($c = db_fetch_array($result)) {
+    $page->formcomponents[$c['cid']] = array('name' => $c['name'],
+					     'type' => $c['type'], 
+					     'value' => $c['value'],
+					     'extra' => $c['extra'],
+					     'mandatory' => $c['mandatory'],
+					     'weight' => $c['weight']
+					     );
+  }
+  
+  $result = db_query("SELECT rid FROM {webform_role_node} WHERE nid = %d", $node->nid);
+  while($rid = db_fetch_array($result)) 
+    $page->roles[]=$rid['rid'];
+  
+  
+  return $page;
+}
+
+function webform_settings(){
+  $output .= form_select(t("Webforms Debug"), "webform_debug",
+			 variable_get("webform_debug", 0),
+			 array(0 => "FALSE", 1 => "TRUE"),
+			 html_br().t("DEBUG for the webform module") . html_br() .
+			 t("Set to true to send debug information in the email and to print debug info on submision."));
+  return $output;
+} // End webform_settings
+
+
+function webform_validate(&$node) {
+  // If we are adding a new componenet or removing a old one 
+  // we have to do what the framework would do for us so we don't loose 
+  // information.
+  if(isset($_POST['add_component']) || isset($_POST['delete_component'])) {
+    $edit = $_POST['edit'];
+    $node = array2object($edit);
+  }
+  
+  // Unpack all components in the form and add them to the node.
+  $components = $_POST['component'];
+  if( is_array($components) && !empty($components)) {
+    foreach($components as $key => $c) {
+      $node->formcomponents[$key] = array('name' => $c['name'],
+					  'type' => $c['type'], 
+					  'value' => $c['value'],
+					  'extra' => $c['extra'],
+					  'mandatory' => $c['mandatory'],
+					  'weight' => $c['weight']
+					  );
+    }
+  }
+  
+  if(isset($_POST['add_component'])) {
+    $node->formcomponents[time()] = array('name' => $_POST['edit']['newcomp'],
+					  'name_en' => $_POST['edit']['newcomp'].' english',
+					  'type' => $_POST['edit']['newcomp']);
+  }
+  if(isset($_POST['delete_component'])) {
+    foreach ($_POST['checked_component'] as $key => $value) {
+      if($value) {
+	unset($node->formcomponents[$key]);
+      }
+    }
+  }
+  // TODO: If we save loop through to check all components.
+  
+  return true;
+}
+
+function webform_link($type) {
+  $links = array();
+  
+  if ($type == "system") {
+    if (user_access("maintain webforms")) {
+      menu("node/add/webform", t("webform"), "node_page", 0);
+    }
+  }
+  
+  return $links;
+}
+
+function webform_form(&$node, &$error, &$param) {
+  
+  $component_types = array('textfield' => t('textfield'),
+                           // 'textarea' => t('textarea'),
+                           'radiobutton' => t('radiobutton'),
+                           'checkbox' => t('checkbox'),
+                           'combobox' => t('combobox'),
+                           'email' => t('e-mail address'));
+  
+  // User access stuff
+  $roles = user_roles(0); // Get all roles including anonymous users
+  $checkboxes = '';
+  foreach ($roles as $rid => $role) {
+    // Uggly way to create a array 
+    $checkboxes .= form_checkbox($role, "roles][", $rid, (is_array($node->roles) && in_array($rid, $node->roles)?1:0));
+  }
+  if(!empty($checkboxes))
+    $output .= form_item(t('Use access'),$checkboxes, t('Check roles that should be able to submit data thru this form.'));
+  
+  if (function_exists("taxonomy_node_form")) {
+    $output .= implode("", taxonomy_node_form("webform", $node));
+  } 
+  
+  $output .= form_textarea(t("Description"), "body", $node->body, 20, 10, 
+                           $error["body"]. " ". t('Text to be shown as teaser and befor the form.'));
+  
+  $output .= form_textarea(t("Confirmation message"), "confirm", $node->confirm, 20, 10, 
+                           $error["confirm"]." ".t("Message to be shown upon successfull submission."));
+  
+  // List all form components.
+  if( is_array($node->formcomponents) && !empty($node->formcomponents)) {
+    
+    foreach($node->formcomponents as $key => $component) {
+      $other = html_form_hidden("component[".$key.'][type]', $component['type']);
+      $rows[] = array(
+                      html_form_checkbox('', 'checked_component['.$key.']'),
+                      html_form_textfield('', "component[".$key.'][name]', $component['name'], 20, 50),
+                      $component['type'],
+                      html_form_textfield('', "component[".$key.'][value]', $component['value'], 20, 255),
+                      html_form_checkbox('', "component[".$key.'][mandatory]', ($component['mandatory']?1:0)),                      
+                      html_form_textfield('', "component[".$key.'][extra]', $component['extra'], 2, 3),
+                      html_form_weight("component[".$key.'][weight]', ($component['weight']?$component['weight']:0)),
+                      $other);
+    }
+    $output .= html_br().
+      html_div(t('Please specify data for the components.').
+	       html_ul(array(t('Check "M" if the field should be manatory.'),
+			     t('To delete a component, check the "X" box and press "Delete selected".'),
+			     t('Use the "extra" field to enter maxlength for textfields. Use "value" to enter a default value.'),
+			     t('Use "value" to enter multiple choices for comboboxes, radio buttons and checkboxes. Seperate the choices with a ;'),
+			     t('Remember to set weight on the components.')
+			     ))
+               );
+    $output .= theme('table', array(html_span('&nbsp;&nbsp;'.t('X'), array('title' => t('delete'))), 
+				    html_span(t('name')), 
+				    t('type'), 
+				    html_span(t('value')), 
+				    html_span(t('M'), array('title' => t('mandatory'))), 
+				    html_span(t('extra'), array('title' => t('Size for textfields'))),
+				    html_span(t('weight'), array('title' => t('In listings, the heavier components will sink and the lighter components will be positioned nearer the top.'))),
+				    ), 
+                     $rows);
+    $output .= form_button(t('Delete selected'), 'delete_component');
+  }
+  
+  // Mini-form to add a new component.
+  $output .= form_select(t('Add a new component'), 'newcomp', $node->newcomp, 
+			 $component_types, t('Select a component type to add.'));
+  $output .= form_button(t('Add'), 'add_component');
+  
+  $output .= form_textfield(t("E-mail address"), "email", $node->email, 60,
+			    127, t('Form submissions will be e-mailed to this address.').($error["email"] ? $error["email"] : ''));
+  
+  return $output;
+}
+
+function webform_view($node, $main = 0, $page = 0) {
+  $doSubmit = true;
+  // Render the webform multi-lingual
+  $submited = $_POST['submited'];
+  if( is_array($node->formcomponents) && !empty($node->formcomponents)) {
+    foreach($node->formcomponents as $key => $component) {
+      if ( $_POST['send'] ) {
+        $error = _webform_submission_ok($component['type'], $submited[$component['name']], 
+                                        $component['mandatory']);
+        if ( $error !== 0 ) {
+          $doSubmit = false;
+        }
+        
+      }
+      
+      $cwidget = _webform_create_widget($component['name'], $component['type'], 
+                                        $component['value'],
+                                        // ($submited[$component['name']]?$submited[$component['name']]:$value), 
+                                        $component['extra'], $error);
+      
+      $rows[] = array($component['name'].($component['mandatory']?html_b(' *'):''),
+                      // Display the component
+                      $cwidget);
+    }
+    $buttons = html_form_button('send', t('send'), '', 'submit').html_form_button('reset', t('reset'), '', 'reset');
+    $rows[] = array(array('data' => $buttons, 'colspan' => '3', 'align' => 'center'));
+    $output .= form(theme('table', NULL, $rows));
+  }
+  
+  if ( $doSubmit && $_POST['send']) {
+    if(_webform_process_submit($node, $errors)) {
+      return theme('node', $node, $main, $page);
+    }
+  }
+  
+  $node->body .= $output;
+  // print the node
+  return theme("node", $node, $main, $page);
+}
+
+function _webform_process_submit(&$node, &$errors) {
+  global $user;
+  
+  // TODO: Check referer to deny posting from of sites.
+  
+  
+  // TODO: Check input.
+  
+  // Check to see if the user has right to use the webform
+  if ( !user_access('use all webforms') )
+    if( !(is_array($node->roles) && in_array($user->rid, $node->roles)) ) {
+      $node->body = t("You are not allowed to submit data to this form.");
+      $node->title = t('Submission error');
+      // We have to output true since the user have done a submission
+      return true;
+    }
+  // Handle posting to the form and output status.
+  $confirm = $node->confirm;
+  
+  $reply = $_POST['submited'];
+  _webform_save_submission($node, $reply);
+  $message = _webform_create_mailmessage($reply);
+  
+  if (isset($node->email)) {
+    $node->email = strip_tags($node->email);
+    if (!empty($node->email)) {
+      $headers = "From: "._webform_encodeHeader( variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\r\n".
+	"Content-Type: text/plain; charset=iso-8859-1\r\n".
+	"Content-Disposition: inline\r\n".
+	"Content-Transfer-Encoding: quoted-printable\r\n".
+	"X-Mailer: PHP/" . phpversion();
+      $subject = _webform_encodeHeader( iconv("UTF-8","ISO-8859-1", t('Form submission from').' '.$node->title));
+      mail($node->email, $subject, $message, $headers);
+    }
+  }
+  
+  $node->body = $confirm.
+    (variable_get('webform_debug', 0)?"<pre>$message</pre>":'');
+  $node->title = t('Thanks for your submission');
+  return true;
+}
+
+function _webform_create_widget($name, $type, $value, $extra, $err = '') {
+  global $user;
+  $name = "submited[$name]";
+  
+  switch($type) {
+  case 'textarea':
+    // TODO: Make textarea
+    return html_form_textfield('', $name, $value, 20, 125).
+      ($err?html_br().$err:'');
+    break;
+  case 'radiobutton':
+    $items = explode(';', $value);
+    $output = '';
+    $first = true;
+    foreach($items as $it) {
+      $output .= html_form_radio($it, $name, $it, $first).html_br();
+      $first = false;
+    }
+    return $output.
+      ($err?html_br().$err:'');
+    break;
+  case 'checkbox':
+    $items = explode(';', $value);
+    $output = '';
+    foreach($items as $it) {
+      $output .= html_form_checkbox($it, $name."[$it]").html_br();
+    }
+    return $output.
+      ($err?html_br().$err:'');
+    break;
+  case 'combobox':
+    $items = explode(';', $value);
+    $first = $items[0];
+    foreach ($items as $it) {
+      $options[$it] = $it;
+    }
+    $output .= html_form_select($name, $first, $options);
+    return $output.
+      ($err?html_br().$err:'');
+    break;
+  case 'email':
+    if($user->uid && $user->mail && empty($value)) {
+      $value = $user->mail;
+    }
+  default:  // textfield
+    $maxsize = 255;
+    if ($extra && is_numeric($extra)) {
+      $maxsize = $extra;
+    }
+    return html_form_textfield('', $name, $value, 50, $maxsize).
+      ($err?html_br().$err:'');
+    break;
+  }
+}
+
+function _webform_submission_ok($type, $value, $mandatory) {
+  // Check if it is mandatory and if so that it exists and have a value
+  if($mandatory && empty($value)) {
+    return theme("error", t('This field must have a value!'));
+  }
+  return 0;
+}
+
+function _webform_create_mailmessage($reply) {
+  global $user;
+  
+  $message .= iconv("UTF-8","ISO-8859-1", t('Submited on')).' '.format_date(time(), 'small')."\r\n";
+  
+  if($user->uid) {
+    $message .= iconv("UTF-8","ISO-8859-1", t('Submited by user').": $user->name")."\r\n";
+  }
+  else {
+    $message .= iconv("UTF-8","ISO-8859-1",t('Submited by anonymous user')).'['.$_SERVER['REMOTE_ADDR'].']'."\r\n";
+  }
+  $message .= iconv("UTF-8","ISO-8859-1",t('Submited values are:'))."\r\n";
+  foreach($reply as $key => $value) {
+    if (is_array($value)) {
+      $message .= iconv("UTF-8","ISO-8859-1", "$key :");
+      foreach($value as $k => $v) {
+        $message .= "\r\n\t".iconv("UTF-8","ISO-8859-1","$k = $v");
+      }
+      $message .= "\r\n";
+    }
+    else {
+      $message .= iconv("UTF-8","ISO-8859-1", "$key : $value")."\r\n";
+    }
+  }
+  
+  if (variable_get('webform_debug', 0)) {
+    $message .= "\r\n";
+    $message .= "DEBUG INFO\r\n";
+    $message .= "==========\r\n";
+    $message .= "\$_SERVER is\r\n";
+    $message .= print_r($_SERVER, true);
+    $message .= "\r\n";
+    $message .= "\$_POST is\r\n";
+    $message .= print_r($_POST, true);
+  }
+  return $message;
+}
+
+function _webform_save_submission($node, $reply) {
+  global $user;
+  
+  // TODO: Better XML structure ???
+  $xmldata = '<recordset userid="'.$user->uid.'" '.
+    'timestamp="'.htmlspecialchars(format_date(time(), 'small')).'" '.
+    'remotehost="'.htmlspecialchars($_SERVER['REMOTE_ADDR']).'" '.
+    'useragent="'.htmlspecialchars($_SERVER['HTTP_USER_AGENT']).'" >';
+  $xmldata .= "\n";
+  
+  foreach($reply as $key => $value) {
+    if (is_array($value)) {
+      $xmldata .= "\t<item name=\"".htmlspecialchars($key)."\" >\n";
+      foreach($value as $k => $v) {
+        $xmldata .= "\t\t<item name=\"".htmlspecialchars($k)."\" value=\"".htmlspecialchars($v)."\" />\n";
+      }
+      $xmldata .= "\t</item>\n";
+    }
+    else {
+      $xmldata .= "\t<item name=\"".htmlspecialchars($key)."\" value=\"".htmlspecialchars($value)."\" />\n";
+    }
+  }
+  
+  $xmldata .= "</recordset>\n";
+  
+  $sid = db_next_id('{webform_submissions}_id');
+  db_query("INSERT INTO {webform_submissions} (nid, sid, uid, created, data) ".
+	   "VALUES (%d, %d, %d, %d, '%s') ",
+	   $node->nid, $sid, $user->uid, time(), $xmldata);
+}
+
+function _webform_role_node_delete($nid) {
+  db_query("DELETE FROM {webform_role_node} WHERE nid = $nid");
+}
+
+/**
+ * Encode a string according to RFC 1522 for use in headers if it
+ * contains 8-bit characters or anything that looks like it should
+ * be encoded.
+ * Nicked from the SquirrelMail project.
+ * @param $string 
+ */
+function _webform_encodeHeader ($string) {
+  $charset = 'iso-8859-1';
+  
+  if (strtolower($charset) == 'iso-8859-1') {
+    $string = str_replace("\240",' ',$string);
+  }
+  
+  // Encode only if the string contains 8-bit characters or =?
+  $j = strlen($string);
+  $max_l = 75 - strlen($charset) - 7;
+  $aRet = array();
+  $ret = '';
+  $iEncStart = $enc_init = false;
+  $cur_l = $iOffset = 0;
+  for($i = 0; $i < $j; ++$i) {
+    switch($string{$i})
+      {
+      case '=':
+      case '<':
+      case '>':
+      case ',':
+      case '?':
+      case '_':
+	if ($iEncStart === false) {
+	  $iEncStart = $i;
+	}
+	$cur_l+=3;
+	if ($cur_l > ($max_l-2)) {
+	  /* if there is an stringpart that doesn't need encoding, add it */
+	  $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
+	  $aRet[] = "=?$charset?Q?$ret?=";
+	  $iOffset = $i;
+	  $cur_l = 0;
+	  $ret = '';
+	  $iEncStart = false;
+	} else {
+	  $ret .= sprintf("=%02X",ord($string{$i}));
+	}
+	break;
+      case '(':
+      case ')':
+	if ($iEncStart !== false) {
+	  $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
+	  $aRet[] = "=?$charset?Q?$ret?=";
+	  $iOffset = $i;
+	  $cur_l = 0;
+	  $ret = '';
+	  $iEncStart = false;
+	}
+	break;
+      case ' ':
+	if ($iEncStart !== false) {
+	  $cur_l++;
+	  if ($cur_l > $max_l) {
+	    $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
+	    $aRet[] = "=?$charset?Q?$ret?=";
+	    $iOffset = $i;
+	    $cur_l = 0;
+	    $ret = '';
+	    $iEncStart = false;
+	  } else {
+	    $ret .= '_';
+	  }
+            }
+	break;
+      default:
+	$k = ord($string{$i});
+	if ($k > 126) {
+	  if ($iEncStart === false) {
+	    // do not start encoding in the middle of a string, also take the rest of the word.
+	    $sLeadString = substr($string,0,$i);
+	    $aLeadString = explode(' ',$sLeadString);
+	    $sToBeEncoded = array_pop($aLeadString);
+	    $iEncStart = $i - strlen($sToBeEncoded);
+	    $ret .= $sToBeEncoded;
+	    $cur_l += strlen($sToBeEncoded);
+	  }
+	  $cur_l += 3;
+	  /* first we add the encoded string that reached it's max size */
+	  if ($cur_l > ($max_l-2)) {
+	    $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
+	    $aRet[] = "=?$charset?Q?$ret?= "; /* the next part is also encoded => separate by space */
+	    $cur_l = 3;
+	    $ret = '';
+	    $iOffset = $i;
+	    $iEncStart = $i;
+	  }
+	  $enc_init = true;
+	  $ret .= sprintf("=%02X", $k);
+	} else {
+	  if ($iEncStart !== false) {
+	    $cur_l++;
+	    if ($cur_l > $max_l) {
+	      $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
+	      $aRet[] = "=?$charset?Q?$ret?=";
+	      $iEncStart = false;
+	      $iOffset = $i;
+	      $cur_l = 0;
+	      $ret = '';
+	    } else {
+	      $ret .= $string{$i};
+	    }
+	  }
+	}
+	break;
+      }
+  }
+  
+  if ($enc_init) {
+    if ($iEncStart !== false) {
+      $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
+      $aRet[] = "=?$charset?Q?$ret?=";
+    } else {
+      $aRet[] = substr($string,$iOffset);
+    }
+    $string = implode('',$aRet);
+  }
+  return $string;
+}
+?>
