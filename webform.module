@@ -32,9 +32,10 @@ function webform_help($section = "admin/help#webform") {
     $output = t("<p>This module lets you create forms or questionnaires and define there content. Submissions from these forms are stored in the database and optionaly also send by e-mail to a predefined address.</p>
 <p>Here is how to create one:
 <ul>
+
  <li>Go to Create Content and add a webform</li>
  <li>Add a description that is displayed as a teaser and above the actual form.</li>
- <li>Add a confirmation message that are displayed after a successfull submission.</li>
+ <li>Add a confirmation message or redirect node that is to be displayed after a successful submission.</li>
  <li>Select which roles who should have submission access to this form (roles that have the &quot;use all webforms&quot; permision can allways use a webform).</li>
  <li>Add one or more components to your form.</li>
  <li>Optionaly add a email address to which submissions will be send. If no email address is specified no email will be send when submissions are made through the form.</li>
@@ -398,10 +399,11 @@ function webform_form(&$node, &$error) {
                            $error["body"]. " ". t('Text to be shown as teaser and before the form.'), NULL, TRUE);
   $output .= filter_form('format', $node->format);
 			   
-  
-  $output .= form_textarea(t("Confirmation message"), "confirm", $node->confirm, 20, 10, 
-                           $error["confirm"]." ".t("Message to be shown upon successfull submission."), NULL, TRUE);
-  
+  $output .= form_textarea(t("Confirmation message or redirect URL"), "confirm", $node->confirm, 20, 10,
+              $error["confirm"]." ".
+              t("Message to be shown upon successful submission or a relative path to redirect page (must start with ./)"), 
+              NULL, TRUE);
+
   // List all form components.
   if( is_array($node->webformcomponents_name) && !empty($node->webformcomponents_name)) {
     $nocomponents = count($node->webformcomponents_name);
@@ -520,8 +522,14 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
   
   if ( $doSubmit && $_POST['webform_send']) {
     if(_webform_process_submit($node, $errors)) {
-      // Submission was successfull redirect to webform/done/<nid>
+      // Check confirmation field to see if redirect should be to another node or a message
+      if(valid_url(trim($node->confirm))){
+        drupal_goto(trim($node->confirm));
+      }
+      else {
+      // Submission was successfully redirected to webform/done/<nid>
       drupal_goto('webform/done/'.$node->nid);
+      }
       return;
     }
   }
@@ -872,12 +880,13 @@ function _webform_create_mailmessage($reply) {
   global $user;
   
   $message .=  t('Submitted on').' '.format_date(time(), 'small')."\r\n";
+  $ip_address = $_SERVER['REMOTE_ADDR'];
   
   if($user->uid) {
-    $message .= t('Submitted by user').": $user->name"."\n";
+    $message .= t('Submitted by user').": $user->name [$ip_address] \n";
   }
   else {
-    $message .= t('Submitted by anonymous user').'['.$_SERVER['REMOTE_ADDR'].']'."\n";
+    $message .= t('Submitted by anonymous user')." [$ip_address] \n";
   }
   $message .= t('Submitted values are:')."\n";
   foreach($reply as $key => $value) {

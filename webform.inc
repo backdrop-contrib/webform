@@ -673,6 +673,12 @@ function _webform_reportanalysis() {
           } else {
             $multiple_choice = false;		// ie Radio Buttons
           }
+
+          if($extra_data['aslist'] == 'Y'){
+            $aslist = true;   // ie List Box and thus implying lot's of choices
+          } else {
+            $aslist = false;
+          }
           
           $choices = explode("\n", _webform_filtervalues($extra_data['items']));
           
@@ -692,8 +698,15 @@ function _webform_reportanalysis() {
               $row[3] = '';
               
               $shadow_row['raw_tally'] = 0;	// Raw tallies are always kept
-              
               $rows[$key] = $row;
+
+              if($aslist) {
+                $shadow_row['do_not_display'] = true;
+              }
+              else {
+                $shadow_row['do_not_display'] = false;
+              }
+
               $shadow_rows[$key] = $shadow_row;
               
               // Populate the Covariance Matrix index lookup array if required
@@ -718,7 +731,7 @@ function _webform_reportanalysis() {
               $key = "$question_name".trim($check);
               
               $shadow_rows[$key]['raw_tally']++;
-              
+              $shadow_rows[$key]['do_not_display'] = false; 
               if(in_array('c',$views_switches)){
                 $covariance_records[$cm_index[$key]][] = $field->sid;
                 $covariance_records[$field->sid][$cm_index[$key]] = true;
@@ -743,7 +756,7 @@ function _webform_reportanalysis() {
         // Handling normal radio buttons
         $key = "$question_name".trim($field->data);
         $shadow_rows[$key]['raw_tally']++;
-        
+        $shadow_rows[$key]['do_not_display'] = false; 
         if(in_array('c',$views_switches)){
           $covariance_records[$cm_index[$key]][] = $field->sid;
           $covariance_records[$field->sid][$cm_index[$key]] = true;
@@ -758,23 +771,18 @@ function _webform_reportanalysis() {
       end($rows);
       unset($key);
     }
-    if (($previous != -1) && ($previous != $field->sid)) {
-      //$rows[] = array_merge(array($previous), $cell);
-      //unset($cell);
-      //$first = false;
-    }
-    
-    if ( $field->name == '__timestamp' ) {
-      //$cell[] = format_date($field->data, 'small');
-    } else if ( unserialize($field->data) ) {
-      //$cell[] = theme('item_list', unserialize($field->data));
-    } else {
-      //$cell[] = $field->data;
-    }
-    //$previous = $field->sid;
     
   } //end main loop
-  
+
+  // Remove any rows that should not be display, ie have had $shadow_rows[$key]['do_not_display'] set to true
+
+  foreach($shadow_rows as $skey => $shadow_row){
+    if($shadow_row['do_not_display']){
+      // Extract element from rows[] here
+      unset($rows[$skey]);
+    }
+  }
+
   // Display the Results Table
   $box_content = "<br>";
   $box_content .= theme('table', $header, $rows);
