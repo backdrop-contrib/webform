@@ -2,13 +2,12 @@
   //$Id$
   /** This module provides a simple way to create forms and questionnaires 
    * for your website.
-   * The development of this module was sponsered by Open Source City and 
-   * Karlstad University Library.
+   * The development of this module was sponsered by &Aring;F Industri AB,
+   * Open Source City and Karlstad University Library.
    *
    * @author Pontus Ullgren <ullgren@user.sourceforge.net>
    * @package module_webform
    * @copyright Pontus Ullgren 2003
-   * @version 0.1
    * 
    **/
 include_once("misc/htmltags.inc");
@@ -37,6 +36,13 @@ function webform_help($section = "admin/help#page") {
 </ul>
 Help on adding and how to configure the components will be shown after adding your first component.
 </p>
+<p>On user submissions the form content is stored in the database table <i>webform_submited_data</i> as key-value pairs. Apart from the form fields the following &quot;special&quot; fields are added:
+<ul>
+  <li> __userid : UID of the submiting user.</li>
+  <li> __timestamp : UNIX timestamp for when the submission occured.</li>
+  <li> __remotehost : IP or name of the remote host from which the submission came.</li>
+  <li> __useragent : What user agent (browser) the user used upon submitting the data.</li>
+</ul>
 ");
     break;
   case 'admin/modules#description':
@@ -207,6 +213,8 @@ function webform_settings(){
 
 
 function webform_validate(&$node) {
+  $error = array();
+
   // If we are adding a new componenet or removing a old one 
   // we have to do what the framework would do for us so we don't loose 
   // information.
@@ -241,8 +249,22 @@ function webform_validate(&$node) {
       }
     }
   }
+
+  // Validate the body field.
+  if (isset($node->body)) {
+    if (!$node->body) {
+      $error['body'] = theme('error', t('You have to specify a form description.'));
+    }
+  }
+
+  // Validate confirm field
+  if (isset($node->confirm)) {
+    if (!$node->confirm) {
+      $error['confirm'] = theme('error', t('You have to specify a confimation message.'));
+    }
+  }
   
-  return true;
+  return $error;
 }
 
 /**
@@ -561,33 +583,45 @@ function _webform_create_mailmessage($reply) {
 
 function _webform_save_submission($node, $reply) {
   global $user;
+  /*  
+   // TODO: Better XML structure ???
+   $xmldata = '<recordset userid="'.$user->uid.'" '.
+   'timestamp="'.htmlspecialchars(format_date(time(), 'small')).'" '.
+   'remotehost="'.htmlspecialchars($_SERVER['REMOTE_ADDR']).'" '.
+   'useragent="'.htmlspecialchars($_SERVER['HTTP_USER_AGENT']).'" >';
+   $xmldata .= "\n";
+   
+   foreach($reply as $key => $value) {
+   if (is_array($value)) {
+   $xmldata .= "\t<item name=\"".htmlspecialchars($key)."\" >\n";
+   foreach($value as $k => $v) {
+   $xmldata .= "\t\t<item name=\"".htmlspecialchars($k)."\" value=\"".htmlspecialchars($v)."\" />\n";
+   }
+   $xmldata .= "\t</item>\n";
+   }
+   else {
+   $xmldata .= "\t<item name=\"".htmlspecialchars($key)."\" value=\"".htmlspecialchars($value)."\" />\n";
+   }
+   }
+   
+   $xmldata .= "</recordset>\n";
+   
+   $sid = db_next_id('{webform_submissions}_id');
+   db_query("INSERT INTO {webform_submissions} (nid, sid, uid, created, data) ".
+   "VALUES (%d, %d, %d, %d, '%s') ",
+   $node->nid, $sid, $user->uid, time(), $xmldata);
+  */
+  $reply['__userid'] = $user->uid;
+  $reply['__timestamp'] = time();
+  $reply['__remotehost'] = $_SERVER['REMOTE_ADDR'];
+  $reply['__useragent'] = $_SERVER['HTTP_USER_AGENT'];
   
-  // TODO: Better XML structure ???
-  $xmldata = '<recordset userid="'.$user->uid.'" '.
-    'timestamp="'.htmlspecialchars(format_date(time(), 'small')).'" '.
-    'remotehost="'.htmlspecialchars($_SERVER['REMOTE_ADDR']).'" '.
-    'useragent="'.htmlspecialchars($_SERVER['HTTP_USER_AGENT']).'" >';
-  $xmldata .= "\n";
-  
+
   foreach($reply as $key => $value) {
-    if (is_array($value)) {
-      $xmldata .= "\t<item name=\"".htmlspecialchars($key)."\" >\n";
-      foreach($value as $k => $v) {
-        $xmldata .= "\t\t<item name=\"".htmlspecialchars($k)."\" value=\"".htmlspecialchars($v)."\" />\n";
-      }
-      $xmldata .= "\t</item>\n";
-    }
-    else {
-      $xmldata .= "\t<item name=\"".htmlspecialchars($key)."\" value=\"".htmlspecialchars($value)."\" />\n";
-    }
+    $sid = db_next_id('{webform_submissions}_id');
+    db_query("INSERT INTO {webform_submited_data} (nid, sid, name, data) ".
+	     "VALUES (%d, %d, '%s', '%s') ", $node->nid, $sid, $key, $value);
   }
-  
-  $xmldata .= "</recordset>\n";
-  
-  $sid = db_next_id('{webform_submissions}_id');
-  db_query("INSERT INTO {webform_submissions} (nid, sid, uid, created, data) ".
-	   "VALUES (%d, %d, %d, %d, '%s') ",
-	   $node->nid, $sid, $user->uid, time(), $xmldata);
 }
 
 function _webform_role_node_delete($nid) {

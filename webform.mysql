@@ -20,11 +20,10 @@ CREATE TABLE webform_role_node
     rid int(10) unsigned not null,
     PRIMARY KEY(nid, rid));
 
-CREATE TABLE webform_submissions 
+CREATE TABLE webform_submited_data
   ( nid int(10) unsigned not null, 
     sid int(10) unsigned not null, 
-    uid int(10) unsigned, 
-    created date, 
-    data text,
+    name varchar(255),
+    data blob,
     PRIMARY KEY(nid, sid));
 
