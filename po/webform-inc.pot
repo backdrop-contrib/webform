@@ -1,12 +1,12 @@
 # LANGUAGE translation of Drupal (webform.inc)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
-# Generated from file: webform.inc,v 1.15 2005/04/02 17:50:24 ullgren
+# Generated from file: webform.inc,v 1.16 2005/04/03 19:49:13 ullgren
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2005-04-03 12:55+0200\n"
+"POT-Creation-Date: 2005-04-03 21:51+0200\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -27,8 +27,12 @@ msgstr ""
 msgid "Operations"
 msgstr ""
 
-#: webform.inc:51;52
-msgid "Do you really want to delete the submissions for this form?"
+#: webform.inc:51
+msgid "Do you really want to delete all submissions for this form?"
+msgstr ""
+
+#: webform.inc:52
+msgid "Do you really want to delete <strong>all</strong> submissions for this form?"
 msgstr ""
 
 #: webform.inc:52;72

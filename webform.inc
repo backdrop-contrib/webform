@@ -48,8 +48,8 @@ function _webform_results_clear($nid) {
     drupal_goto('webform');
   }
   else {
-    $content = theme('confirm', t('Do you really want to delete the submissions for this form?'), 'webform',
-                     t('Do you really want to delete the submissions for this form?'). '<br>'.t('This action cannot be undone.'), 
+    $content = theme('confirm', t('Do you really want to delete all submissions for this form?'), 'webform',
+                     t('Do you really want to delete <strong>all</strong> submissions for this form?'). '<br>'.t('This action cannot be undone.'), 
                      'yes', 'no', NULL);
     return $content;
   }
@@ -65,7 +65,7 @@ function _webform_submission_delete($nid, $sid) {
     $query = 'DELETE FROM {webform_submitted_data} WHERE nid = %d AND sid = %d';
     $res = db_query($query, $nid, $sid);
 
-    drupal_goto('webform');
+    drupal_goto('node/'.$nid.'/results');
   }
   else {
     $content = theme('confirm', t('Do you really want to delete this form submission?'), 'node/'.$nid.'/results', 

@@ -1,12 +1,12 @@
 # LANGUAGE translation of Drupal (webform.module)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
-# Generated from file: webform.module,v 1.45 2005/04/02 17:50:24 ullgren
+# Generated from file: webform.module,v 1.47 2005/04/03 19:49:13 ullgren
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2005-04-03 12:55+0200\n"
+"POT-Creation-Date: 2005-04-03 21:51+0200\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -36,7 +36,7 @@ msgid "Available variables are: %username, %useremail, %site, %date."
 msgstr ""
 
 #: webform.module:61
-msgid "You can also use %server[key] to add any of the special PHP $_SERVER variables and %get[key] to create prefilled forms from from the URL."
+msgid "You can also use %server[key] to add any of the special PHP <a href=\"http://www.php.net/reserved.variables#reserved.variables.server\">$_SERVER</a> variables and %get[key] to create prefilled forms from from the <a href=\"http://www.php.net/reserved.variables#reserved.variables.get\">URL</a>."
 msgstr ""
 
 #: webform.module:63
