@@ -11,7 +11,6 @@
    * @copyright Pontus Ullgren 2003
    * 
    **/
-include_once("htmltags.inc");
 
 /** Hook Help - displayes help and general infomation about the module
  * @param section specifies the section to display help for.
@@ -256,8 +255,9 @@ function webform_validate(&$node) {
     drupal_set_message(t('The form component has been edited. Remember to press submit on the bottom of this form to save your changes.'));
   }
   
-  if(isset($_POST['delete_component']) && isset($_POST['checked_component']) ) {
-    unset($node->webformcomponents_name[$_POST['checked_component']]);
+  if(isset($_POST['delete_component']) && isset($_POST['edit']['webform_checked_component']) ) {
+    unset($node->webformcomponents_name[$_POST['edit']['webform_checked_component']]);
+    drupal_set_message(t('The form component has been deleted. Remember to press submit on the bottom of this form to save your changes.'));
   }
 
   // Validate the body field.
@@ -354,7 +354,7 @@ function webform_form(&$node, &$error) {
         form_hidden("webformcomponents_extra][".$key, $node->webformcomponents_extra[$key]);
 
       $rows[] = array(
-                      html_form_radio('', 'checked_component', $key),
+                      form_radio('', 'webform_checked_component', $key),
                       form_textfield('', "webformcomponents_name][".$key, $name, 20, 50),
                       $node->webformcomponents_type[$key],
                       form_textfield('', "webformcomponents_value][".$key, 
@@ -366,28 +366,24 @@ function webform_form(&$node, &$error) {
                       $other);
     }
 
-    $help_text = html_ul(array(
-                    t('To edit a component, check the "selected" box and press "Edit selected".'),
-                    t('To delete a component, check the "selected" box and press "Delete selected".'),
-                    t('Use "value" to enter a default value.'),
-                    t('Check "mandatory" box if the field should be mandatory.'),
-                    t('Remember to set weight on the components or they will be added randomly to the form.')
-                    )
-              );
+    $help_text = theme_item_list(array(
+                                       t('To edit a component, check the "selected" box and press "Edit selected".'),
+                                       t('To delete a component, check the "selected" box and press "Delete selected".'),
+                                       t('Use "value" to enter a default value.'),
+                                       t('Check "mandatory" box if the field should be mandatory.'),
+                                       t('Remember to set weight on the components or they will be added randomly to the form.')
+                                       )
+                                 );
     $output .= form_item(t('Form components'), $help_text);
-
-    $output .= theme('table', 
-                     array(
-                           html_span('&nbsp;&nbsp;'.t('select')), 
-                           html_span(t('name')), 
-                           t('type'), 
-                           html_span(t('value')), 
-                           html_span(t('mandatory')),
-                           html_span(t('weight'),
-                                     array('title' => 
-                                           t('In listings, the heavier components will sink and the lighter components will be positioned nearer the top.')))
-				    ),
-            $rows);
+    $headers = array(
+                     '<span>&nbsp;&nbsp;'.t('select').'</span>',
+                     '<span>'.t('name').'</span>',
+                     t('type'),
+                     '<span>'.t('value').'</span>',
+                     '<span>'.t('mandatory').'</span>',
+                     '<span>'.t('weight').'</span>'
+                     );
+    $output .= theme('table', $headers, $rows);
 
     $output .= form_button(t('Edit selected'), 'edit_component');
     $output .= form_button(t('Delete selected'), 'delete_component');
@@ -465,7 +461,7 @@ function _webform_editfield() {
   if ( $_POST['edit_component'] != t('Add') ) {
     // We are editing a existing field.
     // Fetch all filed data into the $currfield object.
-    $currfield['key'] = $_POST['checked_component'] ;
+    $currfield['key'] = $node->webform_checked_component;
     $currfield['type'] = $node->webformcomponents_type[$currfield['key']];
     $currfield['name'] = $node->webformcomponents_name[$currfield['key']];
     $currfield['default'] = $node->webformcomponents_value[$currfield['key']];
