@@ -119,9 +119,9 @@ function webform_insert($node) {
   if( is_array($node->formcomponents) && !empty($node->formcomponents)) {
     foreach($node->formcomponents as $key => $component) {   
       db_query("INSERT INTO {webform_component} (nid, cid, name, type, value, extra, mandatory, weight) ".
-	       " VALUES (%d, %d, '%s', '%s', '%s', '%s', %d, %d)",
-	       $node->nid, $key, $component['name'], $component['type'], $component['value'], 
-	       $component['extra'], ($component['mandatory']?1:0), $component['weight']);
+               " VALUES (%d, %d, '%s', '%s', '%s', '%s', %d, %d)",
+               $node->nid, $key, $component['name'], $component['type'], $component['value'], 
+               $component['extra'], ($component['mandatory']?1:0), $component['weight']);
     }
   }
   
@@ -131,16 +131,16 @@ function webform_insert($node) {
     // Filter all empty roles
     foreach ($node->roles as $rid) {
       if($rid != 0)
-	$roles[] = $rid;
+        $roles[] = $rid;
     }
     // Add the users group if it isn't allready checked.
     if(!is_array($roles) || !in_array($user->rid, $roles)) {
-        $roles[] = $user->rid;
+      $roles[] = $user->rid;
     }
     
     if (!empty($roles)) {
       foreach ($roles as $rid) {
-	db_query("INSERT INTO {webform_role_node} (nid, rid) VALUES (%d, %d)", $node->nid, $rid);
+        db_query("INSERT INTO {webform_role_node} (nid, rid) VALUES (%d, %d)", $node->nid, $rid);
       }
     }
   }
@@ -149,13 +149,13 @@ function webform_insert($node) {
 function webform_update($node) {
   // Update 
   db_query("UPDATE {webform} SET confirm = '%s', email = '%s' ".
-	   "WHERE nid = %d", $node->confirm, $node->email, $node->nid);
+           "WHERE nid = %d", $node->confirm, $node->email, $node->nid);
   
   db_query("DELETE FROM {webform_component} WHERE nid = %d", $node->nid);
   if( is_array($node->formcomponents) && !empty($node->formcomponents)) {
     foreach($node->formcomponents as $key => $component) {   
       db_query("INSERT INTO {webform_component} (nid, cid, name, type, value, extra, mandatory, weight) VALUES (%d, %d, '%s', '%s', '%s', '%s', %d, '%s')",
-	       $node->nid, $key, $component['name'], $component['type'], $component['value'], $component['extra'], ($component['mandatory']?1:0), $component['weight']);
+               $node->nid, $key, $component['name'], $component['type'], $component['value'], $component['extra'], ($component['mandatory']?1:0), $component['weight']);
     }
   }  
   
@@ -186,12 +186,12 @@ function webform_load($node) {
                      ' ORDER BY weight', $node->nid);
   while($c = db_fetch_array($result)) {
     $page->formcomponents[$c['cid']] = array('name' => $c['name'],
-					     'type' => $c['type'], 
-					     'value' => $c['value'],
-					     'extra' => $c['extra'],
-					     'mandatory' => $c['mandatory'],
-					     'weight' => $c['weight']
-					     );
+                                             'type' => $c['type'], 
+                                             'value' => $c['value'],
+                                             'extra' => $c['extra'],
+                                             'mandatory' => $c['mandatory'],
+                                             'weight' => $c['weight']
+                                             );
   }
   
   $result = db_query("SELECT rid FROM {webform_role_node} WHERE nid = %d", $node->nid);
@@ -207,22 +207,22 @@ function webform_settings(){
   $current_version = _webform_version();
   if ( $installed_version['build'] < $current_version['build'] ) {
     $output .= '<div>'.l(t('Update from version %a to version %b', 
-                   array( '%a' => $installed_version['text'], '%b' => $current_version['text']) ), 
-                 'webform/update').'</div>';
+                           array( '%a' => $installed_version['text'], '%b' => $current_version['text']) ), 
+                         'webform/upgrade').'</div>';
   }
-
+  
   $output .= form_select(t("Webforms Debug"), "webform_debug",
-			 variable_get("webform_debug", 0),
-			 array(0 => "FALSE", 1 => "TRUE"),
-			 html_br().t("DEBUG for the webform module") . html_br() .
-			 t("Set to true to send debug information in the email and to print debug info on submision. Set this option to <b>FALSE</b> if you don't really know you need to enable it."));
-
+                         variable_get("webform_debug", 0),
+                         array(0 => "FALSE", 1 => "TRUE"),
+                         html_br().t("DEBUG for the webform module") . html_br() .
+                         t("Set to true to send debug information in the email and to print debug info on submision. Set this option to <b>FALSE</b> if you don't really know you need to enable it."));
+  
   return $output;
 } // end function webform_settings
 
 function webform_validate(&$node) {
   $error = array();
-
+  
   // If we are adding a new componenet or removing a old one 
   // we have to do what the framework would do for us so we don't loose 
   // information.
@@ -253,7 +253,7 @@ function webform_validate(&$node) {
   if(isset($_POST['delete_component'])) {
     foreach ($_POST['checked_component'] as $key => $value) {
       if($value) {
-	unset($node->formcomponents[$key]);
+        unset($node->formcomponents[$key]);
       }
     }
   }
@@ -295,7 +295,7 @@ function webform_menu() {
                 'callback' => '_webform_addfieldt',
                  'type' => MENU_HIDE,
                  'access' => user_access('maintain webforms'));
-                 
+
    // Edit webform component
   // webform/edit/component/<component_id>
   $items[] = array('path' => 'webform/editfield',
@@ -303,7 +303,7 @@ function webform_menu() {
                 'callback' => '_webform_editfield',
                  'type' => MENU_HIDE,
                  'access' => user_access('maintain webforms'));
-  
+
   // Upgrade page for the webform
   $items[] = array('path' => 'webform/upgrade', 'title' => t('Webform upgrade page'),
                    'callback' => '_webform_update',
@@ -368,20 +368,22 @@ function webform_form(&$node, &$error) {
                       html_form_weight("component[".$key.'][weight]', ($component['weight']?$component['weight']:0)),
                       $other);
     }
-    $output .= html_br().
-      html_div(t('Please specify data for the components.').
-	       html_ul(array(
-			     t('To delete a component, check the "X" box and press "Delete selected".'),
-			     t('Use "value" to enter a default value.'),
-			     t('Use the "extra" field to:').
-			     html_ul(array(t('Specify maxlength for textfields.'),
-					   t('Specify width and height for textareas in the format: WIDTHxHEIGHT'),
-					   t('Enter multiple choices for comboboxes, radio buttons and checkboxes. Seperate the choices with a ;'),
-					   )),
-			     t('Check "M" if the field should be manatory.'),
-			     t('Remember to set weight on the components or they will be added randomly to the form.')
-			     ))
-               );
+    /*
+     $output .= html_br().
+     html_div(t('Please specify data for the components.').
+     html_ul(array(
+     t('To delete a component, check the "X" box and press "Delete selected".'),
+     t('Use "value" to enter a default value.'),
+     t('Use the "extra" field to:').
+     html_ul(array(t('Specify maxlength for textfields.'),
+     t('Specify width and height for textareas in the format: WIDTHxHEIGHT'),
+     t('Enter multiple choices for comboboxes, radio buttons and checkboxes. Seperate the choices with a ;'),
+     )),
+     t('Check "M" if the field should be manatory.'),
+     t('Remember to set weight on the components or they will be added randomly to the form.')
+     ))
+     );
+    */
     $output .= theme('table', array(html_span('&nbsp;&nbsp;'.t('X'), array('title' => t('delete'))), 
 				    html_span(t('name')), 
 				    t('type'), 
@@ -391,14 +393,15 @@ function webform_form(&$node, &$error) {
 				    html_span(t('weight'), array('title' => t('In listings, the heavier components will sink and the lighter components will be positioned nearer the top.'))),
 				    ), 
                      $rows);
-    $output .= form_button(t('Delete selected'), 'delete_component');
+    //    $output .= form_button(t('Delete selected'), 'delete_component');
   }
-  
-  // Mini-form to add a new component.
-  $output .= form_select(t('Add a new component'), 'newcomp', $node->newcomp, 
-			 $component_types, t('Select a component type to add.'));
-  $output .= form_button(t('Add'), 'add_component');
-  
+  /*
+   // Mini-form to add a new component.
+   $output .= form_select(t('Add a new component'), 'newcomp', $node->newcomp, 
+   $component_types, t('Select a component type to add.'));
+   $output .= form_button(t('Add'), 'add_component');
+  */
+  $output .= form_button(t('Add field'), 'add_component');
   $output .= form_textfield(t("E-mail address"), "email", $node->email, 60,
 			    127, t('Form submissions will be e-mailed to this address.').($error["email"] ? $error["email"] : ''));
   
@@ -470,7 +473,7 @@ function _webform_addfield() {
   
   if( isset($_POST['edit']) ) {
     $edit = $_POST['edit'];
-    foreach ($edit as ($key => $value)) {
+    foreach ($edit as $key => $value) {
       form_hidden($key, $value);
     }
   } 
