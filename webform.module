@@ -723,7 +723,7 @@ function _webform_create_widget($name, $type, $mandatory, $value, $extra, $err =
 
 function _webform_submission_ok($name, $type, $value, $mandatory) {
   // Check if it is mandatory and if so that it exists and have a value
-  if($mandatory && empty($value)) {
+  if($mandatory && !strlen(trim($value))) {
     form_set_error('submitted]['.$name, t('You have not completed the form. %s is a mandatory field.', array('%s' => $name)));
     return 1;
   }
