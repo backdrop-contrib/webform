@@ -651,8 +651,7 @@ function _webform_process_submit(&$node, &$errors) {
     drupal_set_message("<pre>$message</pre>");
   }
   if (variable_get('webform_debug', 0) >= 1) {
-    watchdog('special', t('Submission posted to ')."'$node->title'.<br />\n<pre>$message</pre>",
-             l(t('view node'),'node/'.$node->nid.'/view'));
+    watchdog('special', t('Submission posted to ')."'$node->title'.<br />\n<pre>$message</pre>");
   }
 
   return true;
