@@ -330,7 +330,7 @@ function webform_menu() {
  * Always add a "view form" link
  **/
 function webform_link($type, $node = 0, $main = 0) {
-  if ($main == 1) {
+  if ($node->type == 'webform' && $main == 1) {
     $links[] = l(t('read more'), "node/$node->nid", array('title' => t('Read the rest of this posting.'), 'class' => 'read-more'));
   }
   return $links;
