@@ -4,7 +4,6 @@ This module lets you add forms and questionares to your Drupal site.
 
 Todo:
 -----
-Stop using iconv
 Create a analysis part to enable the forms to work as questionnaires.
 
 Changelog:

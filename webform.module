@@ -1,5 +1,5 @@
 <?php
-  // $Id$
+  //$Id$
   /** This module provides a simple way to create forms and questionnaires 
    * for your website.
    * The development of this module was sponsered by Open Source City and 
@@ -16,7 +16,7 @@ include_once('misc/htmltags.inc');
  **/
 function webform_help($section = "admin/help#page") {
   $output = "";
-
+  
   switch ($section) {
   case 'admin/help#webform':
     $output = "";
@@ -31,7 +31,7 @@ function webform_help($section = "admin/help#page") {
   }
   return $output;
 }
-   
+
 
 function webform_perm() {
   return array("maintain webforms", "create webforms", "use all webforms");
@@ -92,7 +92,8 @@ function webform_insert($node) {
   
   if( is_array($node->formcomponents) && !empty($node->formcomponents)) {
     foreach($node->formcomponents as $key => $component) {   
-      db_query("INSERT INTO {webform_component} (nid, cid, name, type, value, extra, mandatory, weight) VALUES (%d, %d, '%s', '%s', '%s', '%s', %d, %d)",
+      db_query("INSERT INTO {webform_component} (nid, cid, name, type, value, extra, mandatory, weight) ".
+	       " VALUES (%d, %d, '%s', '%s', '%s', '%s', %d, %d)",
 	       $node->nid, $key, $component['name'], $component['type'], $component['value'], 
 	       $component['extra'], ($component['mandatory']?1:0), $component['weight']);
     }
@@ -168,9 +169,9 @@ function webform_load($node) {
   }
   
   $result = db_query("SELECT rid FROM {webform_role_node} WHERE nid = %d", $node->nid);
-  while($rid = db_fetch_array($result)) 
+  while($rid = db_fetch_array($result)) {
     $page->roles[]=$rid['rid'];
-  
+  }
   
   return $page;
 }
@@ -220,7 +221,6 @@ function webform_validate(&$node) {
       }
     }
   }
-  // TODO: If we save loop through to check all components.
   
   return true;
 }
@@ -277,7 +277,7 @@ function webform_form(&$node, &$error, &$param) {
                       $component['type'],
                       html_form_textfield('', "component[".$key.'][value]', $component['value'], 20, 255),
                       html_form_checkbox('', "component[".$key.'][mandatory]', ($component['mandatory']?1:0)),                      
-                      html_form_textfield('', "component[".$key.'][extra]', $component['extra'], 2, 3),
+                      html_form_textfield('', "component[".$key.'][extra]', $component['extra'], 20, 255),
                       html_form_weight("component[".$key.'][weight]', ($component['weight']?$component['weight']:0)),
                       $other);
     }
@@ -285,9 +285,10 @@ function webform_form(&$node, &$error, &$param) {
       html_div(t('Please specify data for the components.').
 	       html_ul(array(t('Check "M" if the field should be manatory.'),
 			     t('To delete a component, check the "X" box and press "Delete selected".'),
-			     t('Use the "extra" field to enter maxlength for textfields. Use "value" to enter a default value.'),
-			     t('Use "value" to enter multiple choices for comboboxes, radio buttons and checkboxes. Seperate the choices with a ;'),
-			     t('Remember to set weight on the components.')
+			     t('Use the "extra" field to enter maxlength for textfields.'),
+			     t('Extra is also used to enter multiple choices for comboboxes, radio buttons and checkboxes. Seperate the choices with a ;'),
+			     t('Use "value" to enter a default value.'),
+			     t('Remember to set weight on the components or they will be added randomly to the form.')
 			     ))
                );
     $output .= theme('table', array(html_span('&nbsp;&nbsp;'.t('X'), array('title' => t('delete'))), 
@@ -295,7 +296,7 @@ function webform_form(&$node, &$error, &$param) {
 				    t('type'), 
 				    html_span(t('value')), 
 				    html_span(t('M'), array('title' => t('mandatory'))), 
-				    html_span(t('extra'), array('title' => t('Size for textfields'))),
+				    html_span(t('extra'), array('title' => t('Size for textfields and choices for comboboxes, raido buttons and checkboxes.'))),
 				    html_span(t('weight'), array('title' => t('In listings, the heavier components will sink and the lighter components will be positioned nearer the top.'))),
 				    ), 
                      $rows);
@@ -329,8 +330,7 @@ function webform_view($node, $main = 0, $page = 0) {
       }
       
       $cwidget = _webform_create_widget($component['name'], $component['type'], 
-                                        $component['value'],
-                                        // ($submited[$component['name']]?$submited[$component['name']]:$value), 
+                                        (isset($submited[$component['name']])?$submited[$component['name']]:$component['value']), 
                                         $component['extra'], $error);
       
       $rows[] = array($component['name'].($component['mandatory']?html_b(' *'):''),
@@ -354,21 +354,31 @@ function webform_view($node, $main = 0, $page = 0) {
 }
 
 function _webform_process_submit(&$node, &$errors) {
-  global $user;
+  global $user, $base_url;
   
-  // TODO: Check referer to deny posting from of sites.
-  
-  
-  // TODO: Check input.
+  // Check referer to deny posting from of sites.
+  if ( variable_get('webform_allow_cross_site_posting', 'OFF') == 'OFF') {
+    $referer = parse_url( urldecode($_SERVER['HTTP_REFERER']));
+    $base = parse_url( urldecode($base_url.'/'));
+    
+    if ( $referer['scheme'] != $base['scheme']
+	 || $referer['host'] != $base['host']
+	 || $referer['path'] != $base['path'] 
+	 ) {
+      // The submission didn't originate from our own domain, return false
+      return false;    
+    }
+  }
   
   // Check to see if the user has right to use the webform
-  if ( !user_access('use all webforms') )
+  if ( !user_access('use all webforms') ){
     if( !(is_array($node->roles) && in_array($user->rid, $node->roles)) ) {
       $node->body = t("You are not allowed to submit data to this form.");
       $node->title = t('Submission error');
       // We have to output true since the user have done a submission
       return true;
     }
+  }
   // Handle posting to the form and output status.
   $confirm = $node->confirm;
   
@@ -380,11 +390,11 @@ function _webform_process_submit(&$node, &$errors) {
     $node->email = strip_tags($node->email);
     if (!empty($node->email)) {
       $headers = "From: "._webform_encodeHeader( variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\r\n".
-	"Content-Type: text/plain; charset=iso-8859-1\r\n".
+	"Content-Type: text/plain; charset=utf-8\r\n".
 	"Content-Disposition: inline\r\n".
 	"Content-Transfer-Encoding: quoted-printable\r\n".
-	"X-Mailer: PHP/" . phpversion();
-      $subject = _webform_encodeHeader( iconv("UTF-8","ISO-8859-1", t('Form submission from').' '.$node->title));
+	"X-Mailer: Drupal Webform (PHP/" . phpversion().")";
+      $subject = _webform_encodeHeader( t('Form submission from').' '.$node->title );
       mail($node->email, $subject, $message, $headers);
     }
   }
@@ -406,21 +416,28 @@ function _webform_create_widget($name, $type, $value, $extra, $err = '') {
       ($err?html_br().$err:'');
     break;
   case 'radiobutton':
-    $items = explode(';', $value);
+    $items = explode(';', $extra);
     $output = '';
-    $first = true;
     foreach($items as $it) {
-      $output .= html_form_radio($it, $name, $it, $first).html_br();
-      $first = false;
+      $output .= html_form_radio($it, $name, $it, ($value==$it)).html_br();
     }
     return $output.
       ($err?html_br().$err:'');
     break;
   case 'checkbox':
-    $items = explode(';', $value);
+    $items = explode(';', $extra);
+    $curval = array();
+    if ( !is_array($value) ) {
+      $list = explode(';', $value);
+      foreach($list as $l)
+	$curval[$l] = 'on';
+    }
+    else {
+      $curval = $value;
+    }
     $output = '';
     foreach($items as $it) {
-      $output .= html_form_checkbox($it, $name."[$it]").html_br();
+      $output .= html_form_checkbox($it, $name."[$it]", isset($curval[$it])).html_br();
     }
     return $output.
       ($err?html_br().$err:'');
@@ -461,25 +478,25 @@ function _webform_submission_ok($type, $value, $mandatory) {
 function _webform_create_mailmessage($reply) {
   global $user;
   
-  $message .= iconv("UTF-8","ISO-8859-1", t('Submited on')).' '.format_date(time(), 'small')."\r\n";
+  $message .=  t('Submited on').' '.format_date(time(), 'small')."\r\n";
   
   if($user->uid) {
-    $message .= iconv("UTF-8","ISO-8859-1", t('Submited by user').": $user->name")."\r\n";
+    $message .= t('Submited by user').": $user->name"."\r\n";
   }
   else {
-    $message .= iconv("UTF-8","ISO-8859-1",t('Submited by anonymous user')).'['.$_SERVER['REMOTE_ADDR'].']'."\r\n";
+    $message .= t('Submited by anonymous user').'['.$_SERVER['REMOTE_ADDR'].']'."\r\n";
   }
-  $message .= iconv("UTF-8","ISO-8859-1",t('Submited values are:'))."\r\n";
+  $message .= t('Submited values are:')."\r\n";
   foreach($reply as $key => $value) {
     if (is_array($value)) {
-      $message .= iconv("UTF-8","ISO-8859-1", "$key :");
+      $message .=  "$key :";
       foreach($value as $k => $v) {
-        $message .= "\r\n\t".iconv("UTF-8","ISO-8859-1","$k = $v");
+        $message .= "\r\n\t"."$k = $v";
       }
       $message .= "\r\n";
     }
     else {
-      $message .= iconv("UTF-8","ISO-8859-1", "$key : $value")."\r\n";
+      $message .=  "$key : $value"."\r\n";
     }
   }
   
@@ -536,10 +553,10 @@ function _webform_role_node_delete($nid) {
  * contains 8-bit characters or anything that looks like it should
  * be encoded.
  * Nicked from the SquirrelMail project.
- * @param $string 
+ * @param $string
  */
 function _webform_encodeHeader ($string) {
-  $charset = 'iso-8859-1';
+  $charset = 'utf-8';
   
   if (strtolower($charset) == 'iso-8859-1') {
     $string = str_replace("\240",' ',$string);
@@ -601,7 +618,7 @@ function _webform_encodeHeader ($string) {
 	  } else {
 	    $ret .= '_';
 	  }
-            }
+	}
 	break;
       default:
 	$k = ord($string{$i});
