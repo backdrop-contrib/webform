@@ -648,7 +648,7 @@ function _webform_process_submit(&$node, &$errors) {
   }
   if (variable_get('webform_debug', 0) >= 1) {
     watchdog('special', t('Submission posted to ')."'$node->title'.<br />\n<pre>$message</pre>",
-             l(t('view node'),'node/view/'.$node->nid));
+             l(t('view node'),'node/'.$node->nid.'/view'));
   }
 
   return true;
