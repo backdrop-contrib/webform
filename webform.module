@@ -283,10 +283,29 @@ function webform_menu() {
 
   $items = array();
 
+  // create content -> webform
   $items[] = array('path' => 'node/add/webform', 'title' => t('webform'),
     'access' => user_access('maintain webforms'));
 
-  $items[] = array('path' => 'webform/update', 'title' => t('Webform update page'),
+  // Add webform component
+  // webform/add/component/<nid> 
+  // TODO: What should we do when nid is not present ?
+  $items[] = array('path' => 'webform/addfield',
+                'title' => t('Add a webform component'),
+                'callback' => '_webform_addfieldt',
+                 'type' => MENU_HIDE,
+                 'access' => user_access('maintain webforms'));
+                 
+   // Edit webform component
+  // webform/edit/component/<component_id>
+  $items[] = array('path' => 'webform/editfield',
+                'title' => t('Edit a webform component'),
+                'callback' => '_webform_editfield',
+                 'type' => MENU_HIDE,
+                 'access' => user_access('maintain webforms'));
+  
+  // Upgrade page for the webform
+  $items[] = array('path' => 'webform/upgrade', 'title' => t('Webform upgrade page'),
                    'callback' => '_webform_update',
                    'type' => MENU_CALLBACK, 
                    'access' => ($user->uid == 1)); // Access only for the GOD user.
@@ -425,6 +444,50 @@ function webform_view($node, $main = 0, $page = 0) {
   return theme("node", $node, $main, $page);
 }
 
+function _webform_addfield() {
+  // webform/addfield/nid
+  
+  // If we are adding a new componenet or removing a old one 
+  // we have to do what the framework would do for us so we don't loose 
+  // information.
+  if( isset($_POST['edit']) ) {
+    $node = array2object($_POST['edit']);
+  }
+  else {
+    // TODO: We are calling this page in the wrong way ... 
+    // Do some clean up ??
+    print theme('page', theme('error', t('Page called out of order')));
+    return;
+  }
+  // TODO: What field types should we have ?
+  // Should there be a field <-> validation connection ??
+  
+  $fieldtypes = array (t('textfield'), t('textarea'), t('select'), t('hidden') );
+  $form .= form_select(t('Field type'), 'webform_newfield_type', t('textfield'), $fieldtypes,
+    t('Choose which type of field you like to add.'));
+  $form .= form_submit(t('Continue'));
+  
+  
+  if( isset($_POST['edit']) ) {
+    $edit = $_POST['edit'];
+    foreach ($edit as ($key => $value)) {
+      form_hidden($key, $value);
+    }
+  } 
+  
+  print theme('page', form($form, 'post', 'wedform/editfield'));
+}
+
+function _webform_editfield() {
+  
+  // TODO:  Extract the node from $_POST['edit']
+  // TODO: Check to see if we are editing a new field if so add one to the node and 'load the default values'
+  
+  // Check what field we should edit and paint up a edit form for that type
+  
+  
+}
+
 function _webform_process_submit(&$node, &$errors) {
   global $user, $base_url;
   
@@ -436,7 +499,7 @@ function _webform_process_submit(&$node, &$errors) {
     if ( $referer['scheme'] != $base['scheme']
          || $referer['host'] != $base['host']
 	 ) {
-      // The submission didn't originate from our own domain, return false
+      // The submission didn't originate from our own domain, just return false
       return false;    
     }
   }
@@ -485,9 +548,6 @@ function _webform_create_widget($name, $type, $value, $extra, $err = '') {
   switch($type) {
   case 'textarea':
     $items = explode('x', $extra);
-    // TODO: Make textarea
-    //    return html_form_textfield('', $name, $value, 20, 125).
-    //      ($err?html_br().$err:'');
     $string = "<textarea name=\"$name\"".
       (empty($items[0])?"":" cols=\"$items[0]\" ").
       (empty($items[1])?"":" rows=\"$items[1]\" ").
@@ -598,34 +658,7 @@ function _webform_create_mailmessage($reply) {
 
 function _webform_save_submission($node, $reply) {
   global $user;
-  /*  
-   // TODO: Better XML structure ???
-   $xmldata = '<recordset userid="'.$user->uid.'" '.
-   'timestamp="'.htmlspecialchars(format_date(time(), 'small')).'" '.
-   'remotehost="'.htmlspecialchars($_SERVER['REMOTE_ADDR']).'" '.
-   'useragent="'.htmlspecialchars($_SERVER['HTTP_USER_AGENT']).'" >';
-   $xmldata .= "\n";
-   
-   foreach($reply as $key => $value) {
-   if (is_array($value)) {
-   $xmldata .= "\t<item name=\"".htmlspecialchars($key)."\" >\n";
-   foreach($value as $k => $v) {
-   $xmldata .= "\t\t<item name=\"".htmlspecialchars($k)."\" value=\"".htmlspecialchars($v)."\" />\n";
-   }
-   $xmldata .= "\t</item>\n";
-   }
-   else {
-   $xmldata .= "\t<item name=\"".htmlspecialchars($key)."\" value=\"".htmlspecialchars($value)."\" />\n";
-   }
-   }
-   
-   $xmldata .= "</recordset>\n";
-   
-   $sid = db_next_id('{webform_submissions}_id');
-   db_query("INSERT INTO {webform_submissions} (nid, sid, uid, created, data) ".
-   "VALUES (%d, %d, %d, %d, '%s') ",
-   $node->nid, $sid, $user->uid, time(), $xmldata);
-  */
+  
   $reply['__userid'] = $user->uid;
   $reply['__timestamp'] = time();
   $reply['__remotehost'] = $_SERVER['REMOTE_ADDR'];
@@ -820,7 +853,7 @@ function _webform_version() {
    * to determine newer/older versions for upgrade and installation
    * purposes.
    */
-  return array("text" => "1.1.0", "build" => 2004062100);
+  return array("text" => "1.1.0", "build" => 2004081900);
 } // function _webform_version
 
 /**
@@ -875,10 +908,10 @@ function _webform_convert_old_submissions() {
                    "FROM webform_submissions");
   
   while ($row = db_fetch_object($result) ) {
-    // Parse each XML string ...
+    // TODO: Parse each XML string ...
     // ... and insert the data into the new table.
   }
-  return array('1', "Converting old submissions", "<div style=\"color: green;\">OK</div>\n");
+  return array('1', "Converting old submissions", "<div style=\"color: red;\">Not implemented!</div>\n");
 } // end function _webform_convert_old_submissions
 
 ?>
