@@ -238,7 +238,7 @@ function webform_link($type) {
   return $links;
 }
 
-function webform_form(&$node, &$error, &$param) {
+function webform_form(&$node, &$error) {
   
   $component_types = array('textfield' => t('textfield'),
                            'textarea' => t('textarea'),
@@ -321,7 +321,7 @@ function webform_form(&$node, &$error, &$param) {
 
 function webform_view($node, $main = 0, $page = 0) {
   $doSubmit = true;
-  // Render the webform multi-lingual
+
   $submited = $_POST['submited'];
   if( is_array($node->formcomponents) && !empty($node->formcomponents)) {
     foreach($node->formcomponents as $key => $component) {
@@ -401,7 +401,7 @@ function _webform_process_submit(&$node, &$errors) {
 	"Content-Transfer-Encoding: quoted-printable\r\n".
 	"X-Mailer: Drupal Webform (PHP/" . phpversion().")";
       $subject = _webform_encodeHeader( t('Form submission from').' '.$node->title );
-      mail($node->email, $subject, $message, $headers);
+      mail($node->email, $subject, $message, _webform_encodeHeader($headers));
     }
   }
   
@@ -424,7 +424,7 @@ function _webform_create_widget($name, $type, $value, $extra, $err = '') {
     $string = "<textarea name=\"$name\"".
       (empty($items[0])?"":" cols=\"$items[0]\" ").
       (empty($items[1])?"":" rows=\"$items[1]\" ").
-       "\">".
+      " >".
       $value.
       "</textarea>".
       ($err?html_br().$err:'');
