@@ -394,6 +394,7 @@ function _webform_process_submit(&$node, &$errors) {
     $node->email = strip_tags($node->email);
     if (!empty($node->email)) {
       $headers = "From: "._webform_encodeHeader( variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\r\n".
+	"Date: ".date("r")."\r\n".
         "MIME-Version: 1.0\r\n".
 	"Content-Type: text/plain; charset=UTF-8\r\n".
 	"Content-Disposition: inline\r\n".
