@@ -40,14 +40,6 @@ function _webform_reporttable() {
       ' AND sd.nid = %d '.
       ' GROUP BY sd.sid, sd.name '.
       ' ORDER BY sd.sid, c.cid ';
-    /*
-      SELECT sd.sid, c.cid, sd.name, sd.data
-      FROM webform_submitted_data sd
-      CROSS JOIN webform_component c
-      on sd.nid = c.nid
-      GROUP BY sd.sid, sd.name
-      ORDER BY sd.sid, c.cid 
-    */
 
     $res = db_query($query, arg(2));
 
@@ -76,6 +68,9 @@ function _webform_reporttable() {
         
         if ( $field->name == '__timestamp' ) {
           $cell[] = format_date($field->data, 'small');
+        }
+        else if ( unserialize($field->data) ) {
+          $cell[] = theme('item_list', unserialize($field->data));
         }
         else {
           $cell[] = $field->data;

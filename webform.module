@@ -799,11 +799,14 @@ function _webform_save_submission($node, $reply) {
       $value = serialize($value);
     }
     
-    $values[] = sprintf("(%d, %d, '%s', '%s')", 
-        $node->nid, $sid, check_query($key), check_query($value));
+    $sqlstring[] = " (%d, %d, '%s', '%s') ";
+    $values[] = $node->nid;
+    $values[] = $sid;
+    $values[] = $key;
+    $values[] = $value;
   }
   db_query("INSERT INTO {webform_submitted_data} (nid, sid, name, data) ".
-           "VALUES ".implode(', ', $values));
+           "VALUES ".implode(', ', $sqlstring), $values);
 }
 
 function _webform_role_node_delete($nid) {
