@@ -6,16 +6,18 @@ Drupal CVS HEAD
 
 Installation
 ------------
+1. If you use as DB prefix in the site configuration you need to update the
+   webform.mysql file and add the prefix to all tablenames.
 
-1. Create the SQL tables. This depends a little on your system, but the most
+2. Create the SQL tables. This depends a little on your system, but the most
    common method is:
      mysql -u username -ppassword drupal < webform.mysql
 
-2. Copy the webform.module to the Drupal modules/ directory.
+3. Copy the webform.module to the Drupal modules/ directory.
 
-3. Enable the module in the admin interface.
+4. Enable the module in the admin interface.
 
-4. (Optional) Edit the settings under "admin" -> "settings" -> "webform"
+5. (Optional) Edit the settings under "admin" -> "settings" -> "webform"
 
 Upgrading from previous version
 -------------------------------
