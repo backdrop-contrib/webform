@@ -244,16 +244,16 @@ function webform_validate(&$node) {
   return true;
 }
 
-function webform_link($type) {
-  $links = array();
-  
-  if ($type == "system") {
-    if (user_access("maintain webforms")) {
-      menu("node/add/webform", t("webform"), "node_page", 0);
-    }
-  }
-  
-  return $links;
+/**
+ * Implementation of hook_menu().
+ */
+function webform_menu() {
+  $items = array();
+
+  $items[] = array('path' => 'node/add/webform', 'title' => t('webform'),
+    'access' => user_access('maintain webforms'));
+
+  return $items;
 }
 
 function webform_form(&$node, &$error) {
