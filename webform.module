@@ -10,7 +10,7 @@
    * @copyright Pontus Ullgren 2003
    * 
    **/
-include_once("misc/htmltags.inc");
+include_once("htmltags.inc");
 
 /** Hook Help - displayes help and general infomation about the module
  * @param section specifies the section to display help for.
@@ -226,9 +226,20 @@ function webform_validate(&$node) {
   // If we are adding a new componenet or removing a old one 
   // we have to do what the framework would do for us so we don't loose 
   // information.
+  if( isset($_POST['edit']) ) {
+    $node = array2object($_POST['edit']);
+  }
+  
   if(isset($_POST['add_component']) || isset($_POST['delete_component'])) {
-    $edit = $_POST['edit'];
-    $node = array2object($edit);
+    _webform_addfield();
+    exit(0);
+  }
+  if (isset($_POST['edit_component']) ) {
+    _webform_editfield();
+    exit(0);
+  }
+  if( isset($_POST['webform_edit_done']) ) {
+    // TODO: We have just edited component add it to the node
   }
   
   // Unpack all components in the form and add them to the node.
@@ -448,9 +459,7 @@ function webform_view($node, $main = 0, $page = 0) {
 }
 
 function _webform_addfield() {
-  // webform/addfield/nid
-  
-  // If we are adding a new componenet or removing a old one 
+  // If we are adding a new componenet
   // we have to do what the framework would do for us so we don't loose 
   // information.
   if( isset($_POST['edit']) ) {
@@ -465,30 +474,74 @@ function _webform_addfield() {
   // TODO: What field types should we have ?
   // Should there be a field <-> validation connection ??
   
-  $fieldtypes = array (t('textfield'), t('textarea'), t('select'), t('hidden') );
+  $fieldtypes = array ('textfield' => t('textfield'), 
+            'textarea' => t('textarea'), 
+            'select' => t('select'), 
+            'hidden' => t('hidden') );
   $form .= form_select(t('Field type'), 'webform_newfield_type', t('textfield'), $fieldtypes,
     t('Choose which type of field you like to add.'));
-  $form .= form_submit(t('Continue'));
-  
-  
   if( isset($_POST['edit']) ) {
     $edit = $_POST['edit'];
     foreach ($edit as $key => $value) {
-      form_hidden($key, $value);
+      $form .= form_hidden($key, $value);
     }
-  } 
+  }
+  $form .= form_button(t('Continue'), 'edit_component');
   
-  print theme('page', form($form, 'post', 'wedform/editfield'));
+  print theme('page', form($form));
 }
 
 function _webform_editfield() {
+  // we have to do what the framework would do for us so we don't loose 
+  // information.
+  if( isset($_POST['edit']) ) {
+    $node = array2object($_POST['edit']);
+  }
+  else {
+    // TODO: We are calling this page in the wrong way ... 
+    // Do some clean up ??
+    print theme('page', theme('error', t('Page called out of order')));
+    return;
+  }
   
-  // TODO:  Extract the node from $_POST['edit']
-  // TODO: Check to see if we are editing a new field if so add one to the node and 'load the default values'
+  // This is the information about the current field.
+  $currfield = array();
+  if ( $_POST['edit_component'] != t('Continue') ) {
+    // We are editing a existing field.
+    // TODO: Fetch all filed data into the $currfield object.
+    
+  }
+  else {
+    // We are editing a new node
+    $currfield['type'] = $node->webform_newfield_type;
+    $currfield['name'] = $node->webform_newfield_type . time();
+  }
   
-  // Check what field we should edit and paint up a edit form for that type
+  // TODO: Print the correct field type specification
+  // We always need: namn, description, weight, value (default), .
+  $form .= form_textfield(t("Name"), "webform_edited_name", $currfield['name'], 60,
+			    127, t('Name of the filed. This is used as a descriptive lable and as the key when saving data in the database..').($error['webform_edited_name'] ? $error['webform_edited_name'] : ''));
+  $form .= form_textfield(t("Description"), "webform_edited_desc", $currfield['desc'], 60,
+			    127, t('A short description of the field.').($error['webform_edited_desc'] ? $error['webform_edited_desc'] : ''));
+
+  $form .= form_textfield(t("Default value"), "webform_edited_default", $currfield['default'], 60,
+			    127, t('The default value of the field.').($error['webform_edited_default'] ? $error['webform_edited_default'] : ''));
+
+  if( isset($_POST['edit']) ) {
+    $edit = $_POST['edit'];
+    foreach ($edit as $key => $value) {
+      $form .= form_hidden($key, $value);
+    }
+  }
   
+  if ( $_POST['edit_component'] != t('Continue') ) {
+    $form .= form_button(t('Submit'),  'webform_edit_done');
+  }
+  else {
+    $form .= form_button(t('Add'), 'webform_edit_done');
+  }
   
+  print theme('page', form($form));
 }
 
 function _webform_process_submit(&$node, &$errors) {
@@ -882,8 +935,10 @@ function _webform_update() {
                           "( nid int(10) unsigned not null, ".
                           "sid int(10) unsigned not null, ".
                           "name varchar(255) not null, ".
-                          "data blob, ".
+                          "data longtext, ".
                           "PRIMARY KEY(nid, sid, name))");
+      $ret[] = update_sql("ALTER TABLE webform_component ".
+            " CHANGE extra extra LONGTEXT DEFAULT NULL");
       // Converting data from old submission table.
       $ret[] = _webform_convert_old_submissions();
 

@@ -10,7 +10,7 @@ CREATE TABLE webform_component
     name varchar(128), 
     type varchar(16), 
     value varchar(128),
-    extra varchar(128), 
+    extra text, 
     mandatory int(2) unsigned, 
     weight int(2),
     PRIMARY KEY(nid, cid));
@@ -24,8 +24,8 @@ CREATE TABLE webform_submited_data
   ( nid int(10) unsigned not null, 
     sid int(10) unsigned not null, 
     name varchar(255) not null,
-    data blob,
+    data longtext,
     PRIMARY KEY(nid, sid, name));
 
 -- Setting default variables
-INSERT INTO variables VALUES ('webform_version', 'a:2:{s:4:"text";s:5:"1.1.0";s:5:"build";i:2004062100;}');
+INSERT INTO variable VALUES ('webform_version', 'a:2:{s:4:"text";s:5:"1.1.0";s:5:"build";i:2004062100;}');
