@@ -358,6 +358,8 @@ function webform_form(&$node, &$error) {
   
   $output .= form_textarea(t("Description"), "body", $node->body, 20, 10, 
                            $error["body"]. " ". t('Text to be shown as teaser and before the form.'), NULL, TRUE);
+  $output .= filter_form('format', $node->format);
+			   
   
   $output .= form_textarea(t("Confirmation message"), "confirm", $node->confirm, 20, 10, 
                            $error["confirm"]." ".t("Message to be shown upon successfull submission."), NULL, TRUE);
@@ -455,6 +457,7 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
   }
   
   $node->body .= $output;
+  $node->body = check_output($node->body);
 }
 
 function _webform_editfield() {
