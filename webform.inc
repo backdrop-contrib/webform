@@ -108,16 +108,17 @@ function _webform_results_download($nid) {
        *   27 Feb 2005       ,1035,56 ,212   ,Yes       ,No      ,No      ,..,No      ,Yes       ,No      ,Yes     ,..,Yes     ,How is this?
        **/
   $node_info = _webform_get_node_info($nid);
-       $title_string = $node_info->title;
+  $title_string = $node_info->title;
 
   $file_name = _webform_records_string($title_string,$nid,'file'); // This will default to printing the output which saves stack space
 
-       drupal_set_header("Content-type: text/plain; charset=utf-8");
-       drupal_set_header("Content-Disposition: attachment; filename=" . $title_string . ".csv");
+  drupal_set_header("Content-type: text/plain; charset=utf-8");
+  drupal_set_header("Content-Disposition: attachment; filename=" . str_replace(' ', '_', $title_string) . ".csv");
 
   @readfile($file_name);  // The @ makes it silent
-       exit(0);
-    }
+  @unlink($file_name);  // Clean up, the @ makes it silent
+  exit(0);
+}
 
 /** function _webform_results_submissions() is a database accessor function designed to return lists
  *  of submissions and data.
@@ -295,8 +296,8 @@ function _webform_records_string($title_string,$nid,$mode = 'file',$new_line = "
   case 'file':
   default:
     $file_record = $header[0] . $header[1] . $header[2];
-    $file_name = "./tmp/tmp_output.csv"; // Need to get drupal path to temp rather than just guess
-    $handle = @fopen($file_name,"w"); // The @ suppresses errors
+    $file_name = tempnam(variable_get('file_directory_temp', FILE_DIRECTORY_TEMP), 'webform');
+    $handle = @fopen($file_name, 'w'); // The @ suppresses errors
     @fwrite($handle,$file_record);
   }
   
