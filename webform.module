@@ -529,7 +529,12 @@ function webform_form(&$node, &$error) {
 }
 
 function webform_view(&$node, $teaser = 0, $page = 0) {
+  global $user;
   $doSubmit = true;
+
+  if (module_exist('profile') ) {
+    profile_load_profile($user);
+  }
 
   $node->body = check_output($node->body, $node->format);
   $submitted = $_POST['edit']['submitted'];
@@ -979,7 +984,6 @@ function _webform_filtervalues($string) {
                    format_date(time(), 'large'));
 
   if (module_exist('profile') ) {
-    module_invoke('profile', 'load_profile', $user);
     foreach($user as $k => $v) {
       $find[] = "%profile[$k]";
       $replace[] = $v;
