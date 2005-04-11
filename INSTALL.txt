@@ -1,7 +1,7 @@
 Requirements
 ------------
 
-Drupal 4.6
+Drupal CVS HEAD
 
 
 Installation
