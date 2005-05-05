@@ -732,8 +732,8 @@ function _webform_results_analysis($nid) {
             $rows[$rkey][3] = '';		// No percentages or bars on average wordcounts
             break;
           default:
-            $rows[$rkey][2] = _build_tally(&$views_switches,&$view_settings,$shadow_rows[$skey][$subkey]);
-            $rows[$rkey][3] = _build_percentages(&$views_switches,&$view_settings,$shadow_rows[$skey][$subkey],$valid_records);
+            $rows[$rkey][2] = _build_tally($views_switches,$view_settings,$shadow_rows[$skey][$subkey]);
+            $rows[$rkey][3] = _build_percentages($views_switches,$view_settings,$shadow_rows[$skey][$subkey],$valid_records);
             break;
           }
         }
@@ -930,7 +930,12 @@ function _webform_results_analysis($nid) {
         foreach($shadow_rows as $sc){
           if($sc[0]){
             $pc = $cm_row[$sc[0]];
-            $av = round(255 * $pc / $max_registered,1);
+            if ( $max_registered != 0 ) {
+              $av = round(255 * $pc / $max_registered,1);
+            }
+            else {
+              $av = 0;
+            }
             if($max_registered){
               $cm_row[$sc[0]] = '<span style="background-color:' . sprintf("#%'02x%'02x%'02x",$av,$av,$av) . '">' . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>';
             }else{

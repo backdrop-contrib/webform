@@ -242,7 +242,7 @@ function webform_settings(){
   $output .= form_select(t("Allow cross site posting"), "webform_allow_cross_site_posting",
                          variable_get("webform_allow_cross_site_posting", 0),
                          array(0 => t('Yes'), 1 => t('No')),
-                         t("Allow postings to your webforms that do not originating from your sites domain."));
+                         t("Allow postings to your webforms that do not originate from your site's domain."));
   
   $output .= form_select(t("Webforms Debug"), "webform_debug",
                          variable_get("webform_debug", 0),
@@ -404,7 +404,7 @@ function webform_link($type, $node = 0, $main = 0) {
     if ( $main == 1) {
       $links[] = l(t('go to form'), "node/$node->nid", array('title' => t('View this form.'), 'class' => 'read-more'));
     }
-    if (!$main && arg(0) == 'webform' && arg(1) == 'done') {
+    if ( $main != 1 && arg(0) == 'webform' && arg(1) == 'done') {
       $links[] = l(t('Go back to the form'), 'node/'.$node->nid);
     }
   }
