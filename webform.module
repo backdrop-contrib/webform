@@ -115,10 +115,6 @@ function webform_access($op, $node) {
 function webform_insert($node) {
   global $user;
   // insert
-  
-  _webform_database_lazy_update();
-  // Lazy Initializer
-
   db_query("INSERT INTO {webform} (nid, confirmation, email, email_from, email_subject) VALUES (%d, '%s', '%s', '%s', '%s')",
            $node->nid, $node->confirmation, $node->email, $node->email_from, $node->email_subject);
   
@@ -158,10 +154,6 @@ function webform_insert($node) {
 
 function webform_update($node) {
   // Update 
-  
-  // Lazy Initializer
-  _webform_database_lazy_update();
-  
   db_query("UPDATE {webform} SET confirmation = '%s', email = '%s', email_from = '%s', email_subject = '%s' ".
            "WHERE nid = %d", $node->confirmation, $node->email, trim($node->email_from), trim($node->email_subject), $node->nid);
   
@@ -200,11 +192,6 @@ function webform_delete(&$node) {
 
 function webform_load($node) {
   // load 
-  
-  // Lazy initializer
-  
-  _webform_database_lazy_update();
-  
   $page = db_fetch_object(db_query("SELECT confirmation, email, email_from, email_subject FROM {webform} WHERE nid = %d", $node->nid));
   
   $result = db_query('SELECT cid, name, type, value, extra, mandatory, weight '.
@@ -253,12 +240,6 @@ function webform_settings(){
   $output .= form_checkbox(t("Show main webform menu"), "webform_show_main_menu",1,
                          variable_get("webform_show_main_menu", true),
                          t('Select the visibility of the main webform item on the main menu'));
-/*
-  $output .= form_checkbox(t("Show node analysis menu"), "webform_show_node_analysis_menu",1,
-                         variable_get("webform_show_node_analysis_menu", true),
-                         t('Select the visibility of the webform node analysis menu'));
-*/
-
   return $output;
 } // end function webform_settings
 
@@ -277,7 +258,12 @@ function webform_validate(&$node) {
   
   if( isset($_POST['webform_edit_done']) ) {
     $old_edit = unserialize($_POST['old_edit']);
-    $edit = array_merge($_POST['edit'], $old_edit);
+    $new_edit = $_POST['edit'];
+
+    if ( !is_array($new_edit) ) $new_edit =array();
+    if ( !is_array($old_edit) ) $old_edit =array();
+    $edit = array_merge($new_edit, $old_edit);
+
     // If we are adding a new componenet or removing a old one 
     // we have to do what the framework would do for us so we don't loose 
     // information.
@@ -326,7 +312,7 @@ function webform_menu() {
   $items = array();
   
   $items[] = array('path' => 'node/add/webform', 'title' => t('webform'),
-                   'access' => user_access('maintain webforms'));
+                   'access' => user_access('create webforms'));
   
   $items[] = array('path' => 'webform/done', 'title' => t('webform'),
                    'callback' => '_webform_thanks',
@@ -348,25 +334,12 @@ function webform_menu() {
                      'type' => MENU_NORMAL_ITEM,
                      'access' => user_access('maintain webforms'));
   }
-  /*
-   $items[] = array('path' => 'webform/table', 'title' => t('table'),
-                    'callback' => 'webform_reporttable',
-                    'type' => MENU_CALLBACK,
-                    'access' => user_access('maintain webforms'));
-  
-   $items[] = array('path' => 'webform/analysis', 'title' => t('analysis'),
-                    'callback' => 'webform_reportanalysis',
-                    'type' => MENU_CALLBACK,
-                    'access' => user_access('maintain webforms'));   
-  */
 
   if (arg(0) == 'node' && is_numeric(arg(1))) {
     $node = node_load(array('nid' => arg(1)));
     if ($node->nid && $node->type == 'webform') {
-
-
       $items[] = array('path' => 'node/' . $node->nid . '/results', 'title' => t('results'),
-                             'callback' => 'webform_results', 'access' => user_access('view webforms'),
+                             'callback' => 'webform_results', 'access' => user_access('maintain webforms'),
                              'type' => MENU_LOCAL_TASK, 'weight' => 3);
 
       $items[] = array('path' => 'node/' . $node->nid . '/results/clear', 'title' => t('clear'),
@@ -412,12 +385,10 @@ function webform_link($type, $node = 0, $main = 0) {
 }
 
 function webform_form(&$node, &$error) {
-  
-  $output .= _webform_database_lazy_update();
-  
   $component_types = array('textfield' => t('textfield'),
                            'textarea' => t('textarea'),
                            'select' => t('select'),
+                           'scale' => t('scale'),
                            'label' => t('label'),
                            'hidden' => t('hidden'),
                            'email' => t('e-mail address'));
@@ -544,11 +515,6 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
   if($sid_to_display){
     if(user_access('maintain webforms')){
       $output .= '<H2 class="warning">Submission #' . $sid_to_display . '</H2><br>';
-      // TODO: Expand the information block
-      //$submitting_user = user_load(array('uid' => 2));
-      //$output .= 'User: ' . $submitting_user->name . ' from IP' . $_GET['ipaddr'] . '<br>';
-      //$output .= 'Date: ' . $_GET['dated'] . '<br>';
-      //$output .= 'Read Only<br>';
     }else
     {
       $sid_to_display = 0;  // This user is not allowed to access a submitted node. Deny the attempt without alert.
@@ -702,6 +668,21 @@ function _webform_editfield() {
                             t('Height of the textarea.').
                             ($error['webform_edited_extra'] ? $error['webform_edited_extra'] : ''));
     break;
+  case 'scale':
+    $form .= form_textarea(t("Options"), "webform_edited_extra][items", $currfield['extra']['items'], 
+                            60, 5, 
+                            t('Enter one option per line.').'<br />'.
+                            webform_help('webform/helptext#variables').
+                            ($error['webform_edited_default'] ? $error['webform_edited_default'] : ''));
+    $form .= form_textfield(t("Default value"), "webform_edited_default", $currfield['default'], 
+                            60, 127, 
+                            t('The preselected value.').'<br />'.
+                            webform_help('webform/helptext#variables').
+                            ($error['webform_edited_default'] ? $error['webform_edited_default'] : ''));
+    $form .= form_checkbox(t('Listbox'), "webform_edited_extra][aslist", 'Y',
+                           ($currfield['extra']['aslist']=='Y'?TRUE:FALSE), 
+                           t('Check this option if you want the select component to be of listbox instead of radiobuttons.'));
+    break;
   case 'select':
     $form .= form_textarea(t("Options"), "webform_edited_extra][items", $currfield['extra']['items'], 
                             60, 5, 
@@ -757,16 +738,16 @@ function _webform_editfield() {
 
 function _webform_process_submit(&$node, &$errors) {
   global $user, $base_url;
-  include_once "webform.inc";
+  include_once(drupal_get_path('module', 'webform')."/webform.inc");
   
   // Check referer to deny posting from of sites.
   if ( variable_get('webform_allow_cross_site_posting', 0) == 1) {
     $referer = parse_url( urldecode($_SERVER['HTTP_REFERER']));
     $base = parse_url( urldecode($base_url.'/'));
-    
+
     if ( $referer['scheme'] != $base['scheme']
          || $referer['host'] != $base['host']
-	 ) {
+         ) {
       // The submission didn't originate from our own domain, return false
       watchdog('webform', t('Trying to post to webform from external domain.'),
                WATCHDOG_WARNING,
@@ -775,7 +756,7 @@ function _webform_process_submit(&$node, &$errors) {
       return false;    
     }
   }
-  
+
   // Check to see if the user has right to use the webform
   if ( !user_access('use all webforms') ){
     if( !(is_array($node->roles) && 
@@ -786,8 +767,6 @@ function _webform_process_submit(&$node, &$errors) {
     }
   }
   // Handle posting to the form and output status.
-  //$confirmation = $node->confirm;   // What is this doing? Slated for removal.
-  
   $reply = $_POST['edit']['submitted'];
   _webform_save_submission($node, $reply);
   $message = _webform_create_mailmessage($reply);
@@ -795,57 +774,48 @@ function _webform_process_submit(&$node, &$errors) {
   if (isset($node->email)) {
     $node->email = strip_tags($node->email);
     if (!empty($node->email)) {
-
-			// Build arrays of possible return email addresses and email subject lines from elements on the form
-			// This is a duplicate of the code that creates the arrays for selection.
-
-			// Set the default or 'Automatic' values
-
-			$email_from_string = "From: "._webform_encodeHeader( variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\r\n";
-			$email_subject_string = _webform_encodeHeader( t('Form submission from: ').' '.$node->title );
-
-		  if( is_array($node->webformcomponents_name) && !empty($node->webformcomponents_name)) {
-		    foreach($node->webformcomponents_name as $key => $name) {
-		    	$type = $node->webformcomponents_type[$key];
-		    	//$value = $node->webformcomponents_value[$key];
-					if( $type == 'email' || $type == 'hidden' ){
-						if($name == $node->email_from){
-							$email_from_string = "From: "._webform_encodeHeader(strip_tags("$reply[$name]"))."\r\n";
-						}
-					}
-
-					if( $type == 'textfield' || $type == 'hidden' ){
-						if($name == $node->email_subject){
-							$email_subject_string = _webform_encodeHeader(strip_tags("$reply[$name]"));
-						}
-					}
-				}
-			}
-
-			$headers = $email_from_string;
+      // Build arrays of possible return email addresses and email subject lines from elements on the form
+      // This is a duplicate of the code that creates the arrays for selection.
+      $email_from_string = "From: ". mime_header_encode(variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\r\n";
+      $email_subject_string = t('Form submission from: ').' '.$node->title;
+      
+      if( is_array($node->webformcomponents_name) && !empty($node->webformcomponents_name)) {
+        foreach($node->webformcomponents_name as $key => $name) {
+          $type = $node->webformcomponents_type[$key];
+          //$value = $node->webformcomponents_value[$key];
+          if( $type == 'email' || $type == 'hidden' ){
+            if($name == $node->email_from){
+              $email_from_string = "From: ".mime_header_encode(strip_tags("$reply[$name]"))."\r\n";
+            }
+          }
+          
+          if( $type == 'textfield' || $type == 'hidden' ){
+            if($name == $node->email_subject){
+              $email_subject_string = strip_tags("$reply[$name]");
+            }
+          }
+        }
+      }
+      
+      $headers = $email_from_string;
       $headers .= "Date: ".date("r")."\r\n".
-        "MIME-Version: 1.0\r\n".
-	"Content-Type: text/plain; charset=UTF-8\r\n".
-	"Content-Disposition: inline\r\n".
-	"Content-Transfer-Encoding: quoted-printable\r\n".
-	"X-Mailer: Drupal Webform (PHP/" . phpversion().")";
-
-      mail($node->email, $email_subject_string, $message, _webform_encodeHeader($headers));
+        "X-Mailer: Drupal Webform (PHP/" . phpversion().")";
+      
+      user_mail($node->email, $email_subject_string, $message, $headers);
     }
   }
-
+  
   if (variable_get('webform_debug', 0) >= 2) {
     drupal_set_message("<pre>$message</pre>");
   }
-
+  
   if (variable_get('webform_debug', 0) >= 1) {
     watchdog('webform', 
              t('Submission posted to ')."'$node->title'.<br />\n".nl2br(htmlentities($message)),
              WATCHDOG_NOTICE);
-
+    
     //TODO: Add reference back to submitted webform
   }
-
   return true;
 }
 
@@ -943,6 +913,34 @@ function _webform_create_widget($name, $type, $mandatory, $value, $extra, $err =
         return form_radios($name, $componentname, $value, $options, 
                            _webform_filtervalues($extra['description']), $mandatory, NULL);
       }
+    }
+    break;
+  case 'scale':
+    $items = explode("\n", _webform_filtervalues($extra['items']));
+    foreach($items as $k => $v) {
+      $v = trim($v);
+      if ( strlen($v) ) {
+        list($k2, $v2) = split("\|", $v);
+        if ( strlen($k2) )
+          $options[$k2] = $v2;
+      }
+    }
+    if ( array_search($value, $options) ) {
+      $value = array_search($value, $options);
+    }
+    if ( $extra['aslist'] == 'Y' ) {
+      if ( !is_array($value) ) {
+        $value = array($value);
+      }
+      return form_select($name,  $componentname,
+                         array_search($value), $options,
+                         _webform_filtervalues($extra['description']), 
+                         $extra['attributes']['dummy'], 
+                         false, $mandatory);
+    }else
+    {
+      return form_radios($name, $componentname, $value, $options, 
+                         _webform_filtervalues($extra['description']), $mandatory, NULL);
     }
     break;
   case 'label':
@@ -1053,7 +1051,7 @@ function _webform_create_mailmessage($reply) {
     $message .= print_r($_POST, true);
   }
 
-  return _webform_qp_enc($message, 79);
+  return $message;
 }
 
 function _webform_save_submission($node, $reply) {
@@ -1088,7 +1086,7 @@ function _webform_role_node_delete($nid) {
 }
 
 function webform_page() {
-  include_once('webform.inc');
+  include_once(drupal_get_path('module', 'webform')."/webform.inc");
   _webform_page();
 }
 
@@ -1097,7 +1095,7 @@ function webform_page() {
  * The function uses the URL tail to nominate internal content.
  */
 function webform_results() {
-  include_once('webform.inc');
+  include_once(drupal_get_path('module', 'webform')."/webform.inc");
 
   $nid = arg(1);
   $node = node_load(array('nid' => $nid));
@@ -1149,55 +1147,8 @@ function _webform_version() {
    * purposes.
    */
 
-  return array("text" => "4.6.2", "build" => 462);
+  return array("text" => "4.6.3", "build" => 463);
 } // function _webform_version
-
-/**
- * _webform_database_lazy_update - Lazy field adder for extra email fields
- * The lazy update function adds any columns in the database that are not
- * listed in its internal magic array.
- * It was purpose constructed to add fields 'email_from' and 'email_subject' as part of the
- * enhanced email patch.
- * The function does not add or delete any data and the upgraded database is backwardly
- * compatible with previous versions of webform.module
- */
-function _webform_database_lazy_update() {
-
-	$lazy_update_output = '';
-	$field_list = '';
-  $table_altered = false;
-
-  // {webform}
-	$required_fields = array('nid' => false,'confirmation' => false,'email' => false,'email_from' => false,'email_subject' => false);
-  $result = db_query("SHOW FIELDS FROM {webform}");
-
-	// Mark fields that exist in table as true
-	while ($record = db_fetch_object($result)){
-		$required_fields[$record->Field] = true;
-	}
-
-	foreach($required_fields as $field_name => $required_field){
-		if(!$required_field){
-			// Field does not exist so we need to create it.
-			switch($field_name){
-				case 'email_subject':		// Contains the component name of the source field for the email subject
-				case 'email_from':			// Contains the component name of the source field for the email from address.
-					db_query("ALTER TABLE {webform} ADD COLUMN %s varchar(255)",$field_name);
-					$table_altered = true;
-          $field_list .= " $field_name ";
-					break;
-				default:
-			}
-		}
-	}
-
-	if($table_altered){
-	  $lazy_update_output = 'Database {webform} updated. Fields added: ' . $field_list;
-	  watchdog('webform',$lazy_update_output, WATCHDOG_NOTICE);
-	}
-
-	return $lazy_update_output;
-}
 
 /**
  * Makes updates to the database structure.
@@ -1210,79 +1161,10 @@ function _webform_update() {
     include_once('database/updates.inc');
     include_once('includes/bootstrap.inc');
     include_once('includes/common.inc');
-
-    // Check to see if we should do a update.
-    print "<strong>Upgrading webform from ".$installed_version['build'] .
-      " to ". $current_version['build']."</strong><br />\n";
-
-    // Upgrading from original version    
-    if ( $installed_version['build'] <= 1 ) {
-      $ret[] = array(1 => "<strong>Build 1</strong><br />\n", 2 => "");
-      // Add the table webform_submitted_data
-      $ret[] = update_sql("CREATE TABLE {webform_submited_data} ".
-                          "( nid int(10) unsigned not null, ".
-                          "sid int(10) unsigned not null, ".
-                          "name varchar(255) not null, ".
-                          "data blob, ".
-                          "PRIMARY KEY(nid, sid, name))");
- 
-      // Converting data from old submission table.
-      $ret[] = _webform_convert_old_submissions();
-    }
-    if ( $installed_version['build'] <= 1 ) {
-      $ret[] = array(1 => "<strong>Build 4.5.0</strong><br />\n", 2 => "");
-      // Change webform_component.extra from varchar(128) -> text
-      $ret[] = update_sql("ALTER TABLE {webform_component} MODIFY extra TEXT");
-      // Change webform_submited_data.data blob -> longtext
-      $ret[] = update_sql("ALTER TABLE {webform_submited_data} MODIFY data LONGTEXT");
-    }
-    if ( $installed_version['build'] < 460 ) {
-      $ret[] = array(1 => "<strong>Build 4.6.0</strong><br />\n", 2 => "");
-      // Update webform_submited_data to webform_submitted_data
-      $ret[] = update_sql("ALTER TABLE {webform_submited_data} RENAME TO {webform_submitted_data}");
-    }
-    if ( $installed_version['build'] < 461 ) {
-      // Update webform.email varchar(50) -> varchar(255)
-      $ret[] = update_sql(" ALTER TABLE {webform} MODIFY email varchar(255)");
-      // Update from lable to label in webform_component
-      $ret[] = update_sql(" UPDATE {webform_component} SET type = 'label' WHERE type = 'lable'");
-    }
-    if ( $installed_version['build'] < 462 ) {
-      // Update webform.confirm varchar(255) -> text and change name to "confirmation"
-      $ret[] = update_sql(" ALTER TABLE {webform} CHANGE confirm confirmation text");
-    }
-    // Set the $current_version
-    variable_set("webform_version", $current_version);
-
-    print "<pre>\n";
-    foreach ( $ret as $return ) {
-      print $return[1];
-      print $return[2];
-    }
-    print "</pre>\n";
+    include_once(drupal_get_path('module', 'webform')."/webform_update.inc");
     
-    print "<strong>Done!</strong><br/>\n";
-    print l(t('Go back'), 'admin/settings/webform')."<br/>\n";
+    _webform_doupdate($installed_version, $current_version);
+
   } // end if ( $installed_version['build'] < $current_version['build'])
 } // end function _webform_update 
-
-/** 
- * Function to convert the old XML formated submissions into the newer format.
- **/
-function _webform_convert_old_submissions() {
-  // Select all from webform_submissions.
-  
-  /* 
-
-  $result = db_query("SELECT nid, sid, uid, UNIX_TIMESTAMP(created) as created, data ".
-                   "FROM {webform_submissions}");
-  
-  while ($row = db_fetch_object($result) ) {
-    // TODO: Parse each XML string ...
-    // ... and insert the data into the new table.
-  }
-  */
-  return array('1', "Converting old submissions", "<div style=\"color: red;\">Not implemented!</div>\n");
-} // end function _webform_convert_old_submissions
-
 ?>

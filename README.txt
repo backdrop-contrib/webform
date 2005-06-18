@@ -11,6 +11,15 @@ Open Source City (www.opensourcecity.org) and Karlstad University Library
 (www.bib.kau.se).
 Also many thanks to the Dupal community for all bughunting.
 
+Bugs/Ideas/Support
+------------------
+Please report bugs, feature and support requests using the issue tracker on 
+drupal.org.
+http://drupal.org/project/issues/webform
+
+Report one issue per problem/idea you have. It's better to report two seperate 
+issues that I might later merge than one that I have to split.
+
 Code Contributions
 ------------------
 jnt

@@ -112,7 +112,7 @@ function _webform_results_download($nid) {
   $file_name = _webform_records_string($title_string,$nid,'file'); // This will default to printing the output which saves stack space
 
   drupal_set_header("Content-type: text/plain; charset=utf-8");
-  drupal_set_header("Content-Disposition: attachment; filename=" . str_replace(' ', '_', $title_string) . ".csv");
+  drupal_set_header("Content-Disposition: attachment; filename=" . preg_replace('/\.$/', '', str_replace(' ', '_', $title_string)) . ".csv");
 
   @readfile($file_name);  // The @ makes it silent
   @unlink($file_name);  // Clean up, the @ makes it silent
@@ -232,10 +232,23 @@ function _webform_records_string($title_string,$nid,$mode = 'file',$new_line = "
     $header[0] .= ',';
     $header[1] .= ',' . $record->name;
 
-    if($record->type == 'select'){
+    if( ($record->type == 'select') || ($record->type == 'scale') ){
 
       $record_array[0]['components'][$index]['options'] = unserialize($record->extra);  // This will create the sub dimensions ['multiple'] and ['items']
       $items = explode("\n", _webform_filtervalues($record_array[0]['components'][$index]['options']['items']));
+      if ( $record->type == 'scale' ) {
+         $new_items = array();
+         foreach($items as $i) {
+           $i = trim($i);
+           if ( strlen($i) ) {
+             list($k, $v) = split("\|", $i);
+             if ( strlen($k) )
+               $new_items[] = $k;
+           }
+         }
+         $items = $new_items;
+      }
+
       $record_array[0]['components'][$index]['options']['items'] = $items;
       
       foreach($record_array[0]['components'][$index]['options']['items'] as $key =>$item){
@@ -357,6 +370,7 @@ function _webform_records_string($title_string,$nid,$mode = 'file',$new_line = "
       break;
     default:
       switch($record_array[0]['components'][$index]['type']){
+      case 'scale':
       case 'select':
         if($record_array[0]['components'][$index]['options']['multiple'] == 'Y'){
           $record_array[1]['components'][$index]['data'] = unserialize($record->data);
@@ -444,7 +458,7 @@ function _webform_make_record_csv_string(&$ra,$new_line){
       // Ignore the common elements
       break;
     default:
-      if($ra[0]['components'][$index]['type'] == 'select'){
+      if( ($ra[0]['components'][$index]['type'] == 'select') || ($ra[0]['components'][$index]['type'] == 'scale') ){
         foreach($ra[0]['components'][$index]['options']['items'] as $choice){
           if(is_array($ra[1]['components'][$index]['data'])){  // When all null, then not array?
             if(in_array($choice,$ra[1]['components'][$index]['data'])){ // This was throwing a warning! [Wrong datatype for second argument]
@@ -635,6 +649,7 @@ function _webform_results_analysis($nid) {
       case 'textarea':
       case 'textfield':
       case 'select':
+      case 'scale':
         //$row = array();
         $row[0] = $shadow_row[0] = $question_number;
         $row[1] = $shadow_row[1] = sprintf($view_settings['options']['heading_format'],$field->name);
@@ -741,7 +756,7 @@ function _webform_results_analysis($nid) {
       //unset($skey,$rkey,$subkey);
     }
     
-    if($component_type == 'select'){
+    if( ($component_type == 'select') ) {
       
       if($new_question){
         $new_question = false;  // Only one pass here for each question
@@ -855,8 +870,95 @@ function _webform_results_analysis($nid) {
       }
       end($rows);
       unset($key);
-    }
+    } // end if( $component_type == 'select' )
+
+    if( ($component_type == 'select') ) {
+      
+      if($new_question){
+        $new_question = false;  // Only one pass here for each question
+        
+        // select components need to have their options pulled out
+        // from the extra field
+        
+        $extra_data = unserialize($field->extra);
+        
+        if(is_array($extra_data)){    
+          if($extra_data['aslist'] == 'Y'){
+            $aslist = true;   // ie List Box and thus implying lot's of choices
+          } else {
+            $aslist = false;
+          }
+          
+          $choices = explode("\n", _webform_filtervalues($extra_data['items']));
+          foreach($choices as $i) {
+            $new_choices = array();
+            $i = trim($i);
+            if ( strlen($i) ) {
+              list($k, $v) = split("\|", $i);
+              if ( strlen($k) )
+                $new_choices[] = $k;
+            }
+            $choices = $new_choices;
+          }
+          print_r($choices);
+          
+          if(is_array($choices)){
+            foreach ($choices as $choice) {
+              
+              $stripped_choice = trim($choice);     // Have to pull off the line-feeds etc..
+              $key = "$question_name"."$stripped_choice";	
+              
+              $row = array();
+              $shadow_row = array();	// This is the non-display shadow that persists data for calculations
+              $row[0] = $shadow_row[0] = _build_numbering($views_switches,$view_settings,$question_number);
+              //$default_label = ($stripped_choice == trim($field->value)) ? '<span style="color: = ' . $view_settings['options']['highlight_color'] . '"> ' . $view_settings['options']['default_identifier'] . '</span>':'';
+              $default_label = ($stripped_choice == trim($field->value)) ? '<span style="color: = red "> ' . $view_settings['options']['default_identifier'] . '</span>':'';
+              $row[1] = $shadow_row[1] = $stripped_choice . $default_label; 	// The option title
+              $row[2] = '';
+              $row[3] = '';
+              
+              $shadow_row['raw_tally'] = 0;	// Raw tallies are always kept
+              $rows[$key] = $row;
+
+              if($aslist) {
+                $shadow_row['do_not_display'] = true;
+              }
+              else {
+                $shadow_row['do_not_display'] = false;
+              }
+
+              $shadow_rows[$key] = $shadow_row;
+              
+              // Populate the Covariance Matrix index lookup array if required
+              if(in_array('c',$views_switches)) $cm_index[$key] = $row[0];
+              
+              unset($row,$key,$shadow_row);
+            }
+          }    
+        }
+      }
+      
+      // The choices are now stored in $question_rows and this may be a first or subsequent call
+      reset($rows);
+      
+      // Handling normal radio buttons
+      $key = "$question_name".trim($field->data);
+      $shadow_rows[$key]['raw_tally']++;
+      $shadow_rows[$key]['do_not_display'] = false; 
+      if(in_array('c',$views_switches)){
+        $covariance_records[$cm_index[$key]][] = $field->sid;
+        $covariance_records[$field->sid][$cm_index[$key]] = true;
+        //print("<br>--> $field->sid , $cm_index[$key]");
+      }
+      
+      $rows[$key][2] = _build_tally($views_switches,$view_settings,$shadow_rows[$key]['raw_tally']);
+      $rows[$key][3] = _build_percentages($views_switches,$view_settings,$shadow_rows[$key]['raw_tally'],$valid_records);
+      
+      end($rows);
+      unset($key);
+    } // end if( $component_type == 'scale' )
     
+
   } //end main loop
 
   // Remove any rows that should not be display, ie have had $shadow_rows[$key]['do_not_display'] set to true
@@ -1051,168 +1153,5 @@ function _build_percentage_bar(&$vs,$ps = 0){
   $pad = round($ps / $vs['analog_bar']['resolution']) * strlen($vs['analog_bar']['bar_char']) ; // We multiply by strlen because we use str_pad() to build the bar and thus we need it to be a multiple of whatever character we use ie: &nbsp; = 6 chars
   $bar_string = '<span style="background-color:' . $vs['analog_bar']['color'] . '">' . str_pad('',$pad,$vs['analog_bar']['bar_char']) . '</span>';  // Ugly non-robust way of drawing a bar.	return $pad;
   return $bar_string;
-}
-
-/**
- * Encode a string according to RFC 1522 for use in headers if it
- * contains 8-bit characters or anything that looks like it should
- * be encoded.
- * Nicked from the SquirrelMail project.
- * @param $string
- */
-function _webform_encodeHeader ($string) {
-  $charset = 'utf-8';
-  
-  if (strtolower($charset) == 'iso-8859-1') {
-    $string = str_replace("\240",' ',$string);
-  }
-  
-  // Encode only if the string contains 8-bit characters or =?
-  $j = strlen($string);
-  $max_l = 75 - strlen($charset) - 7;
-  $aRet = array();
-  $ret = '';
-  $iEncStart = $enc_init = false;
-  $cur_l = $iOffset = 0;
-  for($i = 0; $i < $j; ++$i) {
-    switch($string{$i})
-      {
-      case '=':
-      case '<':
-      case '>':
-      case ',':
-      case '?':
-      case '_':
-	if ($iEncStart === false) {
-	  $iEncStart = $i;
-	}
-	$cur_l+=3;
-	if ($cur_l > ($max_l-2)) {
-	  /* if there is an stringpart that doesn't need encoding, add it */
-	  $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
-	  $aRet[] = "=?$charset?Q?$ret?=";
-	  $iOffset = $i;
-	  $cur_l = 0;
-	  $ret = '';
-	  $iEncStart = false;
-	} else {
-	  $ret .= sprintf("=%02X",ord($string{$i}));
-	}
-	break;
-      case '(':
-      case ')':
-	if ($iEncStart !== false) {
-	  $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
-	  $aRet[] = "=?$charset?Q?$ret?=";
-	  $iOffset = $i;
-	  $cur_l = 0;
-	  $ret = '';
-	  $iEncStart = false;
-	}
-	break;
-      case ' ':
-	if ($iEncStart !== false) {
-	  $cur_l++;
-	  if ($cur_l > $max_l) {
-	    $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
-	    $aRet[] = "=?$charset?Q?$ret?=";
-	    $iOffset = $i;
-	    $cur_l = 0;
-	    $ret = '';
-	    $iEncStart = false;
-	  } else {
-	    $ret .= '_';
-	  }
-	}
-	break;
-      default:
-	$k = ord($string{$i});
-	if ($k > 126) {
-	  if ($iEncStart === false) {
-	    // do not start encoding in the middle of a string, also take the rest of the word.
-	    $sLeadString = substr($string,0,$i);
-	    $aLeadString = explode(' ',$sLeadString);
-	    $sToBeEncoded = array_pop($aLeadString);
-	    $iEncStart = $i - strlen($sToBeEncoded);
-	    $ret .= $sToBeEncoded;
-	    $cur_l += strlen($sToBeEncoded);
-	  }
-	  $cur_l += 3;
-	  /* first we add the encoded string that reached it's max size */
-	  if ($cur_l > ($max_l-2)) {
-	    $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
-	    $aRet[] = "=?$charset?Q?$ret?= "; /* the next part is also encoded => separate by space */
-	    $cur_l = 3;
-	    $ret = '';
-	    $iOffset = $i;
-	    $iEncStart = $i;
-	  }
-	  $enc_init = true;
-	  $ret .= sprintf("=%02X", $k);
-	} else {
-	  if ($iEncStart !== false) {
-	    $cur_l++;
-	    if ($cur_l > $max_l) {
-	      $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
-	      $aRet[] = "=?$charset?Q?$ret?=";
-	      $iEncStart = false;
-	      $iOffset = $i;
-	      $cur_l = 0;
-	      $ret = '';
-	    } else {
-	      $ret .= $string{$i};
-	    }
-	  }
-	}
-	break;
-      }
-  }
-  
-  if ($enc_init) {
-    if ($iEncStart !== false) {
-      $aRet[] = substr($string,$iOffset,$iEncStart-$iOffset);
-      $aRet[] = "=?$charset?Q?$ret?=";
-    } else {
-      $aRet[] = substr($string,$iOffset);
-    }
-    $string = implode('',$aRet);
-  }
-  return $string;
-}
-
-/** 
- * Create quoted_printable text.
- * Nicked from the PHP manual.
- **/
-function _webform_qp_enc($input, $line_max = 79) {
-
-  $hex = array('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F');
-  $lines = preg_split("/(?:\r\n|\r|\n)/", $input);
-  $eol = "\r\n";
-  $escape = "=";
-  $output = "";
-  
-  while( list(, $line) = each($lines) ) {
-    //$line = rtrim($line); // remove trailing white space -> no =20\r\n necessary
-    $linlen = strlen($line);
-    $newline = "";
-    for($i = 0; $i < $linlen; $i++) {
-      $c = substr($line, $i, 1);
-      $dec = ord($c);
-      if ( ($dec == 32) && ($i == ($linlen - 1)) ) { // convert space at eol only
-	$c = "=20";
-      } elseif ( ($dec == 61) || ($dec < 32 ) || ($dec > 126) ) { // always encode "\t", which is *not* required
-	$h2 = floor($dec/16); $h1 = floor($dec%16);
-	$c = $escape.$hex["$h2"].$hex["$h1"];
-      }
-      if ( (strlen($newline) + strlen($c)) >= $line_max ) { // CRLF is not counted
-	$output .= $newline.$escape.$eol; // soft line break; " =\r\n" is okay
-	$newline = "";
-      }
-      $newline .= $c;
-    } // end of for
-    $output .= $newline.$eol;
-  }
-  return trim($output);  
 }
 ?>
