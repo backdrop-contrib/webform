@@ -1,11 +1,66 @@
 <?php
 // $Id$
 
+/*
+function _webform_update_470() function _webform_update_470() {
+  $ret = array();
+    
+
+   
+  
+  return $ret[];
+}
+*/
+function _webform_update_470() {
+  $ret = array();
+  $ret[] = update_sql("CREATE TABLE {webform_tmp} ( ".
+                      "  nid int(10) unsigned NOT NULL default '0', ".
+                      "  sid int(10) unsigned NOT NULL default '0', ".
+                      "  cid int(10) unsigned NOT NULL default '0', ".
+                      "  no int(10) unsigned NOT NULL default '0', ".
+                      "  data longtext, ".
+                      " PRIMARY KEY  (nid,sid,cid,no) ".
+                      " ) ");
+  $result = db_query("SELECT ws.nid, ws.sid, wc.cid, ws.name, ws.data ".
+                     " FROM {webform_submitted_data} ws, {webform_component} wc ".
+                     " WHERE ws.nid = wc.nid ".
+                     "      AND ws.name = wc.name ");
+  
+  while ($row = db_fetch_object($result)) {    
+    $data = unserialize($row->data);
+    if ( is_array($data) ) {
+      foreach($data as $k => $v) {
+        db_query("INSERT INTO {webform_tmp} (nid, sid, cid, no, data) VALUES (%d, %d, %d, %d, '%s')",
+                 $row->nid, $row->sid, $row->cid, $k, $v);
+      }
+    }
+    else {
+      db_query("INSERT INTO {webform_tmp} (nid, sid, cid, no, data) VALUES (%d, %d, %d, %d, '%s')",
+               $row->nid, $row->sid, $row->cid, 0, $row->data);
+    }
+  }
+  $ret[] = array(1, "Converting old submissions", "<div style=\"color: green;\">OK</div>\n");
+  
+  $ret[] = update_sql("DROP TABLE {webform_submitted_data}");
+  $ret[] = update_sql("ALTER TABLE {webform_tmp} RENAME TO {webform_submitted_data}");
+
+  $ret[] = update_sql("ALTER TABLE {webform_submissions} RENAME TO {webform_submissions_old}");
+
+  $ret[] = update_sql("CREATE TABLE {webform_submissions} ( ".
+                      " nid int(10) unsigned NOT NULL default '0', ".
+                      " sid int(10) unsigned NOT NULL default '0', ".
+                      " submitted int(11)  NOT NULL default '0', ".
+                      " PRIMARY KEY  (nid, sid) ".
+                      ")" );
+  
+  return $ret;
+}
+
 /**
  * Makes updates to the database structure.
  **/
 function _webform_doupdate($installed_version, $current_version) {
-
+  $ret = array();
     // Check to see if we should do a update.
     print "<strong>Upgrading webform from ".$installed_version['build'] .
       " to ". $current_version['build']."</strong><br />\n";
@@ -54,6 +109,11 @@ function _webform_doupdate($installed_version, $current_version) {
       $ret[] = update_sql("ALTER TABLE {webform} ADD COLUMN email_subject varchar(255)");
       $ret[] = update_sql("ALTER TABLE {webform} ADD COLUMN email_from varchar(255)");
     }
+    
+    if ( $installed_version['build'] < 470 ) {
+      $ret = array_merge($ret, _webform_update_470());
+    }
+    
     // Set the $current_version
     variable_set("webform_version", $current_version);
 

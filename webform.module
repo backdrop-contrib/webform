@@ -546,12 +546,12 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
         $extra['attributes'] = array();
       }
       $output .= _webform_create_widget(
-                   $name, $node->webformcomponents_type[$key], 
-                   $node->webformcomponents_mandatory[$key],
-                   (isset($submitted[$name])?
-                    $submitted[$name]:
-                    _webform_filtervalues($node->webformcomponents_value[$key])), 
-                   $extra, $error, $node->nid, $sid_to_display);
+                                        $name, $key, $node->webformcomponents_type[$key], 
+                                        $node->webformcomponents_mandatory[$key],
+                                        (isset($submitted[$name])?
+                                         $submitted[$name]:
+                                         _webform_filtervalues($node->webformcomponents_value[$key])), 
+                                        $extra, $error, $node->nid, $sid_to_display);
     }
     
     if ( (!isset($_POST['op']) || ($_POST['op'] != t('Preview'))) ) {
@@ -849,19 +849,19 @@ function _webform_thanks() {
  * @param $sid The Session ID to get the default values from or 0 or NULL to use the component defaults
  * @returns An HTML string sufficient to render the widget
  */
-function _webform_create_widget($name, $type, $mandatory, $value, $extra, $err = '', $nid = 0, $sid = 0) {
+function _webform_create_widget($name, $cid, $type, $mandatory, $value, $extra, $err = '', $nid = 0, $sid = 0) {
   global $user;
-  $componentname = "submitted][$name";
+  $componentname = "submitted][$cid";
 
   if($sid && $nid){
     // This widget is to be set with data that is a reflection of a current sid therefore we must harvest the data
     //$sid_record = _webform_print_csv_string($title_string,arg(2),'record',NULL,$sid);
 
-    $sid_query = 'SELECT sd.sid as sid, sd.name as name, sd.data as data '.
+    $sid_query = 'SELECT sd.sid as sid, sd.data as data '.
       'FROM {webform_submitted_data} sd '.
-      "WHERE sd.nid = %d AND sd.sid = %d AND sd.name = '%s'";
+      "WHERE sd.nid = %d AND sd.sid = %d AND sd.cid = '%d'";
 
-    $main_result = db_query($sid_query, $nid, $sid, $name);
+    $main_result = db_query($sid_query, $nid, $sid, $cid);
 
     // Most components will return only a single entry from this query
     // multiple choice objects may not however, and require a linear array of default values
@@ -1057,27 +1057,40 @@ function _webform_create_mailmessage($reply) {
 function _webform_save_submission($node, $reply) {
   global $user;
   
-  $reply['__userid'] = $user->uid;
-  $reply['__timestamp'] = time();
-  $reply['__remotehost'] = $_SERVER['REMOTE_ADDR'];
-  $reply['__useragent'] = $_SERVER['HTTP_USER_AGENT'];
+  /*  
+   $reply[-1] = $user->uid;
+   $reply[-2] = time();
+   $reply[-3] = $_SERVER['REMOTE_ADDR'];
+   $reply[-4] = $_SERVER['HTTP_USER_AGENT'];
+  */
 
   $sid = db_next_id('{webform_submissions}_id');
 
   foreach($reply as $key => $value) {
-    // TODO: Save array i a better way.
     if (is_array($value)) {
-      $value = serialize($value);
+      foreach($value as $k => $v) {
+        $sqlstring[] = " (%d, %d, %d, %d, '%s') ";
+        $values[] = $node->nid;
+        $values[] = $sid;
+        $values[] = $key;
+        $values[] = $k;
+        $values[] = $v;
+      }
     }
- 
-    $sqlstring[] = " (%d, %d, '%s', '%s') ";
-    $values[] = $node->nid;
-    $values[] = $sid;
-    $values[] = $key;
-    $values[] = $value;
+    else {
+      $sqlstring[] = " (%d, %d, %d, %d, '%s') ";
+      $values[] = $node->nid;
+      $values[] = $sid;
+      $values[] = $key;
+      $values[] = 0;
+      $values[] = $value;
+    }
   }
+  
+  db_query("INSERT INTO {webform_submissions} (nid, sid, submitted) ".
+           " VALUES (%d, %d, %d)", $node->nid, $sid, time());
 
-  db_query("INSERT INTO {webform_submitted_data} (nid, sid, name, data) ".
+  db_query("INSERT INTO {webform_submitted_data} (nid, sid, cid, no, data) ".
            "VALUES ".implode(', ', $sqlstring), $values);
 }
 
@@ -1147,7 +1160,7 @@ function _webform_version() {
    * purposes.
    */
 
-  return array("text" => "4.6.3", "build" => 463);
+  return array("text" => "4.7.0", "build" => 470);
 } // function _webform_version
 
 /**

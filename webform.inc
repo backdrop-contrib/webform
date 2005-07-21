@@ -39,8 +39,12 @@ function _webform_page() {
  */
 function _webform_results_clear($nid) {
   if ($_POST['edit']['confirm']) {
+    
     $query = 'DELETE FROM {webform_submitted_data} WHERE nid = %d';
     $res = db_query($query, $nid);
+    $query = 'DELETE FROM {webform_submissions} WHERE nid = %d';
+    $res = db_query($query, $nid);
+
     $node = node_load(array('nid' => $nid));
     $title = $node->title;
 
@@ -63,6 +67,8 @@ function _webform_results_clear($nid) {
 function _webform_submission_delete($nid, $sid) {
   if ($_POST['edit']['confirm']) {
     $query = 'DELETE FROM {webform_submitted_data} WHERE nid = %d AND sid = %d';
+    $res = db_query($query, $nid, $sid);
+    $query = 'DELETE FROM {webform_submissions} WHERE nid = %d AND sid = %d';
     $res = db_query($query, $nid, $sid);
 
     drupal_goto('node/'.$nid.'/results');
@@ -106,7 +112,7 @@ function _webform_results_download($nid) {
        *   ...............................................................................................................
        *   27 Feb 2005       ,1035,56 ,212   ,Yes       ,No      ,No      ,..,No      ,Yes       ,No      ,Yes     ,..,Yes     ,How is this?
        **/
-  $node_info = _webform_get_node_info($nid);
+  // $node_info = _webform_get_node_info($nid);
   $title_string = $node_info->title;
 
   $file_name = _webform_records_string($title_string,$nid,'file'); // This will default to printing the output which saves stack space
@@ -120,63 +126,107 @@ function _webform_results_download($nid) {
 }
 
 /** function _webform_results_submissions() is a database accessor function designed to return lists
- *  of submissions and data.
+ *  of submissions for a given form.
  * @param $nid the node id of the webform
  */
 function _webform_results_submissions($nid) {
-  $node_info = _webform_get_node_info($nid);
-  $title_string = $node_info->title;
-  $content = _webform_records_string($title_string,$nid,'submission_list');
-  return $content;
-}
-
-function _webform_results_table($nid) {
-      $first = true;
-      $previous = -1;
-      $cell = array();
-
   // Get all the submitted values for the node
-  $query = 'SELECT sd.sid as sid, c.cid as cid, sd.name as name, sd.data as data'.
+  $query = 'SELECT ws.sid as sid, ws.submitted as submitted '.
     ' FROM '.
-    ' {webform_submitted_data} sd, {webform_component} c '.
-    ' WHERE sd.nid = c.nid '.
-    ' AND sd.nid = %d '.
-    ' GROUP BY sd.sid, sd.name '.
-    ' ORDER BY sd.sid, c.cid ';
+    ' {webform_submissions} ws '.
+    ' WHERE ws.nid = %d '.
+    ' ORDER BY ws.sid ';
 
   $res = db_query($query, $nid);
 
-      $header[] = t('#');
-      while ($field = db_fetch_object($res)) {
-        if ( ($previous != -1) 
-             && ($previous != $field->sid)) {
-          
-          $rows[] = array_merge(array($previous), $cell);
-          unset($cell);
-          $first = false;
-        }
+  
+  
+  $header[] = t('#');
+  $header[] = t('Submitted');
+  $header[] = array('data' => t('Operations'), 'colspan' => '3');
 
-        if($first) {
-          $header[] = $field->name;
-        }
-        
-        if ( $field->name == '__timestamp' ) {
-          $cell[] = format_date($field->data, 'small');
-        }
-        else if ( unserialize($field->data) ) {
-          $cell[] = theme('item_list', unserialize($field->data));
-        }
-        else {
-          $cell[] = $field->data;
-        }
-        $previous = $field->sid;
-      }
-      // and the last one ...
-      $rows[] = array_merge(array($previous), $cell);
-
+  while ($field = db_fetch_object($res)) {
+    $rows[] = array($field->sid,
+                    format_date($field->submitted, 'small'),
+                    l(t('View'),"node/$nid",NULL,"sid=".$field->sid,NULL,FALSE),
+                    l(t('Delete'),"node/$nid/results/delete/".$field->sid ,NULL,NULL,NULL,FALSE)
+                    );
+  }
+  
   return theme('table', $header, $rows);
+}
 
 
+
+function _webform_results_table($nid) {
+  $first = true;
+  $previous_sid = -1;
+  $previous_cid = -1;
+  $cell = array();
+  $cell_data = array();
+  
+  // Get all the submitted values for the node
+  $query = 'SELECT ws.sid as sid, ws.submitted as submitted, c.cid as cid, c.name as name, sd.no as no, sd.data as data '.
+    ' FROM '.
+    ' {webform_submissions} ws, {webform_submitted_data} sd, {webform_component} c '.
+    ' WHERE ws.nid = sd.nid '.
+    ' AND sd.nid = c.nid '.
+    ' AND ws.sid = sd.sid '.
+    ' AND sd.cid = c.cid '.
+    ' AND sd.nid = %d '.
+    ' GROUP BY sd.sid, c.cid, sd.no '.
+    ' ORDER BY sd.sid ';
+  
+  $res = db_query($query, $nid);
+  
+  $header[] = t('#');
+  $header[] = t('Time');
+  
+  while ($field = db_fetch_object($res)) {
+    if ( $previous_sid != $field->sid 
+         && $previous_sid != -1 ) {
+      $first = false;
+    }
+
+    // New cid create cell data
+    if ( $previous_cid != $field->cid
+         || $previous_sid != $field->sid ) {
+      if($first) {
+        $header[] = $field->name;
+      }
+      if ( count($cell_data) > 1 ) {
+        $cell[] = theme('item_list', $cell_data);
+      }
+      else {
+        $cell[] = $cell_data[0];
+      }
+      unset($cell_data);
+    }
+    $cell_data[] = $field->data;
+
+    // New sid create a new row
+    if ( $previous_sid != $field->sid ) {
+      if ( $previous_sid != -1 ) {
+        $rows[] = array_merge(array($previous_sid), $cell);
+      }
+      unset($cell);
+      $cell[] = format_date($field->submitted, 'small');
+    }
+
+
+    $previous_sid = $field->sid;
+    $previous_cid = $field->cid;
+  }
+  // and the last one ...  
+  if ( count($cell_data) > 1 ) {
+    $cell[] = theme('item_list', $cell_data);
+  }
+  else {
+    $cell[] = $cell_data[0];
+  }
+  $rows[] = array_merge(array($previous_sid), $cell);
+  
+  return theme('table', $header, $rows);
 }
 
 /** _webform_records_string - Decomposes the database to a flat file for a given SID.
@@ -481,19 +531,6 @@ function _webform_make_record_csv_string(&$ra,$new_line){
   return $output;
 }
 
-/**
- * Pulls the information block for a given node
- * @param $nid - The node requested
- * @return - A structure containing the node info.
- * TODO: Remove this function in favour of the core drupal alternative
- **/
-function _webform_get_node_info($nid){
-  $node_search_result = db_query("SELECT nid, title FROM {node} WHERE type='webform' AND nid=%d",$nid);
-  $node_info = db_fetch_object($node_search_result);
-  return $node_info;
-}
-
-
 /** _webform_results_analysis - Provides simple analysis of a series of webform submission.
  * @return to stdio a themeatic HTML rendering of the page.
  **/
@@ -593,10 +630,6 @@ function _webform_results_analysis($nid) {
   $content .= "<br>"; // Some themes jam the form button too close to the next element and it looks ugly.
   
   unset($uniqueid_query,$uniqueip_query);	
-  
-  // Pull the title of the form from node and make a nice heading for the page
-  //$node_info = _webform_get_node_info($nid);
-  //$title = $node_info->title";
   
   // Do the main query
   $query = 'SELECT sd.name as name, sd.sid as sid, c.cid as cid, c.type as type, sd.data as data, c.extra as extra, c.value as value '.
