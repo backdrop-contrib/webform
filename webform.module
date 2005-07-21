@@ -1066,32 +1066,23 @@ function _webform_save_submission($node, $reply) {
 
   $sid = db_next_id('{webform_submissions}_id');
 
-  foreach($reply as $key => $value) {
-    if (is_array($value)) {
-      foreach($value as $k => $v) {
-        $sqlstring[] = " (%d, %d, %d, %d, '%s') ";
-        $values[] = $node->nid;
-        $values[] = $sid;
-        $values[] = $key;
-        $values[] = $k;
-        $values[] = $v;
-      }
-    }
-    else {
-      $sqlstring[] = " (%d, %d, %d, %d, '%s') ";
-      $values[] = $node->nid;
-      $values[] = $sid;
-      $values[] = $key;
-      $values[] = 0;
-      $values[] = $value;
-    }
-  }
-  
   db_query("INSERT INTO {webform_submissions} (nid, sid, submitted) ".
            " VALUES (%d, %d, %d)", $node->nid, $sid, time());
 
-  db_query("INSERT INTO {webform_submitted_data} (nid, sid, cid, no, data) ".
-           "VALUES ".implode(', ', $sqlstring), $values);
+  foreach($reply as $key => $value) {
+    if (is_array($value)) {
+      foreach($value as $k => $v) {        
+        db_query("INSERT INTO {webform_submitted_data} (nid, sid, cid, no, data) ".
+                 "VALUES (%d, %d, %d, %d, '%s')",
+                 $node->nid, $sid, $key, $k, $v);
+      }
+    }
+    else {
+      db_query("INSERT INTO {webform_submitted_data} (nid, sid, cid, no, data) ".
+               "VALUES (%d, %d, %d, %d, '%s')",
+               $node->nid, $sid, $key, 0, $value);
+    }
+  }
 }
 
 function _webform_role_node_delete($nid) {

@@ -138,8 +138,6 @@ function _webform_results_submissions($nid) {
     ' ORDER BY ws.sid ';
 
   $res = db_query($query, $nid);
-
-  
   
   $header[] = t('#');
   $header[] = t('Submitted');
@@ -606,10 +604,10 @@ function _webform_results_analysis($nid) {
   // Perform the search to identify valid records.
   
   // Boolean logic does not follow the associative law, hence the brackets: x AND (y OR z)
-  $filtered_nodes_search_result = db_query('SELECT DISTINCT max(sd.sid) AS latest_sid '.
+  $filtered_nodes_search_result = db_query('SELECT DISTINCT MAX(sd.sid) AS latest_sid '.
                                            'FROM {webform_submitted_data} sd '.
                                            "WHERE sd.nid = %d AND (sd.name LIKE '%s' OR sd.name LIKE '%s') ".
-                                           'GROUP By sd.data '.
+                                           'GROUP By sd.data, sd.sid '.
                                            'ORDER BY sd.sid DESC',
                                            $nid, $uniqueid_query, $uniqueip_query);
   
