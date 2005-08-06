@@ -851,32 +851,18 @@ function _webform_thanks() {
  */
 function _webform_create_widget($name, $cid, $type, $mandatory, $value, $extra, $err = '', $nid = 0, $sid = 0) {
   global $user;
+  include_once(drupal_get_path('module', 'webform')."/webform.inc");
   $componentname = "submitted][$cid";
 
   if($sid && $nid){
     // This widget is to be set with data that is a reflection of a current sid therefore we must harvest the data
-    //$sid_record = _webform_print_csv_string($title_string,arg(2),'record',NULL,$sid);
-
-    $sid_query = 'SELECT sd.sid as sid, sd.data as data '.
-      'FROM {webform_submitted_data} sd '.
-      "WHERE sd.nid = %d AND sd.sid = %d AND sd.cid = '%d'";
-
-    $main_result = db_query($sid_query, $nid, $sid, $cid);
-
-    // Most components will return only a single entry from this query
-    // multiple choice objects may not however, and require a linear array of default values
-
-    //print "<p>Found " . db_num_rows($main_result) . " records for component: $name.";
-
-    $recs = db_num_rows($main_result);
-    if($recs > 1){
-      // Error! Can occur if component types are changed by editing after data has been submitted.
-      // This error is currently ignored and only the first of such multiple values
-      // will be used.
+    $submission = _webform_fetch_submission($sid);
+    if ( $submission['data'][$cid]['extra']['multiple'] == 'Y' ) {
+      $value = $submission['data'][$cid]['value'];
     }
-
-    $record = db_fetch_object($main_result);
-    $value = ($extra['multiple'] == 'Y') ? unserialize($record->data):$record->data;
+    else {
+      $value =  $submission['data'][$cid]['value']['0'];
+    }
   }
 
   switch($type) {
@@ -933,7 +919,7 @@ function _webform_create_widget($name, $cid, $type, $mandatory, $value, $extra, 
         $value = array($value);
       }
       return form_select($name,  $componentname,
-                         array_search($value), $options,
+                         $value, $options,
                          _webform_filtervalues($extra['description']), 
                          $extra['attributes']['dummy'], 
                          false, $mandatory);
@@ -1100,6 +1086,7 @@ function webform_page() {
  */
 function webform_results() {
   include_once(drupal_get_path('module', 'webform')."/webform.inc");
+  include_once(drupal_get_path('module', 'webform')."/webform_report.inc");
 
   $nid = arg(1);
   $node = node_load(array('nid' => $nid));
