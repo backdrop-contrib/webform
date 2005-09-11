@@ -192,8 +192,96 @@ function _webform_results_download($nid) {
  * @return to stdio a themeatic HTML rendering of the page.
  */
 function _webform_results_analysis($nid) {
-  $content .= theme_box("Results Analysis", "This section needs reimplementation after the database changes.");
+  $query = 'SELECT nid, cid, name, type, value, extra '.
+    ' FROM {webform_component} '.
+    ' WHERE nid = %d '.
+    ' ORDER BY weight';
+
+  $components = db_query($query, $nid);
+
+  $rows = array();
+  $question_number=0;
+
+  $header = array(t('Q'), array('data' => t('responses')));
+
+  while ($component = db_fetch_object($components)) {
+    $question_number++;
+    $row[0] =  $question_number;
+    $row[1] = $component->name;
+    $rows[] = $row;
+    // Do component specific call
+    $crows = module_invoke_all('webform_analysis', $component);
+    if ( is_array($crows) ) {
+      $row[0] = '';
+      $row[1] = theme('table', '', $crows);
+      $rows[] = $row;
+    }
+  }
+  
+  $content = theme('table', $header, $rows);
+
   return $content;
+}
+
+/** Hook for creating the analysis parts for the default components.
+ * @return rows to be displayed on the analysis page.
+ */
+function webform_webform_analysis($component) {
+  switch($component->type) {
+  case 'textarea':
+  case 'textfield':
+  case 'hidden':
+  case 'email':
+    $query = 'SELECT data '.
+      ' FROM webform_submitted_data '.
+      ' WHERE nid = %d '.
+      '  AND cid = %d';
+    $nonblanks = 0;
+    $submissions = 0;
+    $wordcount = 0;
+
+    $result = db_query($query, $component->nid, $component->cid);
+    while ($data = db_fetch_array($result)) {
+      if ( strlen(trim($data['data'])) > 0 ) {
+        $nonblanks++;
+        $wordcount += str_word_count(trim($data['data']));
+      }
+      $submissions++;
+    }
+    
+    $rows[0] = array( t('Left Blank'), ($submissions-$nonblanks));
+    $rows[1] = array( t('User entered value'), $nonblanks);
+    $rows[2] = array( t('Average submission length in words (ex blanks)'), 
+                      ($wordcount/$nonblanks));
+    return $rows;
+    break;
+  case 'select':
+    $query = 'SELECT data, count(data) as datacount '.
+      ' FROM webform_submitted_data '.
+      ' WHERE nid = %d '.
+      '  AND cid = %d '.
+      ' GROUP BY data ';
+    $result = db_query($query, $component->nid, $component->cid);
+    $rows = array();
+    while ($data = db_fetch_array($result)) {
+      $rows[] = array($data['data'], $data['datacount']);
+    }
+    return $rows;
+    break;
+  case 'scale':
+    $query = 'SELECT MAX(data) AS maxgrade, MIN(data) AS mingrade, AVG(data) AS avggrade '.
+      ' FROM webform_submitted_data '.
+      ' WHERE nid = %d '.
+      '  AND cid = %d ';
+    $result = db_fetch_array(db_query($query, $component->nid, $component->cid));
+    
+    $rows[0] = array(t('Max grade'), $result['maxgrade']);
+    $rows[1] = array(t('Min grade'), $result['mingrade']);
+    $rows[2] = array(t('Average grade'), $result['avggrade']);
+
+    return $rows;
+    break;
+  }
 }
 
 ?>
