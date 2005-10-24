@@ -392,8 +392,10 @@ function webform_form(&$node, &$error) {
                            'label' => t('label'),
                            'hidden' => t('hidden'),
                            'email' => t('e-mail address'));
-  
-  //'explanation' => t('explanation'));
+
+  if (function_exists('taxonomy_node_form')) {
+    $output .= implode('', taxonomy_node_form('page', $node));
+  }
   
   // User access stuff
   $roles = user_roles(0); // Get all roles including anonymous users
