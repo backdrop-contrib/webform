@@ -799,11 +799,7 @@ function _webform_process_submit(&$node, &$errors) {
         }
       }
       
-      $headers = $email_from_string;
-      $headers .= "Date: ".date("r")."\r\n".
-        "X-Mailer: Drupal Webform (PHP/" . phpversion().")";
-      
-      user_mail($node->email, $email_subject_string, $message, $headers);
+      _webform_mail($node->email, $email_from_string, $email_subject_string, $message);
     }
   }
   

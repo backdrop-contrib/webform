@@ -117,4 +117,32 @@ function _webform_fetch_submission($sid) {
   return $submission;
 } // end function _webform_fetch_submission
 
+function _webform_mail($to, $from, $subject, $message) {
+  $headers = $from;
+  $headers .= "Date: ".date("r")."\r\n".
+    "X-Mailer: Drupal Webform (PHP/" . phpversion().")";
+    
+  / START - SPAM FILTER
+  // check if they are spamming using a bcc hack
+  if (preg_match('/b*cc\s*:/i', $mail)
+      || preg_match('/b*cc\s*:/i', $subject)
+      || preg_match('/b*cc\s*:/i', $message)
+      || preg_match('/b*cc\s*:/i', $header)
+    ) {
+    return FALSE;
+  }
+
+  // check if they are spamming using a bcc hack
+  if (preg_match('/content\-type/i', $mail)
+      || preg_match('/content\-type/i', $subject)
+      || preg_match('/content\-type/i', $message)
+      || preg_match('/content\-type/i', $header)
+    ) {
+    return FALSE;
+  }
+  // END - SPAM FILTER
+
+  return user_mail($to, $subject, $message, $headers);
+} // end function _webform_mail
+
 ?>
