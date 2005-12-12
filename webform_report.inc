@@ -254,7 +254,7 @@ function webform_webform_analysis($component) {
     $rows[2] = array( t('Average submission length in words (ex blanks)'), 
                       ($wordcount/$nonblanks));
     return $rows;
-    break;
+    // break;
   case 'select':
     $query = 'SELECT data, count(data) as datacount '.
       ' FROM webform_submitted_data '.
@@ -267,7 +267,7 @@ function webform_webform_analysis($component) {
       $rows[] = array($data['data'], $data['datacount']);
     }
     return $rows;
-    break;
+    // break;
   case 'scale':
     $query = 'SELECT MAX(data) AS maxgrade, MIN(data) AS mingrade, AVG(data) AS avggrade '.
       ' FROM webform_submitted_data '.
@@ -280,7 +280,7 @@ function webform_webform_analysis($component) {
     $rows[2] = array(t('Average grade'), $result['avggrade']);
 
     return $rows;
-    break;
+    // break;
   }
 }
 

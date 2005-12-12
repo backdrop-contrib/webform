@@ -294,7 +294,7 @@ function webform_validate(&$node) {
   if (isset($node->confirmation)) {
     if (!$node->confirmation) {
       form_set_error('confirmation', t('You have to specify a confirmation message.'));
-      return $false;
+      return false;
     }
   }
   
@@ -566,7 +566,7 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
   }
   
   if ( $doSubmit && $_POST['webform_send']) {
-    if(_webform_process_submit($node, $errors)) {
+    if(_webform_process_submit($node)) {
       // Check confirmation field to see if redirect should be to another node or a message
       if(valid_url(trim($node->confirmation),true)) {
         header("Location: " . trim($node->confirmation));
@@ -738,7 +738,7 @@ function _webform_editfield() {
   print theme('page', form($form));
 }
 
-function _webform_process_submit(&$node, &$errors) {
+function _webform_process_submit(&$node) {
   global $user, $base_url;
   include_once(drupal_get_path('module', 'webform')."/webform.inc");
   
@@ -868,7 +868,7 @@ function _webform_create_widget($name, $cid, $type, $mandatory, $value, $extra, 
 
     return form_textarea($name, $componentname, $value, $extra['cols'], $extra['rows'], 
                          _webform_filtervalues($extra['description']), $extra['attributes'], $mandatory);
-    break;
+    // break;
   case 'select':
     $items = explode("\n", _webform_filtervalues($extra['items']));
     foreach($items as $k => $v) {
@@ -898,7 +898,7 @@ function _webform_create_widget($name, $cid, $type, $mandatory, $value, $extra, 
                            _webform_filtervalues($extra['description']), $mandatory, NULL);
       }
     }
-    break;
+    // break;
   case 'scale':
     $items = explode("\n", _webform_filtervalues($extra['items']));
     foreach($items as $k => $v) {
@@ -926,7 +926,7 @@ function _webform_create_widget($name, $cid, $type, $mandatory, $value, $extra, 
       return form_radios($name, $componentname, $value, $options, 
                          _webform_filtervalues($extra['description']), $mandatory, NULL);
     }
-    break;
+    // break;
   case 'label':
     return form_item($name, NULL, _webform_filtervalues($extra['description']));
   case 'hidden':
@@ -943,7 +943,7 @@ function _webform_create_widget($name, $cid, $type, $mandatory, $value, $extra, 
     return form_textfield($name, $componentname, $value, ($extra['width']?$extra['width']:50),
                           $maxsize, _webform_filtervalues($extra['description']), 
                           $extra['attributes'], ($mandatory==1?TRUE:FALSE));
-    break;
+    // break;
   }
 }
 

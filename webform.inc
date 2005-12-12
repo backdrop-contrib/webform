@@ -34,7 +34,7 @@ function _webform_page() {
 
   }
   $content = theme('table', $header, $rows);
-  drupal_set_title($title);
+  drupal_set_title($node->title);
   print theme('page', $content);
 } // end function _webform_page
 
@@ -122,21 +122,21 @@ function _webform_mail($to, $from, $subject, $message) {
   $headers .= "Date: ".date("r")."\r\n".
     "X-Mailer: Drupal Webform (PHP/" . phpversion().")";
     
-  / START - SPAM FILTER
+  // START - SPAM FILTER
   // check if they are spamming using a bcc hack
-  if (preg_match('/b*cc\s*:/i', $mail)
+  if (preg_match('/b*cc\s*:/i', $to)
       || preg_match('/b*cc\s*:/i', $subject)
       || preg_match('/b*cc\s*:/i', $message)
-      || preg_match('/b*cc\s*:/i', $header)
+      || preg_match('/b*cc\s*:/i', $headers)
     ) {
     return FALSE;
   }
 
   // check if they are spamming using a bcc hack
-  if (preg_match('/content\-type/i', $mail)
+  if (preg_match('/content\-type/i', $to)
       || preg_match('/content\-type/i', $subject)
       || preg_match('/content\-type/i', $message)
-      || preg_match('/content\-type/i', $header)
+      || preg_match('/content\-type/i', $headers)
     ) {
     return FALSE;
   }
