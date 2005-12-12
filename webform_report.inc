@@ -202,25 +202,25 @@ function _webform_results_analysis($nid) {
   $rows = array();
   $question_number=0;
 
-  $header = array(t('Q'), array('data' => t('responses')));
+  $headers = array( t('Q'), 
+                   array('data' => t('responses'), 'colspan' => '10')
+                 );
 
   while ($component = db_fetch_object($components)) {
     $question_number++;
-    $row[0] =  $question_number;
-    $row[1] = $component->name;
-    $rows[] = $row;
+    
     // Do component specific call
     $crows = module_invoke_all('webform_analysis', $component);
     if ( is_array($crows) ) {
-      $row[0] = '';
-      $row[1] = theme('table', array(), $crows);
-      $rows[] = $row;
+      $row[0] =  array( 'data' => '<strong>'.$question_number.'</strong>', 'rowspan' => count($crows)+1, 'valign' => 'top');
+      $row[1] = array( 'data' => '<strong>'.$component->name.'</strong>', 'colspan' => '10');
+      $rows = array_merge($rows, array_merge(array($row), $crows));
     }
   }
-  
-  $content = theme('table', $header, $rows);
-
-  return $content;
+  if ( is_array($rows) )
+    return theme('table', $headers, $rows);
+  else
+    return '';
 }
 
 /** Hook for creating the analysis parts for the default components.
