@@ -171,8 +171,17 @@ function _webform_legacy_update($installed_version, $current_version) {
     if ( $installed_version['build'] < 463 ) {
       //$ret[] = array(1 => "<strong>Build 4.6.3</strong><br />\n", 2 => "");
       // No more lazy update ...
-      $ret[] = update_sql("ALTER TABLE {webform} ADD COLUMN email_subject varchar(255)");
-      $ret[] = update_sql("ALTER TABLE {webform} ADD COLUMN email_from varchar(255)");
+      // Check if the lazy update has already been performed
+      $result = db_query("SHOW COLUMNS FROM {webform} LIKE 'email_subject'");			
+			if (db_num_rows($result) == 0) {  
+				// The email_subject column is needed
+      	$ret[] = update_sql("ALTER TABLE {webform} ADD COLUMN email_subject varchar(255)");
+			}
+      $result = db_query("SHOW COLUMNS FROM {webform} LIKE 'email_from'");			
+			if (db_num_rows($result) == 0) {  
+				// The email_subject column is needed
+      	$ret[] = update_sql("ALTER TABLE {webform} ADD COLUMN email_from varchar(255)");
+			}
     }
         
     // Set the $current_version
