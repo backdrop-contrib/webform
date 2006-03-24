@@ -1,32 +1,25 @@
 Requirements
 ------------
 
-Drupal CVS HEAD
+Drupal 4.7
 
 
 Installation
 ------------
-1. If you use as DB prefix in the site configuration you need to update the
-   webform.mysql file and add the prefix to all tablenames.
-   This can be done by using the scripts/prefix.sh available in the Drupal 
-   main distribution.
+1. Copy the entire webform directory the Drupal modules directory.
 
-2. Create the SQL tables. This depends a little on your system, but the most
-   common method is:
-     mysql -u username -ppassword drupal < webform.mysql
+2. Login as an administrator. Enable the module in the "administer" -> "modules"
 
-3. Copy the webform.module, webform_update.inc and webform.inc to the Drupal modules/ directory.
-
-4. Enable the module in the admin interface.
-
-5. (Optional) Edit the settings under "admin" -> "settings" -> "webform"
+3. (Optional) Edit the settings under "administer" -> "settings" -> "webform"
 
 Upgrading from previous version
 -------------------------------
 
-1. Copy the new webform.module and webform.inc to the Drupal modules/ directory.
+1. Copy the entire webform directory the Drupal modules directory.
 
-2. Go to "admin" -> "settings" ->  "webform" and select the upgrade link.
+2. Login as the FIRST user or change the $access_check in upgrade.php to FALSE
+
+3. Run upgrade.php (at http://www.yourdrupalsite/upgrade.php)
 
 The .POT file
 -------------
@@ -34,6 +27,13 @@ The .POT file is a template file for translating the module into non-english lan
 If you are not interested in helping with translation you can safely remove this file 
 (and the po directory).
 
-------
+Troubleshooting
+---------------
 
-Pontus Ullgren <ullgren@users.sourceforge.net>
+If you are familiar with 4.6 Drupal installations, you are probably familiar with
+loading SQL files such as the included webform.mysql file. In Drupal 4.7,
+this step has been replaced by use of the update.php file. If you receive SQL
+errors during the update (remember to backup!) you may choose to delete all the
+webform tables and run webform.mysql to start with a fresh copy of the tables.
+
+
