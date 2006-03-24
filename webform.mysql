@@ -37,4 +37,6 @@ CREATE TABLE webform_submissions
     PRIMARY KEY  (nid, sid));
 
 -- Setting default variables
+DELETE FROM variable WHERE name = 'webform_version';
 INSERT INTO variable VALUES ('webform_version', 'a:2:{s:4:"text";s:5:"4.7.0";s:5:"build";i:470;}');
+UPDATE system SET schema_version = 1 WHERE name = 'webform';
