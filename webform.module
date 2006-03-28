@@ -110,9 +110,6 @@ function webform_access($op, $node) {
 }
 
 function webform_insert($node) {
-  //drupal_set_message('<pre>INSERT POST:'.print_r($_POST,true).'</pre>'); 
-  //drupal_set_message('<pre>INSERT NODE:'.print_r($node,true).'</pre><hr />'); 
-  
   global $user;
   // Insert the Webform
   db_query("INSERT INTO {webform} (nid, confirmation, email, email_from, email_subject) VALUES (%d, '%s', '%s', '%s', '%s')", $node->nid, $node->confirmation, $node->email, $node->email_from, $node->email_subject);
@@ -163,9 +160,6 @@ function webform_insert($node) {
 }
 
 function webform_update($node) {  
-  //drupal_set_message('<pre>UPDATE POST:'.print_r($_POST,true).'</pre>'); 
-  //drupal_set_message('<pre>UPDATE NODE:'.print_r($node,true).'</pre><hr />'); 
-  
   // Update
   
   db_query("UPDATE {webform} SET confirmation = '%s', email = '%s', email_from = '%s', email_subject = '%s' "."WHERE nid = %d", $node->confirmation, $node->email, trim($node->email_from), trim($node->email_subject), $node->nid);
@@ -365,9 +359,6 @@ function webform_prepare (&$node) {
       $node = (object)$edit;
       break;
   }
-  
-  //drupal_set_message("<pre>Prepare POST:".print_r($_POST,true)."</pre>");
-  //drupal_set_message("<pre>Prepare NODE:".print_r($node,true)."</pre><hr />");
 }
 
 function webform_validate (&$node) {
@@ -394,9 +385,6 @@ function webform_validate (&$node) {
       }
       break;
   }
-  
-  //drupal_set_message("<pre>Validate POST:".print_r($_POST,true)."</pre>");
-  //drupal_set_message("<pre>Validate NODE:".print_r($node,true)."</pre><hr />");
 }
 
 /** 
@@ -406,9 +394,6 @@ function webform_validate (&$node) {
  **/
 
 function webform_form (&$node, &$param) {
-  
-  //drupal_set_message("<pre>FORM POST:".print_r($_POST,true)."</pre>");
-  //drupal_set_message("<pre>FORM NODE:".print_r($node,true)."</pre><hr />");
 /* Start Edit Form */
   // User access stuff
   $roles = user_roles(0); // Get all roles including anonymous users
@@ -979,8 +964,7 @@ function webform_client_submit($form_id, $form_values) {
       return false;
     }
   };
-  // Handle posting to the form and output status.
-  _webform_save_submission($node, $form_values['submitted'], $form_values['componentKeys']);
+  
   $message= _webform_create_mailmessage($form_values['submitted']);
 
   if (isset ($node->email)) {
@@ -1009,13 +993,16 @@ function webform_client_submit($form_id, $form_values) {
         }
       }
 
-      _webform_mail($node->email, $email_from_string, $email_subject_string, $message);
+      if (_webform_mail($node->email, $email_from_string, $email_subject_string, $message)) {
+      	watchdog('webform', t('Possible spam attempt from ').$_SERVER['REMOTE_ADDR']."<br />\n".nl2br(htmlentities($message)), WATCHDOG_WARNING);
+      	drupal_set_message(t("Illegal information. Data not submitted."), 'error');
+      	return false;
+      }
     }
   }
-
-  if (variable_get('webform_debug', 0) >= 2) {
-    //drupal_set_message("<pre>$message</pre>");
-  }
+  
+  // Handle posting to the form and output status.
+  _webform_save_submission($node, $form_values['submitted'], $form_values['componentKeys']);
 
   if (variable_get('webform_debug', 0) >= 1) {
     watchdog('webform', t('Submission posted to ')."'$node->title'.<br />\n".nl2br(htmlentities($message)), WATCHDOG_NOTICE);
