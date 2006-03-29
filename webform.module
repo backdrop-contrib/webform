@@ -317,7 +317,7 @@ function webform_link($type, $node= 0, $main= 0) {
 }
 
 function webform_prepare (&$node) {
-  
+        
   $op = $_POST['op'];
 
   switch ($op) {
@@ -335,7 +335,7 @@ function webform_prepare (&$node) {
       break;
       
     case t('Done'):
-      // Re-add existing components
+      // Overwrite the database components with any saved in the POST array
       if (isset($_POST['edit']['node']['webformcomponents'])) {
         unset($node->webformcomponents);
         foreach ($_POST['edit']['node']['webformcomponents'] as $key => $value) {
@@ -344,21 +344,44 @@ function webform_prepare (&$node) {
         unset($_POST['edit']['node']['webformcomponents']);
       }
       
-      // Add the component changes/additions to the components
+      // Add the component changes/additions to the node components
       $cid = $_POST['edit']['field']['key'];
-      foreach ($_POST['edit']['field'] as $key => $value) {
-        $node->webformcomponents[$cid][$key] = $value;
+      if (isset($_POST['edit']['field']) && is_array($_POST['edit']['field'])) {
+        foreach ($_POST['edit']['field'] as $key => $value) {
+          $node->webformcomponents[$cid][$key] = $value;
+        }
+        unset($_POST['edit']['field']);
       }
-      unset($_POST['edit']['field']);
   
       // Add saved values of the node
-      $new_edit = (array)$node;
-      $old_edit = (array)$_POST['edit']['node'];
+      $old_edit = (array)$node;
+      $new_edit = (array)$_POST['edit']['node'];
       
       $edit = array_merge($old_edit, $new_edit);
       $node = (object)$edit;
       break;
-  }
+      
+    case t('Preview'):
+      // Make sure the original components (from the database) are in decoded array form
+      if (isset($node->webformcomponents) && is_array($node->webformcomponents)) {
+        foreach ($node->webformcomponents as $cid=>$value)
+        if (!is_array($value)) {
+          // This component is encoded, convert to array form
+          $node->webformcomponents[$cid] = unserialize(base64_decode($value));
+        }
+      }
+      
+      // Overwrite the database components with any saved in the POST array
+      if (isset($_POST['edit']['webformcomponents'])) {
+        unset($node->webformcomponents);
+        foreach ($_POST['edit']['webformcomponents'] as $key => $value) {
+          $node->webformcomponents[$key] = unserialize(base64_decode($value));
+        }
+        unset($_POST['edit']['webformcomponents']);
+      }
+      break;
+      
+  } // end switch
 }
 
 function webform_validate (&$node) {
@@ -875,9 +898,6 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
   global $user;
   include_once (drupal_get_path('module', 'webform')."/webform.inc");
   
-  //drupal_set_message('<pre>'.print_r($_POST,true).'</pre>'); 
-  //drupal_set_message('<pre>'.print_r($node,true).'</pre>');   
-
   if (module_exist('profile')) {
     profile_load_profile($user);
   }
@@ -893,6 +913,10 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
       watchdog('webform', t('Unauthorized webform access attempt', array ('%name' => "<em>$user->name</em>")), WATCHDOG_WARNING); // and log the attempt
     }
   }
+
+  // Prepare the node for viewing, this is necessary to load the components
+  // while previewing changes to the node form
+  webform_prepare($node);
 
   if (is_array($node->webformcomponents) && !empty ($node->webformcomponents)) {
   	// Prepare a new form array
@@ -921,23 +945,28 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
       
     } // end foreach
     
-    // Additional hidden elements   
-    // Email subject and sender
-    $form['details']['email_subject'] = array (
-      '#type'      => 'hidden',
-      '#value'		 => $node->email_subject,
-    );
-    $form['details']['email_from'] = array (
-      '#type'      => 'hidden',
-      '#value'		 => $node->email_from,
-    );
+    // Do not display the submit button if this is a preview
+    if ($_POST['op'] != t('Preview')) {
+      // Additional hidden elements   
+      // Email subject and sender
+      $form['details']['email_subject'] = array (
+        '#type'      => 'hidden',
+        '#value'		 => $node->email_subject,
+      );
+      $form['details']['email_from'] = array (
+        '#type'      => 'hidden',
+        '#value'		 => $node->email_from,
+      );
+      
+      // Add the submit button
+      $form['submitbutton'] = array(
+        '#type' => 'submit',
+        '#value' => t('Submit'),
+        '#weight' => 1000,
+      );
+    } else {
     
-    // Add the submit button
-    $form['submitbutton'] = array(
-      '#type' => 'submit',
-      '#value' => t('Submit'),
-      '#weight' => 1000,
-    );
+    }
   }
   
   
