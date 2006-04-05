@@ -1,6 +1,7 @@
 CREATE TABLE webform 
   ( nid int(10) unsigned not null,
-    confirmation text, 
+    confirmation text,
+    redirect_post int(1) unsigned not null default '0',
     email varchar(255),
     email_subject varchar(255),
     email_from varchar(255),

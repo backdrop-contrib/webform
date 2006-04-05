@@ -112,7 +112,7 @@ function webform_access($op, $node) {
 function webform_insert($node) {
   global $user;
   // Insert the Webform
-  db_query("INSERT INTO {webform} (nid, confirmation, email, email_from, email_subject) VALUES (%d, '%s', '%s', '%s', '%s')", $node->nid, $node->confirmation, $node->email, $node->email_from, $node->email_subject);
+  db_query("INSERT INTO {webform} (nid, confirmation, redirect_post, email, email_from, email_subject) VALUES (%d, '%s', '%s', '%s', '%s')", $node->nid, $node->confirmation, $node->redirect_post, $node->email, $node->email_from, $node->email_subject);
   
   
   // Re-add existing components
@@ -162,7 +162,7 @@ function webform_insert($node) {
 function webform_update($node) {  
   // Update
   
-  db_query("UPDATE {webform} SET confirmation = '%s', email = '%s', email_from = '%s', email_subject = '%s' "."WHERE nid = %d", $node->confirmation, $node->email, trim($node->email_from), trim($node->email_subject), $node->nid);
+  db_query("UPDATE {webform} SET confirmation = '%s', redirect_post = '%d', email = '%s', email_from = '%s', email_subject = '%s' "."WHERE nid = %d", $node->confirmation, $node->redirect_post, $node->email, trim($node->email_from), trim($node->email_subject), $node->nid);
 
   db_query("DELETE FROM {webform_component} WHERE nid = %d", $node->nid);
 
@@ -208,7 +208,7 @@ function webform_delete(& $node) {
 
 function webform_load($node) {
   // load 
-  $page= db_fetch_object(db_query("SELECT confirmation, email, email_from, email_subject FROM {webform} WHERE nid = %d", $node->nid));
+  $page= db_fetch_object(db_query("SELECT confirmation, redirect_post, email, email_from, email_subject FROM {webform} WHERE nid = %d", $node->nid));
   $result= db_query('SELECT cid, name, type, value, extra, mandatory, weight '.' FROM {webform_component} '.' WHERE nid = %d '.' ORDER BY weight, name', $node->nid);
   while ($c= db_fetch_array($result)) {
     $page->webformcomponents[$c['cid']]['name']= $c['name'];
@@ -359,6 +359,9 @@ function webform_prepare (&$node) {
       
       $edit = array_merge($old_edit, $new_edit);
       $node = (object)$edit;
+      
+      // Display editted message
+      drupal_set_message(t('The form component has been changed. Remember to press Submit on the bottom of this form to save your changes.'));
       break;
       
     case t('Preview'):
@@ -466,6 +469,13 @@ function webform_form (&$node, &$param) {
     '#required' => TRUE,
   );
   
+  $form['webform']['redirect_post'] = array(
+    '#type' => 'checkbox',
+    '#title' => t("Redirect POST Values"),
+    '#description' => t("Forward the contents of the POST array to the redirect URL. Use this option for custom processing of the form information. No processing will be done by webform. The confirmation option above MUST be a full redirect URL for this option to have an effect."),
+    '#default_value' => $node->redirect_post,
+  );
+  
   $form['webform']['format'] = filter_form($node->format);
   
   $form['webform']['email'] = array(
@@ -541,7 +551,7 @@ function webform_form (&$node, &$param) {
 	);
 
   // Mini-form to add a new component.
-  $component_types =  webform_components('list');
+  $component_types =  _webform_load_components();
   $form['components']['webform_newfield_type'] = array(
     '#type' => 'select',
     '#title' => t('Add a new component'),
@@ -615,7 +625,7 @@ function webform_edit_field_form ($node) {
   if(!isset($_POST['edit'])) {
     // We are calling this page in the wrong way ... 
     // Do some clean up ??
-    //drupal_set_message(t('Page called out of order'),'error');
+    drupal_set_message(t('Page called out of order'),'error');
     drupal_set_title("Webform Error");
     return array();
   }
@@ -644,10 +654,10 @@ function webform_edit_field_form ($node) {
     drupal_set_title("Edit component: ".$currfield['name']." (".$currfield['type'].")");
   } else {
     // Check to make sure a valid component type was selected
-    $component_types =  webform_components('list');
+    $component_types =  _webform_load_components();
     $new_component_type = $_POST['edit']['webform_newfield_type'];
     if (empty($new_component_type) || !key_exists($new_component_type,$component_types)) {
-      //drupal_set_message(t('Unknown component type \''.$new_component_type.'\''),'error');
+      drupal_set_message(t('Unknown component type \''.$new_component_type.'\''),'error');
       drupal_set_title("Webform Error");
       print theme('page', "");
       return;
@@ -715,149 +725,22 @@ function webform_edit_field_form ($node) {
     '#weight' => 2,
   );
   
+
+  // Add the fields specific to this component type:	
+	_webform_load_components(); // Load all component types
+	$editFunction = "webform_edit_".$currfield['type'];
+	if (function_exists($editFunction)) {
+		$additionalFormElements = $editFunction($currfield); // Call the component render function
+	} else {
+		drupal_set_message(t("The webform component")." '".$currfield['type']."' ".t(" does not have an edit function defined"));
+	}
+
+  // Merge the additional fields with the current fields:
+  $extraFieldsCopy = $form['field']['extra'];
+  $form['field'] = array_merge($form['field'],$additionalFormElements);
+  $form['field']['extra'] = array_merge((array)$extraFieldsCopy,(array)$additionalFormElements['extra']);
   
-  // Add extra options depending on the type
-  switch($currfield['type']) {
-  case 'email':
-    $form['field']['value'] = array (
-      '#type' => 'markup',
-      '#value' => '<label for="edit-default"><b>'.t("Default value").':</b></label>'.
-                  '<div id="edit-default">'.
-                  t('The default value of a email field is always the users email address if he/she is logged in.').
-                  '</div>',
-    );
-    $form['field']['extra']['width'] = array (
-      '#type' => 'textfield',
-      '#title' => t("Width"),
-      '#default_value' => $currfield['extra']['width'],
-      '#description' => t('Width of the textfield.'),
-      '#size' => 5,
-      '#maxlength' => 10,
-    );
-    break;
-  case 'textfield':
-    $form['field']['value'] = array (
-      '#type' => 'textfield',
-      '#title' => t("Default value"),
-      '#default_value' => $currfield['default'],
-      '#description' => t('The default value of the field.').'<br />'.webform_help('webform/helptext#variables'),
-      '#size' => 60,
-      '#maxlength' => 127,
-      '#weight' => 0,
-    );
-    $form['field']['extra']['width'] = array (
-      '#type' => 'textfield',
-      '#title' => t("Width"),
-      '#default_value' => $currfield['extra']['width'],
-      '#description' => t('Width of the textfield.'),
-      '#size' => 5,
-      '#maxlength' => 10,
-      '#weight' => 0,
-    );
-    $form['field']['extra']['attributes']['disabled'] = array (
-      '#type' => 'checkbox',
-      '#title' => t("Disabled"),
-      '#return_value' => 'disabled',
-      '#description' => t('Make this field non-editable. Useful for setting an unchangeable default value.'),
-      '#weight' => 3,
-      '#default_value' => $currfield['extra']['attributes']['disabled'],
-    );
-    break;
-  case 'hidden':
-    $form['field']['value'] = array (
-      '#type' => 'textfield',
-      '#title' => t("Default value"),
-      '#default_value' => $currfield['default'],
-      '#description' => t('The default value of the field.').'<br />'.webform_help('webform/helptext#variables'),
-      '#size' => 60,
-      '#maxlength' => 127,
-      '#weight' => 0,
-    );
-    break;
-  case 'textarea':
-    $form['field']['value'] = array (
-      '#type' => 'textarea',
-      '#title' => t("Default value"),
-      '#default_value' => $currfield['default'],
-      '#description' => t('The default value of the field.').'<br />'.webform_help('webform/helptext#variables'),
-      '#cols' => 60,
-      '#rows' => 5,
-      '#weight' => 0,
-    );
-    $form['field']['extra']['cols'] = array (
-      '#type' => 'textfield',
-      '#title' => t("Width"),
-      '#default_value' => $currfield['extra']['cols'],
-      '#description' => t('Width of the textfield.'),
-      '#size' => 5,
-      '#maxlength' => 10,
-    );
-    $form['field']['extra']['rows'] = array (
-      '#type' => 'textfield',
-      '#title' => t("Height"),
-      '#default_value' => $currfield['extra']['rows'],
-      '#description' => t('Height of the textfield.'),
-      '#size' => 5,
-      '#maxlength' => 10,
-    );
-    $form['field']['extra']['attributes']['disabled'] = array (
-      '#type' => 'checkbox',
-      '#title' => t("Disabled"),
-      '#return_value' => 'disabled',
-      '#description' => t('Make this field non-editable. Useful for setting an unchangeable default value.'),
-      '#weight' => 3,
-      '#default_value' => $currfield['extra']['attributes']['disabled'],
-    );
-    break;
-  case 'select':
-    $form['field']['extra']['items'] = array (
-      '#type' => 'textarea',
-      '#title' => t("Options"),
-      '#default_value' => $currfield['extra']['items'],
-      '#description' => t('A list of selectable options. One option per line.').'<br />'.webform_help('webform/helptext#variables'),
-      '#cols' => 60,
-      '#rows' => 5,
-      '#weight' => -2,
-      '#required' => TRUE,
-    );
-    $form['field']['value'] = array (
-      '#type' => 'textfield',
-      '#title' => t("Default value"),
-      '#default_value' => $currfield['default'],
-      '#description' => t('The default value of the field.').'<br />'.webform_help('webform/helptext#variables'),
-      '#size' => 60,
-      '#maxlength' => 127,
-      '#weight' => 0,
-    );
-    $form['field']['extra']['multiple'] = array (
-      '#type' => 'checkbox',
-      '#title' => t("Multiple"),
-      '#return_value' => 'Y',
-      '#default_value' => ($currfield['extra']['multiple']=='Y'?TRUE:FALSE),
-      '#description' => t('Check this option if the user should be allowed to choose multiple values.'),
-    );
-    $form['field']['extra']['aslist'] = array (
-      '#type' => 'checkbox',
-      '#title' => t("Listbox"),
-      '#return_value' => 'Y',
-      '#default_value' => ($currfield['extra']['aslist']=='Y'?TRUE:FALSE),
-      '#description' => t('Check this option if you want the select component to be of listbox type instead of radiobuttons or checkboxes.'),
-    );
-    break;
-  case 'label':
-    unset ($form['field']['extra']['description']);
-    unset ($form['field']['mandatory']);
-    $form['field']['value'] = array (
-      '#type' => 'textfield',
-      '#title' => t("Description"),
-      '#default_value' => $currfield['default'],
-      '#description' => t('A short description of the field used as help for the user when he/she uses the form.').'<br />'.webform_help('webform/helptext#variables'),
-      '#size' => 60,
-      '#maxlength' => 127,
-    );
-    break;
-  } // End switch
-  
+  // Add the submit button
   $form['field']['submit'] = array (
     '#type' => 'submit',
     '#value' => t("Done"),
@@ -897,6 +780,7 @@ function webform_edit_field_form ($node) {
 function webform_view(& $node, $teaser = 0, $page = 0) {
   global $user;
   include_once (drupal_get_path('module', 'webform')."/webform.inc");
+  _webform_load_components(); // Load all the components
   
   if (module_exist('profile')) {
     profile_load_profile($user);
@@ -914,9 +798,13 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
     }
   }
 
-  // Prepare the node for viewing, this is necessary to load the components
-  // while previewing changes to the node form
+  // Prepare the node for viewing, this is necessary to load the current
+  // webform's components while previewing changes to the node form
   webform_prepare($node);
+
+  if ($node->redirect_post && valid_url(trim($node->confirmation), true)) {
+    $form['#action'] = trim($node->confirmation);
+  }
 
   if (is_array($node->webformcomponents) && !empty ($node->webformcomponents)) {
   	// Prepare a new form array
@@ -932,12 +820,30 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
     $form['details'] = array (
       '#tree' => true,
     );
+    
     foreach ($node->webformcomponents as $cid => $component) {
     
-      // Add this user-defined field to the form (with all the values that are always available)
-      $form['submitted'][$component['name']] = _webform_create_widget($component,$cid,$sid_to_display);
-            
-      // Add hidden form elements containing this form element's component key id (cid in the database)
+      // Add this user-defined field to the form (with all the values that are always available)      
+      $renderFunction = "webform_render_".$component['type'];
+      if (function_exists($renderFunction)) {
+        $form['submitted'][$component['name']] = $renderFunction($component); // Call the component render function
+      } else {
+        drupal_set_message(t("The webform component")." '".$component['type']."' ".t(" is not able to be displayed"));
+      }
+      
+      // Load with submission information if necessary
+      if($sid_to_display){
+        // This component is display only, with the value set according information
+        // previously submitted in the submission numbered $sid_to_display
+        $submission = _webform_fetch_submission($sid_to_display);
+        
+        $form['submitted'][$component['name']]['#value'] = $submission['data'][$cid]['value']['0'];
+        
+        // Disable input
+        $form['submitted'][$component['name']]['#attributes']['disabled'] = 'disabled';
+      }
+                  
+      // Add a hidden form element containing this component's key id (cid in the database)
       $form['componentKeys'][$cid] = array (
         '#type'          => 'hidden',
         '#value'		 => $component['name'],
@@ -1038,7 +944,7 @@ function webform_client_submit($form_id, $form_values) {
 
     //TODO: Add reference back to submitted webform
   }
-
+  
   // Check confirmation field to see if redirect should be to another node or a message
   if (valid_url(trim($node->confirmation), true)) {
     header("Location: ".trim($node->confirmation));
@@ -1047,17 +953,6 @@ function webform_client_submit($form_id, $form_values) {
     drupal_goto('webform/done/'.$node->nid);
   }
 } // end webform_client_submit
-
-/**
- * Validates the entered values from email components on the client-side form.
- */
-function _webform_validate_email ($formelement) {
-  if (!valid_email_address($formelement['#value'])) {
-    $elementName = substr($formelement['#name'],(strrpos($formelement['#name'],'[')+1),-1);
-    form_set_error($elementName,t("Please enter a valid email address"));
-  } 
-  return true;
-}
 
 /**
  * Prints the confirmation message after a succefull submission.
@@ -1240,21 +1135,18 @@ function _webform_version() {
 } // function _webform_version
 
 
-
-/**
- * Hook for the default components.
- * 
- */
- function webform_components($op = 'list', $component = array()) {
- 	switch($op) {
- 		case 'list':
- 		return array ('textfield' => t('textfield'), 'textarea' => t('textarea'), 'select' => t('select'), 'label' => t('label'), 'hidden' => t('hidden'), 'email' => t('e-mail address'));
- 		// break;
- 		case 'edit':
- 		  include_once (drupal_get_path('module', 'webform')."/webform.inc");
-          return _webform_components_edit($component);
- 		default:
- 		break;
- 	}
- } // end webform_webform_components
+function _webform_load_components () {
+  static $componentList;
+  
+  if (!isset($componentList)) {
+    $componentList = array();
+    $path = drupal_get_path('module', 'webform')."/components";
+    $files = file_scan_directory($path, '^.*\.inc$');
+    foreach ($files as $filename => $file) {
+      include_once($filename);
+      $componentList[$file->name] = t($file->name);
+    }
+  }
+  return $componentList;
+}
 ?>

@@ -66,6 +66,18 @@
 
 
 /*
+ * Schema changes 2: Added redirect_post column in webform table
+ */
+function webform_update_2() {
+  
+  $ret = array();
+  
+  $ret[] = update_sql("ALTER TABLE {webform} ADD redirect_post int(1) UNSIGNED NOT NULL DEFAULT '0' AFTER confirmation");
+  
+  return $ret;
+}
+
+/*
  * Schema changes include component id's (cid) keys in the webform_component
  * and webform_submitted_data tables
  */
