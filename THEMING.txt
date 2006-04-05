@@ -1,0 +1,94 @@
+Overview
+--------
+Webform supports theming similar to the Flexinode or Views modules. Any webform
+may be themed on the client side, though doing so may require a reasonable
+amount of knowledge about the Drupal Forms API. More information about the Forms
+API may be found at http://drupaldocs.org/api/head/file/contributions/docs/developer/topics/forms_api_reference.html
+
+
+
+Theme a component
+-----------------
+
+Theming a component can be useful for producing unique components that offer
+Javascript features or additional field validation. This tutorial assumes usage
+of the phptemplate engine.
+
+- Open your theme.php file located in your theme's directory.
+- Add the following lines of php code:
+
+function phptemplate_webform_component_componentIdHere ($component) {
+  return _phptemplate_callback('webform_component_componentIdHere', array('component' => $component));
+}
+
+- Replace "componentIdHere" with the component ID within the form. This can be
+  found by viewing the source of the form or looking up the component in the
+  webform_components table in your database (it should be a 10 digit number).
+
+- Create a new file in your theme's directory named
+	"webform_component_componentIdHere.tpl.php", once again replacing
+	componentIdHere with the component ID.
+	
+- Open up your new file and customize the component however you like according
+  to the Forms API. You might include code something like this:
+  
+<div class="my-custom-component">
+	<?php
+		// Make changes to the component:
+		$component['#attributes']['style'] = "color: blue; border: none";
+		
+		// Display the component
+		echo form_render($component);
+	?>
+</div>
+
+- This probably isn't a good example because you could accomplish the same
+  effect with a stylesheet. Nevertheless, you have the potential to change or
+  override any setting that your set in the webform, or add features to fields
+  that webform does not support.
+
+
+Theme an entire webform
+-----------------------
+
+Theming a webform can be useful for rearranging elements or customizing the
+appearance of multiple components at once. This tutorial assumes usage
+of the phptemplate engine.
+
+- Open your theme.php file located in your theme's directory.
+- Add the following lines of php code:
+
+function phptemplate_webform_form_nodeIdHere ($form) {
+  return _phptemplate_callback('webform_form_nodeIdHere', array('form' => $form));
+}
+
+- Replace "nodeIdHere" with the node ID of the form.
+
+- Create a new file in your theme's directory named
+  "webform_component_nodeIdHere.tpl.php", once again replacing nodeIdHere
+  with the node ID of the webform.
+  
+- Open up your new file and customize the webform however you like. Here's an
+  example putting a field labeled "Email" inside of another fieldset. You could
+  potentially put all your components inside seperate fieldsets to give a
+  better organization to your form.
+  
+<?php
+	// Create a new fieldset within the main fieldset
+	// Note: All fields MUST stay within the 'submitted' fieldset
+	$form['submitted']['newfieldset'] = array (
+			'#type' => 'fieldset'
+	);
+	
+	// Add the form field labeled "Email" to the new fieldset
+	$form['submitted']['newfieldset']['Email'] = $form['submitted']['Email'];
+	echo form_render($form)
+   
+?>
+
+- All webform forms have 3 main fieldsets: "submitted","componentKeys",
+	and "details". Although you may move things around as you wish, keep all your
+	components within the "submitted" fieldset. Only the "submitted" fieldset is
+	displayed and webform depends on the other two to operate properly, so don't
+	mess with them unless you have good reason to do so (like you're forwarding
+	your webform to a custom PHP or PERL script).
