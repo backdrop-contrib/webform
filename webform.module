@@ -934,7 +934,7 @@ function webform_client_submit($form_id, $form_values) {
         }
       }
 
-      if (_webform_mail($node->email, $email_from_string, $email_subject_string, $message)) {
+      if (_webform_mail($node->email, $email_from_string, $email_subject_string, $message) == FALSE) {
       	watchdog('webform', t('Possible spam attempt from ').$_SERVER['REMOTE_ADDR']."<br />\n".nl2br(htmlentities($message)), WATCHDOG_WARNING);
       	drupal_set_message(t("Illegal information. Data not submitted."), 'error');
       	return false;
