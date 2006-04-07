@@ -112,7 +112,7 @@ function webform_access($op, $node) {
 function webform_insert($node) {
   global $user;
   // Insert the Webform
-  db_query("INSERT INTO {webform} (nid, confirmation, redirect_post, email, email_from, email_subject) VALUES (%d, '%s', '%s', '%s', '%s')", $node->nid, $node->confirmation, $node->redirect_post, $node->email, $node->email_from, $node->email_subject);
+  db_query("INSERT INTO {webform} (nid, confirmation, redirect_post, email, email_from, email_subject) VALUES (%d, '%s', %d, '%s', '%s', '%s')", $node->nid, $node->confirmation, $node->redirect_post, $node->email, $node->email_from, $node->email_subject);
   
   
   // Re-add existing components
