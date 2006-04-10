@@ -507,8 +507,8 @@ msgid "Done"
 msgstr "Færdig"
 
 #: webform.module:748
-msgid "<br>Warning: This button will accept your changes as sub-part of the edit.  You will still have to select <b>'submit'</b> on the next screen to make your changes permanent."
-msgstr "<br>Advarsel: Denne knap accepterer dine rettelser i denne del af formularen. Du skal stadig vælge <strong>indsend</strongs> på næste side for at gøre dine rettelser permanente."
+msgid "Warning: This button will accept your changes as sub-part of the edit.  You will still have to select <b>'submit'</b> on the next screen to make your changes permanent."
+msgstr "Advarsel: Denne knap accepterer dine rettelser i denne del af formularen. Du skal stadig vælge <strong>indsend</strongs> på næste side for at gøre dine rettelser permanente."
 
 #: webform.module:766
 msgid "Trying to post to webform from external domain."

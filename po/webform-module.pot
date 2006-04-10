@@ -360,7 +360,7 @@ msgid "Done"
 msgstr ""
 
 #: webform.module:748
-msgid "<br>Warning: This button will accept your changes as sub-part of the edit.  You will still have to select <b>'submit'</b> on the next screen to make your changes permanent."
+msgid "Warning: This button will accept your changes as sub-part of the edit.  You will still have to select <b>'submit'</b> on the next screen to make your changes permanent."
 msgstr ""
 
 #: webform.module:766
