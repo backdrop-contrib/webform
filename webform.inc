@@ -58,7 +58,7 @@ function _webform_results_clear($nid) {
   }
   else {
     $content = theme('confirm', t('Do you really want to delete all submissions for this form?'), 'webform',
-                     t('Do you really want to delete <strong>all</strong> submissions for this form?'). '<br />'.t('This action cannot be undone.'), 
+                     t('Do you really want to delete <strong>all</strong> submissions for this form?'). '<br>'.t('This action cannot be undone.'), 
                      'yes', 'no', NULL);
     return $content;
   }
