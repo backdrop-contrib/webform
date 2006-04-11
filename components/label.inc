@@ -10,6 +10,8 @@
 function webform_edit_label ($currfield) {
     $editFields = array();
     $editFields['extra']['description'] = array(); // Do not render the description field
+    $editFields['mandatory'] = array(); // Do not render the mandatory checkbox
+
     $editFields['value'] = array (
       '#type' => 'textfield',
       '#title' => t("Description"),
