@@ -233,7 +233,7 @@ function webform_settings() {
   $current_version= _webform_version();
 
   if ($installed_version['build'] < $current_version['build']) {
-    $form['webform_update'] = array('#type' => 'fieldset', '#title' => '', '#description' => l(t('Update from version %a to version %b', array ('%a' => $installed_version['text'], '%b' => $current_version['text'])), 'webform/upgrade'));
+    $form['webform_update'] = array('#type' => 'fieldset', '#title' => '', '#description' => '<a href="'.base_path().'update.php">'.t('Update from version %a to version %b', array ('%a' => $installed_version['text'], '%b' => $current_version['text'])).'</a>');
   }
 
   $form['webform_allow_cross_site_posting'] = array('#type' => 'select', '#title' =>  t("Allow cross site posting"), '#default_value' => variable_get("webform_allow_cross_site_posting", 0), "#options" => array (0 => t('Yes'), 1 => t('No')), "#description" => t("Allow postings to your webforms that do not originate from your site's domain."));
@@ -567,17 +567,17 @@ function webform_form (&$node, &$param) {
   );
   
   // Build arrays of possible return email addresses and email subject lines from elements on the form
-  $possible_email_from= array ('Automatic' => 'Automatic');
-  $possible_email_subject= array ('Automatic' => 'Automatic');
+  $possible_email_from = array ('Automatic' => t('Automatic'));
+  $possible_email_subject = array ('Automatic' => t('Automatic'));
   
   if (is_array($node->webformcomponents) && !empty ($node->webformcomponents)) {
-    foreach ($node->webformcomponents as $component) {
+    foreach ($node->webformcomponents as $cid => $component) {
       $type = $component['type'];
       if ($type == 'email' || $type == 'hidden') {
-        $possible_email_from[$component['name']]= $component['name'];
+        $possible_email_from[$component['name']] = $component['name'];
       }
       if ($type == 'textfield' || $type == 'hidden') {
-        $possible_email_subject[$component['name']]= $component['name'];
+        $possible_email_subject[$component['name']] = $component['name'];
       }
     }
   }
@@ -588,6 +588,7 @@ function webform_form (&$node, &$param) {
     '#default_value' => $node->email_from,
     '#options' => $possible_email_from,
     '#description' => t('Form e-mails will have this return address. Choose Automatic for the default'),
+    '#DANGEROUS_SKIP_CHECK' => true,
     '#weight' => 7,
   );
   $form['components']['email_subject'] = array(
@@ -596,6 +597,7 @@ function webform_form (&$node, &$param) {
     '#default_value' => $node->email_subject,
     '#options' => $possible_email_subject,
     '#description' => t('Form e-mails will have this subject line. Choose Automatic for the default'),
+    '#DANGEROUS_SKIP_CHECK' => true,
     '#weight' => 7,
   );
   
@@ -619,7 +621,7 @@ function webform_form (&$node, &$param) {
   return $form;
 }
 
-function webform_edit_field_form ($node) {
+function webform_edit_field_form (&$node) {
   // we have to do what the framework would do for us so we don't lose
   // information.
   if(!isset($_POST['edit'])) {
