@@ -7,7 +7,7 @@
     db_query("CREATE TABLE if not exists {webform} (
         nid int(10) unsigned NOT NULL default '0',
         confirmation text,
-    		redirect_post int(1) unsigned not null default '0',
+        redirect_post int(1) unsigned not null default '0',
         email varchar(255) default NULL,
         email_from varchar(255) default NULL,
         email_subject varchar(255) default NULL,
@@ -53,8 +53,7 @@
       ) TYPE=MyISAM"
     );
     
-    db_query("INSERT INTO variable VALUES ('webform_version', 'a:2:{s:4:\"text\";s:5:\"4.7.0\";s:5:\"build\";i:470;}')");
-    
+  variable_set('webform_version',array('text'=>'4.7.1', 'build' => '471'));
 
   $success = TRUE;
 
