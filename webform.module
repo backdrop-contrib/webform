@@ -347,6 +347,8 @@ function webform_prepare (&$node) {
       // Add the component changes/additions to the node components
       $cid = $_POST['edit']['field']['key'];
       if (isset($_POST['edit']['field']) && is_array($_POST['edit']['field'])) {
+        drupal_set_message("<pre>".print_r($_POST['edit']['field'],true)."</pre>");
+        unset($node->webformcomponents[$cid]);
         foreach ($_POST['edit']['field'] as $key => $value) {
           $node->webformcomponents[$cid][$key] = $value;
         }
