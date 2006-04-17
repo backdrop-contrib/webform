@@ -75,7 +75,9 @@ function webform_render_select ($component) {
 		// Set display as a select list:
 		$formItem['#default_value'] = array($value);
 		$formItem['#type'] = 'select';
-		
+		if ( $component['extra']['multiple'] == 'Y' ) {
+			$formItem['#multiple'] = TRUE;
+		}
 	} else {
 		if ( $component['extra']['multiple'] == 'Y' ) {
 			// Set display as a checkbox set
