@@ -126,29 +126,31 @@ function _webform_fetch_submission($sid) {
   return $submission;
 } // end function _webform_fetch_submission
 
-function _webform_create_mailmessage($reply) {
+function theme_webform_create_mailmessage($reply) {
   global $user;
   
   $message .=  t('Submitted on').' '.format_date(time(), 'small')."\r\n";
   $ip_address = $_SERVER['REMOTE_ADDR'];
   
   if($user->uid) {
-    $message .= t('Submitted by user').": $user->name [$ip_address] \n";
+    $message .= t('Submitted by user').": $user->name [$ip_address]\r\n";
   }
   else {
-    $message .= t('Submitted by anonymous user').": [$ip_address] \n";
+    $message .= t('Submitted by anonymous user').": [$ip_address]\r\n";
   }
-  $message .= "\n\n".t('Submitted values are:')."\n\n";
+  $message .= "\r\n\r\n".t('Submitted values are:')."\r\n\r\n";
   foreach($reply as $key => $value) {
     if (is_array($value)) {
       $message .=  "$key :";
       foreach($value as $k => $v) {
-        $message .= "\n\t\t".$k." : ".$v;
+        if (!empty($v)) {
+          $message .= "\r\n\t\t$k : $v";
+        }
       }
-      $message .= "\n";
+      $message .= "\r\n";
     }
     else {
-      $message .=  "$key : $value"."\n";
+      $message .=  "$key : $value\r\n";
     }
   }
   
