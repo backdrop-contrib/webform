@@ -143,7 +143,7 @@ function _webform_create_mailmessage($reply) {
     if (is_array($value)) {
       $message .=  "$key :";
       foreach($value as $k => $v) {
-        $message .= "\n\t\t"."$k = $v";
+        $message .= "\n\t\t".$k." : ".$v;
       }
       $message .= "\n";
     }

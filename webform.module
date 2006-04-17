@@ -347,7 +347,6 @@ function webform_prepare (&$node) {
       // Add the component changes/additions to the node components
       $cid = $_POST['edit']['field']['key'];
       if (isset($_POST['edit']['field']) && is_array($_POST['edit']['field'])) {
-        drupal_set_message("<pre>".print_r($_POST['edit']['field'],true)."</pre>");
         unset($node->webformcomponents[$cid]);
         foreach ($_POST['edit']['field'] as $key => $value) {
           $node->webformcomponents[$cid][$key] = $value;
@@ -843,11 +842,28 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
         // This component is display only, with the value set according information
         // previously submitted in the submission numbered $sid_to_display
         $submission = _webform_fetch_submission($sid_to_display);
-        
-        $form['submitted'][$component['name']]['#value'] = $submission['data'][$cid]['value']['0'];
-        
-        // Disable input
-        $form['submitted'][$component['name']]['#attributes']['disabled'] = 'disabled';
+        $numberOfValues = count($submission['data'][$cid]['value']);
+        if ($numberOfValues > 1) {
+          // This component has multiple values that need to be set
+          // Find the individual sub-components and set their values
+          $n = 0;
+          foreach ($form['submitted'][$component['name']] as $key => $value) {
+            if (strpos($key,'#') === false && is_array($value)) {
+              // Set the value
+              $form['submitted'][$component['name']][$key]['#value'] = $submission['data'][$cid]['value'][$n];
+              $form['submitted'][$component['name']][$key]['#default_value'] = $submission['data'][$cid]['value'][$n];
+              // Disable input
+              $form['submitted'][$component['name']][$key]['#attributes']['disabled'] = 'disabled';
+              $n++;
+            }
+          }
+        } else {
+          // Set the components only value
+          $form['submitted'][$component['name']]['#value'] = $submission['data'][$cid]['value']['0'];
+          $form['submitted'][$component['name']]['#default_value'] = $submission['data'][$cid]['value']['0'];        
+          // Disable input
+          $form['submitted'][$component['name']]['#attributes']['disabled'] = 'disabled';
+        }
       }
       
       // Add a theme function to each component
@@ -880,8 +896,6 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
         '#value' => t('Submit'),
         '#weight' => 1000,
       );
-    } else {
-    
     }
   }
   
@@ -1042,8 +1056,10 @@ function _webform_save_submission($node, $reply, $componentKeys) {
   foreach ($componentKeys as $cid => $cname) {
   	$value = $reply[$cname];
     if (is_array($value)) {
+      $key = 0;
       foreach ($value as $k => $v) {
-        db_query("INSERT INTO {webform_submitted_data} (nid, sid, cid, no, data) "."VALUES (%d, %d, %d, %d, '%s')", $node->nid, $sid, $cid, $k, $v);
+        db_query("INSERT INTO {webform_submitted_data} (nid, sid, cid, no, data) "."VALUES (%d, %d, %d, %d, '%s')", $node->nid, $sid, $cid, $key, $v);
+        $key++;
       }
     } else {
       db_query("INSERT INTO {webform_submitted_data} (nid, sid, cid, no, data) "."VALUES (%d, %d, %d, %d, '%s')", $node->nid, $sid, $cid, 0, $value);
