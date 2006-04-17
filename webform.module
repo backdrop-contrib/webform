@@ -849,12 +849,19 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
           $n = 0;
           foreach ($form['submitted'][$component['name']] as $key => $value) {
             if (strpos($key,'#') === false && is_array($value)) {
+              // This is a component which contains multiple fields, set each field value from the database
               // Set the value
               $form['submitted'][$component['name']][$key]['#value'] = $submission['data'][$cid]['value'][$n];
               $form['submitted'][$component['name']][$key]['#default_value'] = $submission['data'][$cid]['value'][$n];
               // Disable input
               $form['submitted'][$component['name']][$key]['#attributes']['disabled'] = 'disabled';
               $n++;
+            } elseif (strpos($key,'#options') !== false) {
+              // This is a component that has multiple values, such as a select or checkboxes.
+              // Set the value for all options at once as an array
+              $form['submitted'][$component['name']]['#default_value'] = $submission['data'][$cid]['value'];
+              // Disable input
+              $form['submitted'][$component['name']]['#attributes']['disabled'] = 'disabled';
             }
           }
         } else {
@@ -877,8 +884,8 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
       
     } // end foreach
     
-    // Do not display the submit button if this is a preview
-    if ($_POST['op'] != t('Preview')) {
+    // Do not display the submit button if this is a preview or submission view
+    if ($_POST['op'] != t('Preview') && empty($sid_to_display)) {
       // Additional hidden elements   
       // Email subject and sender
       $form['details']['email_subject'] = array (
@@ -924,7 +931,7 @@ function webform_client_submit($form_id, $form_values) {
     }
   };
   
-  $message= _webform_create_mailmessage($form_values['submitted']);
+  $message= theme_webform_create_mailmessage($form_values['submitted']);
 
   if (isset ($node->email)) {
     $node->email= strip_tags($node->email);
