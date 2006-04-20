@@ -129,39 +129,39 @@ function _webform_fetch_submission($sid) {
 function theme_webform_create_mailmessage($reply) {
   global $user;
   
-  $message .=  t('Submitted on').' '.format_date(time(), 'small')."\r\n";
+  $message .=  t('Submitted on').' '.format_date(time(), 'small')."\n";
   $ip_address = $_SERVER['REMOTE_ADDR'];
   
   if($user->uid) {
-    $message .= t('Submitted by user').": $user->name [$ip_address]\r\n";
+    $message .= t('Submitted by user').": $user->name [$ip_address]\n";
   }
   else {
-    $message .= t('Submitted by anonymous user').": [$ip_address]\r\n";
+    $message .= t('Submitted by anonymous user').": [$ip_address]\n";
   }
-  $message .= "\r\n\r\n".t('Submitted values are:')."\r\n\r\n";
+  $message .= "\n\n".t('Submitted values are:')."\n\n";
   foreach($reply as $key => $value) {
     if (is_array($value)) {
       $message .=  "$key :";
       foreach($value as $k => $v) {
         if (!empty($v)) {
-          $message .= "\r\n\t\t$k : $v";
+          $message .= "\n\t\t$k : $v";
         }
       }
-      $message .= "\r\n";
+      $message .= "\n";
     }
     else {
-      $message .=  "$key : $value\r\n";
+      $message .=  "$key : $value\n";
     }
   }
   
   if (variable_get('webform_debug', 0) == 2) {
-    $message .= "\r\n";
-    $message .= "DEBUG INFO\r\n";
-    $message .= "==========\r\n";
-    $message .= "\$_SERVER is\r\n";
+    $message .= "\n";
+    $message .= "DEBUG INFO\n";
+    $message .= "==========\n";
+    $message .= "\$_SERVER is\n";
     $message .= print_r($_SERVER, true);
-    $message .= "\r\n";
-    $message .= "\$_POST is\r\n";
+    $message .= "\n";
+    $message .= "\$_POST is\n";
     $message .= print_r($_POST, true);
   }
 
@@ -192,7 +192,7 @@ function _webform_mail($to, $from, $subject, $message) {
   }
   // END - SPAM FILTER
 
-  $headers .= "Date: ".date("r")."\r\n".
+  $headers .= "Date: ".date("r")."\n".
     "X-Mailer: Drupal Webform (PHP/" . phpversion().")";
 
   return user_mail($to, $subject, $message, $headers);
