@@ -43,8 +43,7 @@ function _webform_page() {
  * @param      integer ID of node for which to clear submissions
  */
 function _webform_results_clear($nid) {
-  if ($_POST['edit']['confirm']) {
-    
+  if ($_POST['op'] == t('Clear')) {
     $query = 'DELETE FROM {webform_submitted_data} WHERE nid = %d';
     $res = db_query($query, $nid);
     $query = 'DELETE FROM {webform_submissions} WHERE nid = %d';
@@ -57,10 +56,19 @@ function _webform_results_clear($nid) {
     drupal_goto('webform');
   }
   else {
-    $content = theme('confirm', t('Do you really want to delete all submissions for this form?'), 'webform',
-                     t('Do you really want to delete <strong>all</strong> submissions for this form?'). '<br>'.t('This action cannot be undone.'), 
-                     'yes', 'no', NULL);
-    return $content;
+    $form['delete'] = array (
+      '#type' => 'submit',
+      '#value' => t('Clear'),
+    );
+    $form['cancel'] = array (
+      '#type' => 'markup',
+      '#value' => '<a href="'.url('node/'.$nid.'/results').'">'.t("Cancel").'</a>',
+    );
+
+    drupal_set_title(t("Are you sure you want to delete all submissions for this form?"));
+    $output = t('This action cannot be undone.');
+    $output .= drupal_get_form('clear_results',$form);
+    return $output;
   }
 } // end function _webform_results_clear
 
@@ -93,7 +101,7 @@ function _webform_submission_delete($nid, $sid) {
     $node = node_load($nid);
     drupal_set_title(t("Are you sure you want to delete this submission?"));
     $output .= t('This action cannot be undone');
-    $output = drupal_get_form('delete_submission',$form);
+    $output .= drupal_get_form('delete_submission',$form);
     return $output;
   }
 } // end function _webform_submission_delete
