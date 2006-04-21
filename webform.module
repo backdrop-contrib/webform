@@ -992,7 +992,7 @@ function _webform_thanks() {
   if (arg(2)) {
     $node= node_load(array ('nid' => arg(2)));
     if (node_access('view', $node)) {
-      $node->body= check_markup($node->confirmation, $node->format);
+      $node->body= check_markup($node->confirmation, $node->format, FALSE);
       drupal_set_title($node->title);
       return theme('node', $node, FALSE, TRUE);
     } else {
