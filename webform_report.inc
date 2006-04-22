@@ -44,32 +44,37 @@ function _webform_results_submissions($nid) {
 function _webform_results_table($nid) {
   include_once(drupal_get_path('module', 'webform')."/webform.inc");
 
-  $first = true;
-  $cell = array();
+  $header = array();
   $rows = array();
-  
-  // Get all the submitted values for the node
-  $query = 'SELECT ws.sid '.
-    ' FROM '.
-    ' {webform_submissions} ws '.
-    ' WHERE '.
-    ' ws.nid = %d ';
-  
-  $res = db_query($query, $nid);
-  
+  $cell = array();
+
   $header[] = t('#');
   $header[] = t('Time');
-  
-  while ($field = db_fetch_object($res)) {
-    $submission = _webform_fetch_submission($field->sid);
-    $cell[] = $submission['sid'];
-    $cell[] = format_date($submission['submitted'], 'small');
-    
-    foreach ($submission['data'] as $cid => $data) {
-      if($first) {
-        $header[] = $data['name'];
-      }
 
+  // Get all the component cid and names for the node
+  $query = 'SELECT cid, name, type FROM {webform_component} WHERE nid = %d ORDER BY weight, name';
+  $res = db_query($query, $nid);
+  while($component = db_fetch_array($res)) {
+    // Labels and captcha are not displayed
+    if($component['type'] != 'label' && $component['type'] != 'captcha') {
+      $components[] = $component;
+      $header[] = $component['name'];
+    }
+  }
+
+  // Get all the submissions for the node
+  $query = 'SELECT ws.sid FROM {webform_submissions} ws WHERE ws.nid = %d ';
+  $res = db_query($query, $nid);
+
+  // A row for each submission
+  while ($field = db_fetch_array($res)) {
+    $submission = _webform_fetch_submission($field['sid']);
+    $cell[] = $submission['sid'];
+    $cell[] = $submission['submitted'];
+
+    // A cell for each component
+    foreach($components as $component) {
+      $data = $submission['data'][$component['cid']];
       if (count($data['value']) > 1) {
         $cell[] = theme('item_list', $data['value']);
       }
@@ -77,10 +82,10 @@ function _webform_results_table($nid) {
         $cell[] = $data['value']['0'];
       }
     }
-    $first = false;
     $rows[] = $cell;
     unset($cell);
   } 
+
   return theme('table', $header, $rows);
 } // end function _webform_results_table($nid)
 
