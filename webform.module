@@ -810,7 +810,8 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
   }
   
   // Add a theme function for this form
-  $form['#theme'] = 'webform_form_'.$node->nid;
+  // SEE BUG REPORT #60982, theming support broken in 4.7RC4
+  //$form['#theme'] = 'webform_form_'.$node->nid;
 
   if (is_array($node->webformcomponents) && !empty ($node->webformcomponents)) {
   	// Prepare a new form array
@@ -874,7 +875,8 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
       }
       
       // Add a theme function to each component
-      $form['submitted'][$component['name']]['#theme'] = 'webform_component_'.$cid;
+      // SEE BUG REPORT #60982, theming support broken in 4.7RC4
+      //$form['submitted'][$component['name']]['#theme'] = 'webform_component_'.$cid;
                   
       // Add a hidden form element containing this component's key id (cid in the database)
       $form['componentKeys'][$cid] = array (
