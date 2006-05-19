@@ -731,7 +731,7 @@ function webform_edit_field_form (&$node) {
 
   // Add the fields specific to this component type:	
 	_webform_load_components(); // Load all component types
-	$editFunction = "webform_edit_".$currfield['type'];
+	$editFunction = "_webform_edit_".$currfield['type'];
 	if (function_exists($editFunction)) {
 		$additionalFormElements = $editFunction($currfield); // Call the component render function
 	} else {
@@ -810,8 +810,7 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
   }
   
   // Add a theme function for this form
-  // SEE BUG REPORT #60982, theming support broken in 4.7RC4
-  //$form['#theme'] = 'webform_form_'.$node->nid;
+  $form['#theme'] = 'webform_form_'.$node->nid;
 
   if (is_array($node->webformcomponents) && !empty ($node->webformcomponents)) {
   	// Prepare a new form array
@@ -829,54 +828,24 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
     );
     
     foreach ($node->webformcomponents as $cid => $component) {
-    
-      // Add this user-defined field to the form (with all the values that are always available)      
-      $renderFunction = "webform_render_".$component['type'];
-      if (function_exists($renderFunction)) {
-        $form['submitted'][$component['name']] = $renderFunction($component); // Call the component render function
-      } else {
-        drupal_set_message(t("The webform component")." '".$component['type']."' ".t(" is not able to be displayed"));
-      }
-      
       // Load with submission information if necessary
       if($sid_to_display){
         // This component is display only, with the value set according information
         // previously submitted in the submission numbered $sid_to_display
         $submission = _webform_fetch_submission($sid_to_display);
-        $numberOfValues = count($submission['data'][$cid]['value']);
-        if ($numberOfValues > 1) {
-          // This component has multiple values that need to be set
-          // Find the individual sub-components and set their values
-          $n = 0;
-          foreach ($form['submitted'][$component['name']] as $key => $value) {
-            if (strpos($key,'#') === false && is_array($value)) {
-              // This is a component which contains multiple fields, set each field value from the database
-              // Set the value
-              $form['submitted'][$component['name']][$key]['#value'] = $submission['data'][$cid]['value'][$n];
-              $form['submitted'][$component['name']][$key]['#default_value'] = $submission['data'][$cid]['value'][$n];
-              // Disable input
-              $form['submitted'][$component['name']][$key]['#attributes']['disabled'] = 'disabled';
-              $n++;
-            } elseif (strpos($key,'#options') !== false) {
-              // This is a component that has multiple values, such as a select or checkboxes.
-              // Set the value for all options at once as an array
-              $form['submitted'][$component['name']]['#default_value'] = $submission['data'][$cid]['value'];
-              // Disable input
-              $form['submitted'][$component['name']]['#attributes']['disabled'] = 'disabled';
-            }
-          }
-        } else {
-          // Set the components only value
-          $form['submitted'][$component['name']]['#value'] = $submission['data'][$cid]['value']['0'];
-          $form['submitted'][$component['name']]['#default_value'] = $submission['data'][$cid]['value']['0'];        
-          // Disable input
-          $form['submitted'][$component['name']]['#attributes']['disabled'] = 'disabled';
+        $displayFunction = "_webform_submission_display_".$component['type'];
+        if (function_exists($displayFunction)) {
+          $form['submitted'][$component['name']] = $displayFunction($submission['data'][$cid],$component);
         }
+      } else {
+        // Add this user-defined field to the form (with all the values that are always available)      
+        $renderFunction = "_webform_render_".$component['type'];
+        if (function_exists($renderFunction)) {
+          $form['submitted'][$component['name']] = $renderFunction($component); // Call the component render function
+        } else {
+          drupal_set_message(t("The webform component")." '".$component['type']."' ".t("is not able to be displayed"));
+        }      
       }
-      
-      // Add a theme function to each component
-      // SEE BUG REPORT #60982, theming support broken in 4.7RC4
-      //$form['submitted'][$component['name']]['#theme'] = 'webform_component_'.$cid;
                   
       // Add a hidden form element containing this component's key id (cid in the database)
       $form['componentKeys'][$cid] = array (

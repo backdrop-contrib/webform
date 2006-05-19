@@ -54,8 +54,7 @@ function _webform_results_clear($nid) {
 
     watchdog('webform','webform "' . $title . '" entries cleared.', WATCHDOG_NOTICE);
     drupal_goto('webform');
-  }
-  else {
+  } else {
     $form['delete'] = array (
       '#type' => 'submit',
       '#value' => t('Clear'),
@@ -65,8 +64,8 @@ function _webform_results_clear($nid) {
       '#value' => '<a href="'.url('node/'.$nid.'/results').'">'.t("Cancel").'</a>',
     );
 
-    drupal_set_title(t("Are you sure you want to delete all submissions for this form?"));
-    $output = t('This action cannot be undone.');
+    drupal_set_title(t("Clear Form Submissions"));
+    $output = t("Are you sure you want to delete all submissions for this form?")." ".t('This action cannot be undone.');
     $output .= drupal_get_form('clear_results',$form);
     return $output;
   }
