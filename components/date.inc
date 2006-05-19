@@ -130,7 +130,7 @@ function _webform_submission_display_date ($data,$component) {
  **/
 function _webform_analysis_rows_date ($component) {  
   $query = 'SELECT no,data '.
-    ' FROM webform_submitted_data '.
+    ' FROM {webform_submitted_data} '.
     ' WHERE nid = %d '.
     ' AND  cid = %d '.
     ' ORDER BY sid,no ASC ';

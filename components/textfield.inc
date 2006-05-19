@@ -84,7 +84,7 @@ function _webform_submission_display_textfield ($data,$component) {
  **/
 function _webform_analysis_rows_textfield ($component) {  
   $query = 'SELECT data '.
-    ' FROM webform_submitted_data '.
+    ' FROM {webform_submitted_data} '.
     ' WHERE nid = %d '.
     '  AND cid = %d';
   $nonblanks = 0;

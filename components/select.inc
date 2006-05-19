@@ -127,7 +127,7 @@ function _webform_submission_display_select ($data,$component) {
  **/
 function _webform_analysis_rows_select ($component) {
     $query = 'SELECT data, count(data) as datacount '.
-      ' FROM webform_submitted_data '.
+      ' FROM {webform_submitted_data} '.
       ' WHERE nid = %d '.
       ' AND cid = %d '.
       ' AND data != "0" '.

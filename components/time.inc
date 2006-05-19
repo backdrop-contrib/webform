@@ -157,7 +157,7 @@ function _webform_submission_display_time ($data,$component) {
  **/
 function _webform_analysis_rows_time ($component) {  
   $query = 'SELECT no,data '.
-    ' FROM webform_submitted_data '.
+    ' FROM {webform_submitted_data} '.
     ' WHERE nid = %d '.
     ' AND  cid = %d '.
     ' ORDER BY sid,no ASC ';

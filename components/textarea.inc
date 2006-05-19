@@ -95,9 +95,9 @@ function _webform_submission_display_textarea ($data,$component) {
  **/
 function _webform_analysis_rows_textarea ($component) {  
   $query = 'SELECT data '.
-    ' FROM webform_submitted_data '.
+    ' FROM {webform_submitted_data} '.
     ' WHERE nid = %d '.
-    '  AND cid = %d';
+    ' AND cid = %d';
   $nonblanks = 0;
   $submissions = 0;
   $wordcount = 0;
