@@ -151,13 +151,14 @@ function theme_webform_create_mailmessage($reply) {
       $message .=  "$key :";
       foreach($value as $k => $v) {
         if (!empty($v)) {
-          $message .= "\n\t\t$k : $v";
+					// Note that newlines cannot be preceeded by spaces to display properly in some clients
+          $message .= "\n\t\t$k :".(empty($v) ? "\n" : " $v\n");
         }
       }
       $message .= "\n";
-    }
-    else {
-      $message .=  "$key : $value\n";
+    } else {
+			// Note that newlines cannot be preceeded by spaces to display properly in some clients
+      $message .=  "$key :".(empty($value) ? "\n" : " $value\n");
     }
   }
   
