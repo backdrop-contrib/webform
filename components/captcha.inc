@@ -7,7 +7,7 @@
  * are not necessary to specify here (although they may be overridden if desired).
  * @returns An array of form items to be displayed on the edit component page
  **/
-function webform_edit_captcha ($currfield) {
+function _webform_edit_captcha ($currfield) {
 	if (!module_exist("captcha")) {
 		drupal_set_message(t("Using captcha components in webform requires the <a href='http://drupal.org/project/captcha'>Captcha</a> and <a href='http://drupal.org/node/52349'>Textimage</a> modules."),"error");
 	}
@@ -35,7 +35,7 @@ function webform_edit_captcha ($currfield) {
  * @param $component An array of information describing the component, directly correlating to the webform_component database schema
  * @returns An array of a form item to be displayed on the client-side webform
  **/
-function webform_render_captcha ($component) {
+function _webform_render_captcha ($component) {
 	if (module_exist("captcha")) {
 		// Create a dummy form to pass to the captcha function
 		$dummyForm = array();
@@ -45,7 +45,7 @@ function webform_render_captcha ($component) {
 			call_user_func_array($captcha_type.'_captchachallenge', array(&$dummyForm, &$_SESSION['captcha']));   
 		}
 		// Set a custom validation function (defined below)
-		$dummyForm['captcha_response']['#validate'] = array (webform_validate_captcha => array());
+		$dummyForm['captcha_response']['#validate'] = array ("_webform_validate_captcha" => array());
 		// Extract the created captcha into formItem to be returned to webform
 		$formItem = $dummyForm['captcha_response'];
 		
@@ -63,7 +63,7 @@ function webform_render_captcha ($component) {
 }
 
 
-function webform_validate_captcha($captcha_response) {
+function _webform_validate_captcha($captcha_response) {
   // This function copied directly from the captcha module.
   // The below line is commented out to require every submission to use a captcha,
   // no caching correct answers allowed, lest one real user enter the captcha
@@ -82,6 +82,18 @@ function webform_validate_captcha($captcha_response) {
 	}
 	
 	return $_SESSION['captcha_correct'];
+}
+
+/** 
+ * function _webform_submission_display_captcha
+ * Display the result of a captcha submission. The output of this function will be displayed under the "results" tab then "submissions"
+ * @param $data An array of information containing the submission result, directly correlating to the webform_submitted_data database schema
+ * @param $component An array of information describing the component, directly correlating to the webform_component database schema
+ * @returns Textual output formatted for human reading.
+ **/
+function _webform_submission_display_captcha ($data,$component) {
+  $formItem = array();
+  return $formItem;
 }
 
 ?>

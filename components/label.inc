@@ -7,7 +7,7 @@
  * are not necessary to specify here (although they may be overridden if desired).
  * @returns An array of form items to be displayed on the edit component page
  **/
-function webform_edit_label ($currfield) {
+function _webform_edit_label ($currfield) {
     $editFields = array();
     $editFields['extra']['description'] = array(); // Do not render the description field
     $editFields['mandatory'] = array(); // Do not render the mandatory checkbox
@@ -29,7 +29,7 @@ function webform_edit_label ($currfield) {
  * @param $component An array of information describing the component, directly correlating to the webform_component database schema
  * @returns An array of a form item to be displayed on the client-side webform
  **/
-function webform_render_label ($component) {
+function _webform_render_label ($component) {
 	$formItem = array (
     '#type'          => 'markup',
     '#value'				 => _webform_filtervalues($component['value']),
@@ -37,4 +37,18 @@ function webform_render_label ($component) {
 	);
 	return $formItem;
 }
+
+
+/** 
+ * function _webform_submission_data_label
+ * Display the result of a textfield submission. The output of this function will be displayed under the "results" tab then "submissions"
+ * @param $data An array of information containing the submission result, directly correlating to the webform_submitted_data database schema
+ * @param $component An array of information describing the component, directly correlating to the webform_component database schema
+ * @returns Textual output formatted for human reading.
+ **/
+function _webform_submission_display_label ($data,$component) {
+  $formItem = _webform_render_label($component);
+  return $formItem;
+}
+
 ?>

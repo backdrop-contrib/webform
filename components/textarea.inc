@@ -7,7 +7,7 @@
  * are not necessary to specify here (although they may be overridden if desired).
  * @returns An array of form items to be displayed on the edit component page
  **/
-function webform_edit_textarea ($currfield) {
+function _webform_edit_textarea ($currfield) {
     $editFields = array();
     $editFields['value'] = array (
       '#type' => 'textarea',
@@ -51,7 +51,7 @@ function webform_edit_textarea ($currfield) {
  * @param $component An array of information describing the component, directly correlating to the webform_component database schema
  * @returns An array of a form item to be displayed on the client-side webform
  **/
-function webform_render_textarea ($component) {
+function _webform_render_textarea ($component) {
 	$formItem = array (
     '#type'          => "textarea",
     '#title'         => $component['name'],
@@ -72,4 +72,85 @@ function webform_render_textarea ($component) {
 
 	return $formItem;
 }
+
+/** 
+ * function _webform_submission_data_textarea
+ * Display the result of a textfield submission. The output of this function will be displayed under the "results" tab then "submissions"
+ * @param $data An array of information containing the submission result, directly correlating to the webform_submitted_data database schema
+ * @param $component An array of information describing the component, directly correlating to the webform_component database schema
+ * @returns Textual output formatted for human reading.
+ **/
+function _webform_submission_display_textarea ($data,$component) {
+  $formItem = _webform_render_textarea($component);
+  $formItem['#default_value'] = $data['value']['0'];
+  $formItem['#attributes']    = array("disabled" => "disabled");
+  return $formItem;
+}
+
+/** 
+ * function _webform_analysis_view_textarea
+ * Calculate and returns statistics about results for this component from all submission to this webform. The output of this function will be displayed under the "results" tab then "analysis"
+ * @param $component An array of information describing the component, directly correlating to the webform_component database schema
+ * @returns An array of data rows, each containing a statistic for this component's submissions.
+ **/
+function _webform_analysis_rows_textarea ($component) {  
+  $query = 'SELECT data '.
+    ' FROM webform_submitted_data '.
+    ' WHERE nid = %d '.
+    '  AND cid = %d';
+  $nonblanks = 0;
+  $submissions = 0;
+  $wordcount = 0;
+
+  $result = db_query($query, $component['nid'], $component['cid']);
+  while ($data = db_fetch_array($result)) {
+    if ( strlen(trim($data['data'])) > 0 ) {
+      $nonblanks++;
+      $wordcount += str_word_count(trim($data['data']));
+    }
+    $submissions++;
+  }
+  
+  $rows[0] = array( t('Left Blank'), ($submissions - $nonblanks));
+  $rows[1] = array( t('User entered value'), $nonblanks);
+  $rows[2] = array( t('Average submission length in words (ex blanks)'), 
+                    ($nonblanks!=0?($wordcount/$nonblanks):'0'));
+  return $rows;
+}
+
+/** 
+ * function _webform_table_data_textarea
+ * Return the result of this component's submission for display in a table. The output of this function will be displayed under the "results" tab then "table"
+ * @param $data An array of information containing the submission result, directly correlating to the webform_submitted_data database schema
+ * @returns Textual output formatted for human reading.
+ **/
+function _webform_table_data_textarea ($data) {
+  return empty($data['value']['0']) ? "" : $data['value']['0'];
+}
+
+
+/** 
+ * function _webform_csv_headers_textarea
+ * Return the header information for this component to be displayed in a comma seperated value file. The output of this function will be displayed under the "results" tab then "download"
+ * @param $component An array of information describing the component, directly correlating to the webform_component database schema
+ * @returns An array of data to be displayed in the first three rows of a CSV file, not including either prefixed or trailing commas
+ **/
+function _webform_csv_headers_textarea ($component) {
+  $header = array();
+  $header[0] = '';
+  $header[1] = '';
+  $header[2] = '"'.$component['name'].'"';
+  return $header;
+}
+
+/** 
+ * function _webform_csv_data_textarea
+ * Return the result of a textfield submission. The output of this function will be displayed under the "results" tab then "submissions"
+ * @param $data An array of information containing the submission result, directly correlating to the webform_submitted_data database schema
+ * @returns Textual output formatted for CSV, not including either prefixed or trailing commas
+ **/
+function _webform_csv_data_textarea ($data) {
+  return empty($data['value']['0']) ? "" : $data['value']['0'];
+}
+
 ?>
