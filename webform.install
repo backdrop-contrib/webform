@@ -64,6 +64,12 @@
   }
 }      
 
+/*
+ * Schema change 3: Update to UTF8
+ */
+function webform_update_3() {
+  return _system_update_utf8(array('webform', 'webform_component', 'webform_role_node', 'webform_submissions', 'webform_submitted_data'));
+}
 
 /*
  * Schema changes 2: Added redirect_post column in webform table

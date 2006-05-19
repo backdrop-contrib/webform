@@ -5,7 +5,9 @@ CREATE TABLE webform
     email varchar(255),
     email_subject varchar(255),
     email_from varchar(255),
-    primary key(nid));
+    primary key(nid))
+    CHARACTER SET utf8 
+;
 
 CREATE TABLE webform_component 
   ( nid int(10) unsigned not null, 
@@ -16,12 +18,16 @@ CREATE TABLE webform_component
     extra text, 
     mandatory int(2) unsigned, 
     weight int(2),
-    PRIMARY KEY(nid, cid));
+    PRIMARY KEY(nid, cid))
+    CHARACTER SET utf8 
+;
 
 CREATE TABLE webform_role_node 
   ( nid int(10) unsigned not null,
     rid int(10) unsigned not null,
-    PRIMARY KEY(nid, rid));
+    PRIMARY KEY(nid, rid))
+    CHARACTER SET utf8 
+;
 
 CREATE TABLE webform_submitted_data
   ( nid int(10) unsigned NOT NULL default '0',
@@ -29,15 +35,19 @@ CREATE TABLE webform_submitted_data
     cid int(10) unsigned NOT NULL default '0',
     no int(10) unsigned NOT NULL default '0',
     data longtext,
-    PRIMARY KEY (nid,sid,cid,no));
+    PRIMARY KEY (nid,sid,cid,no))
+    CHARACTER SET utf8 
+;
 
 CREATE TABLE webform_submissions 
   ( nid int(10) unsigned NOT NULL default '0', 
     sid int(10) unsigned NOT NULL default '0',
     submitted int(11)  NOT NULL default '0',
-    PRIMARY KEY  (nid, sid));
+    PRIMARY KEY  (nid, sid))
+    CHARACTER SET utf8 
+;
 
 -- Setting default variables
 DELETE FROM variable WHERE name = 'webform_version';
 INSERT INTO variable VALUES ('webform_version', 'a:2:{s:4:"text";s:5:"4.7.1";s:5:"build";i:471;}');
-UPDATE system SET schema_version = 1 WHERE name = 'webform';
+UPDATE system SET schema_version = 3 WHERE name = 'webform';
