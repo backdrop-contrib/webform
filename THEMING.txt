@@ -5,48 +5,9 @@ may be themed on the client side, though doing so may require a reasonable
 amount of knowledge about the Drupal Forms API. More information about the Forms
 API may be found at http://drupaldocs.org/api/head/file/contributions/docs/developer/topics/forms_api_reference.html
 
-
-
-Theme a component
------------------
-
-Theming a component can be useful for producing unique components that offer
-Javascript features or additional field validation. This tutorial assumes usage
-of the phptemplate engine.
-
-- Open your theme.php file located in your theme's directory.
-- Add the following lines of php code:
-
-function phptemplate_webform_component_componentIdHere ($component) {
-  return _phptemplate_callback('webform_component_componentIdHere', array('component' => $component));
-}
-
-- Replace "componentIdHere" with the component ID within the form. This can be
-  found by viewing the source of the form or looking up the component in the
-  webform_components table in your database (it should be a 10 digit number).
-
-- Create a new file in your theme's directory named
-	"webform_component_componentIdHere.tpl.php", once again replacing
-	componentIdHere with the component ID.
-	
-- Open up your new file and customize the component however you like according
-  to the Forms API. You might include code something like this:
-  
-<div class="my-custom-component">
-	<?php
-		// Make changes to the component:
-		$component['#attributes']['style'] = "color: blue; border: none";
-		
-		// Display the component
-		echo form_render($component);
-	?>
-</div>
-
-- This probably isn't a good example because you could accomplish the same
-  effect with a stylesheet. Nevertheless, you have the potential to change or
-  override any setting that your set in the webform, or add features to fields
-  that webform does not support.
-
+Theme submission emails
+-----------------------
+- TODO: documentation needed on this
 
 Theme an entire webform
 -----------------------
