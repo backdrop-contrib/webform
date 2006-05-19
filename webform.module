@@ -902,7 +902,7 @@ function webform_client_submit($form_id, $form_values) {
     }
   };
   
-  $message= theme_webform_create_mailmessage($form_values['submitted']);
+  $message = theme("webform_create_mailmessage",$form_values['submitted']);
 
   if (isset ($node->email)) {
     $node->email= strip_tags($node->email);
