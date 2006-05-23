@@ -132,18 +132,20 @@ function _webform_results_download($nid) {
   $header[2] .= "Serial,Time,SID";
   // Compile header information
   _webform_load_components(); // Load all components
-  foreach($node->webformcomponents as $cid => $component) {
-    $csvHeaderFunction   = "_webform_csv_headers_".$component['type'];
-    if (function_exists($csvHeaderFunction)) {
-      // Let each component determine its headers
-      $componentHeader = $csvHeaderFunction($component);
-      $header[0] .= ",".$componentHeader[0];
-      $header[1] .= ",".$componentHeader[1];
-      $header[2] .= ",".$componentHeader[2];
-      
+  if (is_array($node->webformcomponents)) {
+    foreach($node->webformcomponents as $cid => $component) {
+      $csvHeaderFunction   = "_webform_csv_headers_".$component['type'];
+      if (function_exists($csvHeaderFunction)) {
+        // Let each component determine its headers
+        $componentHeader = $csvHeaderFunction($component);
+        $header[0] .= ',"'.str_replace('"',"'",$componentHeader[0]).'"';
+        $header[1] .= ',"'.str_replace('"',"'",$componentHeader[1]).'"';
+        $header[2] .= ',"'.str_replace('"',"'",$componentHeader[2]).'"';
+        
+      }
     }
   }
-
+  
   // Write header information
   $file_record = $header[0] ."\n". $header[1] ."\n". $header[2] . "\n";
   @fwrite($handle,$file_record);
@@ -166,7 +168,7 @@ function _webform_results_download($nid) {
       $csvDataFunction   = "_webform_csv_data_".$component['type'];
       if (function_exists($csvDataFunction)) {
         // Let each component add its data
-        $row .= ",".$csvDataFunction($submission['data'][$cid],$component);
+        $row .= ',"'.str_replace('"',"'",$csvDataFunction($submission['data'][$cid],$component)).'"';
         
       }
     }
