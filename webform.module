@@ -963,8 +963,13 @@ function webform_client_submit($form_id, $form_values) {
     if (!empty ($node->email)) {
     
       // Create a themed message for mailing
-      $message = theme("webform_create_mailmessage",$form_values['submitted']);
-    
+      // Check for a node-specific message:
+      $message = theme("webform_create_mailmessage_$node->nid",$form_values['submitted']);
+      if (!$message) {
+        // Otherwise use the generic form:
+        $message = theme("webform_create_mailmessage",$form_values['submitted']);
+      }
+      
       // Build arrays of possible return email addresses and email subject lines from elements on the form
       
       // Default values:
