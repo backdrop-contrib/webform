@@ -8,11 +8,13 @@
         nid int(10) unsigned NOT NULL default '0',
         confirmation text,
         redirect_post int(1) unsigned not null default '0',
+        submit_limit int(2)  not null default '-1',
+        submit_interval int(10) not null default '157784630',
         email varchar(255) default NULL,
         email_from varchar(255) default NULL,
         email_subject varchar(255) default NULL,
         PRIMARY KEY  (nid)
-      ) TYPE=MyISAM"
+      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
     );
     
     db_query("CREATE TABLE if not exists {webform_component} (
@@ -25,22 +27,17 @@
         mandatory int(2) unsigned default NULL,
         weight int(2) default NULL,
         PRIMARY KEY  (nid,cid)
-      ) TYPE=MyISAM"
+      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
     );
-    
-    db_query("CREATE TABLE if not exists {webform_role_node} (
-        nid int(10) unsigned NOT NULL default '0',
-        rid int(10) unsigned NOT NULL default '0',
-        PRIMARY KEY  (nid,rid)
-      ) TYPE=MyISAM"
-    );
-    
+ 
     db_query("CREATE TABLE if not exists {webform_submissions} (
         nid int(10) unsigned NOT NULL default '0',
         sid int(10) unsigned NOT NULL default '0',
         submitted int(11) NOT NULL default '0',
+        user varchar(128),
+        remote_addr varchar(128),
         PRIMARY KEY  (nid,sid)
-      ) TYPE=MyISAM"
+      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
     );
     
     db_query("CREATE TABLE if not exists {webform_submitted_data} (
@@ -50,7 +47,7 @@
         no int(10) unsigned NOT NULL default '0',
         data longtext,
         PRIMARY KEY  (nid,sid,cid,no)
-      ) TYPE=MyISAM"
+      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
     );
     
   variable_set('webform_version',array('text'=>'4.7.1', 'build' => '471'));
@@ -62,25 +59,6 @@
   } else {
     drupal_set_message(t('The installation of webform module was unsuccessful.'), 'error');
   }
-}      
-
-/*
- * Schema change 3: Update to UTF8
- */
-function webform_update_3() {
-  return _system_update_utf8(array('webform', 'webform_component', 'webform_role_node', 'webform_submissions', 'webform_submitted_data'));
-}
-
-/*
- * Schema changes 2: Added redirect_post column in webform table
- */
-function webform_update_2() {
-  
-  $ret = array();
-  
-  $ret[] = update_sql("ALTER TABLE {webform} ADD redirect_post int(1) UNSIGNED NOT NULL DEFAULT '0' AFTER confirmation");
-  
-  return $ret;
 }
 
 /*
@@ -110,7 +88,7 @@ function webform_update_1() {
   $result = db_query("SELECT ws.nid, ws.sid, wc.cid, ws.name, ws.data ".
                      " FROM {webform_submitted_data} ws, {webform_component} wc ".
                      " WHERE ws.nid = wc.nid ".
-                     "      AND ws.name = wc.name ");
+                     " AND ws.name = wc.name ");
   
   while ($row = db_fetch_object($result)) {    
     $data = unserialize($row->data);
@@ -140,6 +118,52 @@ function webform_update_1() {
   
   return $ret;
 }
+
+/*
+ * Schema changes 2: Added redirect_post column in webform table
+ */
+function webform_update_2() {
+  
+  $ret = array();
+  
+  $ret[] = update_sql("ALTER TABLE {webform} ADD redirect_post int(1) UNSIGNED NOT NULL DEFAULT '0' AFTER confirmation");
+  
+  return $ret;
+}
+
+
+/*
+ * Schema change 3: Update to UTF8
+ */
+function webform_update_3() {
+  return _system_update_utf8(array('webform', 'webform_component', 'webform_role_node', 'webform_submissions', 'webform_submitted_data'));
+}
+
+/*
+ * Schema change 4: Remove the webform_role_node table, node access can be handled by other modules made for this purpose.
+ * Add additional columns to webform_submissions for recording of repeated submissions (IP Address, Browser, etc).
+ * Add additional columns to webform for setting submission limitations
+ * Change 'maintain webforms' permission into two seperate perms: 'edit webforms', 'access webform results'
+ */
+function webform_update_4() {
+  $ret[] = update_sql("DROP TABLE if exists {webform_role_node}");
+  $ret[] = update_sql("ALTER TABLE {webform_submissions} ADD user varchar(128) AFTER submitted");
+  $ret[] = update_sql("ALTER TABLE {webform_submissions} ADD remote_addr varchar(128) AFTER user");
+  $ret[] = update_sql("ALTER TABLE {webform} ADD submit_limit int(2) NOT NULL DEFAULT '-1' AFTER redirect_post");
+  $ret[] = update_sql("ALTER TABLE {webform} ADD submit_interval int(10) NOT NULL DEFAULT '157784630' AFTER submit_limit"); // 5 years in seconds
+  
+  // Split 'maintain webforms' permissions into both 'edit webforms' and 'access webform results'
+  $result = db_query("SELECT rid,perm FROM {permission}");
+  while ($row = db_fetch_object($result)) {
+    if (strpos($row->perm,"maintain webforms") !== false) {
+      $updatedPerm = str_replace("maintain webforms", "edit webforms, access webform results", $row->perm);
+      db_query("UPDATE {permission} SET perm='%s' WHERE rid = %d", $updatedPerm, $row->rid);
+    }
+  }
+  return $ret;
+}
+
+
 
 /**
  * Makes updates to the database structure (Pre-4.7 versions of Drupal).
