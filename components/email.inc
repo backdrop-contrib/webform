@@ -138,7 +138,7 @@ function _webform_csv_headers_email ($component) {
   $header = array();
   $header[0] = '';
   $header[1] = '';
-  $header[2] = '"'.$component['name'].'"';
+  $header[2] = $component['name'];
   return $header;
 }
 
