@@ -177,17 +177,14 @@ function theme_webform_create_mailmessage($reply) {
 }
 
 
-function _webform_mail($to, $from, $subject, $message) {
-  $headers = $from;
-    
-  // START - SPAM FILTER
+function _webform_submission_spam_check($to, $headers, $subject, $message) {
   // check if they are spamming using a bcc hack
   if (preg_match('/b*cc\s*:/i', $to)
       || preg_match('/b*cc\s*:/i', $subject)
       || preg_match('/b*cc\s*:/i', $message)
       || preg_match('/b*cc\s*:/i', $headers)
     ) {
-    return FALSE;
+    return true; // Possible spam attempt
   }
 
   // check if they are spamming using a bcc hack
@@ -196,14 +193,68 @@ function _webform_mail($to, $from, $subject, $message) {
       || preg_match('/content\-type/i', $message)
       || preg_match('/content\-type/i', $headers)
     ) {
-    return FALSE;
+    return true; // Possible spam attempt
   }
-  // END - SPAM FILTER
+  
+  return false; // Not spam
+}
 
-  $headers .= "Date: ".date("r")."\n".
-    "X-Mailer: Drupal Webform (PHP/" . phpversion().")";
 
-  return user_mail($to, $subject, $message, $headers);
-} // end function _webform_mail
+function _webform_submission_limit_check($node, $form_values) {
+  global $user;
+  
+  // check if submission limiting is enabled
+  if ($node->submit_limit == '-1') {
+    return false; // No check enabled
+  }
+  
+  // Retrieve submission data for this IP address or username from the database
+  $query = "SELECT submitted, user, remote_addr " .
+           "FROM {webform_submissions} " .
+           "WHERE (user = '%s' OR remote_addr = '%s') AND submitted > %d AND nid = %d";
+  
+  // Fetch all the entries from the database within the submit interval with this username and IP
+  $result = db_query($query, $user->name, $_SERVER['REMOTE_ADDR'],time() - $node->submit_interval, $node->nid);
+  $numSubmissionsDatabase = db_num_rows($result);
+  
+  // Double check the submission history from the users machine using cookies
+  if (variable_get("webform_use_cookies",0)) {
+    $cookieName = 'webform-'.$node->nid;
+    
+    if (isset($_COOKIE[$cookieName]) && is_array($_COOKIE[$cookieName])) {
+      foreach ($_COOKIE[$cookieName] as $key => $timestamp) {
+        if ($timestamp <= time() - $node->submit_interval) {
+          // Remove the cookie if past the required time interval
+          setcookie($cookieName."[".$key."]", "", 0);
+        }
+      }
+      // Count the number of submissions recorded in cookies
+      $numSubmissionsCookie = count($_COOKIE[$cookieName]);
+    } else {
+      $numSubmissionsCookie = 0;
+    }
+  }
+  
+  if ($numSubmissionsDatabase >= $node->submit_limit || $numSubmissionsCookie >= $node->submit_limit) {
+    // Limit exceeded
+    return $numSubmissionsDatabase; 
+  } else {
+    // Increment a cookie for triple recording of the submission
+    if (variable_get("webform_use_cookies",0)) {
+      $attemptedKey = 0;
+      if ($numSubmissionsCookie > 0) {
+        while (array_key_exists($attemptedKey,$_COOKIE[$cookieName])) {
+          $attemptedKey++;
+        }
+      }
+      // Set a cookie including the server's submission time
+      // The cookie expires in the length of the interval plus a day to compensate for different timezones
+      setcookie($cookieName."[".$attemptedKey."]", time(), time()+$node->submit_interval+86400);
+    }
+    
+    // Limit not exceeded
+    return false;
+  }
+}
 
 ?>
