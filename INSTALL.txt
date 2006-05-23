@@ -1,7 +1,10 @@
 Requirements
 ------------
+Drupal 4.7.0 or greater
 
-Drupal 4.7
+This release of webform will not work on 4.6 or even development versions of
+Drupal 4.7. Make sure your are running 4.7.0 or higher by checking the
+CHANGLOG.txt file in the root of your Drupal installation.
 
 
 Installation
@@ -12,9 +15,8 @@ Installation
 
 3. (Optional) Edit the settings under "administer" -> "settings" -> "webform"
 
-Upgrading from previous version
--------------------------------
-
+Upgrading from any previous version
+-----------------------------------
 1. Copy the entire webform directory the Drupal modules directory.
 
 2. Login as the FIRST user or change the $access_check in upgrade.php to FALSE
@@ -30,10 +32,22 @@ If you are not interested in helping with translation you can safely remove this
 Troubleshooting
 ---------------
 
-If you are familiar with 4.6 Drupal installations, you are probably familiar with
-loading SQL files such as the included webform.mysql file. In Drupal 4.7,
-this step has been replaced by use of the update.php file. If you receive SQL
-errors during the update (remember to backup!) you may choose to delete all the
-webform tables and run webform.mysql to start with a fresh copy of the tables.
+If you are familiar with 4.6 Drupal installations, you are probably used to
+loading SQL files, such as the previously included webform.mysql file. In Drupal 4.7,
+this step has been replaced by use of the update.php file.
+
+If you receive SQL errors during any upgrades of webform or if webform starts
+behaving erratically, you might try reloading all the webform tables in the
+database. Backup your database first, then delete all the tables that start with
+'webform_'. You'll also need to find and delete the webform record in the
+'system' table in your Drupal installation. Go to the 'modules' page after
+logging in and re-enable webform. If you are still having troubles, updates
+are frequently released in CVS that aren't yet in the 4.7 version. Try downloading
+it from http://drupal.org/node/7404/release.
+
+Lastly, if nothing else works, file a bug-report or support-request at
+http://drupal.org/project/issues/webform, NOT the Drupal forum. Module
+maintainers check the webform issues board much more frequently than the
+generic Drupal forum.
 
 
