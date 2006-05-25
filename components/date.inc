@@ -109,9 +109,34 @@ function _webform_render_date ($component) {
 }
 
 function webform_validate_date ($field,$fieldName,$componentName,$mandatory) {
+  static $completeDate;
+  switch ($fieldName) {
+    case 'month':
+    $completeDate['month'] = $field['#value'];
+    case 'day':
+    $completeDate['day'] = $field['#value'];
+    case 'year':
+    $completeDate['year'] = $field['#value'];
+  }
+  
+  // Check if the user filled the required fields
   if (!is_numeric($field['#value']) && $mandatory) {
     form_set_error ($fieldName,$componentName." ".$fieldName." ".t(" field required"));
     return false;
+  }
+  
+  // Check for a valid date
+  if ( (isset($completeDate['month']) &&
+        isset($completeDate['day']) &&
+        isset($completeDate['year'])) &&
+       ($completeDate['month'] !== "" ||
+        $completeDate['day'] !== "" ||
+        $completeDate['year'] !== "")
+     ){ 
+    if (!checkdate((int)$completeDate['month'],(int)$completeDate['day'],(int)$completeDate['year'])) {
+      form_set_error ($componentName,t("Entered %name is not a valid date",array('%name' => $componentName)));
+      return false;
+    }
   }
 }
 
