@@ -26,6 +26,14 @@ function _webform_edit_date ($currfield) {
     '#options' => array('site' => 'Website Timezone', 'user' => 'User Timezone', 'gmt' => 'GMT'),
     '#weight' => 0,
   );
+  $editFields['extra']['check_daylight_savings'] = array (
+    '#type' => 'checkbox',
+    '#title' => t("Observe Daylight Savings"),
+    '#default_value' => $currfield['extra']['check_daylight_savings'],
+    '#checked_value' => 1,
+    '#description' => t('Automatically adjust the time during daylight savings.'),
+    '#weight' => 1,
+  );
 
   return $editFields;
 }
@@ -37,9 +45,9 @@ function _webform_edit_date ($currfield) {
  * @returns An array of a form item to be displayed on the client-side webform
  **/
 function _webform_render_date ($component) {
-	
 	// Calculate the timestamp in GMT
-	$timestamp = strtotime($component['value']." GMT");
+	$timestamp = strtotime($component['value']);
+	
 	if ($component['extra']['timezone'] == "user") {
 	  // Use the users timezone
     global $user;
@@ -49,18 +57,22 @@ function _webform_render_date ($component) {
     $timestamp += 0;
   } else {
     // Use the Drupal site time
-    $timestamp += (int)variable_get('date_default_timezone',0);
+    $timestamp += variable_get('date_default_timezone',0);
   }
-
+  
+  // Check for daylight savings time
+  if ($component['extra']['check_daylight_savings'] && date("I")) {
+    $timestamp += 3600;
+  }
+  
   $months = array("" => t("month"), 1 => t('January'), t('February'), t('March'), t('April'), t('May'), t('June'), t('July'), t('August'), t('September'), t('October'), t('November'), t('December'));
   $days = array("" => t("day"));
   for ($i = 1; $i <= 31; $i++) $days[$i] = $i;
 
-  // Use format_date(), it handles user timezone and locale.
   if (strlen($component['value']) > 0) {
-    $year = format_date($timestamp, 'custom', 'Y');
-    $month = format_date($timestamp, 'custom', 'm');
-    $day = format_date($timestamp, 'custom', 'd');
+    $year = gmdate('Y', $timestamp);
+    $month = gmdate('m', $timestamp);
+    $day = gmdate('d',$timestamp);
   }
   
   $formItem['#type'] = 'fieldset';

@@ -27,13 +27,21 @@ function _webform_edit_time ($currfield) {
       '#options' => array('site' => 'Website Timezone', 'user' => 'User Timezone', 'gmt' => 'GMT'),
       '#weight' => 0,
     );
+  $editFields['extra']['check_daylight_savings'] = array (
+    '#type' => 'checkbox',
+    '#title' => t("Observe Daylight Savings"),
+    '#default_value' => $currfield['extra']['check_daylight_savings'],
+    '#checked_value' => 1,
+    '#description' => t('Automatically adjust the time during daylight savings.'),
+    '#weight' => 1,
+  );
     $editFields['extra']['hourformat'] = array (
       '#type' => 'radios',
       '#title' => t("Time Format"),
-      '#default_value' => $currfield['extra']['hourformat'],
+      '#default_value' => isset($currfield['extra']['hourformat']) ? $currfield['extra']['hourformat'] : '12-hour',
       '#description' => t('Format the display of the time in 12 or 24 hours.'),
       '#options' => array('12-hour' => '12-hour (am/pm)', '24-hour' => '24-hour'),
-      '#weight' => 0,
+      '#weight' => 2,
     );
     return $editFields;
 }
@@ -47,7 +55,7 @@ function _webform_edit_time ($currfield) {
 function _webform_render_time ($component) {
 	
 	// Calculate the timestamp in GMT
-	$timestamp = strtotime($component['value']." GMT");
+	$timestamp = strtotime($component['value']);
 	if ($component['extra']['timezone'] == "user") {
 	  // Use the users timezone
     global $user;
@@ -60,6 +68,11 @@ function _webform_render_time ($component) {
     $timestamp += (int)variable_get('date_default_timezone',0);
   }
 
+  // Check for daylight savings time
+  if ($component['extra']['check_daylight_savings'] && date("I")) {
+    $timestamp += 3600;
+  }
+  
   if ($component['extra']['hourformat'] == '12-hour') {
     $first_hour = 1;
     $last_hour = 12;
@@ -70,17 +83,17 @@ function _webform_render_time ($component) {
     $hour_format = 'G';
   }
 
+  // Generate the choices for drop-down selects
   $hours[""] = t("hour");
   $minutes[""] = t("minute");
   for ($i = $first_hour; $i <= $last_hour; $i++) $hours[$i] = $i;
   for ($i = 0; $i <= 59; $i++) $minutes[$i < 10 ? "0$i" : $i] = $i < 10 ? "0$i" : $i;
   $am_pms = array('am' => t('am'), 'pm' => t('pm'));
   
-  // Use format_date(), it handles user timezone and locale.
   if (strlen($component['value']) > 0) {
-    $hour = format_date($timestamp, 'custom', $hour_format);
-    $minute = format_date($timestamp, 'custom', 'i');
-    $am_pm = format_date($timestamp, 'custom', 'a');
+    $hour = gmdate($hour_format, $timestamp);
+    $minute = gmdate('i', $timestamp);
+    $am_pm = gmdate('a', $timestamp);
   }
 
   $formItem['#type'] = 'fieldset';
