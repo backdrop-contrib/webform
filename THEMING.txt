@@ -7,7 +7,46 @@ API may be found at http://drupaldocs.org/api/head/file/contributions/docs/devel
 
 Theme submission emails
 -----------------------
-- TODO: documentation needed on this
+The default emails sent by webform are fairly basic. If you like, you may
+customize the display of emails sent by each individual webform. This tutorial
+assumes use of the phptemplate engine.
+
+- Open your template.php file located in your theme's directory.
+- Add the following lines of php code:
+
+function phptemplate_webform_mail_message_nodeIdHere ($formData) {
+  return _phptemplate_callback('webform_form_nodeIdHere', array('formData' => $formData));
+}
+
+- Create a new file in your theme's directory named
+  "webform_create_mailmessage_nodeIdHere.tpl.php", once again replacing nodeIdHere
+  with the node ID of the webform.
+  
+- Open up your new file and customize the webform email. Here's a simple template
+  to get you started:
+  
+  <?php /* Begin sample create_mailmessage file */ ?>
+  
+  Company X Official Website Submission
+  
+  Message was submitted <?php echo format_date(time(), 'small') ?>
+  
+  From the IP address <?php echo $_SERVER['REMOTE_ADDR']; ?>
+  
+  The user's favorite color is <?php echo $formData['Favorite Color'] ?>
+  
+  The user's problem is below:
+  <?php echo $formData['Problem'] ?>
+  
+  <?php /* End sample create_mailmessage file */ ?>
+
+- To get a better idea of what variables are available to you, you can include
+  the print_r function in your email. Simply include the line:
+  
+  <?php print_r($formData) ?>
+  
+  to get a listing of all the available fields you can use in your mail.
+  
 
 Theme an entire webform
 -----------------------
@@ -16,7 +55,7 @@ Theming a webform can be useful for rearranging elements or customizing the
 appearance of multiple components at once. This tutorial assumes usage
 of the phptemplate engine.
 
-- Open your theme.php file located in your theme's directory.
+- Open your template.php file located in your theme's directory.
 - Add the following lines of php code:
 
 function phptemplate_webform_form_nodeIdHere ($form) {
@@ -41,7 +80,7 @@ function phptemplate_webform_form_nodeIdHere ($form) {
 			'#type' => 'fieldset'
 	);
 	
-	// Add the form field labeled "Email" to the new fieldset
+	// Move the form field labeled "Email" to the new fieldset
 	$form['submitted']['newfieldset']['Email'] = $form['submitted']['Email'];
 	echo form_render($form)
    
