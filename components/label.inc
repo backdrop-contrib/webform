@@ -38,7 +38,6 @@ function _webform_render_label ($component) {
 	return $formItem;
 }
 
-
 /** 
  * function _webform_submission_data_label
  * Display the result of a textfield submission. The output of this function will be displayed under the "results" tab then "submissions"
@@ -49,6 +48,19 @@ function _webform_render_label ($component) {
 function _webform_submission_display_label ($data,$component) {
   $formItem = _webform_render_label($component);
   return $formItem;
+}
+
+/** 
+ * function _webform_help_label
+ * Module specific instance of hook_help
+ **/
+function _webform_help_label($section) {
+  switch ($section) {
+    case 'admin/settings/webform#label_description':
+      $output = t("Presents a markup area of text. Does not render a field.");
+      break;
+  }
+  return $output;
 }
 
 ?>

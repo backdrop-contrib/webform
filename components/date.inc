@@ -140,7 +140,6 @@ function webform_validate_date ($field,$fieldName,$componentName,$mandatory) {
   }
 }
 
-
 /** 
  * function _webform_submission_data_date
  * Display the result of a textfield submission. The output of this function will be displayed under the "results" tab then "submissions"
@@ -157,6 +156,19 @@ function _webform_submission_display_date ($data,$component) {
   $formItem['day']['#attributes']      = array("disabled" => "disabled");
   $formItem['year']['#attributes']     = array("disabled" => "disabled");
   return $formItem;
+}
+
+/** 
+ * function _webform_help_date
+ * Module specific instance of hook_help
+ **/
+function _webform_help_date($section) {
+  switch ($section) {
+    case 'admin/settings/webform#date_description':
+      $output = t("Presents month, day, and year fields.");
+      break;
+  }
+  return $output;
 }
 
 /** 

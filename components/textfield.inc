@@ -77,6 +77,19 @@ function _webform_submission_display_textfield ($data,$component) {
 }
 
 /** 
+ * function _webform_help_textfield
+ * Module specific instance of hook_help
+ **/
+function _webform_help_textfield($section) {
+  switch ($section) {
+    case 'admin/settings/webform#textfield_description':
+      $output = t("Basic textfield type.");
+      break;
+  }
+  return $output;
+}
+
+/** 
  * function _webform_analysis_view_textfield
  * Calculate and returns statistics about results for this component from all submission to this webform. The output of this function will be displayed under the "results" tab then "analysis"
  * @param $component An array of information describing the component, directly correlating to the webform_component database schema

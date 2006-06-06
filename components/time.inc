@@ -163,6 +163,19 @@ function _webform_submission_display_time ($data,$component) {
 }
 
 /** 
+ * function _webform_help_time
+ * Module specific instance of hook_help
+ **/
+function _webform_help_time($section) {
+  switch ($section) {
+    case 'admin/settings/webform#time_description':
+      $output = t("Presents the user with hour and minute fields. Optional am/pm fields.");
+      break;
+  }
+  return $output;
+}
+
+/** 
  * function _webform_analysis_view_time
  * Calculate and returns statistics about results for this component from all submission to this webform. The output of this function will be displayed under the "results" tab then "analysis"
  * @param $component An array of information describing the component, directly correlating to the webform_component database schema
