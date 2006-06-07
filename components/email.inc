@@ -53,7 +53,7 @@ function _webform_render_email ($component) {
       $formItem['#size'] = $component['extra']['width'];
     }
     // Add the email filter validation function
-    $formItem['#validate'] = array('webform_validate_email' => array());
+    $formItem['#validate'] = array('_webform_validate_email' => array());
     
 	return $formItem;
 }
