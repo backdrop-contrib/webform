@@ -48,6 +48,7 @@ function _webform_render_captcha ($component) {
 		$dummyForm['captcha_response']['#validate'] = array ("_webform_validate_captcha" => array());
 		// Extract the created captcha into formItem to be returned to webform
 		$formItem = $dummyForm['captcha_response'];
+		$formItem['#weight'] = $component['weight']; 
 		
 		// Override the default title
 		$formItem['#title'] = _webform_filtervalues($component['name']);
@@ -82,15 +83,6 @@ function _webform_validate_captcha($captcha_response) {
 	}
 	
 	return $_SESSION['captcha_correct'];
-}
-
-function _webform_help_captcha($section) {
-  switch ($section) {
-    case 'admin/settings/webform#captcha_description':
-      $output = t("Require a question to prove the user is human. Requires <a href='http://drupal.org/project/captcha'>Captcha</a> module.");
-      break;
-  }
-  return $output;
 }
 
 /** 
