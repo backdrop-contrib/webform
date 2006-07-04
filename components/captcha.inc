@@ -85,6 +85,15 @@ function _webform_validate_captcha($captcha_response) {
 	return $_SESSION['captcha_correct'];
 }
 
+function _webform_help_captcha($section) {
+  switch ($section) {
+    case 'admin/settings/webform#captcha_description':
+      $output = t("Require a question to prove the user is human. Requires <a href='http://drupal.org/project/captcha'>Captcha</a> module.");
+      break;
+  }
+  return $output;
+}
+
 /** 
  * function _webform_submission_display_captcha
  * Display the result of a captcha submission. The output of this function will be displayed under the "results" tab then "submissions"

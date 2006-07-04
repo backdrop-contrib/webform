@@ -26,26 +26,18 @@ function webform_help($section= "admin/help#webform") {
       break;
     case 'admin/help#webform' :
       $output= t("<p>This module lets you create forms or questionnaires and define there content. Submissions from these forms are stored in the database and optionaly also send by e-mail to a predefined address.</p>
-      <p>Here is how to create one:
+      <p>Here is how to create one:</p>
       <ul>
-      
        <li>Go to Create Content and add a webform</li>
        <li>Add a description that is displayed as a teaser and above the actual form.</li>
        <li>Add a confirmation message or redirect node that is to be displayed after a successful submission.</li>
        <li>Add one or more components to your form.</li>
        <li>Optionaly add a email address to which submissions will be send. If no email address is specified no email will be send when submissions are made through the form.</li>
-       <li>Optionally select an email component that will be used to populate the return email address on any sent email.</ul>
-       <li>Optionally select a textfield component that will be used to populate the subject email field on any sent email.</ul>
+       <li>Optionally select an email (or hidden) component that will be used to populate the return email address on any sent email.</ul>
+       <li>Optionally select a textfield (or hidden) component that will be used to populate the subject email field on any sent email.</ul>
       </ul>
-      Help on adding and how to configure the components will be shown after adding your first component.
-      </p>
-      <p>On user submissions the form content is stored in the database table <i>webform_submitted_data</i> as key-value pairs. Apart from the form fields the following &quot;special&quot; fields are added:
-      <ul>
-        <li> __userid : UID of the submiting user.</li>
-        <li> __timestamp : UNIX timestamp for when the submission occured.</li>
-        <li> __remotehost : IP or name of the remote host from which the submission came.</li>
-        <li> __useragent : What user agent (browser) the user used upon submitting the data.</li>
-      </ul>
+      <p>Help on adding and how to configure the components will be shown after adding your first component.</p>
+      <p>On user submissions the form content is stored in the database table <i>webform_submitted_data</i> as key-value pairs.</p>
       ");
       break;
     case 'admin/modules#description' :
@@ -56,11 +48,19 @@ function webform_help($section= "admin/help#webform") {
       break;
     case 'webform/helptext#variables' :
       $output= t('Available variables are: %username, %useremail, %site, %date.');
-      $output .= ' '.t('You can also use %server[key] to add any of the special PHP <a href="http://www.php.net/reserved.variables#reserved.variables.server">$_SERVER</a> variables and %get[key] to create prefilled forms from from the <a href="http://www.php.net/reserved.variables#reserved.variables.get">URL</a>.');
+      $output .= ' '.t('You can also use %server[key] to add any of the special PHP <a href="http://www.php.net/reserved.variables#reserved.variables.server">$_SERVER</a> variables and %get[key] to create prefilled forms from from the <a href="http://www.php.net/reserved.variables#reserved.variables.get">URL</a>. (e.g. %server[HTTP_USER_AGENT] or %get[id])');
       if (module_exist('profile')) {
         $output .= t('If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the varible %profile[profile_city].');
       }
       break;
+  }
+  // Call help hooks in plugins:
+  $components = _webform_load_components();
+  foreach ($components as $component) {
+    $helpFunction = "_webform_help_".$component;
+    if (function_exists($helpFunction)) {
+      $output .= $helpFunction($section);
+    }
   }
   return $output;
 }
@@ -161,17 +161,6 @@ function webform_load($node) {
 
 function webform_settings() {
 
-  $installed_version= variable_get('webform_version', array ('text' => 'Unknown', 'build' => 1));
-  $current_version= _webform_version();
-
-  if ($installed_version['build'] < $current_version['build']) {
-    $form['webform_update'] = array(
-      '#type' => 'fieldset',
-      '#title' => '',
-      '#description' => '<a href="'.base_path().'update.php">'.t('Update from version %a to version %b', array ('%a' => $installed_version['text'], '%b' => $current_version['text'])).'</a>'
-    );
-  }
-  
   $form['components'] = array (
     '#type' => 'fieldset',
     '#title' => t('Available Components'),
@@ -180,11 +169,14 @@ function webform_settings() {
     '#description' => t('Below is a list of supported field types available for webform. You may disable any of these components by unchecking its corresponding box. Only checked components will be available in existing or new webforms.'),
   );
   
+  // Add each component to the form:
   $component_types = _webform_load_components(true);
-  foreach ($component_types as $componentName => $componentTransName) {    
+  $componentBoxes = array('#type' => 'checkboxes', '#default_value' => $status, '#options' => $options);
+  foreach ($component_types as $componentName => $componentTransName) {
     $form['components']['webform_enable_'.$componentName] = array (
-      '#type' => 'checkbox',
       '#title' => $componentTransName,
+      '#description' => module_invoke('webform', 'help', 'admin/settings/webform#'.$componentName.'_description'),
+      '#type' => 'checkbox',
       '#checked_value' => 1,
       '#default_value' => variable_get('webform_enable_'.$componentName,1),
     );
@@ -212,10 +204,30 @@ function webform_settings() {
 	  '#options' => array (0 => "OFF", 1 => "Log submissions", 2 => "Full debug"), 
 	  '#description' => t('Set this option to "Log submissions" to log all submissions in the watchdog. Set it to "Full debug" to print debug info on submission. You probably want to leave this option on "OFF".')
 	);
-  
   return $form;
 } // end function webform_settings
 
+function theme_webform_settings_form ($form) {
+  // Format the components into a table
+  foreach (element_children($form['components']) as $key) {  
+    $row = array();
+    $row[] = $form['components'][$key]['#title'];
+    $row[] = $form['components'][$key]['#description'];
+    unset($form['components'][$key]['#title']);
+    unset($form['components'][$key]['#description']);
+    $row[] = array('data' => form_render($form['components'][$key]), 'align' => 'center');
+    $rows[] = $row;
+  }
+  $header = array(t('Name'), t('Description'), t('Enabled'));
+  
+  // Create the table inside the form
+  $form['components']['table'] = array (
+    '#value' => theme('table', $header, $rows)
+  );
+  
+  $output = form_render($form);
+  return $output;
+}
 
 /**
  * Implementation of hook_menu().
