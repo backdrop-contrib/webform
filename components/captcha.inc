@@ -1,4 +1,5 @@
 <?php
+// $Id$
 /** 
  * function webform_edit_captcha
  * Create a set of form items to be displayed on the form for editing this component.
@@ -105,5 +106,3 @@ function _webform_submission_display_captcha ($data,$component) {
   $formItem = array();
   return $formItem;
 }
-
-?>

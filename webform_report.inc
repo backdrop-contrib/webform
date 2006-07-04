@@ -1,13 +1,13 @@
 <?php
-  // $Id$
+// $Id$
 
-  /** 
-   * This file includes helper functions for creating reports for webform.module
-   *
-   * @author Pontus Ullgren <ullgren@user.sourceforge.net>
-   * @package module_webform
-   * @copyright Pontus Ullgren 2004
-   **/
+/** 
+ * This file includes helper functions for creating reports for webform.module
+ *
+ * @author Pontus Ullgren <ullgren@user.sourceforge.net>
+ * @package module_webform
+ * @copyright Pontus Ullgren 2004
+ **/
 
 /** function _webform_results_submissions() is a database accessor function designed to return lists
  *  of submissions for a given form.
@@ -222,5 +222,3 @@ function _webform_results_analysis($nid) {
   }
   return theme('table', $headers, $rows);
 }
-
-?>

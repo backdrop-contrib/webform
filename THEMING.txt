@@ -92,3 +92,6 @@ function phptemplate_webform_form_nodeIdHere ($form) {
 	displayed and webform depends on the other two to operate properly, so don't
 	mess with them unless you have good reason to do so (like you're forwarding
 	your webform to a custom PHP or PERL script).
+
+
+$Id$

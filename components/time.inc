@@ -1,4 +1,5 @@
 <?php
+// $Id$
 /** 
  * function webform_edit_time
  * Create a set of form items to be displayed on the form for editing this component.
@@ -276,7 +277,3 @@ function _webform_csv_data_time ($data) {
     return "";
   }
 }
-
-
-
-?>

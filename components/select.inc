@@ -1,4 +1,5 @@
 <?php
+// $Id$
 /** 
  * function webform_edit_select
  * Create a set of form items to be displayed on the form for editing this component.
@@ -215,4 +216,3 @@ function _webform_csv_data_select ($data,$component) {
   $output = substr($output,1);
   return $output;
 }
-?>

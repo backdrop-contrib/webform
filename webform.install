@@ -1,5 +1,5 @@
 <?php
-  // $Id$
+// $Id$
 
   function webform_install() {
     drupal_set_message('Installing webform');
@@ -231,4 +231,3 @@ function _webform_legacy_update($installed_version, $current_version) {
     
     return $ret;
 }
-?>

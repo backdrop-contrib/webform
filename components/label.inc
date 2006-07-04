@@ -1,4 +1,5 @@
 <?php
+// $Id$
 /** 
  * function webform_edit_label
  * Create a set of form items to be displayed on the form for editing this component.
@@ -62,5 +63,3 @@ function _webform_help_label($section) {
   }
   return $output;
 }
-
-?>

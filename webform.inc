@@ -1,14 +1,14 @@
 <?php
-  // $Id$
+// $Id$
 
-  /** 
-   * This file includes helper functions for webform.module
-   *
-   *
-   * @author Pontus Ullgren <ullgren@user.sourceforge.net>
-   * @package module_webform
-   * @copyright Pontus Ullgren 2004
-   **/
+/** 
+ * This file includes helper functions for webform.module
+ *
+ *
+ * @author Pontus Ullgren <ullgren@user.sourceforge.net>
+ * @package module_webform
+ * @copyright Pontus Ullgren 2004
+ **/
 
 /* Creates a list of all webforms avaliable on this site.
  */
@@ -256,5 +256,3 @@ function _webform_submission_limit_check($node, $form_values) {
     return false;
   }
 }
-
-?>

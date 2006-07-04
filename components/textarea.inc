@@ -1,4 +1,5 @@
 <?php
+// $Id$
 /** 
  * function webform_edit_textarea
  * Create a set of form items to be displayed on the form for editing this component.
@@ -165,5 +166,3 @@ function _webform_csv_headers_textarea ($component) {
 function _webform_csv_data_textarea ($data) {
   return empty($data['value']['0']) ? "" : $data['value']['0'];
 }
-
-?>
