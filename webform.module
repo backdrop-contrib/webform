@@ -194,7 +194,7 @@ function webform_settings() {
     '#checked_value' => 1,
     '#title' => t("Allow Cookies for Tracking Submissions"),
     '#default_value' => variable_get("webform_use_cookies", 0), 
-    '#description' => '<a href="http://www.wikipedia.org/wiki/HTTP_cookie">'.t('Cookies').'</a> '.t('can be used to help prevent the same user from repeatedly submitting a webform. This feature is not needed for limiting submissions per user, though it can increase accuracy in some situations. Besides cookies, webform also uses IP addresses and site usernames to prevent repeated submissions.')
+    '#description' => t('<a href="http://www.wikipedia.org/wiki/HTTP_cookie">Cookies</a> can be used to help prevent the same user from repeatedly submitting a webform. This feature is not needed for limiting submissions per user, though it can increase accuracy in some situations. Besides cookies, webform also uses IP addresses and site usernames to prevent repeated submissions.')
   );
 
   $form['advanced']['webform_debug']  = array(
@@ -965,18 +965,35 @@ function webform_client_submit($form_id, $form_values) {
     // If the webform is being swamped by repeated entries, limit the messages in watchdog
     if ($violationCount < 21) {
       if ($user->uid > 0) {
-      watchdog('webform', t('The authenticated user ').'<a href="'.url('user/'.$user->uid).'">'.$user->name.'</a>'.
-                            t(' attempted to submit more entries than allowed on the').
-                            ' <a href="'.url("node/".$node->nid).'">'.$node->title.'</a>'.t(' form'), WATCHDOG_WARNING);
+        watchdog('webform', t('The authenticated user <a href="%userURL">%username</a> attempted to submit more entries than allowed on the <a href="%webformURL">%webformTitle</a> webform',
+                              array(
+                                '%userURL' => url('user/'.$user->uid),
+                                '%username' => $user->name,
+                                '%webformURL' => url('node/'.$node->nid),
+                                '%webformTitle' => $node->title,
+                              )), WATCHDOG_WARNING);
       } else {
-        watchdog('webform', t('An anonymous user with IP address ').$_SERVER['REMOTE_ADDR'].
-                            t(' attempted to submit more entries than allowed on the').
-                            '<a href="'.url("node/".$node->nid).'">'.$node->title.'</a>'.t(' form'), WATCHDOG_WARNING);
+        watchdog('webform', t('An anonymous user with IP address %ip attempted to submit more entries than allowed on the <a href="%webformURL">%webformTitle</a> webform',
+                              array(
+                                '%ip' => $_SERVER['REMOTE_ADDR'],
+                                '%webformURL' => url('node/'.$node->nid),
+                                '%webformTitle' => $node->title,
+                              )), WATCHDOG_WARNING);
       }
     }
     drupal_set_message(t("You have submitted the maximum number of entries. Check submission guidelines."), 'error');
     return false;
   }
+
+  // Process post-submission data if necessary in the components
+  _webform_load_components();
+  foreach ($form_values['componentKeys'] as $ckey => $fieldname) {
+    $submitFunction = "_webform_submit_".$node->webformcomponents[$ckey]['type'];
+    if (function_exists($submitFunction)) {
+      $submitFunction($form_values['submitted'][$fieldname], $node->webformcomponents[$ckey]); // Call the component process submission function
+    }
+  }
+  
 
   // Check if this form is sending an email
   if (isset ($node->email)) {
@@ -1052,9 +1069,8 @@ function webform_client_submit($form_id, $form_values) {
 /**
  * Prints the confirmation message after a succefull submission.
  */
-function _webform_thanks() {
-  if (arg(2)) {
-    $node= node_load(array ('nid' => arg(2)));
+function _webform_thanks($nid) {
+  if ($node = node_load(array ('nid' => arg(2)))) {
     if (node_access('view', $node)) {
       $node->body= check_markup($node->confirmation, $node->format, FALSE);
       drupal_set_title($node->title);
@@ -1063,6 +1079,7 @@ function _webform_thanks() {
       drupal_access_denied();
     }
   } else {
+    drupal_set_message(t("No node with the id '%nid' could be found",array('%nid'=>$nid)));
     drupal_not_found();
   }
 } // end _webform_thanks
