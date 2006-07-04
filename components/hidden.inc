@@ -9,21 +9,21 @@
  * @returns An array of form items to be displayed on the edit component page
  **/
 function _webform_edit_hidden ($currfield) {
-	$editFields = array();
-	$editFields['value'] = array (
-		'#type' => 'textfield',
-		'#title' => t("Default value"),
-		'#default_value' => $currfield['default'],
-		'#description' => t('The default value of the field.').'<br />'.webform_help('webform/helptext#variables'),
-		'#size' => 60,
-		'#maxlength' => 127,
-		'#weight' => 0,
-	);
-	$editFields['mandatory'] = array(
-		'#type' => 'hidden',
-		'#value' => 1,
-	);
-	$editFields['extra']['description'] = array(); // Hide the description box
+  $editFields = array();
+  $editFields['value'] = array (
+    '#type' => 'textfield',
+    '#title' => t("Default value"),
+    '#default_value' => $currfield['default'],
+    '#description' => t('The default value of the field.').'<br />'.webform_help('webform/helptext#variables'),
+    '#size' => 60,
+    '#maxlength' => 127,
+    '#weight' => 0,
+  );
+  $editFields['mandatory'] = array(
+    '#type' => 'hidden',
+    '#value' => 1,
+  );
+  $editFields['extra']['description'] = array(); // Hide the description box
   return $editFields;
 }
 
@@ -34,13 +34,13 @@ function _webform_edit_hidden ($currfield) {
  * @returns An array of a form item to be displayed on the client-side webform
  **/
 function _webform_render_hidden($component) {
-	$formItem = array (
+  $formItem = array (
     '#type'          => 'hidden',
-    '#value' 				 => _webform_filtervalues($component['value']),
+    '#value'          => _webform_filtervalues($component['value']),
     '#weight'        => $component['weight'],
-	);
-	
-	return $formItem;
+  );
+  
+  return $formItem;
 }
 
 /** 

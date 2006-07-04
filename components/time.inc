@@ -9,42 +9,42 @@
  * @returns An array of form items to be displayed on the edit component page
  **/
 function _webform_edit_time ($currfield) {
-    $editFields = array();
-    $editFields['value'] = array (
-      '#type' => 'textfield',
-      '#title' => t("Default value"),
-      '#default_value' => $currfield['default'],
-      '#description' => t('The default value of the field.').'<br />'.t('Accepts a time in any <a href="http://www.gnu.org/software/tar/manual/html_node/tar_109.html">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid.'),
-      '#size' => 60,
-      '#maxlength' => 127,
-      '#weight' => 0,
-      '#validate' => array ('webform_validate_time_string' => array ()),
-    );
-    $editFields['extra']['timezone'] = array (
-      '#type' => 'radios',
-      '#title' => t("Timezone"),
-      '#default_value' => empty($currfield['extra']['timezone']) ? "site" : $currfield['extra']['timezone'],
-      '#description' => t('Adjust the time according to a specific timezone. Website timezone is defined in the <a href="%settings">Site Settings</a> and is the default.',array('%settings' => url('admin/settings'))),
-      '#options' => array('site' => 'Website Timezone', 'user' => 'User Timezone', 'gmt' => 'GMT'),
-      '#weight' => 0,
-    );
-  $editFields['extra']['check_daylight_savings'] = array (
-    '#type' => 'checkbox',
-    '#title' => t("Observe Daylight Savings"),
-    '#default_value' => $currfield['extra']['check_daylight_savings'],
-    '#checked_value' => 1,
-    '#description' => t('Automatically adjust the time during daylight savings.'),
-    '#weight' => 1,
+  $editFields = array();
+  $editFields['value'] = array (
+    '#type' => 'textfield',
+    '#title' => t("Default value"),
+    '#default_value' => $currfield['default'],
+    '#description' => t('The default value of the field.').'<br />'.t('Accepts a time in any <a href="http://www.gnu.org/software/tar/manual/html_node/tar_109.html">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid.'),
+    '#size' => 60,
+    '#maxlength' => 127,
+    '#weight' => 0,
+    '#validate' => array ('webform_validate_time_string' => array ()),
   );
-    $editFields['extra']['hourformat'] = array (
-      '#type' => 'radios',
-      '#title' => t("Time Format"),
-      '#default_value' => isset($currfield['extra']['hourformat']) ? $currfield['extra']['hourformat'] : '12-hour',
-      '#description' => t('Format the display of the time in 12 or 24 hours.'),
-      '#options' => array('12-hour' => '12-hour (am/pm)', '24-hour' => '24-hour'),
-      '#weight' => 2,
-    );
-    return $editFields;
+  $editFields['extra']['timezone'] = array (
+    '#type' => 'radios',
+    '#title' => t("Timezone"),
+    '#default_value' => empty($currfield['extra']['timezone']) ? "site" : $currfield['extra']['timezone'],
+    '#description' => t('Adjust the time according to a specific timezone. Website timezone is defined in the <a href="%settings">Site Settings</a> and is the default.',array('%settings' => url('admin/settings'))),
+    '#options' => array('site' => 'Website Timezone', 'user' => 'User Timezone', 'gmt' => 'GMT'),
+    '#weight' => 0,
+  );
+$editFields['extra']['check_daylight_savings'] = array (
+  '#type' => 'checkbox',
+  '#title' => t("Observe Daylight Savings"),
+  '#default_value' => $currfield['extra']['check_daylight_savings'],
+  '#checked_value' => 1,
+  '#description' => t('Automatically adjust the time during daylight savings.'),
+  '#weight' => 1,
+);
+  $editFields['extra']['hourformat'] = array (
+    '#type' => 'radios',
+    '#title' => t("Time Format"),
+    '#default_value' => isset($currfield['extra']['hourformat']) ? $currfield['extra']['hourformat'] : '12-hour',
+    '#description' => t('Format the display of the time in 12 or 24 hours.'),
+    '#options' => array('12-hour' => '12-hour (am/pm)', '24-hour' => '24-hour'),
+    '#weight' => 2,
+  );
+  return $editFields;
 }
 
 /** 
@@ -54,11 +54,11 @@ function _webform_edit_time ($currfield) {
  * @returns An array of a form item to be displayed on the client-side webform
  **/
 function _webform_render_time ($component) {
-	
-	// Calculate the timestamp in GMT
-	$timestamp = strtotime($component['value']);
-	if ($component['extra']['timezone'] == "user") {
-	  // Use the users timezone
+  
+  // Calculate the timestamp in GMT
+  $timestamp = strtotime($component['value']);
+  if ($component['extra']['timezone'] == "user") {
+    // Use the users timezone
     global $user;
     $timestamp += (int)$user->timezone;
   } elseif ($component['extra']['timezone'] == "gmt") {
@@ -128,7 +128,7 @@ function _webform_render_time ($component) {
       );
   }
   
-	return $formItem;
+  return $formItem;
 }
 
 function webform_validate_time ($field,$fieldName,$componentName,$mandatory) {

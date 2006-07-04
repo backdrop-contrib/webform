@@ -54,7 +54,8 @@ function _webform_results_clear($nid) {
 
     watchdog('webform','webform "' . $title . '" entries cleared.', WATCHDOG_NOTICE);
     drupal_goto('webform');
-  } else {
+  }
+  else {
     $form['delete'] = array (
       '#type' => 'submit',
       '#value' => t('Clear'),
@@ -74,8 +75,8 @@ function _webform_results_clear($nid) {
 
 /*
  * Delete one form submission
- * @param	integer	ID of node for which this webform was submitted
- * @param	integer	ID of submission to be deleted (from webform_submitted_data)
+ * @param  integer  ID of node for which this webform was submitted
+ * @param  integer  ID of submission to be deleted (from webform_submitted_data)
  */
 function _webform_submission_delete($nid, $sid) {
   if ($_POST['op']['Delete']) {
@@ -84,17 +85,17 @@ function _webform_submission_delete($nid, $sid) {
     $query = 'DELETE FROM {webform_submissions} WHERE nid = %d AND sid = %d';
     $res = db_query($query, $nid, $sid);
 
-		drupal_set_message(t("Submission deleted"));
+    drupal_set_message(t("Submission deleted"));
     drupal_goto('node/'.$nid.'/results');
   }
   else {
     $form['delete'] = array (
-    	'#type' => 'submit',
-    	'#value' => 'Delete',
+      '#type' => 'submit',
+      '#value' => 'Delete',
     );
     $form['cancel'] = array (
-    	'#type' => 'markup',
-    	'#value' => '<a href="'.url('node/'.$nid.'/results').'">'.t("Cancel").'</a>',
+      '#type' => 'markup',
+      '#value' => '<a href="'.url('node/'.$nid.'/results').'">'.t("Cancel").'</a>',
     );
     
     $node = node_load($nid);
@@ -151,13 +152,14 @@ function theme_webform_create_mailmessage($reply) {
       $message .=  "$key :";
       foreach($value as $k => $v) {
         if (!empty($v)) {
-					// Note that newlines cannot be preceeded by spaces to display properly in some clients
+          // Note that newlines cannot be preceeded by spaces to display properly in some clients
           $message .= "\n\t\t$k :".(empty($v) ? "\n" : " $v\n");
         }
       }
       $message .= "\n";
-    } else {
-			// Note that newlines cannot be preceeded by spaces to display properly in some clients
+    }
+    else {
+      // Note that newlines cannot be preceeded by spaces to display properly in some clients
       $message .=  "$key :".(empty($value) ? "\n" : " $value\n");
     }
   }
@@ -230,7 +232,8 @@ function _webform_submission_limit_check($node, $form_values) {
       }
       // Count the number of submissions recorded in cookies
       $numSubmissionsCookie = count($_COOKIE[$cookieName]);
-    } else {
+    }
+    else {
       $numSubmissionsCookie = 0;
     }
   }
@@ -238,7 +241,8 @@ function _webform_submission_limit_check($node, $form_values) {
   if ($numSubmissionsDatabase >= $node->submit_limit || $numSubmissionsCookie >= $node->submit_limit) {
     // Limit exceeded
     return $numSubmissionsDatabase; 
-  } else {
+  }
+  else {
     // Increment a cookie for triple recording of the submission
     if (variable_get("webform_use_cookies",0)) {
       $attemptedKey = 0;

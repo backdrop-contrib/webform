@@ -35,15 +35,15 @@ function _webform_edit_email ($currfield) {
  * @returns An array of a form item to be displayed on the client-side webform
  **/
 function _webform_render_email ($component) {
-	global $user;
-	$formItem = array (
+  global $user;
+  $formItem = array (
     '#type'          => 'textfield',
     '#title'         => $component['name'],
     '#required'      => $component['mandatory'],
     '#weight'        => $component['weight'],
     '#description'   => _webform_filtervalues($component['extra']['description']),
-	);
-	
+  );
+  
     // Fill in the user's email address if available
     if($user->uid && $user->mail && empty($value)) {
       $formItem['#default_value'] = $user->mail;
@@ -56,7 +56,7 @@ function _webform_render_email ($component) {
     // Add the email filter validation function
     $formItem['#validate'] = array('_webform_validate_email' => array());
     
-	return $formItem;
+  return $formItem;
 }
 
 /** 

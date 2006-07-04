@@ -9,19 +9,19 @@
  * @returns An array of form items to be displayed on the edit component page
  **/
 function _webform_edit_label ($currfield) {
-    $editFields = array();
-    $editFields['extra']['description'] = array(); // Do not render the description field
-    $editFields['mandatory'] = array(); // Do not render the mandatory checkbox
+  $editFields = array();
+  $editFields['extra']['description'] = array(); // Do not render the description field
+  $editFields['mandatory'] = array(); // Do not render the mandatory checkbox
 
-    $editFields['value'] = array (
-      '#type' => 'textfield',
-      '#title' => t("Description"),
-      '#default_value' => $currfield['default'],
-      '#description' => t('A short description of the field used as help for the user when he/she uses the form.').'<br />'.webform_help('webform/helptext#variables'),
-      '#size' => 60,
-      '#maxlength' => 127,
-    );
-    return $editFields;
+  $editFields['value'] = array (
+    '#type' => 'textfield',
+    '#title' => t("Description"),
+    '#default_value' => $currfield['default'],
+    '#description' => t('A short description of the field used as help for the user when he/she uses the form.').'<br />'.webform_help('webform/helptext#variables'),
+    '#size' => 60,
+    '#maxlength' => 127,
+  );
+  return $editFields;
 }
 
 /** 
@@ -31,12 +31,12 @@ function _webform_edit_label ($currfield) {
  * @returns An array of a form item to be displayed on the client-side webform
  **/
 function _webform_render_label ($component) {
-	$formItem = array (
+  $formItem = array (
     '#type'          => 'markup',
-    '#value'				 => _webform_filtervalues($component['value']),
+    '#value'         => _webform_filtervalues($component['value']),
     '#weight'        => $component['weight'],
-	);
-	return $formItem;
+  );
+  return $formItem;
 }
 
 /** 

@@ -194,16 +194,16 @@ function webform_settings() {
     '#checked_value' => 1,
     '#title' => t("Allow Cookies for Tracking Submissions"),
     '#default_value' => variable_get("webform_use_cookies", 0), 
-	  '#description' => '<a href="http://www.wikipedia.org/wiki/HTTP_cookie">'.t('Cookies').'</a> '.t('can be used to help prevent the same user from repeatedly submitting a webform. This feature is not needed for limiting submissions per user, though it can increase accuracy in some situations. Besides cookies, webform also uses IP addresses and site usernames to prevent repeated submissions.')
-	);
+    '#description' => '<a href="http://www.wikipedia.org/wiki/HTTP_cookie">'.t('Cookies').'</a> '.t('can be used to help prevent the same user from repeatedly submitting a webform. This feature is not needed for limiting submissions per user, though it can increase accuracy in some situations. Besides cookies, webform also uses IP addresses and site usernames to prevent repeated submissions.')
+  );
 
   $form['advanced']['webform_debug']  = array(
     '#type' => 'select',
     '#title' => t("Webforms Debug"),
     '#default_value' => variable_get("webform_debug", 0), 
-	  '#options' => array (0 => "OFF", 1 => "Log submissions", 2 => "Full debug"), 
-	  '#description' => t('Set this option to "Log submissions" to log all submissions in the watchdog. Set it to "Full debug" to print debug info on submission. You probably want to leave this option on "OFF".')
-	);
+    '#options' => array (0 => "OFF", 1 => "Log submissions", 2 => "Full debug"), 
+    '#description' => t('Set this option to "Log submissions" to log all submissions in the watchdog. Set it to "Full debug" to print debug info on submission. You probably want to leave this option on "OFF".')
+  );
   return $form;
 } // end function webform_settings
 
@@ -242,7 +242,7 @@ function webform_menu() {
   $items[]= array ('path' => 'webform/done', 'title' => t('webform'),
                    'callback' => '_webform_thanks', 
                    'callback arguments' => array(),
-									 'type' => MENU_CALLBACK, 'access' => true);
+                   'type' => MENU_CALLBACK, 'access' => true);
 
   // Submissions listing 
   $items[]= array ('path' => 'webform', 'title' => t('webform'), 'callback' => 'webform_page',
@@ -394,7 +394,8 @@ function webform_validate (&$node) {
       // show a red border of any sort when an error is flagged on it
       if ($_POST['edit']['selected_component']) {
         form_set_error('selected_component',t("Field deleted, form must be submitted to save changes"));
-      } else {
+      }
+      else {
         form_set_error('selected_component',t("A component must be selected to delete"));
       }
       break;
@@ -425,7 +426,7 @@ function webform_form (&$node, &$param) {
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
     '#weight' => -2);
-	
+  
   $form['webform']['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Title'),
@@ -503,7 +504,8 @@ function webform_form (&$node, &$param) {
       '#value' => t('Edit Selected'),
       '#weight' => 2,
     );
-  } else {
+  }
+  else {
     $rows[] = array(NULL,array('data' => "No Components, add a component below.", 'colspan' => 5));
   }
 
@@ -517,9 +519,9 @@ function webform_form (&$node, &$param) {
   );
   $componentTable .= theme('table', $headers, $rows);
 
-	$form['components']['somemarkup'] = array (
-	'#value' => $componentTable,
-	);
+  $form['components']['somemarkup'] = array (
+  '#value' => $componentTable,
+  );
 
   // Mini-form to add a new component.
   $component_types =  _webform_load_components();
@@ -527,8 +529,8 @@ function webform_form (&$node, &$param) {
     '#type' => 'select',
     '#title' => t('Add a new component'),
     '#default_value' => $node->webform_newfield_type, 
-  	'#options' => $component_types,
-  	'#description' => t('Each component adds a new field to the form. Any number components (even of the same type) may be added to the form. Select a component type to add above.'),
+    '#options' => $component_types,
+    '#description' => t('Each component adds a new field to the form. Any number components (even of the same type) may be added to the form. Select a component type to add above.'),
     '#weight' => 3,
   );
   $form['components']['add_component'] = array(
@@ -690,7 +692,7 @@ function webform_edit_field_form (&$node) {
     drupal_set_title("Webform Error");
     return array();
   }
-	
+  
   // This is the information about the current field.
   $currfield = array();
 
@@ -713,7 +715,8 @@ function webform_edit_field_form (&$node) {
     $currfield['mandatory'] = $component['mandatory'];
     $currfield['extra'] = $component['extra'];
     drupal_set_title("Edit component: ".$currfield['name']." (".$currfield['type'].")");
-  } else {
+  }
+  else {
     // Check to make sure a valid component type was selected
     $component_types =  _webform_load_components();
     $new_component_type = $_POST['edit']['webform_newfield_type'];
@@ -736,36 +739,36 @@ function webform_edit_field_form (&$node) {
   // Print the correct field type specification
   // We always need: name and description.
   $form['field'] = array(
-  	'#type' => 'fieldset',
-  	'#title' => t('Field Details'),
-  	'#collapsible' => FALSE,
-  	'#collapsed' => FALSE,
-  	'#weight' => 5,
-  	'#tree' => TRUE,
+    '#type' => 'fieldset',
+    '#title' => t('Field Details'),
+    '#collapsible' => FALSE,
+    '#collapsed' => FALSE,
+    '#weight' => 5,
+    '#tree' => TRUE,
   );
   
-	
+  
   $form['field']['type'] = array(
-  	'#type' => 'hidden',
-  	'#value' => $currfield['type'],
+    '#type' => 'hidden',
+    '#value' => $currfield['type'],
   );
   $form['field']['key'] = array(
-  	'#type' => 'hidden',
-  	'#value' => $currfield['key'],
+    '#type' => 'hidden',
+    '#value' => $currfield['key'],
   );
   $form['field']['name'] = array(
-  	'#type' => 'textfield',
-  	'#default_value' => $currfield['name'],
-  	'#title' => t("Name"),
-  	'#description' => t('Name of the field. This is used as a descriptive label and as the key when saving data in the database.').($error['webform_edited_name'] ? $error['webform_edited_name'] : ''),
+    '#type' => 'textfield',
+    '#default_value' => $currfield['name'],
+    '#title' => t("Name"),
+    '#description' => t('Name of the field. This is used as a descriptive label and as the key when saving data in the database.').($error['webform_edited_name'] ? $error['webform_edited_name'] : ''),
     '#required' => TRUE,
     '#weight' => -1,
   );
   $form['field']['extra']['description'] = array(
-  	'#type' => 'textfield',
-  	'#default_value' => $currfield['extra']['description'],
-  	'#title' => t("Description"),
-  	'#description' => t('A short description of the field used as help for the user when he/she uses the form.').'<br />'.
+    '#type' => 'textfield',
+    '#default_value' => $currfield['extra']['description'],
+    '#title' => t("Description"),
+    '#description' => t('A short description of the field used as help for the user when he/she uses the form.').'<br />'.
                           webform_help('webform/helptext#variables').
                           ($error['extra'] ? $error['extra'] : ''),
     '#weight' => -1,
@@ -787,14 +790,15 @@ function webform_edit_field_form (&$node) {
   );
   
 
-  // Add the fields specific to this component type:	
-	_webform_load_components(); // Load all component types
-	$editFunction = "_webform_edit_".$currfield['type'];
-	if (function_exists($editFunction)) {
-		$additionalFormElements = $editFunction($currfield); // Call the component render function
-	} else {
-		drupal_set_message(t("The webform component")." '".$currfield['type']."' ".t(" does not have an edit function defined"));
-	}
+  // Add the fields specific to this component type:  
+  _webform_load_components(); // Load all component types
+  $editFunction = "_webform_edit_".$currfield['type'];
+  if (function_exists($editFunction)) {
+    $additionalFormElements = $editFunction($currfield); // Call the component render function
+  }
+  else {
+    drupal_set_message(t("The webform component")." '".$currfield['type']."' ".t(" does not have an edit function defined"));
+  }
 
   // Merge the additional fields with the current fields:
   $extraFieldsCopy = $form['field']['extra'];
@@ -835,7 +839,7 @@ function webform_edit_field_form (&$node) {
     }
   }
   
-	return $form;
+  return $form;
 }
 
 function webform_view(& $node, $teaser = 0, $page = 0) {
@@ -876,13 +880,13 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
   $form['#theme'] = 'webform_form_'.$node->nid;
 
   if (is_array($node->webformcomponents) && !empty ($node->webformcomponents)) {
-  	// Prepare a new form array
-  	$form['submitted'] = array(
-  	  '#type' => 'fieldset',
+    // Prepare a new form array
+    $form['submitted'] = array(
+      '#type' => 'fieldset',
       '#tree' => TRUE,
       '#collapsed' => FALSE,
       '#collapsable' => FALSE
-  	); 
+    ); 
     $form['componentKeys'] = array (
       '#tree' => true,
     ); 
@@ -913,7 +917,7 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
       // Add a hidden form element containing this component's key id (cid in the database)
       $form['componentKeys'][$cid] = array (
         '#type'          => 'hidden',
-        '#value'		 => $component['name'],
+        '#value'     => $component['name'],
       );
       
     } // end foreach
@@ -924,11 +928,11 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
       // Email subject and sender
       $form['details']['email_subject'] = array (
         '#type'      => 'hidden',
-        '#value'		 => $node->email_subject,
+        '#value'     => $node->email_subject,
       );
       $form['details']['email_from'] = array (
         '#type'      => 'hidden',
-        '#value'		 => $node->email_from,
+        '#value'     => $node->email_from,
       );
       
       // Add the submit button
@@ -1014,9 +1018,9 @@ function webform_client_submit($form_id, $form_values) {
       
       // Verify that this submission is not attempting to send any spam hacks
       if (_webform_submission_spam_check ($node->email, $email_from_string, $email_subject_string, $message)) {
-      	watchdog('webform', t('Possible spam attempt from ').$_SERVER['REMOTE_ADDR']."<br />\n".nl2br(htmlentities($message)), WATCHDOG_WARNING);
-      	drupal_set_message(t("Illegal information. Data not submitted."), 'error');
-      	return false;
+        watchdog('webform', t('Possible spam attempt from ').$_SERVER['REMOTE_ADDR']."<br />\n".nl2br(htmlentities($message)), WATCHDOG_WARNING);
+        drupal_set_message(t("Illegal information. Data not submitted."), 'error');
+        return false;
       }
       
       // Additional headers
@@ -1114,14 +1118,15 @@ function _webform_save_submission($node, $reply, $componentKeys) {
   db_query("INSERT INTO {webform_submissions} (nid, sid, submitted, user, remote_addr) "." VALUES (%d, %d, %d, '%s', '%s')", $node->nid, $sid, time(), $user->name, $_SERVER['REMOTE_ADDR']);
 
   foreach ($componentKeys as $cid => $cname) {
-  	$value = $reply[$cname];
+    $value = $reply[$cname];
     if (is_array($value)) {
       $key = 0;
       foreach ($value as $k => $v) {
         db_query("INSERT INTO {webform_submitted_data} (nid, sid, cid, no, data) "."VALUES (%d, %d, %d, %d, '%s')", $node->nid, $sid, $cid, $key, $v);
         $key++;
       }
-    } else {
+    }
+    else {
       db_query("INSERT INTO {webform_submitted_data} (nid, sid, cid, no, data) "."VALUES (%d, %d, %d, %d, '%s')", $node->nid, $sid, $cid, 0, $value);
     }
   }

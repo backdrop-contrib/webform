@@ -46,17 +46,18 @@ function _webform_edit_date ($currfield) {
  * @returns An array of a form item to be displayed on the client-side webform
  **/
 function _webform_render_date ($component) {
-	// Calculate the timestamp in GMT
-	$timestamp = strtotime($component['value']);
-	
-	if ($component['extra']['timezone'] == "user") {
-	  // Use the users timezone
+  // Calculate the timestamp in GMT
+  $timestamp = strtotime($component['value']);
+  
+  if ($component['extra']['timezone'] == "user") {
+    // Use the users timezone
     global $user;
     $timestamp += (int)$user->timezone;
   } elseif ($component['extra']['timezone'] == "gmt") {
     // Use GMT
     $timestamp += 0;
-  } else {
+  }
+  else {
     // Use the Drupal site time
     $timestamp += variable_get('date_default_timezone',0);
   }
@@ -106,7 +107,7 @@ function _webform_render_date ($component) {
     '#validate' => array ('webform_validate_date' => array ('year',$component['name'],$component['mandatory']) ),
     );
     
-	return $formItem;
+  return $formItem;
 }
 
 function webform_validate_date ($field,$fieldName,$componentName,$mandatory) {
@@ -234,7 +235,8 @@ function _webform_analysis_rows_date ($component) {
 function _webform_table_data_date ($data) {
   if (strlen($data['value']['0']) > 0 && strlen($data['value']['1']) > 0 && strlen($data['value']['2']) > 0) {
     return $data['value']['0']."/".$data['value']['1']."/".$data['value']['2'];
-  } else {
+  }
+  else {
     return "";
   }
 }
@@ -263,7 +265,8 @@ function _webform_csv_headers_date ($component) {
 function _webform_csv_data_date ($data) {
   if (strlen($data['value']['0']) > 0 && strlen($data['value']['1']) > 0 && strlen($data['value']['2']) > 0) {
     return $data['value']['0']."/".$data['value']['1']."/".$data['value']['2'];
-  } else {
+  }
+  else {
     return "";
   }
 }

@@ -1,62 +1,63 @@
 <?php
 // $Id$
 
-  function webform_install() {
-    drupal_set_message('Installing webform');
+function webform_install() {
+  drupal_set_message('Installing webform');
 
-    db_query("CREATE TABLE if not exists {webform} (
-        nid int(10) unsigned NOT NULL default '0',
-        confirmation text,
-        redirect_post int(1) unsigned not null default '0',
-        submit_limit int(2)  not null default '-1',
-        submit_interval int(10) not null default '157784630',
-        email varchar(255) default NULL,
-        email_from varchar(255) default NULL,
-        email_subject varchar(255) default NULL,
-        PRIMARY KEY  (nid)
-      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
-    );
-    
-    db_query("CREATE TABLE if not exists {webform_component} (
-        nid int(10) unsigned NOT NULL default '0',
-        cid int(10) unsigned NOT NULL default '0',
-        name varchar(128) default NULL,
-        type varchar(16) default NULL,
-        value varchar(128) default NULL,
-        extra text,
-        mandatory int(2) unsigned default NULL,
-        weight int(2) default NULL,
-        PRIMARY KEY  (nid,cid)
-      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
-    );
- 
-    db_query("CREATE TABLE if not exists {webform_submissions} (
-        nid int(10) unsigned NOT NULL default '0',
-        sid int(10) unsigned NOT NULL default '0',
-        submitted int(11) NOT NULL default '0',
-        user varchar(128),
-        remote_addr varchar(128),
-        PRIMARY KEY  (nid,sid)
-      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
-    );
-    
-    db_query("CREATE TABLE if not exists {webform_submitted_data} (
-        nid int(10) unsigned NOT NULL default '0',
-        sid int(10) unsigned NOT NULL default '0',
-        cid int(10) unsigned NOT NULL default '0',
-        no int(10) unsigned NOT NULL default '0',
-        data longtext,
-        PRIMARY KEY  (nid,sid,cid,no)
-      ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
-    );
-    
+  db_query("CREATE TABLE if not exists {webform} (
+      nid int(10) unsigned NOT NULL default '0',
+      confirmation text,
+      redirect_post int(1) unsigned not null default '0',
+      submit_limit int(2)  not null default '-1',
+      submit_interval int(10) not null default '157784630',
+      email varchar(255) default NULL,
+      email_from varchar(255) default NULL,
+      email_subject varchar(255) default NULL,
+      PRIMARY KEY  (nid)
+    ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
+  );
+  
+  db_query("CREATE TABLE if not exists {webform_component} (
+      nid int(10) unsigned NOT NULL default '0',
+      cid int(10) unsigned NOT NULL default '0',
+      name varchar(128) default NULL,
+      type varchar(16) default NULL,
+      value varchar(128) default NULL,
+      extra text,
+      mandatory int(2) unsigned default NULL,
+      weight int(2) default NULL,
+      PRIMARY KEY  (nid,cid)
+    ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
+  );
+
+  db_query("CREATE TABLE if not exists {webform_submissions} (
+      nid int(10) unsigned NOT NULL default '0',
+      sid int(10) unsigned NOT NULL default '0',
+      submitted int(11) NOT NULL default '0',
+      user varchar(128),
+      remote_addr varchar(128),
+      PRIMARY KEY  (nid,sid)
+    ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
+  );
+  
+  db_query("CREATE TABLE if not exists {webform_submitted_data} (
+      nid int(10) unsigned NOT NULL default '0',
+      sid int(10) unsigned NOT NULL default '0',
+      cid int(10) unsigned NOT NULL default '0',
+      no int(10) unsigned NOT NULL default '0',
+      data longtext,
+      PRIMARY KEY  (nid,sid,cid,no)
+    ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
+  );
+  
   variable_set('webform_version',array('text'=>'4.7.1', 'build' => '471'));
 
   $success = TRUE;
 
   if ($success) {
     drupal_set_message(t('Webform module installed module tables successfully.'));
-  } else {
+  }
+  else {
     drupal_set_message(t('The installation of webform module was unsuccessful.'), 'error');
   }
 }
@@ -214,16 +215,16 @@ function _webform_legacy_update($installed_version, $current_version) {
       //$ret[] = array(1 => "<strong>Build 4.6.3</strong><br />\n", 2 => "");
       // No more lazy update ...
       // Check if the lazy update has already been performed
-      $result = db_query("SHOW COLUMNS FROM {webform} LIKE 'email_subject'");			
-			if (db_num_rows($result) == 0) {  
-				// The email_subject column is needed
-      	$ret[] = update_sql("ALTER TABLE {webform} ADD COLUMN email_subject varchar(255)");
-			}
-      $result = db_query("SHOW COLUMNS FROM {webform} LIKE 'email_from'");			
-			if (db_num_rows($result) == 0) {  
-				// The email_subject column is needed
-      	$ret[] = update_sql("ALTER TABLE {webform} ADD COLUMN email_from varchar(255)");
-			}
+      $result = db_query("SHOW COLUMNS FROM {webform} LIKE 'email_subject'");      
+      if (db_num_rows($result) == 0) {  
+        // The email_subject column is needed
+        $ret[] = update_sql("ALTER TABLE {webform} ADD COLUMN email_subject varchar(255)");
+      }
+      $result = db_query("SHOW COLUMNS FROM {webform} LIKE 'email_from'");      
+      if (db_num_rows($result) == 0) {  
+        // The email_subject column is needed
+        $ret[] = update_sql("ALTER TABLE {webform} ADD COLUMN email_from varchar(255)");
+      }
     }
         
     // Set the $current_version
