@@ -80,7 +80,7 @@ function _webform_render_date ($component) {
   $formItem['#type'] = 'fieldset';
   $formItem['#title'] = $component['name'];
   $formItem['#weight'] = $component['weight'];
-  $formItem['#description'] = $component['extra']['description'];
+  $formItem['#description'] = _webform_filtervalues($component['extra']['description']);
   $formItem['#prefix'] = '<div class="container-inline">';
   $formItem['#suffix'] = '</div>';
   if ($component['mandatory']) {

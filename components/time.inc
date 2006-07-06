@@ -103,7 +103,7 @@ function _webform_render_time ($component) {
     $formItem['#title'] .= '<span class="form-required" title="'.t("This field is required.").'">*</span>';
   }
   $formItem['#weight'] = $component['weight'];
-  $formItem['#description'] = $component['extra']['description'];
+  $formItem['#description'] = _webform_filtervalues($component['extra']['description']);
   $formItem['#prefix'] = '<div class="container-inline">';
   $formItem['#suffix'] = '</div>';
   $formItem['hour'] = array(

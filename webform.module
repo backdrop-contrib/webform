@@ -856,9 +856,9 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
     profile_load_profile($user);
   }
 
-  $sid_to_display = $_GET['sid']; // Will be NULL if no sid
+  $sid_to_display = check_plain($_GET['sid']); // Will be NULL if no sid
 
-  if ($sid_to_display) {
+  if ($sid_to_display && is_numeric($sid_to_display)) {
     if (user_access('access webform results')) {
       drupal_set_title('Submission #'.$sid_to_display);
       $node->body = "";
@@ -1124,7 +1124,7 @@ function _webform_filtervalues($string) {
   // Clean up any unused %system stuff
   $string= preg_replace('/\%server\[\w+\]/', '', $string);
 
-  return $string;
+  return filter_xss($string);
 } // end _webform_filtervalues
 
 function _webform_save_submission($node, $reply, $componentKeys) {
