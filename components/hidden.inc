@@ -110,7 +110,7 @@ function _webform_analysis_rows_hidden ($component) {
  * @returns Textual output formatted for human reading.
  **/
 function _webform_table_data_hidden ($data) {
-  return empty($data['value']['0']) ? "" : $data['value']['0'];
+  return check_plain(empty($data['value']['0']) ? "" : $data['value']['0']);
 }
 
 

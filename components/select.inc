@@ -168,12 +168,12 @@ function _webform_table_data_select ($data) {
   if (is_array($data['value'])) {
     foreach ($data['value'] as $value) {
       if ($value !== '0') {
-        $output .= $value."<br />";
+        $output .= check_plain($value)."<br />";
       }
     }
   }
   else {
-    $output = empty($data['value']['0']) ? "" : $data['value']['0'];
+    $output = check_plain(empty($data['value']['0']) ? "" : $data['value']['0']);
   }
   return $output;
 }

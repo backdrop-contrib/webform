@@ -139,7 +139,7 @@ function _webform_analysis_rows_textarea ($component) {
  * @returns Textual output formatted for human reading.
  **/
 function _webform_table_data_textarea ($data) {
-  return empty($data['value']['0']) ? "" : $data['value']['0'];
+  return empty($data['value']['0']) ? "" : check_markup($data['value']['0'], FILTER_HTML_STRIP, FALSE);
 }
 
 
