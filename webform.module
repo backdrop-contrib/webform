@@ -171,7 +171,6 @@ function webform_settings() {
   
   // Add each component to the form:
   $component_types = _webform_load_components(true);
-  $componentBoxes = array('#type' => 'checkboxes', '#default_value' => $status, '#options' => $options);
   foreach ($component_types as $componentName => $componentTransName) {
     $form['components']['webform_enable_'.$componentName] = array (
       '#title' => $componentTransName,
@@ -760,7 +759,7 @@ function webform_edit_field_form (&$node) {
     '#type' => 'textfield',
     '#default_value' => $currfield['name'],
     '#title' => t("Name"),
-    '#description' => t('Name of the field. This is used as a descriptive label and as the key when saving data in the database.').($error['webform_edited_name'] ? $error['webform_edited_name'] : ''),
+    '#description' => t('Name of the field. This is used as a descriptive label and as the key when saving data in the database.'),
     '#required' => TRUE,
     '#weight' => -1,
   );
@@ -769,8 +768,7 @@ function webform_edit_field_form (&$node) {
     '#default_value' => $currfield['extra']['description'],
     '#title' => t("Description"),
     '#description' => t('A short description of the field used as help for the user when he/she uses the form.').'<br />'.
-                          webform_help('webform/helptext#variables').
-                          ($error['extra'] ? $error['extra'] : ''),
+                          webform_help('webform/helptext#variables'),
     '#weight' => -1,
   );
   
@@ -783,6 +781,7 @@ function webform_edit_field_form (&$node) {
   );
   $form['field']['weight'] = array (
     '#type' => 'weight',
+    '#delta' => (count($_POST['edit']['webformcomponents'])>10?count($_POST['edit']['webformcomponents']):10),
     '#title' => t("Weight"),
     '#default_value' => $currfield['weight'],
     '#description' => t('Optional. In the menu, the heavier items will sink and the lighter items will be positioned nearer the top.'),
