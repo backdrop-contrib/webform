@@ -21,7 +21,7 @@ Upgrading from any previous version
 
 2. Login as the FIRST user or change the $access_check in upgrade.php to FALSE
 
-3. Run upgrade.php (at http://www.yourdrupalsite/upgrade.php)
+3. Run upgrade.php (at http://www.yourdrupalsite/update.php)
 
 The .POT file
 -------------
