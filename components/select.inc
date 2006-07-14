@@ -147,7 +147,7 @@ function _webform_analysis_rows_select ($component) {
       ' FROM {webform_submitted_data} '.
       ' WHERE nid = %d '.
       ' AND cid = %d '.
-      ' AND data != "0" '.
+      ' AND data != \'0\' '.
       ' GROUP BY data ';
     $result = db_query($query, $component['nid'], $component['cid']);
     $rows = array();

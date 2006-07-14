@@ -1129,9 +1129,11 @@ function _webform_filtervalues($string) {
 function _webform_save_submission($node, $reply, $componentKeys) {
   global $user;
 
-  $sid = db_next_id('{webform_submissions}_id');
+  $sid = db_next_id('{webform_submissions}_sid');
   
-  db_query("INSERT INTO {webform_submissions} (nid, sid, submitted, user, remote_addr) "." VALUES (%d, %d, %d, '%s', '%s')", $node->nid, $sid, time(), $user->name, $_SERVER['REMOTE_ADDR']);
+  // 'user' is a reserved keyword in Postgres
+  $user_col = $GLOBALS['db_type'] == 'pgsql' ? '"user"' : 'user';
+  db_query("INSERT INTO {webform_submissions} (nid, sid, submitted, $user_col, remote_addr) "." VALUES (%d, %d, %d, '%s', '%s')", $node->nid, $sid, time(), $user->name, $_SERVER['REMOTE_ADDR']);
 
   foreach ($componentKeys as $cid => $cname) {
     $value = $reply[$cname];

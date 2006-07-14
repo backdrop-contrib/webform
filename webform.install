@@ -4,51 +4,104 @@
 function webform_install() {
   drupal_set_message('Installing webform');
 
-  db_query("CREATE TABLE if not exists {webform} (
-      nid int(10) unsigned NOT NULL default '0',
-      confirmation text,
-      redirect_post int(1) unsigned not null default '0',
-      submit_limit int(2)  not null default '-1',
-      submit_interval int(10) not null default '157784630',
-      email varchar(255) default NULL,
-      email_from varchar(255) default NULL,
-      email_subject varchar(255) default NULL,
-      PRIMARY KEY  (nid)
-    ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
-  );
-  
-  db_query("CREATE TABLE if not exists {webform_component} (
-      nid int(10) unsigned NOT NULL default '0',
-      cid int(10) unsigned NOT NULL default '0',
-      name varchar(128) default NULL,
-      type varchar(16) default NULL,
-      value varchar(128) default NULL,
-      extra text,
-      mandatory int(2) unsigned default NULL,
-      weight int(2) default NULL,
-      PRIMARY KEY  (nid,cid)
-    ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
-  );
+  switch ($GLOBALS['db_type']) {
+    case 'mysqli':
+    case 'mysql':
+      db_query("CREATE TABLE if not exists {webform} (
+        nid int(10) unsigned NOT NULL default '0',
+        confirmation text,
+        redirect_post int(1) unsigned not null default '0',
+        submit_limit int(2)  not null default '-1',
+        submit_interval int(10) not null default '157784630',
+        email varchar(255) default NULL,
+        email_from varchar(255) default NULL,
+        email_subject varchar(255) default NULL,
+        PRIMARY KEY  (nid)
+        ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
+      );
 
-  db_query("CREATE TABLE if not exists {webform_submissions} (
-      nid int(10) unsigned NOT NULL default '0',
-      sid int(10) unsigned NOT NULL default '0',
-      submitted int(11) NOT NULL default '0',
-      user varchar(128),
-      remote_addr varchar(128),
-      PRIMARY KEY  (nid,sid)
-    ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
-  );
+      db_query("CREATE TABLE if not exists {webform_component} (
+        nid int(10) unsigned NOT NULL default '0',
+        cid int(10) unsigned NOT NULL default '0',
+        name varchar(128) default NULL,
+        type varchar(16) default NULL,
+        value varchar(128) default NULL,
+        extra text,
+        mandatory int(2) unsigned default NULL,
+        weight int(2) default NULL,
+        PRIMARY KEY  (nid,cid)
+        ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
+      );
+
+      db_query("CREATE TABLE if not exists {webform_submissions} (
+        nid int(10) unsigned NOT NULL default '0',
+        sid int(10) unsigned NOT NULL default '0',
+        submitted int(11) NOT NULL default '0',
+        user varchar(128),
+        remote_addr varchar(128),
+        PRIMARY KEY  (nid,sid)
+        ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
+      );
+
+      db_query("CREATE TABLE if not exists {webform_submitted_data} (
+        nid int(10) unsigned NOT NULL default '0',
+        sid int(10) unsigned NOT NULL default '0',
+        cid int(10) unsigned NOT NULL default '0',
+        no int(10) unsigned NOT NULL default '0',
+        data longtext,
+        PRIMARY KEY  (nid,sid,cid,no)
+        ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
+      );
+      break;
+
+  case 'pgsql':
+      db_query("CREATE TABLE {webform} (
+          nid integer NOT NULL default '0',
+          confirmation text NOT NULL default '',
+          redirect_post smallint NOT NULL default '0',
+          submit_limit smallint NOT NULL default '-1',
+          submit_interval integer NOT NULL default '157784630',
+          email varchar(255) NOT NULL default '',
+          email_from varchar(255) NOT NULL default '',
+          email_subject varchar(255) NOT NULL default '',
+          PRIMARY KEY (nid)
+          )"
+      );
   
-  db_query("CREATE TABLE if not exists {webform_submitted_data} (
-      nid int(10) unsigned NOT NULL default '0',
-      sid int(10) unsigned NOT NULL default '0',
-      cid int(10) unsigned NOT NULL default '0',
-      no int(10) unsigned NOT NULL default '0',
-      data longtext,
-      PRIMARY KEY  (nid,sid,cid,no)
-    ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
-  );
+      db_query("CREATE TABLE {webform_component} (
+          nid integer NOT NULL default '0',
+          cid integer NOT NULL default '0',
+          name varchar(128) NOT NULL default '',
+          type varchar(16) NOT NULL default '',
+          value varchar(128) NOT NULL default '',
+          extra text NOT NULL default '',
+          mandatory smallint NOT NULL default '0',
+          weight smallint NOT NULL default '0',
+          PRIMARY KEY (nid,cid)
+          )"
+      );
+  
+      db_query("CREATE TABLE {webform_submissions} (
+          nid integer NOT NULL default '0',
+          sid serial,
+          submitted integer NOT NULL default '0',
+          \"user\" varchar(128),
+          remote_addr varchar(128) NOT NULL default '',
+          PRIMARY KEY (nid,sid)
+          )"
+      );
+    
+      db_query("CREATE TABLE {webform_submitted_data} (
+          nid integer NOT NULL default '0',
+          sid integer NOT NULL default '0',
+          cid integer NOT NULL default '0',
+          no integer NOT NULL default '0',
+          data text NOT NULL default '',
+          PRIMARY KEY (nid,sid,cid,no)
+          )"
+      );
+    break;
+  }
   
   variable_set('webform_version',array('text'=>'4.7.1', 'build' => '471'));
 
@@ -164,6 +217,23 @@ function webform_update_4() {
   return $ret;
 }
 
+/*
+ * Update MySQL sequence name to be cross-database compatible
+ */
+function webform_update_5() {
+  $ret = array();
+  
+  switch ($GLOBALS['db_type']) {
+    case 'mysqli':
+    case 'mysql':
+      db_query('LOCK TABLES {sequences} WRITE');
+      $ret[] = update_sql("UPDATE {sequences} SET name = '%s' WHERE name = '%s'", db_prefix_tables('{webform_submissions}_sid'), db_prefix_tables('{webform_submissions}_id'));
+      db_query('UNLOCK TABLES'); 
+      break;
+  }
+  
+  return $ret;
+}
 
 
 /**
@@ -215,7 +285,7 @@ function _webform_legacy_update($installed_version, $current_version) {
       //$ret[] = array(1 => "<strong>Build 4.6.3</strong><br />\n", 2 => "");
       // No more lazy update ...
       // Check if the lazy update has already been performed
-      $result = db_query("SHOW COLUMNS FROM {webform} LIKE 'email_subject'");      
+      $result = db_query("SHOW COLUMNS FROM {webform} LIKE 'email_subject'");  		
       if (db_num_rows($result) == 0) {  
         // The email_subject column is needed
         $ret[] = update_sql("ALTER TABLE {webform} ADD COLUMN email_subject varchar(255)");
