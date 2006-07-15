@@ -17,6 +17,14 @@ function _webform_edit_email ($currfield) {
                   t('The default value of a email field is always the users email address if he/she is logged in.').
                   '</div>',
     );
+    $editFields['extra']['carboncopy'] = array (
+      '#type' => 'checkbox',
+      '#title' => t("CC submission to this email"),
+      '#return_value' => 'Y',
+      '#default_value' => ($currfield['extra']['carboncopy']=='Y'?TRUE:FALSE),
+      '#description' => t('Check this option if the email specified in this component should get a CC submission.'). ' '.
+                        t('Note that this opens the risk that the form can be used to send emails to any address and might be missused as a spam gateway.'),
+    );
     $editFields['extra']['width'] = array (
       '#type' => 'textfield',
       '#title' => t("Width"),
