@@ -108,17 +108,18 @@ function webform_insert($node) {
   // Re-add existing components from the POST array
   if (isset($_POST['edit']['webformcomponents'])) {
     unset($node->webformcomponents);
-    foreach ($_POST['edit']['webformcomponents'] as $key => $value) {
-      $node->webformcomponents[$key] = unserialize(base64_decode($value));
-    }
+    $node->webformcomponents = _webform_components_decode($_POST['edit']['webformcomponents']);
   }
 
   // Insert the components into the database
   if( is_array($node->webformcomponents) && !empty($node->webformcomponents)) {
     foreach($node->webformcomponents as $cid => $component) {   
-      db_query("INSERT INTO {webform_component} (nid, cid, name, type, value, extra, mandatory, weight) ".
-               " VALUES (%d, %d, '%s', '%s', '%s', '%s', %d, %d)",
-               $node->nid, $cid, $component['name'], 
+      db_query("INSERT INTO {webform_component} (nid, cid, pid, name, type, value, extra, mandatory, weight) ".
+               " VALUES (%d, %d, %d, '%s', '%s', '%s', '%s', %d, %d)",
+               $node->nid,
+               $cid,
+               $component['parent'],
+               $component['name'], 
                $component['type'],
                $component['value'], 
                serialize($component['extra']), 
@@ -153,9 +154,9 @@ function webform_load($node) {
     $page->webformcomponents[$c['cid']]['value']= $c['value'];
     $page->webformcomponents[$c['cid']]['extra']= unserialize($c['extra']);
     $page->webformcomponents[$c['cid']]['mandatory']= $c['mandatory'];
+    $page->webformcomponents[$c['cid']]['parent']= $c['pid'];
     $page->webformcomponents[$c['cid']]['weight']= $c['weight'];
   }
-
   return $page;
 }
 
@@ -296,18 +297,24 @@ function webform_link($type, $node= 0, $main= 0) {
   return $links;
 }
 
+/** 
+ * Implementation of hook_prepare().
+ * This function is called before the display of webform_form(). Rather than
+ * a typical usage of hook_prepare, in webform it is used to update the contents
+ * of the $node object after changes have been made to the node, such as adding a
+ * new component or deleting an existing component. The node is altered as necessary,
+ * then the user is returned to the display of webform_form() with the changes visible.
+ * The changes to the node are not permanent until the user submits the form.
+ **/
 function webform_prepare (&$node) {
         
   $op = $_POST['op'];
-
+  
   switch ($op) {
     case t('Delete Selected'):
       // Re-add existing components
-        if (isset($_POST['edit']['webformcomponents'])) {
-        unset($node->webformcomponents);
-        foreach ($_POST['edit']['webformcomponents'] as $key => $value) {
-          $node->webformcomponents[$key] = unserialize(base64_decode($value));
-        }
+      if (isset($_POST['edit']['webformcomponents'])) {
+        $node->webformcomponents = _webform_components_decode($_POST['edit']['webformcomponents']);
       }
       // Delete an existing component
       $cid = $_POST['edit']['selected_component'];
@@ -317,10 +324,7 @@ function webform_prepare (&$node) {
     case t('Done'):
       // Overwrite the database components with any saved in the POST array
       if (isset($_POST['edit']['node']['webformcomponents'])) {
-        unset($node->webformcomponents);
-        foreach ($_POST['edit']['node']['webformcomponents'] as $key => $value) {
-          $node->webformcomponents[$key] = unserialize(base64_decode($value));
-        }
+        $node->webformcomponents = _webform_components_decode($_POST['edit']['node']['webformcomponents']);
         unset($_POST['edit']['node']['webformcomponents']);
       }
       
@@ -344,27 +348,9 @@ function webform_prepare (&$node) {
       // Display editted message
       drupal_set_message(t('The form component has been changed. Remember to press Submit on the bottom of this form to save your changes.'));
       break;
-      
     case t('Preview'):
-      // Make sure the original components (from the database) are in decoded array form
-      if (isset($node->webformcomponents) && is_array($node->webformcomponents)) {
-        foreach ($node->webformcomponents as $cid=>$value)
-        if (!is_array($value)) {
-          // This component is encoded, convert to array form
-          $node->webformcomponents[$cid] = unserialize(base64_decode($value));
-        }
-      }
-      
-      // Overwrite the database components with any saved in the POST array
-      if (isset($_POST['edit']['webformcomponents'])) {
-        unset($node->webformcomponents);
-        foreach ($_POST['edit']['webformcomponents'] as $key => $value) {
-          $node->webformcomponents[$key] = unserialize(base64_decode($value));
-        }
-        unset($_POST['edit']['webformcomponents']);
-      }
+      $node->webformcomponents = _webform_components_decode($node->webformcomponents);
       break;
-      
   } // end switch
   
   // Make sure the submission limiter is correctly set
@@ -374,17 +360,38 @@ function webform_prepare (&$node) {
   }
 }
 
+/** 
+ * Implementation of hook_validate().
+ * This function is called after the user clicks any button displayed in webform_form().
+ * Rather than a typical usage of validation, in webform this is used to perform various
+ * actions without kicking the user out of the 'edit' tab. For instance, webform detects
+ * the when the buttons "Add" or "Edit Selected" are clicked, and then direct the user
+ * to a form for editing a component.
+ **/
 function webform_validate (&$node) {
 
   $op = $_POST['op'];
+  $node->webformcomponents = _webform_components_decode ($_POST['edit']['webformcomponents']);
 
   switch ($op) {
-    // Intercept these buttons and redirect
+    // Intercept these buttons and redirect:
     case t('Add'):
+      $errors = form_get_errors();
+      if (empty($errors)) {
+        $form = webform_edit_field_form($node);
+        $output = drupal_get_form('webform_edit_'.$_POST['edit']['webform_newfield_type'],$form);
+        print theme('page',$output);
+        exit(0);
+      }
+      break;
     case t('Edit Selected'):
-      $form = webform_edit_field_form($node);
-      $output = drupal_get_form('webform_edit_field',$form);
-      print theme('page',$output);
+      $errors = form_get_errors();
+      if (empty($errors)) {
+        $form = webform_edit_field_form($node);
+        $component = $node->webformcomponents[$_POST['edit']['selected_component']];
+        $output = drupal_get_form('webform_edit_'.$component['type'],$form);
+        print theme('page',$output);
+      }
       exit(0);
       break;
     case t('Delete Selected'):
@@ -398,6 +405,7 @@ function webform_validate (&$node) {
         form_set_error('selected_component',t("A component must be selected to delete"));
       }
       break;
+    // Standard form checking:
     case t('Submit'):
     case t('Preview'):
       // Make sure the submission limiter is correctly set
@@ -405,7 +413,7 @@ function webform_validate (&$node) {
         if (!is_numeric($_POST['edit']['submit_limit'])) {
           form_set_error('submit_limit',t('Submission limit must be a number'));
         }
-      }    
+      }
       break;
   }
 }
@@ -413,9 +421,7 @@ function webform_validate (&$node) {
 /** 
  * Implementation of hook_form()
  * Creates the standard form for editing or creating a webform.
- * This form is then processed by the webform_node_form_submit() function.
  **/
-
 function webform_form (&$node, &$param) {
 /* Start Edit Form */
 
@@ -467,32 +473,16 @@ function webform_form (&$node, &$param) {
     '#weight' => -1);
   
   if (is_array($node->webformcomponents) && !empty($node->webformcomponents)) {
+    $options = array();
     foreach($node->webformcomponents as $cid => $component) {  
-      // Create a radio button
-      $form['components']['selected_component'][$cid] = array(
-        '#name' => 'edit[selected_component]', // Override the naming scheme to force these radios into the same group
-        '#type' => 'radio',
-        '#return_value' => $cid,
-        '#parents' => array('webform'), // If we don't specify the parent, the forms API will think this is an illegal posting
-      );
-     
-      // Shorten long values
-      if (strlen($component['value']) > 30) {
-        $component['value'] = substr($component['value'],30);
-        $component['value'] .= "...";
-      }
-     
-      // Add each component to a table row
-      $rows[] = array(
-        form_render($form['components']['selected_component'][$cid]),
-        $component['name'],
-        $component['type'],
-        ($component['value'] == "") ? "-" : $component['value'],
-        ($component['mandatory'] == 1) ? "Y" : "N" ,
-        $component['weight'],
-      );
-      
+      $options[$cid] = $component['name'];
     }
+    $form['components']['selected_component'] = array(
+      '#type' => 'radios',
+      '#options' => $options,
+      '#default_value' => $node->selected_component > 0 ? $node->selected_component : array_shift(array_keys($node->webformcomponents)),
+      '#DANGEROUS_SKIP_CHECK' => TRUE,
+    );
     $form['components']['delete_component'] = array(
       '#type' => 'submit',
       '#value' => t('Delete Selected'),
@@ -504,30 +494,12 @@ function webform_form (&$node, &$param) {
       '#weight' => 2,
     );
   }
-  else {
-    $rows[] = array(NULL,array('data' => "No Components, add a component below.", 'colspan' => 5));
-  }
 
-  $headers = array(
-    "<span></span>",
-    t('Name'),
-    t('Type'),
-    t('Value'),
-    t('Mandatory'),
-    t('Weight'),
-  );
-  $componentTable .= theme('table', $headers, $rows);
-
-  $form['components']['somemarkup'] = array (
-  '#value' => $componentTable,
-  );
-
-  // Mini-form to add a new component.
   $component_types =  _webform_load_components();
   $form['components']['webform_newfield_type'] = array(
     '#type' => 'select',
     '#title' => t('Add a new component'),
-    '#default_value' => $node->webform_newfield_type, 
+    '#default_value' => $node->webform_newfield_type,
     '#options' => $component_types,
     '#description' => t('Each component adds a new field to the form. Any number components (even of the same type) may be added to the form. Select a component type to add above.'),
     '#weight' => 3,
@@ -546,13 +518,14 @@ function webform_form (&$node, &$param) {
     '#title' => t('Mail Settings'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
-    '#weight' => 0);
+    '#weight' => 0,
+  );
   
   $form['mailsettings']['email'] = array(
     '#type' => 'textfield',
     '#title' =>t("E-mail to address"),
     '#default_value' => $node->email,
-    '#description' => t('Form submissions will be e-mailed to this address. Leave blank for none.')
+    '#description' => t('Form submissions will be e-mailed to this address. Leave blank for none.'),
   );
   
   // Build arrays of possible return email addresses and email subject lines from elements on the form
@@ -577,8 +550,8 @@ function webform_form (&$node, &$param) {
     '#default_value' => $node->email_from,
     '#options' => $possible_email_from,
     '#description' => t('After adding components to this form, any email or hidden form element may be selected as the sender for e-mails.'),
-    '#DANGEROUS_SKIP_CHECK' => true,
     '#weight' => 7,
+    '#DANGEROUS_SKIP_CHECK' => TRUE,
   );
   $form['mailsettings']['email_subject'] = array(
     '#type' => 'select',
@@ -586,8 +559,8 @@ function webform_form (&$node, &$param) {
     '#default_value' => $node->email_subject,
     '#options' => $possible_email_subject,
     '#description' => t('After adding components to this form, any textfield or hidden form element may be selected as the subject line for e-mails.'),
-    '#DANGEROUS_SKIP_CHECK' => true,
     '#weight' => 7,
+    '#DANGEROUS_SKIP_CHECK' => TRUE,
   );
   
   /* End mail settings form */
@@ -680,10 +653,68 @@ function webform_form (&$node, &$param) {
   // Create our forms and display the output:
   return $form;
 }
+/**
+ * Theme the node form. Use a standard Drupal table to organize the components fieldset
+ *
+ * @param array $form
+ * @return string Formatted HTML form, ready for display
+ */
+function theme_webform_node_form ($form) {
+  $node = $form['#node'];
+  if (is_array($node->webformcomponents) && !empty($node->webformcomponents)) {
+    $componentTree = array();
+    _webform_components_tree_build($node->webformcomponents, $componentTree);
+    $componentTree = _webform_components_tree_sort($componentTree);
+    // Build the table rows
+    function _webform_add_rows($cid, $component, $level, &$form, &$rows) { 
+      // Shorten long values
+      if (strlen($component['value']) > 30) {
+        $component['value'] = substr($component['value'],30);
+        $component['value'] .= "...";
+      }
+      
+      // Add padding to the radio label
+      $form['components']['selected_component'][$cid]['#title'] = '<span style="padding-left: '.($level*15).'px; padding-right: 20px;">'.$form['components']['selected_component'][$cid]['#title'].'</span>';
+      
+      // Add each component to a table row
+      $rows[] = array(
+        form_render($form['components']['selected_component'][$cid]),
+        $component['type'],
+        ($component['value'] == "") ? "-" : $component['value'],
+        ($component['mandatory'] == 1) ? "Y" : "N" ,
+        $component['weight'],
+      );
+      if (is_array($component['children'])) {
+        foreach ($component['children'] as $cid => $component) {
+          _webform_add_rows($cid, $component, $level+1, $form, $rows);
+        }
+      }
+    }
+    foreach ($componentTree['children'] as $cid => $component) {
+      _webform_add_rows($cid, $component, 0, $form, $rows);
+    }
+  }
+  else {
+    $rows[] = array(NULL,array('data' => "No Components, add a component below.", 'colspan' => 5));
+  }
+
+  $headers = array(
+    array('data' => t('Name'), 'style' => 'padding-left: 30px'),
+    t('Type'),
+    t('Value'),
+    t('Mandatory'),
+    t('Weight'),
+  );
+  $componentTable .= theme('table', $headers, $rows);
+
+  $form['components']['table'] = array (
+    '#value' => $componentTable,
+  );
+  return form_render($form);
+}
 
 function webform_edit_field_form (&$node) {
-  // we have to do what the framework would do for us so we don't lose
-  // information.
+  // we have to do what the framework would do for us so we don't lose information.
   if(!isset($_POST['edit'])) {
     // We are calling this page in the wrong way ... 
     // Do some clean up ??
@@ -698,9 +729,9 @@ function webform_edit_field_form (&$node) {
   if ( $_POST['op'] == t('Edit Selected') ) {
     // Check to make sure a valid component id was selected
     $cid = $_POST['edit']['selected_component'];
-    $component = unserialize(base64_decode($_POST['edit']['webformcomponents'][$cid]));
+    $component = $node->webformcomponents[$cid];
     if (empty($component)) {
-      //drupal_set_message(t('Component not found'),'error');
+      drupal_set_message(t('Component not found'),'error');
       drupal_set_title("Webform Error");
       return array();
     }
@@ -710,6 +741,7 @@ function webform_edit_field_form (&$node) {
     $currfield['type'] = $component['type'];
     $currfield['name'] = $component['name'];
     $currfield['default'] = $component['value'];
+    $currfield['parent'] = $component['parent'];
     $currfield['weight'] = $component['weight'];
     $currfield['mandatory'] = $component['mandatory'];
     $currfield['extra'] = $component['extra'];
@@ -730,7 +762,7 @@ function webform_edit_field_form (&$node) {
     $currfield['type'] = $_POST['edit']['webform_newfield_type'];
     $currfield['name'] = $currfield['type']."_".$currfield['key'];
     drupal_set_title("Add new component (".$currfield['type'].")");
-  }  
+  }
   
   // Construct the form:
   $form = array();
@@ -779,6 +811,24 @@ function webform_edit_field_form (&$node) {
     '#description' => t('Check this option if the user must enter a value.'),
     '#weight' => 2,
   );
+  
+  if (variable_get('webform_enable_fieldset',true) && is_array($node->webformcomponents)) {
+    $options = array('0' => 'Root');
+    foreach ($node->webformcomponents as $thiscid => $value) {
+      if ($value['type'] == 'fieldset' && $thiscid != $cid) {
+        $options[$thiscid] = $value['name'];
+      }
+    }
+    $form['field']['parent'] = array (
+      '#type' => 'select',
+      '#title' => t("Parent Fieldset"),
+      '#default_value' => $currfield['parent'],
+      '#description' => t('Optional. You may organize your form by placing this component inside inside another fieldset.'),
+      '#options' => $options,
+      '#weight' => 2,
+    );
+  }
+  
   $form['field']['weight'] = array (
     '#type' => 'weight',
     '#delta' => (count($_POST['edit']['webformcomponents'])>10?count($_POST['edit']['webformcomponents']):10),
@@ -787,7 +837,6 @@ function webform_edit_field_form (&$node) {
     '#description' => t('Optional. In the menu, the heavier items will sink and the lighter items will be positioned nearer the top.'),
     '#weight' => 2,
   );
-  
 
   // Add the fields specific to this component type:  
   _webform_load_components(); // Load all component types
@@ -841,35 +890,39 @@ function webform_edit_field_form (&$node) {
   return $form;
 }
 
-function webform_view(& $node, $teaser = 0, $page = 0) {
+function webform_view(&$node, $teaser = 0, $page = 0) {
   if (arg(0) == "comment") {
     // Do not render the form for comments
     return;
   }
-
-  global $user;
+  
   include_once (drupal_get_path('module', 'webform')."/webform.inc");
   _webform_load_components(); // Load all the components
+  
+  global $user, $sid_to_display, $submission, $preview;
+  $sid_to_display = check_plain($_GET['sid']); // Will be NULL if no sid
+  $submission = array();
+  $preview = false;
+  
+  if ($_POST['op'] == t('Preview')) {
+    $preview = true;
+    webform_prepare($node);
+  }
   
   if (module_exist('profile')) {
     profile_load_profile($user);
   }
 
-  $sid_to_display = check_plain($_GET['sid']); // Will be NULL if no sid
-
   if ($sid_to_display && is_numeric($sid_to_display)) {
     if (user_access('access webform results')) {
       drupal_set_title('Submission #'.$sid_to_display);
       $node->body = "";
+      $submission = _webform_fetch_submission($sid_to_display);
     } else {
       $sid_to_display = NULL; // This user is not allowed to access a submitted node. Deny the attempt without alert.
       watchdog('webform', t('Unauthorized webform access attempt', array ('%name' => "<em>$user->name</em>")), WATCHDOG_WARNING); // and log the attempt
     }
   }
-
-  // Prepare the node for viewing, this is necessary to load the current
-  // webform's components while previewing changes to the node form
-  webform_prepare($node);
 
   if ($node->redirect_post && valid_url(trim($node->confirmation), true)) {
     $form['#action'] = trim($node->confirmation);
@@ -877,7 +930,9 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
   
   // Add a theme function for this form
   $form['#theme'] = 'webform_form_'.$node->nid;
-
+  // Set the encoding type (necessary for file uploads)
+  $form['#attributes']['enctype'] = 'multipart/form-data';
+  
   if (is_array($node->webformcomponents) && !empty ($node->webformcomponents)) {
     // Prepare a new form array
     $form['submitted'] = array(
@@ -893,36 +948,50 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
       '#tree' => true,
     );
     
-    foreach ($node->webformcomponents as $cid => $component) {
+    // Put the components into a tree structure
+    $componentTree = array();
+    _webform_components_tree_build($node->webformcomponents,$componentTree);
+  
+    function _webform_view_add_component ($cid, $component, &$parent_fieldset, &$form) {
+      global $sid_to_display, $submission, $preview;
       // Load with submission information if necessary
       if($sid_to_display){
         // This component is display only, with the value set according information
         // previously submitted in the submission numbered $sid_to_display
-        $submission = _webform_fetch_submission($sid_to_display);
         $displayFunction = "_webform_submission_display_".$component['type'];
         if (function_exists($displayFunction)) {
-          $form['submitted'][$component['name']] = $displayFunction($submission['data'][$cid],$component);
+          $parent_fieldset[$component['name']] = $displayFunction($submission['data'][$cid],$component);
         }
       } else {
         // Add this user-defined field to the form (with all the values that are always available)      
         $renderFunction = "_webform_render_".$component['type'];
         if (function_exists($renderFunction)) {
-          $form['submitted'][$component['name']] = $renderFunction($component); // Call the component render function
+          $parent_fieldset[$component['name']] = $renderFunction($component); // Call the component render function
         } else {
           drupal_set_message(t("The webform component")." '".$component['type']."' ".t("is not able to be displayed"));
         }      
       }
-                  
-      // Add a hidden form element containing this component's key id (cid in the database)
-      $form['componentKeys'][$cid] = array (
-        '#type'          => 'hidden',
-        '#value'     => $component['name'],
-      );
+
+      if (!$preview) {
+        // Add a hidden form element containing this component's key id (cid in the database)
+        $form['componentKeys'][$cid] = array (
+          '#type'          => 'hidden',
+          '#value'     => $component['name'],
+        );
+      }
       
-    } // end foreach
+      if (is_array($component['children'])) {
+        foreach ($component['children'] as $cid => $subcomponent) {
+          _webform_view_add_component ($cid, $subcomponent, $parent_fieldset[$component['name']], $form);
+        }
+      }
+    }
+    foreach ($componentTree['children'] as $cid => $component) {
+      _webform_view_add_component($cid, $component, $form['submitted'], $form, $submission);
+    }
     
     // Do not display the submit button if this is a preview or submission view
-    if ($_POST['op'] != t('Preview') && empty($sid_to_display)) {
+    if (!$preview && empty($sid_to_display)) {
       // Additional hidden elements   
       // Email subject and sender
       $form['details']['email_subject'] = array (
@@ -943,11 +1012,14 @@ function webform_view(& $node, $teaser = 0, $page = 0) {
     }
   }
   
-  
   // Note that the form name is defined here ('webform_client'). This in turn will
   // use the From API to call the 'webform_client_validate' and 'webform_client_submit' functions
   $output = drupal_get_form('webform_client',$form);
-  // Modify the node body by appending the created form
+  
+  // Remove the surrounding <form> tag if this is a preview
+  if ($preview) {
+    $output = preg_replace('/<\/?form[^>]*>/','',$output);
+  }
   
   $node->body = check_markup($node->body, $node->format, FALSE);
   $node->body .= $output;
@@ -957,7 +1029,6 @@ function webform_client_submit($form_id, $form_values) {
   global $user, $base_url;
   include_once (drupal_get_path('module', 'webform')."/webform.inc");
   $node = node_load(array('nid'=>arg(1)));
-
 
   // Verify that this submission is within the submission limits on this form
   if ($violationCount = _webform_submission_limit_check ($node, $form_values)) {
@@ -983,7 +1054,22 @@ function webform_client_submit($form_id, $form_values) {
     drupal_set_message(t("You have submitted the maximum number of entries. Check submission guidelines."), 'error');
     return false;
   }
-
+  
+  // Flatten trees within the submission
+  $form_values['submitted_tree'] = $form_values['submitted'];
+  function _webform_client_submit_flatten($fieldset, &$form) {
+    foreach ($fieldset as $key => $value) {
+      if (is_array($value)) {
+        _webform_client_submit_flatten($value,$form);
+        $form[$key] = ""; // Set the fieldset value to a blank
+        unset($fieldset[$key]);
+      } else {
+        $form[$key] = $value;
+      }
+    }
+  }
+  _webform_client_submit_flatten($form_values['submitted'],$form_values['submitted']);
+  
   // Process post-submission data if necessary in the components
   _webform_load_components();
   foreach ($form_values['componentKeys'] as $ckey => $fieldname) {
@@ -993,24 +1079,23 @@ function webform_client_submit($form_id, $form_values) {
     }
   }
   
-
   // Check if this form is sending an email
   if (isset ($node->email)) {
-    $node->email= strip_tags($node->email);
+    $node->email = strip_tags($node->email);
     if (!empty ($node->email)) {
     
       // Create a themed message for mailing
       // Check for a node-specific message:
-      $message = theme("webform_create_mailmessage_$node->nid",$form_values['submitted']);
+      $message = theme("webform_create_mailmessage_$node->nid",$form_values, $node);
       if (!$message) {
         // Otherwise use the generic form:
-        $message = theme("webform_create_mailmessage",$form_values['submitted']);
+        $message = theme("webform_create_mailmessage",$form_values, $node);
       }
       
       // Build arrays of possible return email addresses and email subject lines from elements on the form
       
       // Default values:
-      $email_from_string= "From: ".mime_header_encode(variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\n";
+      $email_from_string= "From: ".mime_header_encode(variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\r\n";
       $email_subject_string= t('Form submission from: ').' '.$node->title;
 
       // Search for user set FROM and SUBJECT fields
@@ -1218,6 +1303,53 @@ function _webform_version() {
   return array ("text" => "4.7.1", "build" => 471);
 } // function _webform_version
 
+function _webform_components_decode ($components) {
+  if (is_array($components)) {
+    foreach ($components as $cid => $value) {
+      if (is_string($value)) {
+        $components[$cid] = unserialize(base64_decode($value));
+      }
+    }
+  }
+  return $components;
+}
+
+/**
+ * Convert an array of components into a tree
+ */
+function _webform_components_tree_build ($src, &$tree, $parent = 0) {
+  foreach ($src as $cid => $component) {
+    if ($component['parent'] == $parent) {
+      _webform_components_tree_build($src, $component, $cid);
+      $tree['children'][$cid] = $component;
+    }
+  }
+  return $tree;
+}
+
+/**
+ * Helper for the uasort in webform_components_tree_sort()
+ */
+function _webform_components_sort($a, $b) {
+  if ($a['weight'] == $b['weight']) {
+    return strcasecmp($a['name'],$b['name']);
+  }
+  return ($a['weight'] < $b['weight']) ? -1 : 1;
+}
+
+/**
+ * Sort each level of a component tree by weight
+ */
+function _webform_components_tree_sort ($tree) {
+  if (is_array($tree['children'])) {
+    uasort($tree['children'],"_webform_components_sort");
+    foreach($tree['children'] as $cid => $component) {
+      $return[$cid] = _webform_components_tree_sort($component);
+    }
+    $tree['children'] = $return;
+  }
+  return $tree;
+}
 
 function _webform_load_components ($returnAll = false) {
   static $componentList;
@@ -1235,4 +1367,3 @@ function _webform_load_components ($returnAll = false) {
   }
   return $componentList;
 }
-?>
