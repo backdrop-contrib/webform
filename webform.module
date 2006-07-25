@@ -349,7 +349,9 @@ function webform_prepare (&$node) {
       drupal_set_message(t('The form component has been changed. Remember to press Submit on the bottom of this form to save your changes.'));
       break;
     case t('Preview'):
-      $node->webformcomponents = _webform_components_decode($node->webformcomponents);
+      if (isset($_POST['edit']['webformcomponents'])) {
+        $node->webformcomponents = _webform_components_decode($_POST['edit']['webformcomponents']);
+      }
       break;
   } // end switch
   
