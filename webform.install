@@ -23,6 +23,7 @@ function webform_install() {
       db_query("CREATE TABLE if not exists {webform_component} (
         nid int(10) unsigned NOT NULL default '0',
         cid int(10) unsigned NOT NULL default '0',
+        pid int(10) unsigned NOT NULL default '0',
         name varchar(128) default NULL,
         type varchar(16) default NULL,
         value varchar(128) default NULL,
@@ -71,6 +72,7 @@ function webform_install() {
       db_query("CREATE TABLE {webform_component} (
           nid integer NOT NULL default '0',
           cid integer NOT NULL default '0',
+          pid integer NOT NULL default '0',
           name varchar(128) NOT NULL default '',
           type varchar(16) NOT NULL default '',
           value varchar(128) NOT NULL default '',
@@ -235,6 +237,24 @@ function webform_update_5() {
   return $ret;
 }
 
+/*
+ * Add a parent ID to all components, allowing nested fieldsets
+ */
+function webform_update_6() {
+  $ret = array();
+  
+  switch ($GLOBALS['db_type']) {
+    case 'pgsql':
+      $ret[] = update_sql("ALTER TABLE {webform_component} ADD pid integer NOT NULL DEFAULT '0' AFTER cid");
+      break;
+    case 'mysqli':
+    case 'mysql':
+      $ret[] = update_sql("ALTER TABLE {webform_component} ADD pid int(10) NOT NULL DEFAULT 0 AFTER cid");
+      break;
+  }
+  
+  return $ret;
+}
 
 /**
  * Makes updates to the database structure (Pre-4.7 versions of Drupal).
