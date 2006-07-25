@@ -1,7 +1,7 @@
 Overview
 --------
 Webform supports theming similar to the Flexinode or Views modules. Any webform
-may be themed on the client side, though doing so may require a reasonable
+may be themed on the server side, though doing so may require a reasonable
 amount of knowledge about the Drupal Forms API. More information about the Forms
 API may be found at http://drupaldocs.org/api/head/file/contributions/docs/developer/topics/forms_api_reference.html
 
@@ -14,8 +14,8 @@ assumes use of the phptemplate engine.
 - Open your template.php file located in your theme's directory.
 - Add the following lines of php code:
 
-function phptemplate_webform_mail_message_nodeIdHere ($formData) {
-  return _phptemplate_callback('webform_form_nodeIdHere', array('formData' => $formData));
+function phptemplate_webform_create_mailmessage_nodeIdHere ($formData, $node) {
+  return _phptemplate_callback('webform_create_mailmessage_nodeIdHere', array('formData' => $formData, 'node' => $node)));
 }
 
 - Create a new file in your theme's directory named
@@ -33,10 +33,10 @@ function phptemplate_webform_mail_message_nodeIdHere ($formData) {
   
   From the IP address <?php echo $_SERVER['REMOTE_ADDR']; ?>
   
-  The user's favorite color is <?php echo $formData['Favorite Color'] ?>
+  The user's favorite color is <?php echo $formData['submitted']['Favorite Color'] ?>
   
   The user's problem is below:
-  <?php echo $formData['Problem'] ?>
+  <?php echo $formData['submitted']['Problem'] ?>
   
   <?php /* End sample create_mailmessage file */ ?>
 
@@ -46,6 +46,14 @@ function phptemplate_webform_mail_message_nodeIdHere ($formData) {
   <?php print_r($formData) ?>
   
   to get a listing of all the available fields you can use in your mail.
+  
+- An Important Note for Webform Themers: When webforms added support for fieldsets
+  (i.e. nested fields), it became necessary to increase the complexity of themed
+  emails. Previously, the $formData variable only sent the values of the form in
+  a flat array. Now, $formData contains several arrays of information:
+  $formData['submitted'] => An array of fields and their submitted values (identical to the previous value of $formData)
+  $formData['submitted_tree'] => An array of fields and their values structured in a recursive array
+  $formData['components'] => An array of component_ids and their field names
   
 
 Theme an entire webform
