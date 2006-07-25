@@ -866,26 +866,22 @@ function webform_edit_field_form (&$node) {
     '#attributes' => array('style' => 'display: none;'),
     '#tree' => TRUE,
   );
-  if(isset($_POST['edit']) ) {
-    $edit = $_POST['edit'];
-    foreach($edit as $key => $value) {
-      if( is_array($edit[$key]) ) {
-        foreach($edit[$key] as $key2 => $value2) {
-          if(!empty($value2)) 
-            $form['node'][$key][$key2] = array (
-              '#type' => 'hidden',
-              '#value' => $value2
-            );
-        }
-      }
-      else if(!empty($value) ) {
-        $form['node'][$key] = array (
-          '#type' => 'hidden',
-          '#value' => $value,
-        );
+  
+  // Recursively create hidden form elements for all fields on the node form
+  function _webform_edit_field_form_hiddens (&$form, $key, $value) {
+    if (is_array($value)) {
+      foreach ($value as $k => $v) {
+        _webform_edit_field_form_hiddens($form[$key], $k, $v);
       }
     }
+    else {
+      $form[$key] = array (
+        '#type' => 'hidden',
+        '#value' => $value
+      );
+    }
   }
+  _webform_edit_field_form_hiddens($form, 'node', $_POST['edit']);
   
   return $form;
 }
