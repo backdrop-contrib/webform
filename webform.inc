@@ -134,9 +134,8 @@ function _webform_fetch_submission($sid) {
   return $submission;
 } // end function _webform_fetch_submission
 
-function theme_webform_create_mailmessage($reply) {
+function theme_webform_create_mailmessage($form_values, $node) {
   global $user;
-  
   $message .=  t('Submitted on').' '.format_date(time(), 'small')."\n";
   $ip_address = $_SERVER['REMOTE_ADDR'];
   
@@ -146,23 +145,22 @@ function theme_webform_create_mailmessage($reply) {
   else {
     $message .= t('Submitted by anonymous user').": [$ip_address]\n";
   }
-  $message .= "\n\n".t('Submitted values are:')."\n\n";
-  foreach($reply as $key => $value) {
+
+  $message .= "\n";
+  function _webform_submission_format ($key, $value, $indent = "   ") {
     if (is_array($value)) {
-      $message .=  "$key :";
-      foreach($value as $k => $v) {
-        if (!empty($v)) {
-          // Note that newlines cannot be preceeded by spaces to display properly in some clients
-          $message .= "\n\t\t$k :".(empty($v) ? "\n" : " $v\n");
-        }
+      $message .=  $key.":\n";
+      foreach ($value as $k => $v) {
+        $message .= $indent;
+        $message .= _webform_submission_format($k,$v, $indent."   ");
       }
-      $message .= "\n";
-    }
-    else {
+    } else {
       // Note that newlines cannot be preceeded by spaces to display properly in some clients
-      $message .=  "$key :".(empty($value) ? "\n" : " $value\n");
+      $message .=  "$key:".(empty($value) ? "\n" : " $value\n");
     }
+    return ($message);
   }
+  $message .= _webform_submission_format(t('Submitted values are'),$form_values['submitted_tree']);
   
   if (variable_get('webform_debug', 0) == 2) {
     $message .= "\n";
