@@ -950,40 +950,6 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
     $componentTree = array();
     _webform_components_tree_build($node->webformcomponents,$componentTree);
   
-    function _webform_view_add_component ($cid, $component, &$parent_fieldset, &$form) {
-      global $sid_to_display, $submission, $preview;
-      // Load with submission information if necessary
-      if($sid_to_display){
-        // This component is display only, with the value set according information
-        // previously submitted in the submission numbered $sid_to_display
-        $displayFunction = "_webform_submission_display_".$component['type'];
-        if (function_exists($displayFunction)) {
-          $parent_fieldset[$component['name']] = $displayFunction($submission['data'][$cid],$component);
-        }
-      } else {
-        // Add this user-defined field to the form (with all the values that are always available)      
-        $renderFunction = "_webform_render_".$component['type'];
-        if (function_exists($renderFunction)) {
-          $parent_fieldset[$component['name']] = $renderFunction($component); // Call the component render function
-        } else {
-          drupal_set_message(t("The webform component")." '".$component['type']."' ".t("is not able to be displayed"));
-        }      
-      }
-
-      if (!$preview) {
-        // Add a hidden form element containing this component's key id (cid in the database)
-        $form['componentKeys'][$cid] = array (
-          '#type'          => 'hidden',
-          '#value'     => $component['name'],
-        );
-      }
-      
-      if (is_array($component['children'])) {
-        foreach ($component['children'] as $cid => $subcomponent) {
-          _webform_view_add_component ($cid, $subcomponent, $parent_fieldset[$component['name']], $form);
-        }
-      }
-    }
     foreach ($componentTree['children'] as $cid => $component) {
       _webform_view_add_component($cid, $component, $form['submitted'], $form, $submission);
     }
@@ -1022,6 +988,42 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
   $node->body = check_markup($node->body, $node->format, FALSE);
   $node->body .= $output;
 } // end webform_view
+
+
+function _webform_view_add_component ($cid, $component, &$parent_fieldset, &$form) {
+  global $sid_to_display, $submission, $preview;
+  // Load with submission information if necessary
+  if($sid_to_display){
+    // This component is display only, with the value set according information
+    // previously submitted in the submission numbered $sid_to_display
+    $displayFunction = "_webform_submission_display_".$component['type'];
+    if (function_exists($displayFunction)) {
+      $parent_fieldset[$component['name']] = $displayFunction($submission['data'][$cid],$component);
+    }
+  } else {
+    // Add this user-defined field to the form (with all the values that are always available)      
+    $renderFunction = "_webform_render_".$component['type'];
+    if (function_exists($renderFunction)) {
+      $parent_fieldset[$component['name']] = $renderFunction($component); // Call the component render function
+    } else {
+      drupal_set_message(t("The webform component")." '".$component['type']."' ".t("is not able to be displayed"));
+    }      
+  }
+
+  if (!$preview) {
+    // Add a hidden form element containing this component's key id (cid in the database)
+    $form['componentKeys'][$cid] = array (
+      '#type'          => 'hidden',
+      '#value'     => $component['name'],
+    );
+  }
+  
+  if (is_array($component['children'])) {
+    foreach ($component['children'] as $cid => $subcomponent) {
+      _webform_view_add_component ($cid, $subcomponent, $parent_fieldset[$component['name']], $form);
+    }
+  }
+}
 
 function webform_client_submit($form_id, $form_values) {
   global $user, $base_url;
