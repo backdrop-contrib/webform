@@ -240,8 +240,7 @@ function webform_menu() {
   $items[]= array ('path' => 'node/add/webform', 'title' => t('webform'), 'access' => user_access('create webforms'));
 
   $items[]= array ('path' => 'webform/done', 'title' => t('webform'),
-                   'callback' => '_webform_thanks', 
-                   'callback arguments' => array(),
+                   'callback' => '_webform_thanks',
                    'type' => MENU_CALLBACK, 'access' => true);
 
   // Submissions listing 
@@ -393,8 +392,8 @@ function webform_validate (&$node) {
         $component = $node->webformcomponents[$_POST['edit']['selected_component']];
         $output = drupal_get_form('webform_edit_'.$component['type'],$form);
         print theme('page',$output);
+        exit(0);
       }
-      exit(0);
       break;
     case t('Delete Selected'):
       // We have to throw a form error for Drupal to stop form processing
@@ -966,6 +965,10 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
         '#type'      => 'hidden',
         '#value'     => $node->email_from,
       );
+      $form['details']['nid'] = array (
+        '#type'      => 'hidden',
+        '#value'     => $node->nid,
+      );
       
       // Add the submit button
       $form['submitbutton'] = array(
@@ -1028,7 +1031,7 @@ function _webform_view_add_component ($cid, $component, &$parent_fieldset, &$for
 function webform_client_submit($form_id, $form_values) {
   global $user, $base_url;
   include_once (drupal_get_path('module', 'webform')."/webform.inc");
-  $node = node_load(array('nid'=>arg(1)));
+  $node = node_load(array('nid'=>$form_values['details']['nid']));
 
   // Verify that this submission is within the submission limits on this form
   if ($violationCount = _webform_submission_limit_check ($node, $form_values)) {
@@ -1157,7 +1160,7 @@ function webform_client_submit($form_id, $form_values) {
  * Prints the confirmation message after a succefull submission.
  */
 function _webform_thanks($nid) {
-  if ($node = node_load(array ('nid' => arg(2)))) {
+  if ($node = node_load(array ('nid' => $nid))) {
     if (node_access('view', $node)) {
       $node->body= check_markup($node->confirmation, $node->format, FALSE);
       drupal_set_title($node->title);
