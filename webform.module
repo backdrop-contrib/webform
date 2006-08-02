@@ -1057,21 +1057,9 @@ function webform_client_submit($form_id, $form_values) {
     drupal_set_message(t("You have submitted the maximum number of entries. Check submission guidelines."), 'error');
     return false;
   }
-  
   // Flatten trees within the submission
   $form_values['submitted_tree'] = $form_values['submitted'];
-  function _webform_client_submit_flatten($fieldset, &$form) {
-    foreach ($fieldset as $key => $value) {
-      if (is_array($value)) {
-        _webform_client_submit_flatten($value,$form);
-        $form[$key] = ""; // Set the fieldset value to a blank
-        unset($fieldset[$key]);
-      } else {
-        $form[$key] = $value;
-      }
-    }
-  }
-  _webform_client_submit_flatten($form_values['submitted'],$form_values['submitted']);
+  _webform_client_submit_flatten($node, array_flip($form_values['componentKeys']),$form_values['submitted'],$form_values['submitted']);
   
   // Process post-submission data if necessary in the components
   _webform_load_components();
@@ -1155,6 +1143,21 @@ function webform_client_submit($form_id, $form_values) {
     drupal_goto('webform/done/'.$node->nid);
   }
 } // end webform_client_submit
+
+/**
+ * Flattens a submitted form back into a single array representation (rather than nested fields)
+ */
+function _webform_client_submit_flatten($node, $components, $fieldset, &$form) {
+  foreach ($fieldset as $key => $value) {
+    if (is_array($value) && $node->webformcomponents[$components[$key]]['type'] == 'fieldset') {
+      _webform_client_submit_flatten($node, $components, $value,$form);
+      $form[$key] = ""; // Set the fieldset value to a blank
+      unset($fieldset[$key]);
+    } else {
+      $form[$key] = $value;
+    }
+  }
+}
 
 /**
  * Prints the confirmation message after a succefull submission.
