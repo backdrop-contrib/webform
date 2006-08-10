@@ -134,8 +134,8 @@ function _webform_fetch_submission($sid) {
   return $submission;
 } // end function _webform_fetch_submission
 
-function theme_webform_create_mailmessage($form_values, $node) {
-  global $user;
+function theme_webform_create_mailmessage($form_values, $node, $sid) {
+  global $user, $baseurl;
   $message .=  t('Submitted on').' '.format_date(time(), 'small')."\n";
   $ip_address = $_SERVER['REMOTE_ADDR'];
   
@@ -162,10 +162,19 @@ function theme_webform_create_mailmessage($form_values, $node) {
   }
   $message .= _webform_submission_format(t('Submitted values are'),$form_values['submitted_tree']);
   
+  $message .= "\n\n";
+  $message .= t("The results of this submission may be viewed at:\n");
+  $message .= "http://".$_SERVER['HTTP_HOST'].$baseurl.url('node/'.$node->nid);
+  
+  
   if (variable_get('webform_debug', 0) == 2) {
     $message .= "\n";
     $message .= "DEBUG INFO\n";
     $message .= "==========\n";
+    $message .= "\$form_values are\n";
+    $message .= print_r($form_values, true);
+    $message .= "\$node is\n";
+    $message .= print_r($node, true);
     $message .= "\$_SERVER is\n";
     $message .= print_r($_SERVER, true);
     $message .= "\n";
