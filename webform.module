@@ -149,6 +149,7 @@ function webform_load($node) {
   $page= db_fetch_object(db_query("SELECT * FROM {webform} WHERE nid = %d", $node->nid));
   $result= db_query('SELECT * FROM {webform_component} WHERE nid = %d ORDER BY weight, name', $node->nid);
   while ($c= db_fetch_array($result)) {
+    $page->webformcomponents[$c['cid']]['cid']= $c['cid'];
     $page->webformcomponents[$c['cid']]['name']= $c['name'];
     $page->webformcomponents[$c['cid']]['type']= $c['type'];
     $page->webformcomponents[$c['cid']]['value']= $c['value'];
@@ -668,9 +669,9 @@ function theme_webform_node_form ($form) {
     $componentTree = _webform_components_tree_sort($componentTree);
     // Build the table rows
     function _webform_add_rows($cid, $component, $level, &$form, &$rows) { 
-      // Shorten long values
+      // Create presentable values
       if (strlen($component['value']) > 30) {
-        $component['value'] = substr($component['value'],30);
+        $component['value'] = htmlspecialchars(substr($component['value'],0,30));
         $component['value'] .= "...";
       }
       
@@ -948,7 +949,8 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
     // Put the components into a tree structure
     $componentTree = array();
     _webform_components_tree_build($node->webformcomponents,$componentTree);
-  
+    
+    // Recursively add components to the form
     foreach ($componentTree['children'] as $cid => $component) {
       _webform_view_add_component($cid, $component, $form['submitted'], $form, $submission);
     }
@@ -1070,6 +1072,9 @@ function webform_client_submit($form_id, $form_values) {
     }
   }
   
+  // Save the submission to the database
+  $sid = _webform_save_submission($node, $form_values['submitted'], $form_values['componentKeys']);
+  
   // Check if this form is sending an email
   if (isset ($node->email)) {
     $node->email = strip_tags($node->email);
@@ -1077,17 +1082,17 @@ function webform_client_submit($form_id, $form_values) {
     
       // Create a themed message for mailing
       // Check for a node-specific message:
-      $message = theme("webform_create_mailmessage_$node->nid",$form_values, $node);
+      $message = theme("webform_create_mailmessage_$node->nid",$form_values, $node, $sid);
       if (!$message) {
         // Otherwise use the generic form:
-        $message = theme("webform_create_mailmessage",$form_values, $node);
+        $message = theme("webform_create_mailmessage",$form_values, $node, $sid);
       }
       
       // Build arrays of possible return email addresses and email subject lines from elements on the form
       
       // Default values:
       $email_from_string= "From: ".mime_header_encode(variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\r\n";
-      $email_subject_string= t('Form submission from: ').' '.$node->title;
+      $email_subject_string= t('Form submission from: ').' '.$node->title."\r\n";
 
       // Search for user set FROM and SUBJECT fields
       if (is_array($node->webformcomponents) && !empty ($node->webformcomponents)) {
@@ -1102,11 +1107,11 @@ function webform_client_submit($form_id, $form_values) {
           // Find and set a custom SUBJECT: field
           if ($type == 'textfield' || $type == 'hidden') {
             if ($component['name'] == $node->email_subject) {
-              $email_subject_string= strip_tags($form_values['submitted'][$component['name']]);
+              $email_subject_string= "Subject: ".strip_tags($form_values['submitted'][$component['name']])."\r\n";
             }
           }
           if ($type == 'email' && $component['extra']['carboncopy'] == 'Y' ) {
-            $headers  .= "CC: ".$form_values['submitted'][$component['name']]."\n";
+            $headers  .= "CC: ".$form_values['submitted'][$component['name']]."\r\n";
           }
         }
       }
@@ -1120,15 +1125,19 @@ function webform_client_submit($form_id, $form_values) {
       
       // Additional headers
       $headers .= $email_from_string;
-      $headers .= "Date: ".date("r")."\n";
+      $headers .= $email_subject_string;
+      $headers .= "Date: ".date("r")."\r\n";
       $headers .= "X-Mailer: Drupal Webform (PHP/" . phpversion().")";
     
       // Mail the webform results
       user_mail($node->email, $email_subject_string, $message, $headers);
+      
+      // Debugging output
+      if (variable_get('webform_debug',0) >= 2) {
+        drupal_set_message("E-mail Headers: <pre>".$headers."</pre>E-mail Body: <pre>".$message."</pre>");
+      }
     }
   }
-  // Handle posting to the form and output status.
-  _webform_save_submission($node, $form_values['submitted'], $form_values['componentKeys']);
    
   if (variable_get('webform_debug', 0) >= 1) {
     watchdog('webform', t('Submission posted to ')."'$node->title'.<br />\n".nl2br(htmlentities($message)), WATCHDOG_NOTICE);
@@ -1181,7 +1190,7 @@ function _webform_thanks($nid) {
 /** 
  * Filters all special chars
  **/
-function _webform_filtervalues($string) {
+function _webform_filtervalues($string, $strict = TRUE) {
   global $user;
 
   $find= array ('%username', '%useremail', '%site', '%date');
@@ -1217,7 +1226,11 @@ function _webform_filtervalues($string) {
   // Clean up any unused %system stuff
   $string= preg_replace('/\%server\[\w+\]/', '', $string);
 
-  return filter_xss($string);
+  if ($strict) {
+  	return filter_xss($string);
+  } else {
+    return $string;
+  }
 } // end _webform_filtervalues
 
 function _webform_save_submission($node, $reply, $componentKeys) {
@@ -1242,6 +1255,8 @@ function _webform_save_submission($node, $reply, $componentKeys) {
       db_query("INSERT INTO {webform_submitted_data} (nid, sid, cid, no, data) "."VALUES (%d, %d, %d, %d, '%s')", $node->nid, $sid, $cid, 0, $value);
     }
   }
+  
+  return $sid;
 }
 
 function webform_page() {
