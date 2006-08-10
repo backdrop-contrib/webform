@@ -81,7 +81,7 @@ function _webform_render_date ($component) {
   $formItem['#title'] = $component['name'];
   $formItem['#weight'] = $component['weight'];
   $formItem['#description'] = _webform_filtervalues($component['extra']['description']);
-  $formItem['#prefix'] = '<div class="container-inline">';
+  $formItem['#prefix'] = '<div class="webform-component-'.$component['type'].' container-inline" id="webform-component-'.$component['cid'].'">';
   $formItem['#suffix'] = '</div>';
   if ($component['mandatory']) {
     $formItem['#title'] .= '<span class="form-required" title="'.t("This field is required.").'">*</span>';

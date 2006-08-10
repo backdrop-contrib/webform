@@ -50,6 +50,8 @@ function _webform_render_email ($component) {
     '#required'      => $component['mandatory'],
     '#weight'        => $component['weight'],
     '#description'   => _webform_filtervalues($component['extra']['description']),
+    '#prefix'        => '<div class="webform-component-'.$component['type'].'" id="webform-component-'.$component['cid'].'">',
+    '#suffix'        => '</div>',
   );
   
     // Fill in the user's email address if available
@@ -88,7 +90,7 @@ function _webform_validate_email ($formelement) {
  * @param $component An array of information describing the component, directly correlating to the webform_component database schema
  * @returns Textual output formatted for human reading.
  **/
-function _webform_submission_display_email ($data,$component) {
+function _webform_submission_display_email ($data, $component) {
   $formItem = _webform_render_email($component);
   $formItem['#default_value'] = $data['value']['0'];
   $formItem['#attributes']    = array("disabled" => "disabled");

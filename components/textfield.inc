@@ -54,6 +54,8 @@ function _webform_render_textfield ($component) {
     '#weight'        => $component['weight'],
     '#description'   => _webform_filtervalues($component['extra']['description']),
     '#attributes'    => $component['extra']['attributes'],
+	'#prefix'        => '<div class="webform-component-'.$component['type'].'" id="webform-component-'.$component['cid'].'">',
+	'#suffix'        => '</div>',
   );
   // Change the 'width' option to the correct 'size' option
   if ($component['extra']['width'] > 0) {

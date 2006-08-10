@@ -58,6 +58,10 @@ function _webform_render_captcha ($component) {
     if (strlen(trim($component['extra']['description'])) > 0) {
       $formItem['#description'] = _webform_filtervalues($component['extra']['description']);
     }
+    
+    // Wrap in a div
+    $formItem['#prefix'] = '<div class="webform-component-'.$component['type'].'" id="webform-component-'.$component['cid'].'">'.$formItem['#prefix'];
+    $formItem['#suffix'] .= "</div>";
   }
   else {
     drupal_set_message(t("Unable to render captcha field because the captcha module is not available."),"error");
@@ -103,7 +107,7 @@ function _webform_help_captcha($section) {
  * @param $component An array of information describing the component, directly correlating to the webform_component database schema
  * @returns Textual output formatted for human reading.
  **/
-function _webform_submission_display_captcha ($data,$component) {
+function _webform_submission_display_captcha ($component, $data) {
   $formItem = array();
   return $formItem;
 }

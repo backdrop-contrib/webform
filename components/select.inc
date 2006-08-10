@@ -58,6 +58,8 @@ function _webform_render_select ($component) {
     '#required'      => $component['mandatory'],
     '#weight'        => $component['weight'],
     '#description'   => _webform_filtervalues($component['extra']['description']),
+	'#prefix'        => '<div class="webform-component-'.$component['type'].'" id="webform-component-'.$component['cid'].'">',
+	'#suffix'        => '</div>',
   );
   
   // Convert the user-entered list into an array

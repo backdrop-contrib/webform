@@ -42,6 +42,7 @@ function _webform_render_fieldset ($component) {
     '#description'   => _webform_filtervalues($component['extra']['description']),
     '#collapsible'   => $component['extra']['collapsible'],
     '#collapsed'     => $component['extra']['collapsed'],
+    '#attributes'    => array("class" => "webform-component-".$component['type'], "id" => "webform-component-".$component['cid']),
   );
   // Change the 'width' option to the correct 'size' option
   if ($component['extra']['width'] > 0) {
