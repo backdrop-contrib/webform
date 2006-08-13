@@ -24,7 +24,7 @@ function _webform_page() {
   $result = db_query("SELECT nid, title FROM {node} WHERE type='webform'");
    
   while ($node = db_fetch_object($result)) {
-    $rows[] = array($node->title,
+    $rows[] = array(l($node->title,'node/' . $node->nid),
                     l(t('submissions'),'node/' . $node->nid . '/results'),
                     l(t('analysis'),'node/' . $node->nid . '/results/analysis'),
                     l(t('table'),'node/' . $node->nid . '/results/table'),
