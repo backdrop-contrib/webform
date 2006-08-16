@@ -90,7 +90,6 @@ function _webform_render_time ($component) {
   for ($i = $first_hour; $i <= $last_hour; $i++) $hours[$i] = $i;
   for ($i = 0; $i <= 59; $i++) $minutes[$i < 10 ? "0$i" : $i] = $i < 10 ? "0$i" : $i;
   $am_pms = array('am' => t('am'), 'pm' => t('pm'));
-  drupal_set_message("test".$component['value']);
   if (strlen($component['value']) > 0) {
     $hour = gmdate($hour_format, $timestamp);
     $minute = gmdate('i', $timestamp);
