@@ -249,7 +249,7 @@ function webform_menu($may_cache) {
   }
   
   $items[]= array ('path' => 'webform/done', 'title' => t('webform'),
-    'callback' => '_webform_thanks',
+    'callback' => '_webform_confirmation',
     'access' => true,
     'type' => MENU_CALLBACK);
                        
@@ -1181,12 +1181,11 @@ function _webform_client_submit_flatten($node, $components, $fieldset, &$form) {
 /**
  * Prints the confirmation message after a succefull submission.
  */
-function _webform_thanks($nid) {
+function _webform_confirmation($nid) {
   if ($node = node_load(array ('nid' => $nid))) {
     if (node_access('view', $node)) {
-      $node->body= check_markup($node->confirmation, $node->format, FALSE);
       drupal_set_title($node->title);
-      return theme('node', $node, FALSE, TRUE);
+      return theme('webform_confirmation',$node);
     } else {
       drupal_access_denied();
     }
@@ -1194,8 +1193,15 @@ function _webform_thanks($nid) {
     drupal_set_message(t("No node with the id '%nid' could be found",array('%nid'=>$nid)));
     drupal_not_found();
   }
-} // end _webform_thanks
+} // end _webform_confirmation
 
+/**
+ * Themable function for webform submission confirmation
+ */
+function theme_webform_confirmation($node) {
+  $node->body = check_markup($node->confirmation, $node->format, FALSE);
+  return theme('node', $node, FALSE, TRUE);
+}
 
 /** 
  * Filters all special chars
