@@ -260,7 +260,7 @@ function _webform_csv_headers_select ($component) {
       $header[2] .= "\,".$item;
     }
     // Remove the preceding extra comma
-    $header[2] = substr($header[2],1);
+    $header[2] = substr($header[2],2);
   }
   else {
     $header[2] = $component['name'];
