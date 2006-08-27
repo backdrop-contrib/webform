@@ -1376,7 +1376,7 @@ function _webform_components_sort($a, $b) {
  */
 function _webform_components_tree_sort ($tree) {
   if (is_array($tree['children'])) {
-    uasort($tree['children'],"_webform_webform_components_sort");
+    uasort($tree['children'],"_webform_components_sort");
     foreach($tree['children'] as $cid => $component) {
       $return[$cid] = _webform_components_tree_sort($component);
     }
