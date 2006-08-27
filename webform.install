@@ -229,7 +229,7 @@ function webform_update_5() {
     case 'mysqli':
     case 'mysql':
       db_query('LOCK TABLES {sequences} WRITE');
-      $ret[] = update_sql("UPDATE {sequences} SET name = '%s' WHERE name = '%s'", db_prefix_tables('{webform_submissions}_sid'), db_prefix_tables('{webform_submissions}_id'));
+      $ret[] = update_sql(sprintf("UPDATE {sequences} SET name = '%s' WHERE name = '%s'", db_prefix_tables('{webform_submissions}_sid'), db_prefix_tables('{webform_submissions}_id')));
       db_query('UNLOCK TABLES'); 
       break;
   }
