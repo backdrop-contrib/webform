@@ -1093,7 +1093,7 @@ function webform_client_submit($form_id, $form_values) {
       
       // Default values:
       $email_from_string= "From: ".mime_header_encode(variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\r\n";
-      $email_subject_string= t('Form submission from: ').' '.$node->title."\r\n";
+      $email_subject_string= t('Form submission from: ').' '.$node->title;
 
       // Search for user set FROM and SUBJECT fields
       if (is_array($node->webformcomponents) && !empty ($node->webformcomponents)) {
@@ -1108,7 +1108,7 @@ function webform_client_submit($form_id, $form_values) {
           // Find and set a custom SUBJECT: field
           if ($type == 'textfield' || $type == 'hidden') {
             if ($component['name'] == $node->email_subject) {
-              $email_subject_string= "Subject: ".strip_tags($form_values['submitted'][$cid])."\r\n";
+              $email_subject_string= strip_tags($form_values['submitted'][$cid]);
             }
           }
           if ($type == 'email' && $component['extra']['carboncopy'] == 'Y' ) {
@@ -1123,7 +1123,6 @@ function webform_client_submit($form_id, $form_values) {
         drupal_set_message(t("Illegal information. Data not submitted."), 'error');
         return false;
       }
-      
       // Additional headers
       $headers .= $email_from_string;
       $headers .= $email_subject_string;
