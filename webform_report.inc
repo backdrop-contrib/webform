@@ -178,7 +178,7 @@ function _webform_results_download($nid) {
   // Close the file 
   @fclose($handle);
 
-  drupal_set_header("Content-type: text/plain; charset=utf-8");
+  drupal_set_header("Content-type: text/csv; charset=utf-8");
   drupal_set_header("Content-Disposition: attachment; filename=" . preg_replace('/\.$/', '', str_replace(' ', '_', $node->title)) . ".csv");
 
   @readfile($file_name);  // The @ makes it silent
