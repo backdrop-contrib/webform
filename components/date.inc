@@ -78,10 +78,10 @@ function _webform_render_date ($component) {
   }
   
   $formItem['#type'] = 'fieldset';
-  $formItem['#title'] = $component['name'];
+  $formItem['#title'] = htmlspecialchars($component['name'], ENT_QUOTES);
   $formItem['#weight'] = $component['weight'];
   $formItem['#description'] = _webform_filtervalues($component['extra']['description']);
-  $formItem['#prefix'] = '<div class="webform-component-'.$component['type'].' container-inline" id="webform-component-'.$component['cid'].'">';
+  $formItem['#prefix'] = '<div class="webform-component-'.$component['type'].' container-inline" id="webform-component-'._webform_safe_name($component['name']).'">';
   $formItem['#suffix'] = '</div>';
   if ($component['mandatory']) {
     $formItem['#title'] .= '<span class="form-required" title="'.t("This field is required.").'">*</span>';
@@ -123,7 +123,7 @@ function webform_validate_date ($field,$fieldName,$componentName,$mandatory) {
   
   // Check if the user filled the required fields
   if (!is_numeric($field['#value']) && $mandatory) {
-    form_set_error ($fieldName,$componentName." ".$fieldName." ".t(" field required"));
+    form_set_error ($fieldName,$componentName." ".htmlspecialchars($fieldName)." ".t(" field required"));
     return false;
   }
   
@@ -132,8 +132,8 @@ function webform_validate_date ($field,$fieldName,$componentName,$mandatory) {
         isset($completeDate['day']) &&
         isset($completeDate['year'])) &&
        ($completeDate['month'] !== "" ||
-        $completeDate['day'] !== "" ||
-        $completeDate['year'] !== "")
+        $completeDate['day']   !== "" ||
+        $completeDate['year']  !== "")
      ){ 
     if (!checkdate((int)$completeDate['month'],(int)$completeDate['day'],(int)$completeDate['year'])) {
       form_set_error ($componentName,t("Entered %name is not a valid date",array('%name' => $componentName)));
@@ -158,6 +158,23 @@ function _webform_submission_display_date ($data,$component) {
   $formItem['day']['#attributes']      = array("disabled" => "disabled");
   $formItem['year']['#attributes']     = array("disabled" => "disabled");
   return $formItem;
+}
+
+/**
+ * theme_webform_mail_date
+ * Format the output of emailed data for this component
+ *
+ * @param mixed $data A string or array of the submitted data
+ * @param array $component An array of information describing the component, directly correlating to the webform_component database schema
+ * @returns string Textual output to be included in the email
+ */
+function theme_webform_mail_date ($data, $component) {
+  $output = $component['name'].":";
+  if ($data['month'] && $data['day']) {
+    $timestamp = strtotime($data['month']."/".$data['day']."/".$data['year']);
+    $output .= " ".format_date($timestamp, "custom", 'F j, Y');
+  }
+  return $output;
 }
 
 /** 

@@ -48,13 +48,13 @@ function _webform_edit_textfield ($currfield) {
 function _webform_render_textfield ($component) {
   $formItem = array (
     '#type'          => $component['type'],
-    '#title'         => $component['name'],
+    '#title'         => htmlspecialchars($component['name'], ENT_QUOTES),
     '#default_value' => _webform_filtervalues($component['value']),
     '#required'      => $component['mandatory'],
     '#weight'        => $component['weight'],
     '#description'   => _webform_filtervalues($component['extra']['description']),
     '#attributes'    => $component['extra']['attributes'],
-	'#prefix'        => '<div class="webform-component-'.$component['type'].'" id="webform-component-'.$component['cid'].'">',
+	'#prefix'        => '<div class="webform-component-'.$component['type'].'" id="webform-component-'._webform_safe_name($component['name']).'">',
 	'#suffix'        => '</div>',
   );
   // Change the 'width' option to the correct 'size' option

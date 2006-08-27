@@ -37,12 +37,12 @@ function _webform_edit_fieldset ($currfield) {
 function _webform_render_fieldset ($component) {
   $formItem = array (
     '#type'          => $component['type'],
-    '#title'         => $component['name'],
+    '#title'         => htmlspecialchars($component['name'], ENT_QUOTES),
     '#weight'        => $component['weight'],
     '#description'   => _webform_filtervalues($component['extra']['description']),
     '#collapsible'   => $component['extra']['collapsible'],
     '#collapsed'     => $component['extra']['collapsed'],
-    '#attributes'    => array("class" => "webform-component-".$component['type'], "id" => "webform-component-".$component['cid']),
+    '#attributes'    => array("class" => "webform-component-".$component['type'], "id" => "webform-component-"._webform_safe_name($component['name'])),
   );
   // Change the 'width' option to the correct 'size' option
   if ($component['extra']['width'] > 0) {

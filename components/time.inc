@@ -97,13 +97,13 @@ function _webform_render_time ($component) {
   }
 
   $formItem['#type'] = 'fieldset';
-  $formItem['#title'] = $component['name'];
+  $formItem['#title'] = htmlspecialchars($component['name'], ENT_QUOTES);
   if ($component['mandatory']) {
     $formItem['#title'] .= '<span class="form-required" title="'.t("This field is required.").'">*</span>';
   }
   $formItem['#weight'] = $component['weight'];
   $formItem['#description'] = _webform_filtervalues($component['extra']['description']);
-  $formItem['#prefix'] = '<div class="webform-component-'.$component['type'].' container-inline" id="webform-component-'.$component['cid'].'">';
+  $formItem['#prefix'] = '<div class="webform-component-'.$component['type'].' container-inline" id="webform-component-'._webform_safe_name($component['name']).'">';
   $formItem['#suffix'] = '</div>';
   $formItem['hour'] = array(
     '#prefix' => '',
@@ -160,6 +160,27 @@ function _webform_submission_display_time ($data,$component) {
     $formItem['ampm']['#default_value']     = $data['value']['2'];
   }
   return $formItem;
+}
+
+/**
+ * theme_webform_mail_time
+ * Format the output of emailed data for this component
+ *
+ * @param mixed $data A string or array of the submitted data
+ * @param array $component An array of information describing the component, directly correlating to the webform_component database schema
+ * @returns string Textual output to be included in the email
+ */
+function theme_webform_mail_time ($data, $component) {
+  $output = $component['name'].":";
+  if ($data['hour'] && $data['minute']) {
+    if ($component['extra']['hourformat'] == "24-hour") {
+      $output .= " ".$data['hour'].":".$data['minute'];
+    }
+    else {
+      $output .= " ".$data['hour'].":".$data['minute']." ".$data['ampm'];
+    }
+  }
+  return $output;
 }
 
 /** 

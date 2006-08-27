@@ -55,7 +55,7 @@ function _webform_edit_textarea ($currfield) {
 function _webform_render_textarea ($component) {
   $formItem = array (
     '#type'          => "textarea",
-    '#title'         => $component['name'],
+    '#title'         => htmlspecialchars($component['name'], ENT_QUOTES),
     '#default_value' => _webform_filtervalues($component['value']),
     '#required'      => $component['mandatory'],
     '#weight'        => $component['weight'],
@@ -63,7 +63,7 @@ function _webform_render_textarea ($component) {
     '#rows'          => $component['extra']['rows'],
     '#cols'          => $component['extra']['cols'],
     '#attributes'    => $component['extra']['attributes'],
-	'#prefix'        => '<div class="webform-component-'.$component['type'].'" id="webform-component-'.$component['cid'].'">',
+	'#prefix'        => '<div class="webform-component-'.$component['type'].'" id="webform-component-'._webform_safe_name($component['name']).'">',
 	'#suffix'        => '</div>',
   );
   if ($component['extra']['rows'] > 0) {

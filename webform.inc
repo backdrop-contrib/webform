@@ -147,24 +147,38 @@ function theme_webform_create_mailmessage($form_values, $node, $sid) {
   }
 
   $message .= "\n";
-  function _webform_submission_format ($key, $value, $indent = "   ") {
-    if (is_array($value)) {
-      $message .=  $key.":\n";
-      foreach ($value as $k => $v) {
-        $message .= $indent;
-        $message .= _webform_submission_format($k,$v, $indent."   ");
-      }
-    } else {
+  function _webform_submission_format ($key, $value, $node, $indent = "") {
+    // First check for component-level themes
+    $themedOutput = theme("webform_mail_".$node->webformcomponents[$key]['type'],$value,$node->webformcomponents[$key]);
+    if ($themedOutput) {
+      // Indent the output and add to message
+      $message .= $indent;
+      $themedOutput = rtrim($themedOutput,"\n");
+      $message .= str_replace("\n","\n".$indent,$themedOutput);
+      $message .= "\n";
+    }
+    // Generic output for single values
+    elseif (!is_array($value)) {
       // Note that newlines cannot be preceeded by spaces to display properly in some clients
-      $message .=  "$key:".(empty($value) ? "\n" : " $value\n");
+      if ($node->webformcomponents[$key]['name']) {
+        $message .=  $indent.$node->webformcomponents[$key]['name'].":".(empty($value) ? "\n" : " $value\n");
+      }
+    }
+    // Else use a generic output for arrays
+    else {
+      $message .=  $node->webformcomponents[$key]['name'].":\n";
+      foreach ($value as $k => $v) {
+        $message .= _webform_submission_format($k, $v, $node, $indent."   ");
+      }
     }
     return ($message);
   }
-  $message .= _webform_submission_format(t('Submitted values are'),$form_values['submitted_tree']);
+  $message .= t('Submitted values are:');
+  $message .= _webform_submission_format("",$form_values['submitted_tree'], $node);
   
   $message .= "\n\n";
   $message .= t("The results of this submission may be viewed at:\n");
-  $message .= "http://".$_SERVER['HTTP_HOST'].$baseurl.url('node/'.$node->nid);
+  $message .= "http://".$_SERVER['HTTP_HOST'].$baseurl.url('node/'.$node->nid)."?sid=".$sid;
   
   
   if (variable_get('webform_debug', 0) == 2) {

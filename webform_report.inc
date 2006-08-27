@@ -138,9 +138,9 @@ function _webform_results_download($nid) {
       if (function_exists($csvHeaderFunction)) {
         // Let each component determine its headers
         $componentHeader = $csvHeaderFunction($component);
-        $header[0] .= ',"'.str_replace('"',"'",$componentHeader[0]).'"';
-        $header[1] .= ',"'.str_replace('"',"'",$componentHeader[1]).'"';
-        $header[2] .= ',"'.str_replace('"',"'",$componentHeader[2]).'"';
+        $header[0] .= ',"'.str_replace(array('"','\,'),array('""','","'),$componentHeader[0]).'"';
+        $header[1] .= ',"'.str_replace(array('"','\,'),array('""','","'),$componentHeader[1]).'"';
+        $header[2] .= ',"'.str_replace(array('"','\,'),array('""','","'),$componentHeader[2]).'"';
         
       }
     }
@@ -168,7 +168,7 @@ function _webform_results_download($nid) {
       $csvDataFunction   = "_webform_csv_data_".$component['type'];
       if (function_exists($csvDataFunction)) {
         // Let each component add its data
-        $row .= ',"'.str_replace('"',"'",$csvDataFunction($submission['data'][$cid],$component)).'"';
+        $row .= ',"'.str_replace(array('"','\,'),array('""','","'),$csvDataFunction($submission['data'][$cid],$component)).'"';
         
       }
     }

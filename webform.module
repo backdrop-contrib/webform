@@ -235,7 +235,7 @@ function theme_webform_settings_form ($form) {
  */
 function webform_menu($may_cache) {
   global $user;
-
+  
   $items = array ();
   if ($may_cache) {
     $items[]= array ('path' => 'node/add/webform', 'title' => t('webform'),
@@ -246,15 +246,17 @@ function webform_menu($may_cache) {
       'callback' => 'webform_page',
       'access' => user_access('access webform results'),
       'type' => MENU_NORMAL_ITEM);
+    
+    $items[]= array ('path' => 'webform/done', 'title' => t('webform'),
+      'callback' => '_webform_confirmation',
+      'access' => true,
+      'type' => MENU_CALLBACK);     
+    
+    return $items;
   }
-  
-  $items[]= array ('path' => 'webform/done', 'title' => t('webform'),
-    'callback' => '_webform_confirmation',
-    'access' => true,
-    'type' => MENU_CALLBACK);
-                       
+
   if (arg(0) == 'node' && is_numeric(arg(1))) {
-    $node = db_fetch_object(db_query('SELECT nid, type FROM node WHERE nid = %d',arg(1)));
+    $node = node_load(arg(1));
     if ($node->nid && $node->type == 'webform') {
       $items[]= array ('path' => 'node/'.$node->nid.'/results', 'title' => t('results'), 
                        'callback' => 'webform_results',
@@ -488,7 +490,7 @@ function webform_form (&$node, &$param) {
   if (is_array($node->webformcomponents) && !empty($node->webformcomponents)) {
     $options = array();
     foreach($node->webformcomponents as $cid => $component) {  
-      $options[$cid] = $component['name'];
+      $options[$cid] = htmlspecialchars($component['name'], ENT_QUOTES);
     }
     $form['components']['selected_component'] = array(
       '#type' => 'radios',
@@ -682,7 +684,7 @@ function theme_webform_node_form ($form) {
     function _webform_add_rows($cid, $component, $level, &$form, &$rows) { 
       // Create presentable values
       if (strlen($component['value']) > 30) {
-        $component['value'] = htmlspecialchars(substr($component['value'],0,30));
+        $component['value'] = htmlspecialchars(substr($component['value'],0,30), ENT_QUOTES);
         $component['value'] .= "...";
       }
       
@@ -829,7 +831,7 @@ function webform_edit_field_form (&$node) {
     $options = array('0' => 'Root');
     foreach ($node->webformcomponents as $thiscid => $value) {
       if ($value['type'] == 'fieldset' && $thiscid != $cid) {
-        $options[$thiscid] = $value['name'];
+        $options[$thiscid] = htmlspecialchars($value['name'], ENT_QUOTES);
       }
     }
     $form['field']['parent'] = array (
@@ -945,10 +947,7 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
   if (is_array($node->webformcomponents) && !empty ($node->webformcomponents)) {
     // Prepare a new form array
     $form['submitted'] = array(
-      '#type' => 'fieldset',
-      '#tree' => TRUE,
-      '#collapsed' => FALSE,
-      '#collapsable' => FALSE
+      '#tree' => TRUE
     ); 
     $form['componentKeys'] = array (
       '#tree' => true,
@@ -960,12 +959,10 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
     // Put the components into a tree structure
     $componentTree = array();
     _webform_components_tree_build($node->webformcomponents,$componentTree);
-    
     // Recursively add components to the form
     foreach ($componentTree['children'] as $cid => $component) {
-      _webform_view_add_component($cid, $component, $form['submitted'], $form, $submission);
+      _webform_view_add_component($cid, $component, $form['submitted'], $form);
     }
-    
     // Do not display the submit button if this is a preview or submission view
     if (!$preview && empty($sid_to_display)) {
       // Additional hidden elements   
@@ -1008,35 +1005,28 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
 
 function _webform_view_add_component ($cid, $component, &$parent_fieldset, &$form) {
   global $sid_to_display, $submission, $preview;
+  
   // Load with submission information if necessary
   if($sid_to_display){
     // This component is display only, with the value set according information
     // previously submitted in the submission numbered $sid_to_display
     $displayFunction = "_webform_submission_display_".$component['type'];
     if (function_exists($displayFunction)) {
-      $parent_fieldset[$component['name']] = $displayFunction($submission['data'][$cid],$component);
+      $parent_fieldset[$cid] = $displayFunction($submission['data'][$cid],$component);
     }
   } else {
     // Add this user-defined field to the form (with all the values that are always available)      
     $renderFunction = "_webform_render_".$component['type'];
     if (function_exists($renderFunction)) {
-      $parent_fieldset[$component['name']] = $renderFunction($component); // Call the component render function
+      $parent_fieldset[$cid] = $renderFunction($component); // Call the component render function
     } else {
       drupal_set_message(t("The webform component")." '".$component['type']."' ".t("is not able to be displayed"));
-    }      
-  }
-
-  if (!$preview) {
-    // Add a hidden form element containing this component's key id (cid in the database)
-    $form['componentKeys'][$cid] = array (
-      '#type'          => 'hidden',
-      '#value'     => $component['name'],
-    );
+    }
   }
   
   if (is_array($component['children'])) {
-    foreach ($component['children'] as $cid => $subcomponent) {
-      _webform_view_add_component ($cid, $subcomponent, $parent_fieldset[$component['name']], $form);
+    foreach ($component['children'] as $scid => $subcomponent) {
+      _webform_view_add_component ($scid, $subcomponent, $parent_fieldset[$cid], $form);
     }
   }
 }
@@ -1072,19 +1062,19 @@ function webform_client_submit($form_id, $form_values) {
   }
   // Flatten trees within the submission
   $form_values['submitted_tree'] = $form_values['submitted'];
-  _webform_client_submit_flatten($node, array_flip($form_values['componentKeys']),$form_values['submitted'],$form_values['submitted']);
+  _webform_client_submit_flatten($node, $form_values['submitted'], $form_values['submitted']);
   
   // Process post-submission data if necessary in the components
   _webform_load_components();
-  foreach ($form_values['componentKeys'] as $ckey => $fieldname) {
-    $submitFunction = "_webform_submit_".$node->webformcomponents[$ckey]['type'];
+  foreach ($node->webformcomponents as $cid => $component) {
+    $submitFunction = "_webform_submit_".$component['type'];
     if (function_exists($submitFunction)) {
-      $submitFunction($form_values['submitted'][$fieldname], $node->webformcomponents[$ckey]); // Call the component process submission function
+      $submitFunction($form_values['submitted'][$cid], $component); // Call the component process submission function
     }
   }
   
   // Save the submission to the database
-  $sid = _webform_save_submission($node, $form_values['submitted'], $form_values['componentKeys']);
+  $sid = _webform_save_submission($node, $form_values['submitted']);
   
   // Check if this form is sending an email
   if (isset ($node->email)) {
@@ -1112,17 +1102,17 @@ function webform_client_submit($form_id, $form_values) {
           // Find and set a custom FROM: field
           if ($type == 'email' || $type == 'hidden') {
             if ($component['name'] == $node->email_from) {
-              $email_from_string= "From: ".mime_header_encode(strip_tags($form_values['submitted'][$component['name']]))."\r\n";
+              $email_from_string= "From: ".mime_header_encode(strip_tags($form_values['submitted'][$cid]))."\r\n";
             }
           }
           // Find and set a custom SUBJECT: field
           if ($type == 'textfield' || $type == 'hidden') {
             if ($component['name'] == $node->email_subject) {
-              $email_subject_string= "Subject: ".strip_tags($form_values['submitted'][$component['name']])."\r\n";
+              $email_subject_string= "Subject: ".strip_tags($form_values['submitted'][$cid])."\r\n";
             }
           }
           if ($type == 'email' && $component['extra']['carboncopy'] == 'Y' ) {
-            $headers  .= "CC: ".$form_values['submitted'][$component['name']]."\r\n";
+            $headers  .= "CC: ".$form_values['submitted'][$cid]."\r\n";
           }
         }
       }
@@ -1166,10 +1156,10 @@ function webform_client_submit($form_id, $form_values) {
 /**
  * Flattens a submitted form back into a single array representation (rather than nested fields)
  */
-function _webform_client_submit_flatten($node, $components, $fieldset, &$form) {
+function _webform_client_submit_flatten($node, $fieldset, &$form) {
   foreach ($fieldset as $key => $value) {
-    if (is_array($value) && $node->webformcomponents[$components[$key]]['type'] == 'fieldset') {
-      _webform_client_submit_flatten($node, $components, $value,$form);
+    if (is_array($value) && $node->webformcomponents[$key]['type'] == 'fieldset') {
+      _webform_client_submit_flatten($node, $value,$form);
       $form[$key] = ""; // Set the fieldset value to a blank
       unset($fieldset[$key]);
     } else {
@@ -1179,7 +1169,7 @@ function _webform_client_submit_flatten($node, $components, $fieldset, &$form) {
 }
 
 /**
- * Prints the confirmation message after a succefull submission.
+ * Prints the confirmation message after a successful submission.
  */
 function _webform_confirmation($nid) {
   if ($node = node_load(array ('nid' => $nid))) {
@@ -1249,7 +1239,7 @@ function _webform_filtervalues($string, $strict = TRUE) {
   }
 } // end _webform_filtervalues
 
-function _webform_save_submission($node, $reply, $componentKeys) {
+function _webform_save_submission($node, $submitted) {
   global $user;
 
   $sid = db_next_id('{webform_submissions}_sid');
@@ -1258,8 +1248,7 @@ function _webform_save_submission($node, $reply, $componentKeys) {
   $user_col = $GLOBALS['db_type'] == 'pgsql' ? '"user"' : 'user';
   db_query("INSERT INTO {webform_submissions} (nid, sid, submitted, $user_col, remote_addr) "." VALUES (%d, %d, %d, '%s', '%s')", $node->nid, $sid, time(), $user->name, $_SERVER['REMOTE_ADDR']);
 
-  foreach ($componentKeys as $cid => $cname) {
-    $value = $reply[$cname];
+  foreach ($submitted as $cid => $value) {
     if (is_array($value)) {
       $key = 0;
       foreach ($value as $k => $v) {
@@ -1340,6 +1329,13 @@ function _webform_version() {
   return array ("text" => "4.7.1", "build" => 471);
 } // function _webform_version
 
+function _webform_safe_name($name) {
+  $name = drupal_strtolower(trim($name));
+  $name = str_replace(' ', '_', $name);
+  $name = preg_replace('/[^a-z0-9_]/', '', $name);
+  return $name;
+}
+
 function _webform_components_decode ($components) {
   if (is_array($components)) {
     foreach ($components as $cid => $value) {
@@ -1365,7 +1361,7 @@ function _webform_components_tree_build ($src, &$tree, $parent = 0) {
 }
 
 /**
- * Helper for the uasort in webform_components_tree_sort()
+ * Helper for the uasort in webform_tree_sort()
  */
 function _webform_components_sort($a, $b) {
   if ($a['weight'] == $b['weight']) {
@@ -1374,12 +1370,13 @@ function _webform_components_sort($a, $b) {
   return ($a['weight'] < $b['weight']) ? -1 : 1;
 }
 
+
 /**
- * Sort each level of a component tree by weight
+ * Sort each level of a component tree by weight and name
  */
 function _webform_components_tree_sort ($tree) {
   if (is_array($tree['children'])) {
-    uasort($tree['children'],"_webform_components_sort");
+    uasort($tree['children'],"_webform_webform_components_sort");
     foreach($tree['children'] as $cid => $component) {
       $return[$cid] = _webform_components_tree_sort($component);
     }

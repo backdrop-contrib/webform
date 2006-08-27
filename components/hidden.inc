@@ -54,7 +54,7 @@ function _webform_submission_display_hidden ($data,$component) {
   $formItem = _webform_render_hidden($component);
   $formItem['#value']         = $data['value']['0'];
   $formItem['#type']          = 'textfield';
-  $formItem['#title']         = $component['name']." (hidden)";
+  $formItem['#title']         = htmlspecialchars($component['name'], ENT_QUOTES)." (hidden)";
   $formItem['#attributes']    = array("disabled" => "disabled");
   return $formItem;
 }

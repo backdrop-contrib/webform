@@ -46,11 +46,11 @@ function _webform_render_email ($component) {
   global $user;
   $formItem = array (
     '#type'          => 'textfield',
-    '#title'         => $component['name'],
+    '#title'         => htmlspecialchars($component['name'], ENT_QUOTES),
     '#required'      => $component['mandatory'],
     '#weight'        => $component['weight'],
     '#description'   => _webform_filtervalues($component['extra']['description']),
-    '#prefix'        => '<div class="webform-component-'.$component['type'].'" id="webform-component-'.$component['cid'].'">',
+    '#prefix'        => '<div class="webform-component-'.$component['type'].'" id="webform-component-'._webform_safe_name($component['name']).'">',
     '#suffix'        => '</div>',
   );
   
