@@ -146,10 +146,14 @@ function _webform_submit_select (&$data,$component) {
       $options[_webform_safe_name($v)] = $v;
     }
   }
-  foreach ($data as $key => $value) {
-    if ($value) {
-      $data[$key] = $options[$key];
+  if (is_array($data)) {
+    foreach ($data as $key => $value) {
+      if ($value) {
+        $data[$key] = $options[$key];
+      }
     }
+  } elseif (!empty($data)) {
+    $data = $options[$data];
   }
 }
 
