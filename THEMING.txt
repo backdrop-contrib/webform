@@ -51,6 +51,7 @@ function phptemplate_webform_create_mailmessage_nodeIdHere ($formData, $node) {
   (i.e. nested fields), it became necessary to increase the complexity of themed
   emails. Previously, the $formData variable only sent the values of the form in
   a flat array. Now, $formData contains several arrays of information:
+  
   $formData['submitted'] => An array of fields and their submitted values (identical to the previous value of $formData)
   $formData['submitted_tree'] => An array of fields and their values structured in a recursive array
   $formData['components'] => An array of component_ids and their field names
@@ -73,13 +74,11 @@ function phptemplate_webform_form_nodeIdHere ($form) {
 - Replace "nodeIdHere" with the node ID of the form.
 
 - Create a new file in your theme's directory named
-  "webform_component_nodeIdHere.tpl.php", once again replacing nodeIdHere
+  "webform_form_nodeIdHere.tpl.php", once again replacing nodeIdHere
   with the node ID of the webform.
   
 - Open up your new file and customize the webform however you like. Here's an
-  example putting a field labeled "Email" inside of another fieldset. You could
-  potentially put all your components inside seperate fieldsets to give a
-  better organization to your form.
+  example putting a field labeled "Email" inside of another fieldset.
   
 <?php
 	// Create a new fieldset within the main fieldset
@@ -94,12 +93,12 @@ function phptemplate_webform_form_nodeIdHere ($form) {
    
 ?>
 
-- All webform forms have 3 main fieldsets: "submitted","componentKeys",
-	and "details". Although you may move things around as you wish, keep all your
-	components within the "submitted" fieldset. Only the "submitted" fieldset is
-	displayed and webform depends on the other two to operate properly, so don't
-	mess with them unless you have good reason to do so (like you're forwarding
-	your webform to a custom PHP or PERL script).
+- All webform forms have 2 main fieldsets: "submitted", and "details". Although
+  you may move things around as you wish, keep all your components within the
+  "submitted" fieldset. Only the "submitted" fieldset is displayed and webform
+  depends on the other two to operate properly, so don't mess with them unless
+  you have good reason to do so (like you're forwarding your webform to a custom
+  PHP or PERL script).
 
 
 $Id$
