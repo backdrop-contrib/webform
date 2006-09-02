@@ -224,7 +224,7 @@ function _webform_analysis_rows_time ($component) {
             if ($row['no'] == '2') {
               $ampm = $row['data'];
               // Build the full timestamp
-              if (strlen($hour) > 0 && strlen($day) > 0 ) {
+              if (strlen($hour) > 0 && strlen($minute) > 0 ) {
                 $timestamps[] = strtotime($hour.":".$minute.$ampm);
               }
             } else {
