@@ -99,7 +99,7 @@ function _webform_analysis_rows_hidden ($component) {
   $rows[0] = array( t('Empty'), ($submissions - $nonblanks));
   $rows[1] = array( t('Non-empty'), $nonblanks);
   $rows[2] = array( t('Average submission length in words (ex blanks)'), 
-                    ($nonblanks!=0?($wordcount/$nonblanks):'0'));
+                    ($nonblanks !=0 ? number_format($wordcount/$nonblanks,2) : '0'));
   return $rows;
 }
 
