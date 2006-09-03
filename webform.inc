@@ -16,9 +16,9 @@ function _webform_page() {
   $header = array(
                   t('Title'), 
                   array('data' => t('View'),
-                        'colspan' => '3'),
+                        'colspan' => '4'),
                   array('data' => t('Operations'),
-                        'colspan' => '3')
+                        'colspan' => '2')
                   );
 
   $result = db_query("SELECT nid, title FROM {node} WHERE type='webform'");
@@ -29,10 +29,13 @@ function _webform_page() {
                     l(t('analysis'),'node/' . $node->nid . '/results/analysis'),
                     l(t('table'),'node/' . $node->nid . '/results/table'),
                     l(t('download'),'node/' . $node->nid . '/results/download'),
-                    //l(t('edit'), 'node/'.$node->nid.'/edit'),
+                    l(t('edit'), 'node/'.$node->nid.'/edit'),
                     l(t('clear'), 'node/' . $node->nid . '/results/clear'));
 
   }
+  
+  if (user_perm)
+  
   $content = theme('table', $header, $rows);
   drupal_set_title($node->title);
   return $content;
@@ -105,6 +108,32 @@ function _webform_submission_delete($nid, $sid) {
     return $output;
   }
 } // end function _webform_submission_delete
+
+/**
+ * Return all the submissions for a particular node
+ */
+function _webform_fetch_submissions($nid) {
+  
+  $query = 'SELECT s.sid, s.submitted, s.remote_addr, sd.cid, sd.no, sd.data ' .
+           'FROM {webform_submissions} as s ' .
+           'LEFT JOIN {webform_submitted_data} as sd on (sd.sid = s.sid) '.
+           'WHERE sd.nid = %d';
+    
+  $res = db_query($query, $nid);
+  $submissions = array();
+  
+  // Outer loop: iterate for each submission
+  while ($row = db_fetch_object($res)) {
+    if ($row->sid != $previous) {
+      $submissions[$row->sid]['submitted'] = $row->submitted;
+      $submissions[$row->sid]['remote_addr'] = $row->remote_addr;
+    }
+    $submissions[$row->sid]['data'][$row->cid]['value'][$row->no] = $row->data;
+    $previous = $row->sid;
+  }
+ 
+  return $submissions;
+} // end function _webform_fetch_submissions
 
 /* This function is used to fetch a specified submission.
  */
