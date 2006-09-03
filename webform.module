@@ -242,22 +242,21 @@ function webform_menu($may_cache) {
       'access' => user_access('create webforms'));
     
     // Submissions listing 
-    $items[]= array ('path' => 'webform', 'title' => t('webform'),
+    $items[]= array ('path' => 'admin/webform', 'title' => t('webform'),
       'callback' => 'webform_page',
       'access' => user_access('access webform results'),
       'type' => MENU_NORMAL_ITEM);
-    
-    $items[]= array ('path' => 'webform/done', 'title' => t('webform'),
-      'callback' => '_webform_confirmation',
-      'access' => true,
-      'type' => MENU_CALLBACK);     
-    
+        
     return $items;
   }
 
   if (arg(0) == 'node' && is_numeric(arg(1))) {
     $node = node_load(arg(1));
     if ($node->nid && $node->type == 'webform') {
+      $items[]= array ('path' => 'node/'.$node->nid.'/done', 'title' => t('webform'),
+                       'callback' => '_webform_confirmation', 'callback arguments' => array(arg(1)),
+                       'access' => true,
+                       'type' => MENU_CALLBACK); 
       $items[]= array ('path' => 'node/'.$node->nid.'/results', 'title' => t('results'), 
                        'callback' => 'webform_results',
                        'access' => user_access('access webform results'), 
@@ -302,9 +301,6 @@ function webform_link($type, $node= 0, $main= 0) {
   if ($node->type == 'webform') {
     if ($main == 1) {
       $links[]= l(t('go to form'), "node/$node->nid", array ('title' => t('View this form.'), 'class' => 'read-more'));
-    }
-    if ($main != 1 && arg(0) == 'webform' && arg(1) == 'done') {
-      $links[]= l(t('Go back to the form'), 'node/'.$node->nid);
     }
   }
   return $links;
@@ -948,10 +944,7 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
     // Prepare a new form array
     $form['submitted'] = array(
       '#tree' => TRUE
-    ); 
-    $form['componentKeys'] = array (
-      '#tree' => true,
-    ); 
+    );
     $form['details'] = array (
       '#tree' => true,
     );
@@ -1148,7 +1141,7 @@ function webform_client_submit($form_id, $form_values) {
     header("Location: ".trim($node->confirmation));
     exit();
   } else {
-    drupal_goto('webform/done/'.$node->nid);
+    drupal_goto('node/'.$node->nid.'/done');
   }
 } // end webform_client_submit
 
@@ -1189,6 +1182,7 @@ function _webform_confirmation($nid) {
  */
 function theme_webform_confirmation($node) {
   $node->body = check_markup($node->confirmation, $node->format, FALSE);
+  $node->links[] = l(t('Go back to the form'), 'node/'.$node->nid);
   return theme('node', $node, FALSE, TRUE);
 }
 
