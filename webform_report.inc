@@ -43,6 +43,8 @@ function _webform_results_submissions($nid) {
  */
 function _webform_results_table($nid) {
   include_once(drupal_get_path('module', 'webform')."/webform.inc");
+  // Load Components
+  _webform_load_components();
 
   $header = array();
   $rows = array();
@@ -50,7 +52,9 @@ function _webform_results_table($nid) {
 
   $header[] = t('#');
   $header[] = t('Time');
+  $header[] = t('IP Address');
 
+  
   // Get all the component cid and names for the node
   $query = 'SELECT cid, name, type, extra FROM {webform_component} WHERE nid = %d ORDER BY weight, name';
   $res = db_query($query, $nid);
@@ -59,18 +63,15 @@ function _webform_results_table($nid) {
   }
 
   // Get all the submissions for the node
-  $query = 'SELECT ws.sid FROM {webform_submissions} ws WHERE ws.nid = %d ';
-  $res = db_query($query, $nid);
-
-  // A row for each submission
-  while ($field = db_fetch_array($res)) {
-    $submission = _webform_fetch_submission($field['sid']);
-    $cell[] = $submission['sid'];
-    $cell[] = $submission['submitted'];
+  $submissions = _webform_fetch_submissions($nid);
+  // Generate a row for each submission
+  foreach ($submissions as $sid => $submission) {
+    $cell[] = l($sid,'node/'.$nid,NULL,"sid=".$sid);
+    $cell[] = format_date($submission['submitted'],"small");
+    $cell[] = $submission['remote_addr'];
     $componentHeaders = array();
 
-    // A cell for each component
-    _webform_load_components();
+    // Generate a cell for each component
     foreach($components as $component) {
       $component['extra'] = unserialize($component['extra']);
       $tableFunction = "_webform_table_data_".$component['type'];
@@ -85,8 +86,10 @@ function _webform_results_table($nid) {
     
     $rows[] = $cell;
     unset($cell);
-  } 
-  $header = array_merge($header,$componentHeaders);
+  }
+  if (!empty($componentHeaders)) {
+    $header = array_merge($header,$componentHeaders);
+  }
 
   return theme('table', $header, $rows);
 } // end function _webform_results_table($nid)
@@ -150,26 +153,18 @@ function _webform_results_download($nid) {
   $file_record = $header[0] ."\n". $header[1] ."\n". $header[2] . "\n";
   @fwrite($handle,$file_record);
 
-  // Compile data from submissions
-  // Get all the submissions
-  $query = 'SELECT ws.sid '.
-    ' FROM '.
-    ' {webform_submissions} ws '.
-    ' WHERE '.
-    ' ws.nid = %d ';
+  // Get all the submissions for the node
+  $submissions = _webform_fetch_submissions($nid);
   
-  $res = db_query($query, $nid);
-  
+  // Generate a row for each submission
   $rowcount = 0;
-  while ($field = db_fetch_object($res)) {
-    $submission = _webform_fetch_submission($field->sid);
-    $row = ++$rowcount.",\"". format_date($submission['submitted'], 'small')."\",".$submission['sid'];
+  foreach ($submissions as $sid => $submission) {
+    $row = ++$rowcount.",\"". format_date($submission['submitted'], 'small')."\",".$sid;
     foreach($node->webformcomponents as $cid => $component) {      
       $csvDataFunction   = "_webform_csv_data_".$component['type'];
       if (function_exists($csvDataFunction)) {
         // Let each component add its data
         $row .= ',"'.str_replace(array('"','\,'),array('""','","'),$csvDataFunction($submission['data'][$cid],$component)).'"';
-        
       }
     }
     // Write data from submissions
