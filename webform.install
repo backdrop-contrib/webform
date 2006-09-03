@@ -26,7 +26,7 @@ function webform_install() {
         pid int(10) unsigned NOT NULL default '0',
         name varchar(128) default NULL,
         type varchar(16) default NULL,
-        value varchar(128) default NULL,
+        value text default NULL,
         extra text,
         mandatory int(2) unsigned default NULL,
         weight int(2) default NULL,
@@ -75,7 +75,7 @@ function webform_install() {
           pid integer NOT NULL default '0',
           name varchar(128) NOT NULL default '',
           type varchar(16) NOT NULL default '',
-          value varchar(128) NOT NULL default '',
+          value text NOT NULL default '',
           extra text NOT NULL default '',
           mandatory smallint NOT NULL default '0',
           weight smallint NOT NULL default '0',
@@ -250,6 +250,25 @@ function webform_update_6() {
     case 'mysqli':
     case 'mysql':
       $ret[] = update_sql("ALTER TABLE {webform_component} ADD pid int(10) NOT NULL DEFAULT 0 AFTER cid");
+      break;
+  }
+  
+  return $ret;
+}
+
+/*
+ * Allow much larger default values for components
+ */
+function webform_update_7() {
+  $ret = array();
+  
+  switch ($GLOBALS['db_type']) {
+    case 'pgsql':
+      db_change_column($ret, 'webform_component', 'value', 'value', 'TEXT', array('not null' => FALSE, 'default' => "NULL"));
+      break;
+    case 'mysqli':
+    case 'mysql':
+      $ret[] = update_sql("ALTER TABLE {webform_component} CHANGE value value TEXT NULL DEFAULT NULL");
       break;
   }
   
