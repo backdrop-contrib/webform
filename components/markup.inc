@@ -11,7 +11,6 @@
 function _webform_edit_markup ($currfield) {
   $editFields = array();
   $editFields['mandatory'] = array(); // Do not render the mandatory checkbox
-  dsm($currfield);
   $editFields['value'] = array(
     '#type' => 'textarea',
     '#title' => t("Value"),
