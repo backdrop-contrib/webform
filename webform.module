@@ -80,18 +80,15 @@ function webform_access($op, $node) {
   global $user;
   
   switch ($op) {
-  case "view":
-    return $node->status;
-  case "create":
-    return user_access("create webforms");
-  case "update":
-  case "delete":
-    if ((user_access("edit own webforms") && ($user->uid == $node->uid)) ||
+    case "create":
+      return user_access("create webforms");
+    case "update":
+    case "delete":
+      if ((user_access("edit own webforms") && ($user->uid == $node->uid)) ||
         (user_access("edit webforms"))) {
-      return true;
-    }
+        return true;
+      }
   }
-  return false;
 }
 
 function webform_insert($node) {
