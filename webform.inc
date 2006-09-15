@@ -207,7 +207,7 @@ function theme_webform_create_mailmessage($form_values, $node, $sid) {
   
   $message .= "\n\n";
   $message .= t("The results of this submission may be viewed at:\n");
-  $message .= "http://".$_SERVER['HTTP_HOST'].$baseurl.url('node/'.$node->nid)."?sid=".$sid;
+  $message .= "http://".$_SERVER['HTTP_HOST'].$baseurl.url('node/'.$node->nid,"sid=".$sid);
   
   
   if (variable_get('webform_debug', 0) == 2) {
