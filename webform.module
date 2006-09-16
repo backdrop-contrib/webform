@@ -283,6 +283,10 @@ function webform_menu($may_cache) {
                        'access' => user_access('clear webform results'),
                        'weight' => 8,
                        'type' => MENU_LOCAL_TASK);
+      $items[]= array ('path' => 'node/'.$node->nid.'/results/delete', 'title' => t('webform'),
+                       'callback' => '_webform_confirmation',
+                       'access' => user_access('clear webform results'),
+                       'type' => MENU_CALLBACK); 
     }
   }
 

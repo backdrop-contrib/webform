@@ -25,14 +25,23 @@ function _webform_results_submissions($nid) {
   
   $header[] = t('#');
   $header[] = t('Submitted');
-  $header[] = array('data' => t('Operations'), 'colspan' => '3');
+  if (user_access('clear webform results')) {
+    $header[] = array('data' => t('Operations'), 'colspan' => '3');
+  }
+  else {
+    $header[] = array('data' => t('Operations'), 'colspan' => '2');
+  }
 
   while ($field = db_fetch_object($res)) {
-    $rows[] = array($field->sid,
-                    format_date($field->submitted, 'small'),
-                    l(t('View'),"node/$nid",NULL,"sid=".$field->sid,NULL,FALSE),
-                    l(t('Delete'),"node/$nid/results/delete/".$field->sid ,NULL,NULL,NULL,FALSE)
-                    );
+    $row = array();
+    $row[] = $field->sid;
+    $row[] = format_date($field->submitted, 'small');
+    $row[] = l(t('View'),"node/$nid",NULL,"sid=".$field->sid,NULL,FALSE);
+    
+    if (user_access('clear webform results')) {
+      $row[] = l(t('Delete'),"node/$nid/results/delete/".$field->sid ,NULL,NULL,NULL,FALSE);
+    }
+    $rows[] = $row;
   }
   
   return theme('table', $header, $rows);
