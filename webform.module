@@ -492,10 +492,19 @@ function webform_form (&$node, &$param) {
     foreach($node->webformcomponents as $cid => $component) {  
       $options[$cid] = htmlspecialchars($component['name'], ENT_QUOTES);
     }
+    
+    if ($node->selected_component > 0) {
+        $defaultValue = $node->selected_component;
+    }
+    else {
+        $compKeys = array_keys($node->webformcomponents);
+        $defaultValue = array_shift($compKeys);
+    }
+    
     $form['components']['selected_component'] = array(
       '#type' => 'radios',
       '#options' => $options,
-      '#default_value' => $node->selected_component > 0 ? $node->selected_component : array_shift(array_keys($node->webformcomponents)),
+      '#default_value' => $defaultValue,
       '#DANGEROUS_SKIP_CHECK' => TRUE,
     );
     $form['components']['delete_component'] = array(
