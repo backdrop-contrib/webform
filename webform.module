@@ -313,9 +313,9 @@ function webform_link($type, $node= 0, $main= 0) {
  * The changes to the node are not permanent until the user submits the form.
  **/
 function webform_prepare (&$node) {
-        
+
   $op = $_POST['op'];
-  
+
   switch ($op) {
     case t('Delete Selected'):
       // Re-add existing components
@@ -351,6 +351,9 @@ function webform_prepare (&$node) {
       $edit = array_merge($old_edit, $new_edit);
       $node = (object)$edit;
       
+      // Restore the node form's saved POST values
+      $_POST['edit'] = $_POST['edit']['node'];
+
       // Display editted message
       drupal_set_message(t('The form component has been changed. Remember to press Submit on the bottom of this form to save your changes.'));
       break;
@@ -867,14 +870,12 @@ function webform_edit_field_form (&$node) {
     '#value' => t("Done"),
     '#weight' => 3,
   );
-  
+
   // Create hidden form elements to restore all the settings on the node edit form
   $form['node'] = array (
-    '#type' => 'fieldset',
-    '#attributes' => array('style' => 'display: none;'),
     '#tree' => TRUE,
   );
-  
+
   // Recursively create hidden form elements for all fields on the node form
   function _webform_edit_field_form_hiddens (&$form, $key, $value) {
     if (is_array($value)) {
@@ -890,7 +891,7 @@ function webform_edit_field_form (&$node) {
     }
   }
   _webform_edit_field_form_hiddens($form, 'node', $_POST['edit']);
-  
+
   return $form;
 }
 
