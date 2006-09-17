@@ -16,6 +16,8 @@ function webform_install() {
         email varchar(255) default NULL,
         email_from varchar(255) default NULL,
         email_subject varchar(255) default NULL,
+        additional_validate text default NULL,
+        additional_submit text default NULL,
         PRIMARY KEY  (nid)
         ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
       );
@@ -57,50 +59,52 @@ function webform_install() {
 
   case 'pgsql':
       db_query("CREATE TABLE {webform} (
-          nid integer NOT NULL default '0',
-          confirmation text NOT NULL default '',
-          redirect_post smallint NOT NULL default '0',
-          submit_limit smallint NOT NULL default '-1',
-          submit_interval integer NOT NULL default '157784630',
-          email varchar(255) NOT NULL default '',
-          email_from varchar(255) NOT NULL default '',
-          email_subject varchar(255) NOT NULL default '',
-          PRIMARY KEY (nid)
-          )"
+        nid integer NOT NULL default '0',
+        confirmation text NOT NULL default '',
+        redirect_post smallint NOT NULL default '0',
+        submit_limit smallint NOT NULL default '-1',
+        submit_interval integer NOT NULL default '157784630',
+        email varchar(255) NOT NULL default '',
+        email_from varchar(255) NOT NULL default '',
+        email_subject varchar(255) NOT NULL default '',
+        additional_validate text default NULL,
+        additional_submit text default NULL,
+        PRIMARY KEY (nid)
+        )"
       );
   
       db_query("CREATE TABLE {webform_component} (
-          nid integer NOT NULL default '0',
-          cid integer NOT NULL default '0',
-          pid integer NOT NULL default '0',
-          name varchar(128) NOT NULL default '',
-          type varchar(16) NOT NULL default '',
-          value text NOT NULL default '',
-          extra text NOT NULL default '',
-          mandatory smallint NOT NULL default '0',
-          weight smallint NOT NULL default '0',
-          PRIMARY KEY (nid,cid)
-          )"
+        nid integer NOT NULL default '0',
+        cid integer NOT NULL default '0',
+        pid integer NOT NULL default '0',
+        name varchar(128) NOT NULL default '',
+        type varchar(16) NOT NULL default '',
+        value text NOT NULL default '',
+        extra text NOT NULL default '',
+        mandatory smallint NOT NULL default '0',
+        weight smallint NOT NULL default '0',
+        PRIMARY KEY (nid,cid)
+        )"
       );
   
       db_query("CREATE TABLE {webform_submissions} (
-          nid integer NOT NULL default '0',
-          sid serial,
-          submitted integer NOT NULL default '0',
-          \"user\" varchar(128),
-          remote_addr varchar(128) NOT NULL default '',
-          PRIMARY KEY (nid,sid)
-          )"
+        nid integer NOT NULL default '0',
+        sid serial,
+        submitted integer NOT NULL default '0',
+        \"user\" varchar(128),
+        remote_addr varchar(128) NOT NULL default '',
+        PRIMARY KEY (nid,sid)
+        )"
       );
     
       db_query("CREATE TABLE {webform_submitted_data} (
-          nid integer NOT NULL default '0',
-          sid integer NOT NULL default '0',
-          cid integer NOT NULL default '0',
-          no integer NOT NULL default '0',
-          data text NOT NULL default '',
-          PRIMARY KEY (nid,sid,cid,no)
-          )"
+        nid integer NOT NULL default '0',
+        sid integer NOT NULL default '0',
+        cid integer NOT NULL default '0',
+        no integer NOT NULL default '0',
+        data text NOT NULL default '',
+        PRIMARY KEY (nid,sid,cid,no)
+        )"
       );
     break;
   }
@@ -269,6 +273,24 @@ function webform_update_7() {
     case 'mysqli':
     case 'mysql':
       $ret[] = update_sql("ALTER TABLE {webform_component} CHANGE value value TEXT NULL DEFAULT NULL");
+      break;
+  }
+  
+  return $ret;
+}
+
+/*
+ * Add additional validate and submit processing columns
+ */
+function webform_update_8() {
+  $ret = array();
+  
+  switch ($GLOBALS['db_type']) {
+    case 'pgsql':
+    case 'mysqli':
+    case 'mysql':
+      $ret[] = update_sql("ALTER TABLE {webform} ADD additional_validate text DEFAULT NULL AFTER email_subject");
+      $ret[] = update_sql("ALTER TABLE {webform} ADD additional_submit text DEFAULT NULL AFTER additional_validate");
       break;
   }
   

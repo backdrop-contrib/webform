@@ -66,7 +66,7 @@ function webform_help($section= "admin/help#webform") {
 }
 
 function webform_perm() {
-  return array ("create webforms", "edit own webforms", "edit webforms", "access webform results", "clear webform results");
+  return array ("create webforms", "edit own webforms", "edit webforms", "access webform results", "clear webform results","use PHP for additional processing");
 }
 
 /**
@@ -100,7 +100,7 @@ function webform_insert($node) {
   }
   
   // Insert the Webform
-  db_query("INSERT INTO {webform} (nid, confirmation, redirect_post, submit_limit, submit_interval, email, email_from, email_subject) VALUES (%d, '%s', %d, %d, %d, '%s', '%s', '%s')", $node->nid, $node->confirmation, $node->redirect_post, $node->submit_limit, $node->submit_interval, $node->email, $node->email_from, $node->email_subject);
+  db_query("INSERT INTO {webform} (nid, confirmation, redirect_post, submit_limit, submit_interval, email, email_from, email_subject, additional_validate, additional_submit) VALUES (%d, '%s', %d, %d, %d, '%s', '%s', '%s', '%s', '%s')", $node->nid, $node->confirmation, $node->redirect_post, $node->submit_limit, $node->submit_interval, $node->email, $node->email_from, $node->email_subject, $node->additional_validate, $node->additional_submit);
   
   // Re-add existing components from the POST array
   if (isset($_POST['edit']['webformcomponents'])) {
@@ -594,7 +594,7 @@ function webform_form (&$node, &$param) {
     '#type' => 'fieldset',
     '#title' => t('Advanced Settings'),
     '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
+    '#collapsed' => TRUE,
     '#weight' => 1);
   
   
@@ -649,6 +649,25 @@ function webform_form (&$node, &$param) {
                            ),
   );
   
+  if (user_access('use PHP for additional processing')) {
+    $form['advanced']['additional_validate'] = array(
+      '#type' => 'textarea',
+      '#title' => 'Additional Validation',
+      '#description' => t('Enter PHP code to preform additional validation for this form. Include the &lt;?php ?&gt; tags. $form_id and $form_values are available variables. If validation fails, use the form_set_error function to prevent the form from being submitted. Use the same syntax as a _validate function used in the <a href="http://api.drupal.org/api/4.7/file/developer/topics/forms_api.html">Forms API</a>.'),
+      '#default_value' => $node->additional_validate,
+      '#cols' => 40,
+      '#rows' => 10,
+    );
+    
+    $form['advanced']['additional_submit'] = array(
+      '#type' => 'textarea',
+      '#title' => 'Additional Processing',
+      '#description' => t('Enter PHP code to preform additional processing for this form (after the validation). Include the &lt;?php ?&gt; tags. $form_id and $form_values are available variables, use the same syntax as a _submit function used in the <a href="http://api.drupal.org/api/4.7/file/developer/topics/forms_api.html">Forms API</a>.'),
+      '#default_value' => $node->additional_submit,
+      '#cols' => 40,
+      '#rows' => 10,
+    );
+  }
   $form['advanced']['redirect_post'] = array(
     '#type' => 'checkbox',
     '#title' => t("Redirect POST Values"),
@@ -1035,11 +1054,15 @@ function _webform_view_add_component ($cid, $component, &$parent_fieldset, &$for
   }
 }
 
-function webform_client_submit($form_id, $form_values) {
+function webform_client_validate($form_id, $form_values) {
   global $user, $base_url;
   include_once (drupal_get_path('module', 'webform')."/webform.inc");
   $node = node_load(array('nid'=>$form_values['details']['nid']));
 
+  // Flatten trees within the submission
+  $form_values['submitted_tree'] = $form_values['submitted'];
+  _webform_client_submit_flatten($node, $form_values['submitted'], $form_values['submitted']);
+  
   // Verify that this submission is within the submission limits on this form
   if ($violationCount = _webform_submission_limit_check ($node, $form_values)) {
     // If the webform is being swamped by repeated entries, limit the messages in watchdog
@@ -1061,9 +1084,20 @@ function webform_client_submit($form_id, $form_values) {
                               )), WATCHDOG_WARNING);
       }
     }
-    drupal_set_message(t("You have submitted the maximum number of entries. Check submission guidelines."), 'error');
-    return false;
+    form_set_error('',t("You have submitted the maximum number of entries. Check submission guidelines."));
   }
+  
+  if (trim($node->additional_validate)) {
+    // We use eval here (rather than drupal_eval) because the user needs access to local variables
+    eval("?>".$node->additional_validate);
+  }
+}
+
+function webform_client_submit($form_id, $form_values) {
+  global $user, $base_url;
+  include_once (drupal_get_path('module', 'webform')."/webform.inc");
+  $node = node_load(array('nid'=>$form_values['details']['nid']));
+
   // Flatten trees within the submission
   $form_values['submitted_tree'] = $form_values['submitted'];
   _webform_client_submit_flatten($node, $form_values['submitted'], $form_values['submitted']);
@@ -1145,6 +1179,11 @@ function webform_client_submit($form_id, $form_values) {
    
   if (variable_get('webform_debug', 0) >= 1) {
     watchdog('webform', t('Submission posted to ')."'$node->title' ".l(t('Results'),'node/'.$node->nid,NULL,'sid='.$sid)."<br />\n".nl2br(htmlentities($message)), WATCHDOG_NOTICE);
+  }
+
+  if (trim($node->additional_submit)) {
+    // We use eval here (rather than drupal_eval) because the user needs access to local variables
+    eval("?>".$node->additional_submit);
   }
   
   // Check confirmation field to see if redirect should be to another node or a message
