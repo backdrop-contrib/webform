@@ -9,31 +9,32 @@
  * @returns An array of form items to be displayed on the edit component page
  **/
 function _webform_edit_email ($currfield) {
-    $editFields = array();
-    $editFields['value'] = array (
-      '#type' => 'markup',
-      '#value' => '<label for="edit-default"><b>'.t("Default value").':</b></label>'.
-                  '<div id="edit-default">'.
-                  t('The default value of a email field is always the users email address if he/she is logged in.').
-                  '</div>',
-    );
-    $editFields['extra']['carboncopy'] = array (
-      '#type' => 'checkbox',
-      '#title' => t("CC submission to this email"),
-      '#return_value' => 'Y',
-      '#default_value' => ($currfield['extra']['carboncopy']=='Y'?TRUE:FALSE),
-      '#description' => t('Check this option if the email specified in this component should get a CC submission.'). ' '.
-                        t('Note that this opens the risk that the form can be used to send emails to any address and might be missused as a spam gateway.'),
-    );
-    $editFields['extra']['width'] = array (
-      '#type' => 'textfield',
-      '#title' => t("Width"),
-      '#default_value' => $currfield['extra']['width'],
-      '#description' => t('Width of the textfield.'),
-      '#size' => 5,
-      '#maxlength' => 10,
-    );
-    return $editFields;
+  $editFields = array();
+  $editFields['value'] = array (
+    '#type' => 'checkbox',
+    '#title' => t("User email as default"),
+    '#default_value' => $currfield['default'] ? $currfield['default'] : 'user email',
+    '#return_value' => 'user email',
+    '#description' => t('Set the default value of this field to the user email, if he/she is logged in.'),
+    '#weight' => 0,
+  );
+  $editFields['extra']['carboncopy'] = array (
+    '#type' => 'checkbox',
+    '#title' => t("CC submission to this email"),
+    '#return_value' => 'Y',
+    '#default_value' => ($currfield['extra']['carboncopy']=='Y'?TRUE:FALSE),
+    '#description' => t('Check this option if the email specified in this component should get a CC submission.'). ' '.
+                      t('Note that this opens the risk that the form can be used to send emails to any address and might be missused as a spam gateway.'),
+  );
+  $editFields['extra']['width'] = array (
+    '#type' => 'textfield',
+    '#title' => t("Width"),
+    '#default_value' => $currfield['extra']['width'],
+    '#description' => t('Width of the textfield.'),
+    '#size' => 5,
+    '#maxlength' => 10,
+  );
+  return $editFields;
 }
 
 /** 
@@ -52,18 +53,18 @@ function _webform_render_email ($component) {
     '#description'   => _webform_filtervalues($component['extra']['description']),
     '#prefix'        => '<div class="webform-component-'.$component['type'].'" id="webform-component-'._webform_safe_name($component['name']).'">',
     '#suffix'        => '</div>',
-    '#validate'      => array('_webform_validate_email' => array()),
+    '#validate'      => array('_webform_validate_email' => array($component['cid'])),
   );
   
-    // Fill in the user's email address if available
-    if($user->uid && $user->mail && empty($value)) {
-      $formItem['#default_value'] = $user->mail;
-    }
-    
-    // Change the 'width' option to the correct 'size' option
-    if ($component['extra']['width'] > 0) {
-      $formItem['#size'] = $component['extra']['width'];
-    }
+  // Fill in the user's email address if available
+  if($user->uid && $user->mail && $component['value'] == 'user email') {
+    $formItem['#default_value'] = $user->mail;
+  }
+  
+  // Change the 'width' option to the correct 'size' option
+  if ($component['extra']['width'] > 0) {
+    $formItem['#size'] = $component['extra']['width'];
+  }
     
   return $formItem;
 }
@@ -74,10 +75,9 @@ function _webform_render_email ($component) {
  * @param $formelement An array of information describing the component, directly correlating to the webform_component database schema
  * @returns True if successful, calls a form_set_error on the field if the email is not valid.
  **/
-function _webform_validate_email ($formelement) {
+function _webform_validate_email ($formelement, $name) {
   if (!empty($formelement['#value']) && !valid_email_address($formelement['#value'])) {
-    $elementName = substr($formelement['#name'],(strrpos($formelement['#name'],'[')+1),-1);
-    form_set_error($formelement['#name'],t("Please enter a valid email address"));
+    form_set_error($name,t("'%value' is not a valid email address",array('%value' => $formelement['#value'])));
   }
 }
 
