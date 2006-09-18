@@ -45,7 +45,7 @@ function _webform_render_captcha ($component) {
     
     // Recursively check if captcha has already been answered in the POST array:
     if (isset($_POST['edit']['submitted'])) {
-      $captcha_correct = _webform_render_captcha_check(_webform_safe_name($component['name']),$_POST['edit']['submitted']);
+      $captcha_correct = _webform_render_captcha_check($component['cid'],$_POST['edit']['submitted']);
     } else {
       $captcha_correct = false;
     }
