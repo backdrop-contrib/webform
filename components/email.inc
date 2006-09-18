@@ -13,7 +13,7 @@ function _webform_edit_email ($currfield) {
   $editFields['value'] = array (
     '#type' => 'checkbox',
     '#title' => t("User email as default"),
-    '#default_value' => $currfield['default'] ? $currfield['default'] : 'user email',
+    '#default_value' => $currfield['default'],
     '#return_value' => 'user email',
     '#description' => t('Set the default value of this field to the user email, if he/she is logged in.'),
     '#weight' => 0,
