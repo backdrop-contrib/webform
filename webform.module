@@ -25,19 +25,19 @@ function webform_help($section= "admin/help#webform") {
       $output= t("Webforms are forms and questionnaires. To add one select <strong>create content -&gt; webform</strong>. Below you can set different security and debug options.");
       break;
     case 'admin/help#webform' :
-      $output= t("<p>This module lets you create forms or questionnaires and define there content. Submissions from these forms are stored in the database and optionaly also send by e-mail to a predefined address.</p>
+      $output= t("<p>This module lets you create forms or questionnaires and define their content. Submissions from these forms are stored in the database and optionally also sent by e-mail to a predefined address.</p>
       <p>Here is how to create one:</p>
       <ul>
        <li>Go to Create Content and add a webform</li>
-       <li>Add a description that is displayed as a teaser and above the actual form.</li>
-       <li>Add a confirmation message or redirect node that is to be displayed after a successful submission.</li>
+       <li>Add a description to be displayed as a teaser and above the actual form.</li>
+       <li>Add a confirmation message or redirect node that is to be displayed after successful submission.</li>
        <li>Add one or more components to your form.</li>
-       <li>Optionaly add a email address to which submissions will be send. If no email address is specified no email will be send when submissions are made through the form.</li>
-       <li>Optionally select an email (or hidden) component that will be used to populate the return email address on any sent email.</ul>
-       <li>Optionally select a textfield (or hidden) component that will be used to populate the subject email field on any sent email.</ul>
+       <li>Optionally add an e-mail address to which submissions will be sent. If no email address is specified, no e-mail will be sent when submissions are made through the form.</li>
+       <li>Optionally select an e-mail (or hidden) component that will be used to populate the return e-mail address on any sent e-mail.</li>
+       <li>Optionally select a textfield (or hidden) component that will be used to populate the subject e-mail field on any sent e-mail.</li>
       </ul>
-      <p>Help on adding and how to configure the components will be shown after adding your first component.</p>
-      <p>On user submissions the form content is stored in the database table <i>webform_submitted_data</i> as key-value pairs.</p>
+      <p>Help on adding and configuring the components will be shown after you add your first component.</p>
+      <p>The content of submitted forms is stored in the database table <i>webform_submitted_data</i> as key-value pairs.</p>
       ");
       break;
     case 'admin/modules#description' :
