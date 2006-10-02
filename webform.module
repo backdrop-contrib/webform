@@ -842,6 +842,7 @@ function webform_edit_field_form (&$node) {
     '#type' => 'textfield',
     '#default_value' => $currfield['extra']['description'],
     '#title' => t("Description"),
+    '#maxlength' => '512',
     '#description' => t('A short description of the field used as help for the user when he/she uses the form.').'<br />'.
                           webform_help('webform/helptext#variables'),
     '#weight' => -1,
