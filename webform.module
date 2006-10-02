@@ -73,7 +73,7 @@ function webform_perm() {
  * Define the human-readable name of a node type.
  */
 function webform_node_info() {
-  return array ('webform' => array ('name' => 'webform', 'base' => 'webform'));
+  return array ('webform' => array ('name' => t('webform'), 'base' => 'webform'));
 }
 
 function webform_access($op, $node) {
