@@ -78,9 +78,12 @@ function _webform_render_select ($component) {
   if ( $component['extra']['aslist'] == 'Y' ) {
     if(strpos($value, ',')) {
       $value = explode(',', $value);
+        foreach ($value as $key => $v) {
+          $value[$key] = _webform_safe_name($value[$key]);
+        }
     }
     else {
-      $value = array($value);
+      $value = array(_webform_safe_name($value));
     }
     // Set display as a select list:
     $formItem['#default_value'] = $value;
@@ -93,9 +96,12 @@ function _webform_render_select ($component) {
     if ( $component['extra']['multiple'] == 'Y' ) {
       if(strpos($value, ',')) {
         $value = explode(',', $value);
+        foreach ($value as $key => $v) {
+          $value[$key] = _webform_safe_name($value[$key]);
+        }
       }
       else {
-        $value = array($value);
+        $value = array(_webform_safe_name($value));
       }
       // Set display as a checkbox set
       $formItem['#default_value'] = $value;
@@ -104,7 +110,7 @@ function _webform_render_select ($component) {
     }
     else {
       // Set display as a radio set
-      $formItem['#default_value'] = $value;
+      $formItem['#default_value'] = _webform_safe_name($value);
       $formItem['#type'] = 'radios';
     }
   }
