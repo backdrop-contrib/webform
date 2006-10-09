@@ -62,55 +62,56 @@ function _webform_render_select ($component) {
 	'#suffix'        => '</div>',
   );
   
-  // Convert the user-entered list into an array
+  // Convert the user-entered options list into an array
   $value = _webform_filtervalues($component['value']);
   $items = explode("\n", _webform_filtervalues($component['extra']['items']));
-  $options = array();
+  if ($component['extra']['aslist'] == 'Y' && $component['extra']['multiple'] != 'Y') {
+    $options = array('' => t('select...'));
+  }
+  else {
+    $options = array();
+  }
   foreach($items as $k => $v) {
     $v = trim($v);
     if (strlen($v)) {
-      $options[_webform_safe_name($v)] = htmlspecialchars($v, ENT_QUOTES);
+      $options[_webform_safe_name($v)] = $v;
     }
   }
   // Set the component options
   $formItem['#options'] = $options;
   
-  if ( $component['extra']['aslist'] == 'Y' ) {
-    if(strpos($value, ',')) {
-      $value = explode(',', $value);
-        foreach ($value as $key => $v) {
-          $value[$key] = _webform_safe_name($value[$key]);
-        }
+  // Convert default value to a list if necessary
+  if ($component['extra']['multiple'] == 'Y') {
+    if (strpos($value, ',')) {
+      $varray = explode(',', $value);
+      foreach ($varray as $key => $v) {
+        $varray[$key] = _webform_safe_name($v);
+      }
+      $formItem['#default_value'] = $varray;
     }
     else {
-      $value = array(_webform_safe_name($value));
+      $formItem['#default_value'] = _webform_safe_name($value);
     }
+  }
+  else {
+    $formItem['#default_value'] = _webform_safe_name($value);
+  }
+  
+  if ($component['extra']['aslist'] == 'Y') {
     // Set display as a select list:
-    $formItem['#default_value'] = $value;
     $formItem['#type'] = 'select';
-    if ( $component['extra']['multiple'] == 'Y' ) {
+    if ($component['extra']['multiple'] == 'Y') {
       $formItem['#multiple'] = TRUE;
     }
   }
   else {
-    if ( $component['extra']['multiple'] == 'Y' ) {
-      if(strpos($value, ',')) {
-        $value = explode(',', $value);
-        foreach ($value as $key => $v) {
-          $value[$key] = _webform_safe_name($value[$key]);
-        }
-      }
-      else {
-        $value = array(_webform_safe_name($value));
-      }
+    if ($component['extra']['multiple'] == 'Y') {
       // Set display as a checkbox set
-      $formItem['#default_value'] = $value;
       $formItem['#type'] = 'checkboxes';
       
     }
     else {
       // Set display as a radio set
-      $formItem['#default_value'] = _webform_safe_name($value);
       $formItem['#type'] = 'radios';
     }
   }
@@ -138,7 +139,7 @@ function _webform_submission_display_select ($data,$component) {
     // Set the value as a single string
     foreach ($data['value'] as $value) {
       if ($value !== '0') {
-        $formItem['#default_value'] = $value;
+        $formItem['#default_value'] = _webform_safe_name($value);
         break;
       }
     }
