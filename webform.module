@@ -668,6 +668,17 @@ function webform_form (&$node, &$param) {
       '#rows' => 10,
     );
   }
+  else {
+    $form['advanced']['additional_validate'] = array(
+      '#type' => 'value',
+      '#value' => $node->additional_validate,
+    );
+    
+    $form['advanced']['additional_submit'] = array(
+      '#type' => 'value',
+      '#value' => $node->additional_submit,
+    );
+  }
   $form['advanced']['redirect_post'] = array(
     '#type' => 'checkbox',
     '#title' => t("Redirect POST Values"),
@@ -1374,14 +1385,14 @@ function _webform_version() {
 } // function _webform_version
 
 function _webform_safe_name($name) {
-  $name = drupal_strtolower(trim($name));
-  $name = str_replace(' ', '_', $name);
-  $name = preg_replace('/[^a-z0-9_]/', '', $name);
+  $new = drupal_strtolower(trim($name));
+  $new = str_replace(' ', '_', $new);
+  $new = preg_replace('/[^a-z0-9_]/', '', $new);
   // If the string contains NO safe characters, base64 encode the answer
   if ($new == '') {
     $new = base64_encode($name);
   }
-  return $name;
+  return $new;
 }
 
 function _webform_components_decode ($components) {
