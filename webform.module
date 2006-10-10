@@ -1142,7 +1142,7 @@ function webform_client_submit($form_id, $form_values) {
       // Build arrays of possible return email addresses and email subject lines from elements on the form
       
       // Default values:
-      $email_from_string= "From: ".mime_header_encode(variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\r\n";
+      $email_from_string= "From: ".mime_header_encode(variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\n";
       $email_subject_string= t('Form submission from: ').' '.$node->title;
 
       // Search for user set FROM and SUBJECT fields
@@ -1152,7 +1152,7 @@ function webform_client_submit($form_id, $form_values) {
           // Find and set a custom FROM: field
           if ($type == 'email' || $type == 'hidden') {
             if ($component['name'] == $node->email_from) {
-              $email_from_string= "From: ".mime_header_encode(strip_tags($form_values['submitted'][$cid]))."\r\n";
+              $email_from_string= "From: ".mime_header_encode(strip_tags($form_values['submitted'][$cid]))."\n";
             }
           }
           // Find and set a custom SUBJECT: field
@@ -1162,7 +1162,7 @@ function webform_client_submit($form_id, $form_values) {
             }
           }
           if ($type == 'email' && $component['extra']['carboncopy'] == 'Y' ) {
-            $headers  .= "CC: ".$form_values['submitted'][$cid]."\r\n";
+            $headers  .= "CC: ".$form_values['submitted'][$cid]."\n";
           }
         }
       }
