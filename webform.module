@@ -1175,8 +1175,6 @@ function webform_client_submit($form_id, $form_values) {
       }
       // Additional headers
       $headers .= $email_from_string;
-      $headers .= $email_subject_string;
-      $headers .= "Date: ".date("r")."\r\n";
       $headers .= "X-Mailer: Drupal Webform (PHP/" . phpversion().")";
     
       // Mail the webform results
