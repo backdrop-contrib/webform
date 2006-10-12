@@ -56,7 +56,7 @@ function _webform_results_clear($nid) {
     $title = $node->title;
 
     watchdog('webform','webform "' . $title . '" entries cleared.', WATCHDOG_NOTICE);
-    drupal_goto('webform');
+    drupal_goto('admin/webform');
   }
   else {
     $form['delete'] = array (
