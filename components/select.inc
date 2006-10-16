@@ -204,7 +204,7 @@ function theme_webform_mail_select ($data, $component) {
       }
     }
   } else {
-    $output = $component['name'].": ".$data."\n";
+    $output = $component['name'].": ".$options[_webform_safe_name($data)]."\n";
   }
   return $output;
 }
