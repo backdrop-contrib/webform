@@ -263,10 +263,11 @@ function _webform_submission_limit_check($node, $form_values) {
   // Retrieve submission data for this IP address or username from the database
   $query = "SELECT submitted, user, remote_addr " .
            "FROM {webform_submissions} " .
-           "WHERE (user = '%s' OR remote_addr = '%s') AND submitted > %d AND nid = %d";
+           "WHERE (( %d = 0 AND remote_addr = '%s') OR user = '%s' )" .
+           "AND submitted > %d AND nid = %d";
   
   // Fetch all the entries from the database within the submit interval with this username and IP
-  $result = db_query($query, $user->name, $_SERVER['REMOTE_ADDR'],time() - $node->submit_interval, $node->nid);
+  $result = db_query($query, $user->uid, $_SERVER['REMOTE_ADDR'], $user->name, time() - $node->submit_interval, $node->nid);
   $numSubmissionsDatabase = db_num_rows($result);
   
   // Double check the submission history from the users machine using cookies
