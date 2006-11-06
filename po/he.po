@@ -1,0 +1,525 @@
+# LANGUAGE translation of Drupal (webform.module)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from file: webform.module,v 1.47 2005/04/03 19:49:13 ullgren
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2005-04-03 21:51+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
+
+#: webform.module:26
+msgid "Webforms are forms and questionnaires. To add one select <strong>create content -&gt; webform</strong>. Below you can set different security and debug options."
+msgstr ""
+
+#: webform.module:29
+msgid "<p>This module lets you create forms or questionnaires and define there content. Submissions from these forms are stored in the database and optionaly also send by e-mail to a predefined address.</p>\n<p>Here is how to create one:\n<ul>\n\n <li>Go to Create Content and add a webform</li>\n <li>Add a description that is displayed as a teaser and above the actual form.</li>\n <li>Add a confirmation message or redirect node that is to be displayed after a successful submission.</li>\n <li>Select which roles who should have submission access to this form (roles that have the &quot;use all webforms&quot; permision can allways use a webform).</li>\n <li>Add one or more components to your form.</li>\n <li>Optionaly add a email address to which submissions will be send. If no email address is specified no email will be send when submissions are made through the form.</li>\n <li>Optionally select an email component that will be used to populate the return email address on any sent email.</ul>\n <li>Optionally select a textfield component that will be used to populate the subject email field on any sent email.</ul>\n</ul>\nHelp on adding and how to configure the components will be shown after adding your first component.\n</p>\n<p>On user submissions the form content is stored in the database table <i>webform_submitted_data</i> as key-value pairs. Apart from the form fields the following &quot;special&quot; fields are added:\n<ul>\n  <li> __userid : UID of the submiting user.</li>\n  <li> __timestamp : UNIX timestamp for when the submission occured.</li>\n  <li> __remotehost : IP or name of the remote host from which the submission came.</li>\n  <li> __useragent : What user agent (browser) the user used upon submitting the data.</li>\n</ul>\n"
+msgstr ""
+
+#: webform.module:54
+msgid "Enables the creation of forms and questionnaires."
+msgstr "מאפשר יצירת טפסים ושאלונים"
+
+#: webform.module:57
+msgid "A webform can be a questionnaires, contact or request forms. It can be used to let visitors make contact, register for a event or to enable a complex survey."
+msgstr ""
+
+#: webform.module:60
+msgid "Available variables are: %username, %useremail, %site, %date."
+msgstr "משתנים זמינים: %username, %useremail, %site, %date."
+
+#: webform.module:61
+msgid "You can also use %server[key] to add any of the special PHP <a href=\"http://www.php.net/reserved.variables#reserved.variables.server\">$_SERVER</a> variables and %get[key] to create prefilled forms from from the <a href=\"http://www.php.net/reserved.variables#reserved.variables.get\">URL</a>."
+msgstr ""
+
+#: webform.module:63
+msgid "If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the varible %profile[profile_city]."
+msgstr ""
+
+#: webform.module:237
+msgid "Update from version %a to version %b"
+msgstr "עדכון מגירסה %a לגירסה %b"
+
+#: webform.module:242
+msgid "Allow cross site posting"
+msgstr "מאפשר פרסום בכמה אתרים"
+
+#: webform.module:244
+msgid "Yes"
+msgstr "כן"
+
+#: webform.module:244
+msgid "No"
+msgstr "לא"
+
+#: webform.module:245
+msgid "Allow postings to your webforms that do not originating from your sites domain."
+msgstr ""
+
+#: webform.module:247
+msgid "Webforms Debug"
+msgstr ""
+
+#: webform.module:250
+msgid "DEBUG for the webform module"
+msgstr ""
+
+#: webform.module:251
+msgid "Set this option to \"Log submissions\" to log all submissions in the watchdog. Set it to \"Full debug\" to print debug info on submission. You probably want to leave this option on \"OFF\"."
+msgstr ""
+
+#: webform.module:253
+msgid "Show main webform menu"
+msgstr ""
+
+#: webform.module:255
+msgid "Select the visibility of the main webform item on the main menu"
+msgstr ""
+
+#: webform.module:291
+msgid "The form component has been changed. Remember to press Submit on the bottom of this form to save your changes."
+msgstr ""
+
+#: webform.module:296
+msgid "The form component has been deleted. Remember to press Submit on the bottom of this form to save your changes."
+msgstr ""
+
+#: webform.module:302
+msgid "You have to specify a form description."
+msgstr ""
+
+#: webform.module:310
+msgid "You have to specify a confirmation message."
+msgstr ""
+
+#: webform.module:337
+msgid "Webform upgrade page"
+msgstr "עמוד שדרוג הטופס"
+
+#: webform.module:368
+msgid "results"
+msgstr "תוצאות"
+
+#: webform.module:405
+msgid "go to form"
+msgstr "לך לטופס"
+
+#: webform.module:405
+msgid "View this form."
+msgstr "הצג טופס זה."
+
+#: webform.module:408
+msgid "Go back to the form"
+msgstr "לך בחזרה לטופס"
+
+#: webform.module:418
+msgid "textfield"
+msgstr "שדה טקסט"
+
+#: webform.module:419
+msgid "textarea"
+msgstr "אזור טקסט"
+
+#: webform.module:420
+msgid "select"
+msgstr "בחירה"
+
+#: webform.module:421
+msgid "label"
+msgstr ""
+
+#: webform.module:422
+msgid "hidden"
+msgstr "חבוי"
+
+#: webform.module:423
+msgid "e-mail address"
+msgstr "כתובת דואר אלקטרוני"
+
+#: webform.module:435
+msgid "Use access"
+msgstr ""
+
+#: webform.module:435
+msgid "Roles that should be able to submit data using this form."
+msgstr "תפקידים המורשים להגיש נתונים תוך שימוש בטופס זה."
+
+#: webform.module:441;650
+msgid "Description"
+msgstr "תיאור"
+
+#: webform.module:442
+msgid "Text to be shown as teaser and before the form."
+msgstr "המלל שיוצג כתמצית ולפני הטופס"
+
+#: webform.module:445
+msgid "Confirmation message or redirect URL"
+msgstr "אישור הודעה או כתובת URL שאליה יופנה הגולש"
+
+#: webform.module:447
+msgid "Message to be shown upon successful submission or an absolute path to a redirect page (must start with http://)"
+msgstr "הודעה שתוצג לאחר מילוי מוצלח של הטופס, או נתיב מוחלט או כתובת URL אבסולוטית של עמוד שאליו יועבר הגולש (חייב להתחיל ב-http://("
+
+#: webform.module:473
+msgid "To edit a component, check its \"selected\" box and press \"Edit selected\"."
+msgstr "כדי לערוך מרכיב, יש לסמן את תיבת הבחירה שלו וללחוץ על 'עריכת הנבחר'"
+
+#: webform.module:474
+msgid "To delete a component, check its \"selected\" box and press \"Delete selected\"."
+msgstr "כדי למחוק מרכיב, יש לסמן את תיבת הבחירה שלו וללחוץ על 'מחיקת הנבחר'"
+
+#: webform.module:475
+msgid "Use \"value\" to enter a default value."
+msgstr "אפשר להשתמש ב'ערך' כדי להכניס ערך ברירת מחדל."
+
+#: webform.module:476
+msgid "Check \"mandatory\" box if the field should be mandatory."
+msgstr "האם שדה זה הוא שדה חובה?"
+
+#: webform.module:477
+msgid "Remember to set weight on the components or they will be added to the form in a random order."
+msgstr "זכרו לתת משקל לרכיבים  או שהם יתווספו לטופס בסדר אקראי."
+
+#: webform.module:478
+msgid "The components are sorted first by weight and then by name."
+msgstr "המרכיבים מסודרים ראשית לפי משקל ואז לפי שם."
+
+#: webform.module:481
+msgid "Form components"
+msgstr "מרכיבי הטופס"
+
+#: webform.module:483
+msgid "Select"
+msgstr ""
+
+#: webform.module:484;648
+msgid "Name"
+msgstr "שם"
+
+#: webform.module:485
+msgid "Type"
+msgstr "סוג"
+
+#: webform.module:486
+msgid "Value"
+msgstr "ערך"
+
+#: webform.module:487
+msgid "Mandatory"
+msgstr "חובה"
+
+#: webform.module:488
+msgid "Weight"
+msgstr "משקל"
+
+#: webform.module:492
+msgid "Edit selected"
+msgstr "עריכת הנבחר"
+
+#: webform.module:493
+msgid "Delete selected"
+msgstr "מחיקת הנבחר"
+
+#: webform.module:497
+msgid "Add a new component"
+msgstr "הוספת מרכיב חדש"
+
+#: webform.module:498
+msgid "Select a component type to add."
+msgstr "בחר מרכיב להוספה."
+
+#: webform.module:499;628
+msgid "Add"
+msgstr "הוספה"
+
+#: webform.module:501
+msgid "E-mail to address"
+msgstr ""
+
+#: webform.module:503
+msgid "Form submissions will be e-mailed to this address. Leave blank for none."
+msgstr "הגשות הטופס יישלחו לכתובת זו. השאר ריק לכלום."
+
+#: webform.module:522
+msgid "E-mail from address"
+msgstr "כתובת ה-FROM שממנה יישלח הדואר האלקטרוני"
+
+#: webform.module:523
+msgid "Form e-mails will have this return address. Choose Automatic for the default"
+msgstr ""
+
+#: webform.module:525
+msgid "E-mail subject"
+msgstr "נושא הדואר האלקטרוני"
+
+#: webform.module:526
+msgid "Form e-mails will have this subject line. Choose Automatic for the default"
+msgstr ""
+
+#: webform.module:551
+msgid "Unauthorized webform access attempt"
+msgstr "נסיון גישה לא מורשה לטופס"
+
+#: webform.module:586
+msgid "Preview"
+msgstr "הצג"
+
+#: webform.module:589
+msgid "Submit"
+msgstr "הגש"
+
+#: webform.module:621
+msgid "Page called out of order"
+msgstr ""
+
+#: webform.module:649
+msgid "Name of the field. This is used as a descriptive label and as the key when saving data in the database."
+msgstr ""
+
+#: webform.module:652
+msgid "A short description of the field used as help for the user when he/she uses the form."
+msgstr ""
+
+#: webform.module:659;666;678;685;706
+msgid "Default value"
+msgstr "ערך ברירת מחדל"
+
+#: webform.module:659
+msgid "The default value of a email field is always the users email address if he/she is logged in."
+msgstr ""
+
+#: webform.module:660;672;691
+msgid "Width"
+msgstr ""
+
+#: webform.module:662;674
+msgid "Width of the textfield."
+msgstr "רוחב שדה הטקסט"
+
+#: webform.module:668
+msgid "The default value of the field."
+msgstr "ערך ברירת המחדל של השדה."
+
+#: webform.module:680
+msgid "The value of the field."
+msgstr "ערך השדה."
+
+#: webform.module:687
+msgid "The default value of the area."
+msgstr "ערך ברירת המחדל של האיזור."
+
+#: webform.module:693
+msgid "Width of the textarea."
+msgstr "רוחב איזור הטקסט"
+
+#: webform.module:695
+msgid "Height"
+msgstr "גובה"
+
+#: webform.module:697
+msgid "Height of the textarea."
+msgstr "גובה איזור הטקסט."
+
+#: webform.module:701
+msgid "Options"
+msgstr "אפשרויות"
+
+#: webform.module:703
+msgid "Enter one option per line."
+msgstr "יש להכניס אפשרות אחת לשורה."
+
+#: webform.module:708
+msgid "The preselected value."
+msgstr "הערך הנבחר מראש."
+
+#: webform.module:711
+msgid "Multiple"
+msgstr "מרובה"
+
+#: webform.module:713
+msgid "Check this option if the user should be allowed to choose multiple values."
+msgstr "סימון אפשרות זו יאפשר לממלא הטופס לבחור ערכים מרובים."
+
+#: webform.module:714
+msgid "Listbox"
+msgstr ""
+
+#: webform.module:716
+msgid "Check this option if you want the select component to be of listbox type instead of radiobuttons or checkboxes."
+msgstr ""
+
+#: webform.module:747
+msgid "Done"
+msgstr "בוצע"
+
+#: webform.module:748
+msgid "Warning: This button will accept your changes as sub-part of the edit.  You will still have to select <b>'submit'</b> on the next screen to make your changes permanent."
+msgstr ""
+
+#: webform.module:766
+msgid "Trying to post to webform from external domain."
+msgstr ""
+
+#: webform.module:768
+msgid "Visit referer"
+msgstr ""
+
+#: webform.module:769
+msgid "You are not allowed to post to this form from an external domain."
+msgstr ""
+
+#: webform.module:778
+msgid "You are not allowed to submit data using this form."
+msgstr "אינך מורשה להגיש נתונים תוך שימוש בטופס זה."
+
+#: webform.module:800
+msgid "Form submission from: "
+msgstr "טופס הוגש מ: "
+
+#: webform.module:838
+msgid "Submission posted to "
+msgstr "הוגש ל"
+
+#: webform.module:966
+msgid "You have not completed the form. %s is a mandatory field."
+msgstr "לא השלמת למלא את הטופס. %s הוא שדה חובה."
+
+#: webform.module:1018
+msgid "Submitted on"
+msgstr "הוגש ב"
+
+#: webform.module:1022
+msgid "Submitted by user"
+msgstr "הוגש על ידי"
+
+#: webform.module:1025
+msgid "Submitted by anonymous user"
+msgstr "הוגש על ידי גולש שטרם נרשם"
+
+#: webform.module:1027
+msgid "Submitted values are:"
+msgstr "הערכים שהוגשו הם:"
+
+#: webform.module:1261
+msgid "Go back"
+msgstr "לך אחורה"
+
+#: webform.module:72
+msgid "maintain webforms"
+msgstr "ניהול טפסים"
+
+#: webform.module:72
+msgid "create webforms"
+msgstr "יצירת טפסים"
+
+#: webform.module:72
+msgid "use all webforms"
+msgstr "שימוש בכל הטפסים"
+
+#: webform.inc:11
+msgid "Title"
+msgstr "כותרת"
+
+#: webform.inc:12;321;390
+msgid "View"
+msgstr "הצג"
+
+#: webform.inc:14
+msgid "Operations"
+msgstr "פעולות"
+
+#: webform.inc:51
+msgid "Do you really want to delete all submissions for this form?"
+msgstr "האמנם ברצונך למחוק את כל המידע שהוגש בעזרת טופס זה?"
+
+#: webform.inc:52
+msgid "Do you really want to delete <strong>all</strong> submissions for this form?"
+msgstr "האמנם ברצונך למחוק את כל המידע שהוגש בעזרת טופס זה?"
+
+#: webform.inc:52;72
+msgid "This action cannot be undone."
+msgstr "אי אפשר לבטל פעולה זו."
+
+#: webform.inc:71;72
+msgid "Do you really want to delete this form submission?"
+msgstr "האמנם ברצונך למחוק הגשת טופס זו?"
+
+#: webform.inc:149
+msgid "#"
+msgstr ""
+
+#: webform.inc:286
+msgid "Date"
+msgstr "תאריך"
+
+#: webform.inc:286
+msgid "User"
+msgstr "משתמש"
+
+#: webform.inc:286
+msgid "Action"
+msgstr "פעולה"
+
+#: webform.inc:322;391
+msgid "Delete"
+msgstr "מחיקה"
+
+#: webform.inc:502
+msgid "Unique Users Only"
+msgstr "משתמשים ייחודיים בלבד"
+
+#: webform.inc:502
+msgid "Unique IPs Only"
+msgstr "כתובות IP ייחודיות בלבד"
+
+#: webform.inc:503
+msgid "Analog Bar"
+msgstr "בר אנלוגי"
+
+#: webform.inc:503
+msgid "Percentage"
+msgstr "אחוזים"
+
+#: webform.inc:503
+msgid "Tallies"
+msgstr "חישובים"
+
+#: webform.inc:503
+msgid "Covariance Matrix"
+msgstr ""
+
+#: webform.inc:605
+msgid "Q"
+msgstr ""
+
+#: webform.inc:605
+msgid "choice"
+msgstr "בחירה"
+
+#: webform.inc:605
+msgid "responses"
+msgstr "תגובות"
+
+#: webform.inc:661
+msgid "Left Blank"
+msgstr "הושאר ריק"
+
+#: webform.inc:661
+msgid "Default"
+msgstr "ברירת מחדל"
+
+#: webform.inc:661
+msgid "User entered value"
+msgstr "ערך שהוכנס על ידי המשתמש"
+
+#: webform.inc:661
+msgid "Average submission length in words (ex blanks)"
+msgstr "אורך הטופס המוגש הממוצע במילים (לא כולל רווחים)"
+
