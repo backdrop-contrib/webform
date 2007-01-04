@@ -1259,7 +1259,10 @@ function _webform_confirmation($nid) {
  */
 function theme_webform_confirmation($node) {
   $node->body = check_markup($node->confirmation, $node->format, FALSE);
-  $node->links[] = l(t('Go back to the form'), 'node/'.$node->nid);
+  $node->links['webform_back'] = array(
+    'href' => 'node/'.$node->nid,
+    'title' => t('Go back to the form'),
+  );
   return theme('node', $node, FALSE, TRUE);
 }
 
