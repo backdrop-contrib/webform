@@ -40,16 +40,13 @@ function webform_help($section= "admin/help#webform") {
       <p>The content of submitted forms is stored in the database table <i>webform_submitted_data</i> as key-value pairs.</p>
       ");
       break;
-    case 'admin/modules#description' :
-      $output= t("Enables the creation of forms and questionnaires.");
-      break;
     case 'node/add#webform' :
       $output= t("A webform can be a questionnaires, contact or request forms. It can be used to let visitors make contact, register for a event or to enable a complex survey.");
       break;
     case 'webform/helptext#variables' :
       $output= t('Available variables are: %username, %useremail, %site, %date.');
       $output .= ' '.t('You can also use %server[key] to add any of the special PHP <a href="http://www.php.net/reserved.variables#reserved.variables.server">$_SERVER</a> variables and %get[key] to create prefilled forms from from the <a href="http://www.php.net/reserved.variables#reserved.variables.get">URL</a>. (e.g. %server[HTTP_USER_AGENT] or %get[id])');
-      if (module_exist('profile')) {
+      if (module_exists('profile')) {
         $output .= t('If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the varible %profile[profile_city].');
       }
       break;
@@ -70,10 +67,16 @@ function webform_perm() {
 }
 
 /**
- * Define the human-readable name of a node type.
+ * Implementation of hook_node_info().
  */
 function webform_node_info() {
-  return array ('webform' => array ('name' => t('webform'), 'base' => 'webform'));
+  return array(
+    'webform' => array(
+      'name' => t('Webform'),
+      'module' => 'webform',
+      'description' => t('Create a new form or questionnaire accessible to users. Submission results and statistics are recorded and accessible to privileged users.'),
+    )
+  );
 }
 
 function webform_access($op, $node) {
@@ -94,7 +97,7 @@ function webform_access($op, $node) {
 function webform_insert($node) {
   global $user;
   // Correctly set the submission limits
-  if ($_POST['edit']['enforce_limit'] === 'no') {
+  if ($_POST['enforce_limit'] === 'no') {
     $node->submit_limit = '-1';
     $node->submit_interval = '157784630'; // 5 years, close enough to 'ever'
   }
@@ -103,9 +106,9 @@ function webform_insert($node) {
   db_query("INSERT INTO {webform} (nid, confirmation, redirect_post, submit_limit, submit_interval, email, email_from, email_subject, additional_validate, additional_submit) VALUES (%d, '%s', %d, %d, %d, '%s', '%s', '%s', '%s', '%s')", $node->nid, $node->confirmation, $node->redirect_post, $node->submit_limit, $node->submit_interval, $node->email, $node->email_from, $node->email_subject, $node->additional_validate, $node->additional_submit);
   
   // Re-add existing components from the POST array
-  if (isset($_POST['edit']['webformcomponents'])) {
+  if (isset($_POST['webformcomponents'])) {
     unset($node->webformcomponents);
-    $node->webformcomponents = _webform_components_decode($_POST['edit']['webformcomponents']);
+    $node->webformcomponents = _webform_components_decode($_POST['webformcomponents']);
   }
 
   // Insert the components into the database
@@ -158,7 +161,7 @@ function webform_load($node) {
   return $page;
 }
 
-function webform_settings() {
+function webform_admin_settings() {
 
   $form['components'] = array (
     '#type' => 'fieldset',
@@ -202,10 +205,10 @@ function webform_settings() {
     '#options' => array (0 => "OFF", 1 => "Log submissions", 2 => "Full debug"), 
     '#description' => t('Set this option to "Log submissions" to log all submissions in the watchdog. Set it to "Full debug" to print debug info on submission. You probably want to leave this option on "OFF".')
   );
-  return $form;
-} // end function webform_settings
+  return system_settings_form($form);
+} // end function webform_admin_settings
 
-function theme_webform_settings_form ($form) {
+function theme_webform_admin_settings ($form) {
   // Format the components into a table
   foreach (element_children($form['components']) as $key) {  
     $row = array();
@@ -213,7 +216,7 @@ function theme_webform_settings_form ($form) {
     $row[] = $form['components'][$key]['#description'];
     unset($form['components'][$key]['#title']);
     unset($form['components'][$key]['#description']);
-    $row[] = array('data' => form_render($form['components'][$key]), 'align' => 'center');
+    $row[] = array('data' => drupal_render($form['components'][$key]), 'align' => 'center');
     $rows[] = $row;
   }
   $header = array(t('Name'), t('Description'), t('Enabled'));
@@ -223,7 +226,7 @@ function theme_webform_settings_form ($form) {
     '#value' => theme('table', $header, $rows)
   );
   
-  $output = form_render($form);
+  $output = drupal_render($form);
   return $output;
 }
 
@@ -235,14 +238,32 @@ function webform_menu($may_cache) {
   
   $items = array ();
   if ($may_cache) {
-    $items[]= array ('path' => 'node/add/webform', 'title' => t('webform'),
-      'access' => user_access('create webforms'));
+    $items[]= array (
+      'path' => 'node/add/webform',
+      'title' => t('Webform'),
+      'access' => user_access('create webforms'),
+    );
     
     // Submissions listing 
-    $items[]= array ('path' => 'admin/webform', 'title' => t('webform'),
+    $items[]= array (
+      'path' => 'admin/content/webform',
+      'title' => t('Webforms'),
       'callback' => 'webform_page',
       'access' => user_access('access webform results'),
-      'type' => MENU_NORMAL_ITEM);
+      'description' => t('View and edit all the available webforms on your site.'),
+      'type' => MENU_NORMAL_ITEM,
+    );
+    
+    // Admin Settings
+    $items[]= array (
+      'path' => 'admin/settings/webform',
+      'title' => t('Webform'),
+      'callback' => 'drupal_get_form',
+      'callback arguments' => 'webform_admin_settings',
+      'access' => user_access('administer site configuration'),
+      'description' => t('Global configuration of webform functionality.'),
+      'type' => MENU_NORMAL_ITEM,
+    );
         
     return $items;
   }
@@ -316,60 +337,60 @@ function webform_link($type, $node= 0, $main= 0) {
  * then the user is returned to the display of webform_form() with the changes visible.
  * The changes to the node are not permanent until the user submits the form.
  **/
-function webform_prepare (&$node) {
+function webform_prepare(&$node) {
 
   $op = $_POST['op'];
 
   switch ($op) {
     case t('Delete Selected'):
       // Re-add existing components
-      if (isset($_POST['edit']['webformcomponents'])) {
-        $node->webformcomponents = _webform_components_decode($_POST['edit']['webformcomponents']);
+      if (isset($_POST['webformcomponents'])) {
+        $node->webformcomponents = _webform_components_decode($_POST['webformcomponents']);
       }
       // Delete an existing component
-      $cid = $_POST['edit']['selected_component'];
+      $cid = $_POST['selected_component'];
       unset($node->webformcomponents[$cid]);
       break;
       
     case t('Done'):
       // Overwrite the database components with any saved in the POST array
-      if (isset($_POST['edit']['node']['webformcomponents'])) {
-        $node->webformcomponents = _webform_components_decode($_POST['edit']['node']['webformcomponents']);
-        unset($_POST['edit']['node']['webformcomponents']);
+      if (isset($_POST['node']['webformcomponents'])) {
+        $node->webformcomponents = _webform_components_decode($_POST['node']['webformcomponents']);
+        unset($_POST['node']['webformcomponents']);
       }
       
       // Add the component changes/additions to the node components
-      $cid = $_POST['edit']['field']['key'];
-      if (isset($_POST['edit']['field']) && is_array($_POST['edit']['field'])) {
+      $cid = $_POST['field']['key'];
+      if (isset($_POST['field']) && is_array($_POST['field'])) {
         unset($node->webformcomponents[$cid]);
-        foreach ($_POST['edit']['field'] as $key => $value) {
+        foreach ($_POST['field'] as $key => $value) {
           $node->webformcomponents[$cid][$key] = $value;
         }
-        unset($_POST['edit']['field']);
+        unset($_POST['field']);
       }
   
       // Add saved values of the node
       $old_edit = (array)$node;
-      $new_edit = (array)$_POST['edit']['node'];
+      $new_edit = (array)$_POST['node'];
       
       $edit = array_merge($old_edit, $new_edit);
       $node = (object)$edit;
       
       // Restore the node form's saved POST values
-      $_POST['edit'] = $_POST['edit']['node'];
+      //$_POST = $_POST['node'];
 
       // Display editted message
       drupal_set_message(t('The form component has been changed. Remember to press Submit on the bottom of this form to save your changes.'));
       break;
     case t('Preview'):
-      if (isset($_POST['edit']['webformcomponents'])) {
-        $node->webformcomponents = _webform_components_decode($_POST['edit']['webformcomponents']);
+      if (isset($_POST['webformcomponents'])) {
+        $node->webformcomponents = _webform_components_decode($_POST['webformcomponents']);
       }
       break;
   } // end switch
   
   // Make sure the submission limiter is correctly set
-  if ($_POST['edit']['enforce_limit'] === 'no') {
+  if ($_POST['enforce_limit'] === 'no') {
     $node->submit_limit = '-1';
     $node->submit_interval = '157784630'; // 5 years, close enough to 'ever'
   }
@@ -383,18 +404,16 @@ function webform_prepare (&$node) {
  * the when the buttons "Add" or "Edit Selected" are clicked, and then direct the user
  * to a form for editing a component.
  **/
-function webform_validate (&$node) {
-
+function webform_validate(&$node) {
   $op = $_POST['op'];
-  $node->webformcomponents = _webform_components_decode ($_POST['edit']['webformcomponents']);
+  $node->webformcomponents = _webform_components_decode($_POST['webformcomponents']);
 
   switch ($op) {
     // Intercept these buttons and redirect:
     case t('Add'):
       $errors = form_get_errors();
       if (empty($errors)) {
-        $form = webform_edit_field_form($node);
-        $output = drupal_get_form('webform_edit_'.$_POST['edit']['webform_newfield_type'],$form);
+        $output = drupal_get_form('webform_edit_field_form', $node);
         print theme('page',$output);
         exit(0);
       }
@@ -402,9 +421,7 @@ function webform_validate (&$node) {
     case t('Edit Selected'):
       $errors = form_get_errors();
       if (empty($errors)) {
-        $form = webform_edit_field_form($node);
-        $component = $node->webformcomponents[$_POST['edit']['selected_component']];
-        $output = drupal_get_form('webform_edit_'.$component['type'],$form);
+        $output = drupal_get_form('webform_edit_field_form', $node);
         print theme('page',$output);
         exit(0);
       }
@@ -413,7 +430,7 @@ function webform_validate (&$node) {
       // We have to throw a form error for Drupal to stop form processing
       // The 'selected_component' field item is a radio button, which shouldn't
       // show a red border of any sort when an error is flagged on it
-      if ($_POST['edit']['selected_component']) {
+      if ($_POST['selected_component']) {
         form_set_error('selected_component',t("Field deleted, form must be submitted to save changes"));
       }
       else {
@@ -424,8 +441,8 @@ function webform_validate (&$node) {
     case t('Submit'):
     case t('Preview'):
       // Make sure the submission limiter is correctly set
-      if ($_POST['edit']['enforce_limit'] === 'yes') {
-        if (!is_numeric($_POST['edit']['submit_limit'])) {
+      if ($_POST['enforce_limit'] === 'yes') {
+        if (!is_numeric($_POST['submit_limit'])) {
           form_set_error('submit_limit',t('Submission limit must be a number'));
         }
       }
@@ -437,7 +454,7 @@ function webform_validate (&$node) {
  * Implementation of hook_form()
  * Creates the standard form for editing or creating a webform.
  **/
-function webform_form (&$node, &$param) {
+function webform_form(&$node, &$param) {
 /* Start Edit Form */
 
   $form['webform'] = array(
@@ -713,7 +730,7 @@ function webform_form (&$node, &$param) {
  * @param array $form
  * @return string Formatted HTML form, ready for display
  */
-function theme_webform_node_form ($form) {
+function theme_webform_node_form($form) {
   $node = $form['#node'];
   if (is_array($node->webformcomponents) && !empty($node->webformcomponents)) {
     $componentTree = array();
@@ -732,7 +749,7 @@ function theme_webform_node_form ($form) {
       
       // Add each component to a table row
       $rows[] = array(
-        form_render($form['components']['selected_component'][$cid]),
+        drupal_render($form['components']['selected_component'][$cid]),
         $component['type'],
         ($component['value'] == "") ? "-" : $component['value'],
         ($component['mandatory'] == 1) ? "Y" : "N" ,
@@ -764,25 +781,16 @@ function theme_webform_node_form ($form) {
   $form['components']['table'] = array (
     '#value' => $componentTable,
   );
-  return form_render($form);
+  return drupal_render($form);
 }
 
-function webform_edit_field_form (&$node) {
-  // we have to do what the framework would do for us so we don't lose information.
-  if(!isset($_POST['edit'])) {
-    // We are calling this page in the wrong way ... 
-    // Do some clean up ??
-    drupal_set_message(t('Page called out of order'),'error');
-    drupal_set_title("Webform Error");
-    return array();
-  }
-  
+function webform_edit_field_form(&$node) {
   // This is the information about the current field.
   $currfield = array();
 
-  if ( $_POST['op'] == t('Edit Selected') ) {
+  if ($_POST['op'] == t('Edit Selected')) {
     // Check to make sure a valid component id was selected
-    $cid = $_POST['edit']['selected_component'];
+    $cid = $_POST['selected_component'];
     $component = $node->webformcomponents[$cid];
     if (empty($component)) {
       drupal_set_message(t('Component not found'),'error');
@@ -804,7 +812,7 @@ function webform_edit_field_form (&$node) {
   else {
     // Check to make sure a valid component type was selected
     $component_types =  _webform_load_components();
-    $new_component_type = $_POST['edit']['webform_newfield_type'];
+    $new_component_type = $_POST['webform_newfield_type'];
     if (empty($new_component_type) || !key_exists($new_component_type,$component_types)) {
       drupal_set_message(t('Unknown component type \''.$new_component_type.'\''),'error');
       drupal_set_title("Webform Error");
@@ -813,7 +821,7 @@ function webform_edit_field_form (&$node) {
     }
     // We are editing a new node
     $currfield['key'] = time();
-    $currfield['type'] = $_POST['edit']['webform_newfield_type'];
+    $currfield['type'] = $_POST['webform_newfield_type'];
     $currfield['name'] = $currfield['type']."_".$currfield['key'];
     drupal_set_title("Add new component (".$currfield['type'].")");
   }
@@ -886,7 +894,7 @@ function webform_edit_field_form (&$node) {
   
   $form['field']['weight'] = array (
     '#type' => 'weight',
-    '#delta' => (count($_POST['edit']['webformcomponents'])>10?count($_POST['edit']['webformcomponents']):10),
+    '#delta' => (count($_POST['webformcomponents'])>10?count($_POST['webformcomponents']):10),
     '#title' => t("Weight"),
     '#default_value' => $currfield['weight'],
     '#description' => t('Optional. In the menu, the heavier items will sink and the lighter items will be positioned nearer the top.'),
@@ -921,7 +929,7 @@ function webform_edit_field_form (&$node) {
   );
 
   // Recursively create hidden form elements for all fields on the node form
-  function _webform_edit_field_form_hiddens (&$form, $key, $value) {
+  function _webform_edit_field_form_hiddens(&$form, $key, $value) {
     if (is_array($value)) {
       foreach ($value as $k => $v) {
         _webform_edit_field_form_hiddens($form[$key], $k, $v);
@@ -934,32 +942,18 @@ function webform_edit_field_form (&$node) {
       );
     }
   }
-  _webform_edit_field_form_hiddens($form, 'node', $_POST['edit']);
+  _webform_edit_field_form_hiddens($form, 'node', $_POST);
 
   return $form;
 }
 
 function webform_view(&$node, $teaser = 0, $page = 0) {
-  if (arg(0) == "comment" || $teaser) {
-    // Do not render the form for comments or on teasers
-    return;
-  }
-  
-  include_once (drupal_get_path('module', 'webform')."/webform.inc");
-  _webform_load_components(); // Load all the components
-  
-  global $user, $sid_to_display, $submission, $preview;
   $sid_to_display = check_plain($_GET['sid']); // Will be NULL if no sid
   $submission = array();
   $preview = false;
   
   if ($_POST['op'] == t('Preview')) {
-    $preview = true;
     webform_prepare($node);
-  }
-  
-  if (module_exist('profile')) {
-    profile_load_profile($user);
   }
 
   if ($sid_to_display && is_numeric($sid_to_display)) {
@@ -972,7 +966,41 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
       watchdog('webform', t('Unauthorized webform access attempt', array ('%name' => "<em>$user->name</em>")), WATCHDOG_WARNING); // and log the attempt
     }
   }
+  
+  $output = drupal_get_form('webform_client_form', $node, $submission);
 
+  // Remove the surrounding <form> tag if this is a preview
+  if ($preview) {
+    $output = preg_replace('/<\/?form[^>]*>/','',$output);
+  }
+  
+  $node->content['webform'] = array(
+    '#value' => $output,
+    '#weight' => 10,
+  );
+  
+  return $node;
+} // end webform_view
+
+/**
+ * Client form generation function. If this is displaying an existing
+ * submission, pass in the $submission variable with the contents of the
+ * submission to be displayed.
+ */
+function webform_client_form(&$node, $submission = array()) {
+  global $user;
+  
+  include_once (drupal_get_path('module', 'webform')."/webform.inc");
+  _webform_load_components(); // Load all the components
+  
+  if ($_POST['op'] == t('Preview')) {
+    $preview = true;
+  }
+  
+  if (module_exists('profile')) {
+    profile_load_profile($user);
+  }
+  
   if ($node->redirect_post && valid_url(trim($node->confirmation), true)) {
     $form['#action'] = trim($node->confirmation);
   }
@@ -996,7 +1024,7 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
     _webform_components_tree_build($node->webformcomponents,$componentTree);
     // Recursively add components to the form
     foreach ($componentTree['children'] as $cid => $component) {
-      _webform_view_add_component($cid, $component, $form['submitted'], $form);
+      _webform_client_form_add_component($cid, $component, $form['submitted'], $form);
     }
     // Do not display the submit button if this is a preview or submission view
     if (!$preview && empty($sid_to_display)) {
@@ -1024,21 +1052,10 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
     }
   }
   
-  // Note that the form name is defined here ('webform_client'). This in turn will
-  // use the From API to call the 'webform_client_validate' and 'webform_client_submit' functions
-  $output = drupal_get_form('webform_client',$form);
-  
-  // Remove the surrounding <form> tag if this is a preview
-  if ($preview) {
-    $output = preg_replace('/<\/?form[^>]*>/','',$output);
-  }
-  
-  $node->body = check_markup($node->body, $node->format, FALSE);
-  $node->body .= $output;
-} // end webform_view
+  return $form;
+}
 
-
-function _webform_view_add_component ($cid, $component, &$parent_fieldset, &$form) {
+function _webform_client_form_add_component($cid, $component, &$parent_fieldset, &$form) {
   global $sid_to_display, $submission, $preview;
   
   // Load with submission information if necessary
@@ -1061,19 +1078,19 @@ function _webform_view_add_component ($cid, $component, &$parent_fieldset, &$for
   
   if (is_array($component['children'])) {
     foreach ($component['children'] as $scid => $subcomponent) {
-      _webform_view_add_component ($scid, $subcomponent, $parent_fieldset[$cid], $form);
+      _webform_client_form_add_component ($scid, $subcomponent, $parent_fieldset[$cid], $form);
     }
   }
 }
 
-function webform_client_validate($form_id, $form_values) {
+function webform_client_form_validate($form_id, $form_values) {
   global $user, $base_url;
   include_once (drupal_get_path('module', 'webform')."/webform.inc");
   $node = node_load(array('nid'=>$form_values['details']['nid']));
 
   // Flatten trees within the submission
   $form_values['submitted_tree'] = $form_values['submitted'];
-  _webform_client_submit_flatten($node, $form_values['submitted'], $form_values['submitted']);
+  _webform_client_form_submit_flatten($node, $form_values['submitted'], $form_values['submitted']);
   
   // Verify that this submission is within the submission limits on this form
   if ($violationCount = _webform_submission_limit_check ($node, $form_values)) {
@@ -1105,14 +1122,14 @@ function webform_client_validate($form_id, $form_values) {
   }
 }
 
-function webform_client_submit($form_id, $form_values) {
+function webform_client_form_submit($form_id, $form_values) {
   global $user, $base_url;
   include_once (drupal_get_path('module', 'webform')."/webform.inc");
   $node = node_load(array('nid'=>$form_values['details']['nid']));
 
   // Flatten trees within the submission
   $form_values['submitted_tree'] = $form_values['submitted'];
-  _webform_client_submit_flatten($node, $form_values['submitted'], $form_values['submitted']);
+  _webform_client_form_submit_flatten($node, $form_values['submitted'], $form_values['submitted']);
   
   // Process post-submission data if necessary in the components
   _webform_load_components();
@@ -1142,8 +1159,9 @@ function webform_client_submit($form_id, $form_values) {
       // Build arrays of possible return email addresses and email subject lines from elements on the form
       
       // Default values:
-      $email_from_string= "From: ".mime_header_encode(variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\n";
-      $email_subject_string= t('Form submission from: ').' '.$node->title;
+      $headers = array();
+      $email_from_string = "From: ".mime_header_encode(variable_get('site_mail', "webmail@{$_SERVER['SERVER_NAME']}"))."\n";
+      $email_subject_string = t('Form submission from: ').' '.$node->title;
 
       // Search for user set FROM and SUBJECT fields
       if (is_array($node->webformcomponents) && !empty ($node->webformcomponents)) {
@@ -1152,37 +1170,36 @@ function webform_client_submit($form_id, $form_values) {
           // Find and set a custom FROM: field
           if ($type == 'email' || $type == 'hidden') {
             if ($component['name'] == $node->email_from) {
-              $email_from_string= "From: ".mime_header_encode(strip_tags($form_values['submitted'][$cid]))."\n";
+              $email_from_string = $form_values['submitted'][$cid];
             }
           }
           // Find and set a custom SUBJECT: field
           if ($type == 'textfield' || $type == 'hidden') {
             if ($component['name'] == $node->email_subject) {
-              $email_subject_string= strip_tags($form_values['submitted'][$cid]);
+              $email_subject_string = strip_tags($form_values['submitted'][$cid]);
             }
           }
           if ($type == 'email' && $component['extra']['carboncopy'] == 'Y' ) {
-            $headers  .= "CC: ".$form_values['submitted'][$cid]."\n";
+            $headers['CC'] = $form_values['submitted'][$cid]."\n";
           }
         }
       }
       
       // Verify that this submission is not attempting to send any spam hacks
-      if (_webform_submission_spam_check ($node->email, $email_from_string, $email_subject_string, $message)) {
+      if (_webform_submission_spam_check ($node->email, $email_subject_string, $message, $headers)) {
         watchdog('webform', t('Possible spam attempt from ').$_SERVER['REMOTE_ADDR']."<br />\n".nl2br(htmlentities($message)), WATCHDOG_WARNING);
         drupal_set_message(t("Illegal information. Data not submitted."), 'error');
         return false;
       }
       // Additional headers
-      $headers .= $email_from_string;
-      $headers .= "X-Mailer: Drupal Webform (PHP/" . phpversion().")";
+      $headers['X-Mailer'] = 'Drupal Webform (PHP/' . phpversion() . ')';
     
       // Mail the webform results
-      user_mail($node->email, $email_subject_string, $message, $headers);
+      drupal_mail('webform-submission', $node->email, $email_subject_string, $message, $email_from_string, $headers);
       
       // Debugging output
       if (variable_get('webform_debug',0) >= 2) {
-        drupal_set_message("E-mail Headers: <pre>".$headers."</pre>E-mail Body: <pre>".$message."</pre>");
+        drupal_set_message("E-mail Headers: <pre>".print_r($headers, true)."</pre>E-mail Body: <pre>".$message."</pre>");
       }
     }
   }
@@ -1203,15 +1220,15 @@ function webform_client_submit($form_id, $form_values) {
   } else {
     drupal_goto('node/'.$node->nid.'/done');
   }
-} // end webform_client_submit
+} // end webform_client_form_submit
 
 /**
  * Flattens a submitted form back into a single array representation (rather than nested fields)
  */
-function _webform_client_submit_flatten($node, $fieldset, &$form) {
+function _webform_client_form_submit_flatten($node, $fieldset, &$form) {
   foreach ($fieldset as $key => $value) {
     if (is_array($value) && $node->webformcomponents[$key]['type'] == 'fieldset') {
-      _webform_client_submit_flatten($node, $value,$form);
+      _webform_client_form_submit_flatten($node, $value,$form);
       $form[$key] = ""; // Set the fieldset value to a blank
       unset($fieldset[$key]);
     } else {
@@ -1255,7 +1272,7 @@ function _webform_filtervalues($string, $strict = TRUE) {
   $find= array ('%username', '%useremail', '%site', '%date');
   $replace= array ($user->name, $user->mail, variable_get('site_name', 'drupal'), format_date(time(), 'large'));
 
-  if (module_exist('profile')) {
+  if (module_exists('profile')) {
     foreach ($user as $k => $v) {
       $find[]= "%profile[$k]";
       $replace[]= $v;
@@ -1275,7 +1292,7 @@ function _webform_filtervalues($string, $strict = TRUE) {
   }
   $string= str_replace($find, $replace, $string);
 
-  if (module_exist('profile')) {
+  if (module_exists('profile')) {
     // Clean up any unused %profile stuff
     $string= preg_replace('/\%profile\[\w+\]/', '', $string);
   }
@@ -1393,7 +1410,7 @@ function _webform_safe_name($name) {
   return $new;
 }
 
-function _webform_components_decode ($components) {
+function _webform_components_decode($components) {
   if (is_array($components)) {
     foreach ($components as $cid => $value) {
       if (is_string($value)) {
@@ -1407,7 +1424,7 @@ function _webform_components_decode ($components) {
 /**
  * Convert an array of components into a tree
  */
-function _webform_components_tree_build ($src, &$tree, $parent = 0) {
+function _webform_components_tree_build($src, &$tree, $parent = 0) {
   foreach ($src as $cid => $component) {
     if ($component['parent'] == $parent) {
       _webform_components_tree_build($src, $component, $cid);

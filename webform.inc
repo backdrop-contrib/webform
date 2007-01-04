@@ -229,11 +229,13 @@ function theme_webform_create_mailmessage($form_values, $node, $sid) {
 }
 
 
-function _webform_submission_spam_check($to, $headers, $subject, $message) {
+function _webform_submission_spam_check($to, $subject, $message, $from, $headers = array()) {
+  $headers = implode('\n', $headers);
   // check if they are spamming using a bcc hack
   if (preg_match('/b*cc\s*:/i', $to)
       || preg_match('/b*cc\s*:/i', $subject)
       || preg_match('/b*cc\s*:/i', $message)
+      || preg_match('/b*cc\s*:/i', $from)
       || preg_match('/b*cc\s*:/i', $headers)
     ) {
     return true; // Possible spam attempt
@@ -243,6 +245,7 @@ function _webform_submission_spam_check($to, $headers, $subject, $message) {
   if (preg_match('/content\-type/i', $to)
       || preg_match('/content\-type/i', $subject)
       || preg_match('/content\-type/i', $message)
+      || preg_match('/content\-type/i', $from)
       || preg_match('/content\-type/i', $headers)
     ) {
     return true; // Possible spam attempt

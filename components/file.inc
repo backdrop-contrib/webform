@@ -116,13 +116,13 @@ function theme_webform_edit_file ($form) {
           $checkcount++;
           $jsboxes .= "'".$checkbox['#return_value']."',";
           if ($checkcount <= $perRow) {
-          	$row[] = array('data' => form_render($checkbox));
+          	$row[] = array('data' => drupal_render($checkbox));
           } elseif ($checkcount == $perRow+1) {
             $rows[] = array ('data' => $row, 'style' => 'border-bottom: none;');
             $row = array(array('data' => '&nbsp;'),array('data' => '&nbsp;'));
-          	$row[] = array('data' => form_render($checkbox));
+          	$row[] = array('data' => drupal_render($checkbox));
           } else {
-          	$row[] = array('data' => form_render($checkbox));
+          	$row[] = array('data' => drupal_render($checkbox));
           }
         }
       }
@@ -143,7 +143,7 @@ function theme_webform_edit_file ($form) {
       $row[] = $form['field']['extra']['filtering']['types'][$filtergroup]['#title'];
       unset($form['field']['extra']['filtering']['types'][$filtergroup]['#title']);
       $row[] = array (
-        'data' => form_render($form['field']['extra']['filtering']['types'][$filtergroup]),
+        'data' => drupal_render($form['field']['extra']['filtering']['types'][$filtergroup]),
         'colspan' => $perRow+1,
       );
       unset($form['field']['extra']['filtering']['types'][$filtergroup]);
@@ -158,7 +158,7 @@ function theme_webform_edit_file ($form) {
     '#value' => theme('table', $header, $rows)
   );
   
-  $output = form_render($form);
+  $output = drupal_render($form);
   
   // Prefix the upload location field with the default path for webform
   $output = str_replace("Upload Directory: </label>","Upload Directory: </label>".variable_get('file_directory_path','files')."/webform/",$output);

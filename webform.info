@@ -1,0 +1,4 @@
+; $Id: $
+name = Webform
+description = Enables the creation of forms and questionnaires.
+version = "$Name$"

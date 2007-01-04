@@ -90,7 +90,7 @@ function phptemplate_webform_form_nodeIdHere ($form) {
 	// Move the form field labeled "Email" to the new fieldset
 	$form['submitted']['newfieldset']['Email'] = $form['submitted']['Email'];
 	unset($form['submitted']['Email']);
-	echo form_render($form)
+	echo drupal_render($form)
    
 ?>
 
