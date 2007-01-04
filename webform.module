@@ -275,7 +275,7 @@ function webform_menu($may_cache) {
                        'callback' => '_webform_confirmation', 'callback arguments' => array(arg(1)),
                        'access' => true,
                        'type' => MENU_CALLBACK); 
-      $items[]= array ('path' => 'node/'.$node->nid.'/results', 'title' => t('results'), 
+      $items[]= array ('path' => 'node/'.$node->nid.'/results', 'title' => t('Results'), 
                        'callback' => 'webform_results',
                        'access' => user_access('access webform results'), 
                        'type' => MENU_LOCAL_TASK, 'weight' => 2);
@@ -948,6 +948,8 @@ function webform_edit_field_form(&$node) {
 }
 
 function webform_view(&$node, $teaser = 0, $page = 0) {
+  include_once (drupal_get_path('module', 'webform')."/webform.inc");
+  
   $sid_to_display = check_plain($_GET['sid']); // Will be NULL if no sid
   $submission = array();
   $preview = false;
@@ -990,7 +992,6 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
 function webform_client_form(&$node, $submission = array()) {
   global $user;
   
-  include_once (drupal_get_path('module', 'webform')."/webform.inc");
   _webform_load_components(); // Load all the components
   
   if ($_POST['op'] == t('Preview')) {
@@ -1024,10 +1025,10 @@ function webform_client_form(&$node, $submission = array()) {
     _webform_components_tree_build($node->webformcomponents,$componentTree);
     // Recursively add components to the form
     foreach ($componentTree['children'] as $cid => $component) {
-      _webform_client_form_add_component($cid, $component, $form['submitted'], $form);
+      _webform_client_form_add_component($cid, $component, $form['submitted'], $form, $submission);
     }
     // Do not display the submit button if this is a preview or submission view
-    if (!$preview && empty($sid_to_display)) {
+    if (!$preview && empty($submission)) {
       // Additional hidden elements   
       // Email subject and sender
       $form['details']['email_subject'] = array (
@@ -1055,11 +1056,9 @@ function webform_client_form(&$node, $submission = array()) {
   return $form;
 }
 
-function _webform_client_form_add_component($cid, $component, &$parent_fieldset, &$form) {
-  global $sid_to_display, $submission, $preview;
-  
+function _webform_client_form_add_component($cid, $component, &$parent_fieldset, &$form, $submission) {
   // Load with submission information if necessary
-  if($sid_to_display){
+  if(!empty($submission)){
     // This component is display only, with the value set according information
     // previously submitted in the submission numbered $sid_to_display
     $displayFunction = "_webform_submission_display_".$component['type'];
@@ -1078,7 +1077,7 @@ function _webform_client_form_add_component($cid, $component, &$parent_fieldset,
   
   if (is_array($component['children'])) {
     foreach ($component['children'] as $scid => $subcomponent) {
-      _webform_client_form_add_component ($scid, $subcomponent, $parent_fieldset[$cid], $form);
+      _webform_client_form_add_component($scid, $subcomponent, $parent_fieldset[$cid], $form);
     }
   }
 }
@@ -1343,8 +1342,9 @@ function webform_page() {
 }
 
 /**
- * function webform_results() is an allocator function that builds the page under the 'results' sub menu
- * The function uses the URL tail to nominate internal content.
+ * function webform_results() is an allocator function that builds the page
+ * under the 'Results' sub menu The function uses the URL tail to nominate
+ * internal content.
  */
 function webform_results() {
   include_once (drupal_get_path('module', 'webform')."/webform.inc");

@@ -59,19 +59,10 @@ function _webform_results_clear($nid) {
     drupal_goto('admin/webform');
   }
   else {
-    $form['delete'] = array (
-      '#type' => 'submit',
-      '#value' => t('Clear'),
-    );
-    $form['cancel'] = array (
-      '#type' => 'markup',
-      '#value' => '<a href="'.url('node/'.$nid.'/results').'">'.t("Cancel").'</a>',
-    );
-
     drupal_set_title(t("Clear Form Submissions"));
-    $output = t("Are you sure you want to delete all submissions for this form?")." ".t('This action cannot be undone.');
-    $output .= drupal_get_form('clear_results',$form);
-    return $output;
+    $form = array();
+    $question = t("Are you sure you want to delete all submissions for this form?");
+    return confirm_form($form, $question, drupal_get_destination(), NULL, t('Clear'));
   }
 } // end function _webform_results_clear
 
