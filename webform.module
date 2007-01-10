@@ -623,7 +623,7 @@ function webform_form(&$node, &$param) {
   );
   
   $form['advanced']['submitlimit']['unlimited'] = array(
-    '#name' => 'edit[enforce_limit]', // Override the naming scheme to force these radios into the same group
+    '#name' => 'enforce_limit', // Override the naming scheme to force these radios into the same group
     '#type' => 'radio',
     '#return_value' => 'no',
     '#title' => 'Unlimited',
@@ -632,7 +632,7 @@ function webform_form(&$node, &$param) {
   );
 
   $form['advanced']['submitlimit']['limited'] = array(
-    '#name' => 'edit[enforce_limit]', // Override the naming scheme to force these radios into the same group
+    '#name' => 'enforce_limit', // Override the naming scheme to force these radios into the same group
     '#type' => 'radio',
     '#return_value' => 'yes',
     '#prefix' => '<br />',
@@ -1185,7 +1185,7 @@ function webform_client_form_submit($form_id, $form_values) {
       }
       
       // Verify that this submission is not attempting to send any spam hacks
-      if (_webform_submission_spam_check ($node->email, $email_subject_string, $message, $headers)) {
+      if (_webform_submission_spam_check ($node->email, $email_subject_string, $message, $email_from_string, $headers)) {
         watchdog('webform', t('Possible spam attempt from ').$_SERVER['REMOTE_ADDR']."<br />\n".nl2br(htmlentities($message)), WATCHDOG_WARNING);
         drupal_set_message(t("Illegal information. Data not submitted."), 'error');
         return false;
@@ -1363,7 +1363,7 @@ function webform_results() {
         $content= _webform_results_analysis($nid);
         break;
       case 'clear' :
-        $content= _webform_results_clear($nid);
+        $content= drupal_get_form('_webform_results_clear', $nid);
         break;
       case 'delete' :
         $sid= arg(4);

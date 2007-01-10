@@ -46,26 +46,27 @@ function _webform_page() {
  * @param      integer ID of node for which to clear submissions
  */
 function _webform_results_clear($nid) {
-  if ($_POST['op'] == t('Clear')) {
-    $query = 'DELETE FROM {webform_submitted_data} WHERE nid = %d';
-    $res = db_query($query, $nid);
-    $query = 'DELETE FROM {webform_submissions} WHERE nid = %d';
-    $res = db_query($query, $nid);
-
-    $node = node_load(array('nid' => $nid));
-    $title = $node->title;
-
-    watchdog('webform','webform "' . $title . '" entries cleared.', WATCHDOG_NOTICE);
-    drupal_goto('admin/webform');
-  }
-  else {
-    drupal_set_title(t("Clear Form Submissions"));
-    $form = array();
-    $question = t("Are you sure you want to delete all submissions for this form?");
-    return confirm_form($form, $question, drupal_get_destination(), NULL, t('Clear'));
-  }
+  drupal_set_title(t("Clear Form Submissions"));
+  
+  $form = array();
+  $form['nid'] = array('#type' => 'value', '#value' => $nid);
+  $question = t("Are you sure you want to delete all submissions for this form?");
+  
+  return confirm_form($form, $question, drupal_get_destination(), NULL, t('Clear'), t('Cancel'));
 } // end function _webform_results_clear
 
+function _webform_results_clear_submit($form_id, $form_values) {
+  db_query('DELETE FROM {webform_submitted_data} WHERE nid = %d', $form_values['nid']);
+  db_query('DELETE FROM {webform_submissions} WHERE nid = %d', $form_values['nid']);
+
+  $node = node_load(array('nid' => $form_values['nid']));
+  $title = $node->title;
+
+  $message = t('Webform %title entries cleared.', array('%title' => $title));
+  drupal_set_message($message);
+  watchdog('webform', $message, WATCHDOG_NOTICE);
+  drupal_goto('admin/content/webform'); 
+}
 
 /*
  * Delete one form submission
@@ -248,7 +249,7 @@ function _webform_submission_spam_check($to, $subject, $message, $from, $headers
 
 function _webform_submission_limit_check($node, $form_values) {
   global $user;
-  
+
   // check if submission limiting is enabled
   if ($node->submit_limit == '-1') {
     return false; // No check enabled
