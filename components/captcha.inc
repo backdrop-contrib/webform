@@ -9,7 +9,7 @@
  * @returns An array of form items to be displayed on the edit component page
  **/
 function _webform_edit_captcha ($currfield) {
-  if (!module_exist("captcha")) {
+  if (!module_exists("captcha")) {
     drupal_set_message(t("Using captcha components in webform requires the <a href='http://drupal.org/project/captcha'>Captcha</a> and <a href='http://drupal.org/node/52349'>Textimage</a> modules."),"error");
   }
   
@@ -37,7 +37,7 @@ function _webform_edit_captcha ($currfield) {
  * @returns An array of a form item to be displayed on the client-side webform
  **/
 function _webform_render_captcha ($component) {
-  if (module_exist("captcha")) {
+  if (module_exists("captcha")) {
     // Create a dummy form to pass to the captcha function
     $dummyForm = array();
     // Pass the form to the captcha rendering function
