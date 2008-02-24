@@ -284,7 +284,7 @@ function theme_webform_mail_select($data, $component) {
         if ($options[$value]) {
           $output .= "    - ". $options[$value] ."\n";
         }
-        elseif($options[_webform_safe_name($value)]) {
+        elseif ($options[_webform_safe_name($value)]) {
           $output .= "    - ". $options[_webform_safe_name($value)] ."\n";
         }
       }
@@ -294,7 +294,7 @@ function theme_webform_mail_select($data, $component) {
     if ($options[$data]) {
       $output = $component['name'] .": ". $options[$data] ."\n";
     }
-    elseif($options[_webform_safe_name($data)]) {
+    elseif ($options[_webform_safe_name($data)]) {
       $output = $component['name'] .": ". $options[_webform_safe_name($data)] ."\n";
     }
   }

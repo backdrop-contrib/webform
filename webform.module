@@ -756,7 +756,7 @@ function webform_form_alter($form_id, &$form) {
  */
 function webform_form_submit($form_id, $form_values) {
   // There should be a more effective way to find the new node ID.
-  $nid = db_result(db_query('SELECT nid FROM {node} WHERE type = "webform" ORDER BY nid DESC LIMIT 1'));
+  $nid = db_result(db_query_range('SELECT nid FROM {node} WHERE type = "webform" ORDER BY nid DESC', 0, 1));
 
   // Remove the the submitted message added by node module.
   unset($_SESSION['messages']['status']);
@@ -1534,7 +1534,7 @@ function theme_webform_mail_message($form_values, $node, $sid, $cid) {
 
   $message .= "\n\n";
   $message .= t("The results of this submission may be viewed at:") ."\n";
-  $message .= url('node/'.$node->nid, "sid=". $sid, NULL, TRUE);
+  $message .= url('node/'. $node->nid, "sid=". $sid, NULL, TRUE);
 
   return $message;
 }
@@ -1578,7 +1578,7 @@ function theme_webform_mail_fields($cid, $value, $node, $indent = "") {
   else {
     $message .= $indent . $node->webform['components'][$cid]['name'] .":\n";
     foreach ($value as $k => $v) {
-      foreach($node->webform['components'] as $local_key => $local_value) {
+      foreach ($node->webform['components'] as $local_key => $local_value) {
         if ($local_value['form_key'] == $k && $local_value['pid'] == $cid) {
           $form_key = $local_key;
           break;
@@ -1715,10 +1715,10 @@ function theme_webform_admin_content($nodes) {
   foreach ($nodes as $node) {
     $rows[] = array(
       l($node->title, 'node/'. $node->nid),
-      l(t('Submissions'),'node/'. $node->nid .'/results'),
-      l(t('Analysis'),'node/'. $node->nid .'/results/analysis'),
-      l(t('Table'),'node/'. $node->nid .'/results/table'),
-      l(t('Download'),'node/'. $node->nid .'/results/download'),
+      l(t('Submissions'), 'node/'. $node->nid .'/results'),
+      l(t('Analysis'), 'node/'. $node->nid .'/results/analysis'),
+      l(t('Table'), 'node/'. $node->nid .'/results/table'),
+      l(t('Download'), 'node/'. $node->nid .'/results/download'),
       node_access('update', $node) ? l(t('Edit'), 'node/'. $node->nid .'/edit') : '',
       user_access('clear webform results') ? l(t('Clear'), 'node/'. $node->nid .'/results/clear') : '',
     );
