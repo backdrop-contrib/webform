@@ -6,7 +6,7 @@
 
 if (Drupal.jsEnabled) {
   $(document).ready(function() {
-	  var context = this; // Preparing for behaviors in Drupal 6.
+    var context = this; // Preparing for behaviors in Drupal 6.
     // Apply special behaviors to fields with default values.
     Drupal.webform.defaultValues(context);
     // On click or change, make a parent radio button selected.

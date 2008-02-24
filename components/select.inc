@@ -242,7 +242,7 @@ function _webform_submit_select(&$data, $component) {
         $data[$key] = $options[$key];
       }
       else {
-      	$data[$key] = NULL;
+        $data[$key] = NULL;
       }
     }
   }

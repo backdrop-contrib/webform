@@ -186,7 +186,7 @@ function webform_components_form_submit($form_id, $form_values) {
   }
 
   if ($_POST['op'] == t('Publish')) {
-  	$node->status = 1;
+    $node->status = 1;
     node_save($node);
     drupal_set_message(t('Your webform has been published.'));
     return 'node/'. $node->nid;
@@ -356,7 +356,7 @@ function webform_component_edit_form_submit($form_id, $form_values) {
   }
 
   if ($form_values['clone']) {
-  	drupal_set_message(t('Component %name cloned.', array('%name' => $form_values['name'])));
+    drupal_set_message(t('Component %name cloned.', array('%name' => $form_values['name'])));
     webform_component_clone($node, $form_values);
   }
   elseif (!empty($form_values['cid'])) {

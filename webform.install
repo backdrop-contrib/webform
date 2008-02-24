@@ -450,7 +450,7 @@ function webform_update_14() {
   variable_del('webform_default_from_email');
 
   if ('Form submission from: ' == variable_get('webform_default_subject', 'Form submission from: ')) {
-  	variable_set('webform_default_subject', 'Form submission from: %title');
+    variable_set('webform_default_subject', 'Form submission from: %title');
   }
   return $ret;
 }
@@ -461,10 +461,10 @@ function webform_update_14() {
  * Change the 'disabled' option from an attributes option to an individual option.
  */
 function webform_update_15() {
-	$ret = array();
+  $ret = array();
   $result = db_query('SELECT nid, cid, extra, value FROM {webform_component} WHERE type = "email"');
   while($row = db_fetch_array($result)) {
-  	$extra = unserialize($row['extra']);
+    $extra = unserialize($row['extra']);
     if ($extra['carboncopy']) {
       $extra['email'] = 1;
       unset($extra['carboncopy']);
@@ -513,7 +513,7 @@ function webform_update_16() {
  * Set the submit interval to a real "unlimited" value instead of 5 years.
  */
 function webform_update_17() {
-	$ret = array();
+  $ret = array();
   $ret[] = update_sql("UPDATE {webform} SET submit_interval = -1 WHERE submit_interval = 157784630");
   return $ret;
 }

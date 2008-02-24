@@ -291,7 +291,7 @@ function webform_forms($args) {
  * Only allow users with view webform submissions to download files.
  */
 function webform_file_download($file) {
-  $file = file_check_location(file_directory_path() .'/' . $file, file_directory_path() .'/webform/');
+  $file = file_check_location(file_directory_path() .'/'. $file, file_directory_path() .'/webform/');
   if ($file && user_access('access webform results')) {
     $info = image_get_info(file_create_path($file));
     return array('Content-type: '. $info['mime_type']);
@@ -358,7 +358,7 @@ function webform_load($node) {
     $component['pid'] = $c['pid'];
     $component['weight'] = $c['weight'];
     if ($component['extra']['email']) {
-    	$additions->webform['additional_emails'][$c['cid']] = $c['cid'];
+      $additions->webform['additional_emails'][$c['cid']] = $c['cid'];
     }
   }
 
@@ -486,7 +486,7 @@ function webform_form(&$node, &$param) {
 
   foreach (array('from_name', 'from_address', 'subject') as $field) {
     switch ($field) {
-    	case 'from_name':
+      case 'from_name':
         $default_value = webform_variable_get('webform_default_from_name');
         $title = t('E-mail from name');
         $description = t('After adding components to this form any email, select, or hidden form element may be selected as the sender\'s name for e-mails.');
@@ -623,7 +623,7 @@ function webform_form(&$node, &$param) {
 function theme_webform_mail_components_form($form) {
   drupal_add_css(drupal_get_path('module', 'webform') .'/webform.css');
   $node = $form['#node'];
-	$header = array(
+  $header = array(
     array('data' => t('To'), 'class' => 'webform-checkbox'),
     t('Name'),
     t('Type'),
@@ -632,14 +632,14 @@ function theme_webform_mail_components_form($form) {
   foreach (element_children($form['email_components']) as $cid) {
     $title = $form['email_components'][$cid]['#title'];
     unset($form['email_components'][$cid]['#title']);
-  	$rows[] = array(
+    $rows[] = array(
       array('data' => drupal_render($form['email_components'][$cid]), 'class' => 'webform-checkbox'),
       $title,
       $node->webform['components'][$cid]['type'],
     );
   }
   if (empty($rows)) {
-  	$rows[] = array(array('colspan' => 5, 'data' => t('No components yet in this webform.')));
+    $rows[] = array(array('colspan' => 5, 'data' => t('No components yet in this webform.')));
   }
 
   $form['#children'] = theme('table', $header, $rows);
@@ -654,10 +654,10 @@ function theme_webform_mail_settings_form($form) {
 
   // Loop through fields, rendering them into radio button options.
   foreach (array('from_name', 'from_address', 'subject') as $field) {
-  	foreach (array('custom' => t('Custom'), 'component' => t('Component')) as $option => $title) {
+    foreach (array('custom' => t('Custom'), 'component' => t('Component')) as $option => $title) {
       $form['email_'. $field .'_'. $option]['#attributes']['class'] = 'webform-set-active';
-  		$form['email_'. $field .'_option'][$option]['#title'] = $title .': '. drupal_render($form['email_'. $field .'_'. $option]);
-  	}
+      $form['email_'. $field .'_option'][$option]['#title'] = $title .': '. drupal_render($form['email_'. $field .'_'. $option]);
+    }
     // For spacing consitency, every option is wrapped in container-inline.
     foreach (element_children($form['email_'. $field .'_option']) as $option) {
       $form['email_'. $field .'_option'][$option]['#prefix'] = '<div class="container-inline">';
@@ -665,7 +665,7 @@ function theme_webform_mail_settings_form($form) {
     }
     // Wrap the default option in a placeholder tag..
     if (isset($form['email_'. $field .'_option']['#options']['default'])) {
-    	$form['email_'. $field .'_option']['default']['#title'] = t('Default') .': '. theme('placeholder', $form['email_'. $field .'_option']['default']['#title']);
+      $form['email_'. $field .'_option']['default']['#title'] = t('Default') .': '. theme('placeholder', $form['email_'. $field .'_option']['default']['#title']);
     }
   }
 
@@ -701,7 +701,7 @@ function webform_submit(&$node) {
 
     foreach ($original_node->webform['components'] as $cid => $component) {
       if (!isset($node->webform['components'][$cid])) {
-      	$node->webform['components'][$cid] = $component;
+        $node->webform['components'][$cid] = $component;
       }
       if ($node->webform['email_components'][$cid]) {
         $node->webform['components'][$cid]['extra']['email'] = 1;
@@ -712,7 +712,7 @@ function webform_submit(&$node) {
 
   // Merge the e-mail name, address, and subject options into single values.
   foreach (array('from_name', 'from_address', 'subject') as $field) {
-  	$option = $node->webform['email_'. $field .'_option'];
+    $option = $node->webform['email_'. $field .'_option'];
     if ($option == 'default') {
       $node->webform['email_'. $field] = 'default';
     }
@@ -737,7 +737,7 @@ function webform_submit(&$node) {
  */
 function webform_form_alter($form_id, &$form) {
   if ($form_id == 'webform_node_form' && empty($form['nid']['#value'])) {
-  	$form['#submit']['webform_form_submit'] = array();
+    $form['#submit']['webform_form_submit'] = array();
     // Force webforms to be unpublished initially.
     if (user_access('administer nodes')) {
       $form['options']['status']['#default_value'] = FALSE;
@@ -1219,7 +1219,7 @@ function webform_client_form_submit($form_id, $form_values) {
 
     // Restore the newly added values either in the previous position.
     foreach ($original_post as $key => $val) {
-    	$_POST['submitted'][$key] = $val;
+      $_POST['submitted'][$key] = $val;
     }
     // Remove the variable so it doesn't show up in the additional processing.
     unset($original_post);
@@ -1242,7 +1242,7 @@ function webform_client_form_submit($form_id, $form_values) {
       $form_values['submitted'][$key] = $val;
     }
     foreach ($original_values as $key => $val) {
-    	$form_values['submitted'][$key] = $val;
+      $form_values['submitted'][$key] = $val;
     }
     // Remove the variable so it doesn't show up in the additional processing.
     unset($original_values);
@@ -1259,11 +1259,11 @@ function webform_client_form_submit($form_id, $form_values) {
   foreach ($node->webform['additional_emails'] as $cid => $value) {
     if (is_array($form_values['submitted'][$cid])) {
       $node->webform['additional_emails'][$cid] = array();
-    	foreach ($form_values['submitted'][$cid] as $submitted_value) {
+      foreach ($form_values['submitted'][$cid] as $submitted_value) {
         if ($submitted_value) {
           $node->webform['additional_emails'][$cid][] = $submitted_value;
         }
-    	}
+      }
     }
     else {
       $node->webform['additional_emails'][$cid] = $form_values['submitted'][$cid];
@@ -1328,7 +1328,7 @@ function webform_client_form_submit($form_id, $form_values) {
 
       // Assemble the FROM string.
       if (isset($headers['From'])) {
-      	$froms[$cid] = $headers['From'];
+        $froms[$cid] = $headers['From'];
       }
       elseif (strlen($email_from_name) > 0) {
         $froms[$cid] = '"'. mime_header_encode($email_from_name) .'" <'. $email_from_address .'>';
@@ -1339,10 +1339,10 @@ function webform_client_form_submit($form_id, $form_values) {
 
       // Update the subject if set in the themed headers.
       if (isset($headers['Subject'])) {
-      	$subjects[$cid] = $headers['Subject'];
+        $subjects[$cid] = $headers['Subject'];
       }
       else {
-      	$subjects[$cid] = $email_subject;
+        $subjects[$cid] = $email_subject;
       }
 
       // Update the to e-mail if set in the themed headers.
@@ -1363,14 +1363,14 @@ function webform_client_form_submit($form_id, $form_values) {
       // In the case of checkboxes or multiple select, multiple e-mails may need
       // to be sent out.
       if (is_array($address)) {
-      	foreach ($address as $single_address) {
-      		drupal_mail('webform-submission', $single_address, $email_subject, $messages[$cid], $froms[$cid], $headers[$cid]);
+        foreach ($address as $single_address) {
+          drupal_mail('webform-submission', $single_address, $email_subject, $messages[$cid], $froms[$cid], $headers[$cid]);
 
           // Debugging output for email.
           if (variable_get('webform_debug', 0) >= 2) {
             drupal_set_message("E-mail Headers: <pre>". htmlentities(print_r($headers[$cid], true)) ."</pre>To: ". $single_address ."<br />From: ". htmlentities($froms[$cid]) ."<br />Subject: ". $subjects[$cid] ."<br />E-mail Body: <pre>". $messages[$cid] ."</pre>");
           }
-      	}
+        }
       }
       else {
         drupal_mail('webform-submission', $address, $email_subject, $messages[$cid], $froms[$cid], $headers[$cid]);
@@ -1639,10 +1639,10 @@ function _webform_filtervalues($string, $node = NULL, $submission = NULL, $stric
 
   // Submission replacements.
   if (isset($submission)) {
-  	foreach ($submission as $cid => $value) {
-  		$find[] = '%cid['. $cid .']';
+    foreach ($submission as $cid => $value) {
+      $find[] = '%cid['. $cid .']';
       $replace[] = $value;
-  	}
+    }
   }
 
   // Provide a list of candidates for token replacement.
@@ -1802,7 +1802,7 @@ function webform_get_cid(&$node, $form_key, $pid) {
  * Retreive a Drupal variable with the appropriate default value.
  */
 function webform_variable_get($variable) {
-	switch ($variable) {
+  switch ($variable) {
     case 'webform_default_from_name':
       $result = variable_get('webform_default_from_name', variable_get('site_name', ''));
       break;
@@ -1837,13 +1837,13 @@ function _webform_safe_name($name) {
  * 
  */
 function _webform_component_options($components, $type) {
-	$acceptable_types = $type == 'email' ? array('email', 'select', 'hidden') : array('textfield', 'select', 'hidden');
+  $acceptable_types = $type == 'email' ? array('email', 'select', 'hidden') : array('textfield', 'select', 'hidden');
   $options = array();
   foreach ((array)$components as $cid => $component) {
-		if (in_array($component['type'], $acceptable_types)) {
-			$options[$cid] = $component['name'];
-		}
-	}
+    if (in_array($component['type'], $acceptable_types)) {
+      $options[$cid] = $component['name'];
+    }
+  }
   return $options;
 }
 
