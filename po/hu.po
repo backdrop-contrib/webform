@@ -1,0 +1,1221 @@
+# translation of webform-hu.po to Hungarian
+# #-#-#-#-#  webform-inc.po (PROJECT VERSION)  #-#-#-#-#
+# LANGUAGE translation of Drupal (webform.inc)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from file: webform.inc,v 1.16 2005/04/03 19:49:13 ullgren
+# #-#-#-#-#  webform-module.po (webform-module)  #-#-#-#-#
+# translation of webform-module.po to
+# LANGUAGE translation of Drupal (webform.module)
+# $Id$
+# Copyright YEAR NAME <EMAIL@ADDRESS>, 2005.
+#
+# FEHÉR János (http://mindworks.hu) <feher.janos _at- mindworks.hu>, 2007.
+msgid ""
+msgstr ""
+"Project-Id-Version: webform-hu\n"
+"POT-Creation-Date: 2007-11-07 04:04+0100\n"
+"PO-Revision-Date: 2007-11-07 04:45+0100\n"
+"Last-Translator: FEHÉR János (http://mindworks.hu) <feher.janos _at- mindworks.hu>\n"
+"Language-Team: Hungarian <Drupal.hu Fordítási Csapat <forditas [at] drupal.hu>>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  webform-inc.po (PROJECT VERSION)  #-#-#-#-#\n"
+"Plural-Forms:  nplurals=2; plural=n != 1;\n"
+"#-#-#-#-#  webform-module.po (webform-module)  #-#-#-#-#\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Poedit-Language: Hungarian\n"
+"X-Poedit-Country: HUNGARY\n"
+"X-Generator: KBabel 1.11.4\n"
+
+#: webform.inc:17 webform.module:499
+msgid "Title"
+msgstr "Cím"
+
+#: webform.inc:18 webform_report.inc:56
+msgid "View"
+msgstr "Megtekint"
+
+#: webform.inc:19 webform_report.inc:32
+msgid "Operations"
+msgstr "Műveletek"
+
+#: webform.inc:27 webform.module:304
+msgid "Submissions"
+msgstr "Űrlap-eredmények"
+
+#: webform.inc:28 webform.module:309
+msgid "Analysis"
+msgstr "Analízis"
+
+#: webform.inc:29 webform.module:314
+msgid "Table"
+msgstr "Táblázat"
+
+#: webform.inc:30 webform.module:319
+msgid "Download"
+msgstr "Letöltés"
+
+#: webform.inc:35
+msgid "Edit"
+msgstr "Szerkesztés"
+
+#: webform.inc:36;57 webform.module:324
+msgid "Clear"
+msgstr "Törlés"
+
+#: webform.inc:51
+msgid "Clear Form Submissions"
+msgstr "Az űrlap eredményeinek törlése"
+
+#: webform.inc:55
+msgid "Are you sure you want to delete all submissions for this form?"
+msgstr "Biztosan törlve legyen az űrlapra adott összes válasz?"
+
+#: webform.inc:57;88
+msgid "Cancel"
+msgstr "Mégsem"
+
+#: webform.inc:67
+msgid "Webform %title entries cleared."
+msgstr "Az űrlap eredményei törölve lettek: %title"
+
+#: webform.inc:81
+msgid "Delete Form Submission"
+msgstr "Űrlap eredmények törlése"
+
+#: webform.inc:86
+msgid "Are you sure you want to delete this submission?"
+msgstr "Biztosan törölve legyen ez az űrlap-eredmény?"
+
+#: webform.inc:88 webform_report.inc:60
+msgid "Delete"
+msgstr "Törlés"
+
+#: webform.inc:98
+msgid "Submission deleted"
+msgstr "Eredmény törölve"
+
+#: webform.inc:175
+msgid "Submitted on"
+msgstr "Elküldv"
+
+#: webform.inc:179
+msgid "Submitted by user"
+msgstr "Felhasználó küldte be"
+
+#: webform.inc:182
+msgid "Submitted by anonymous user"
+msgstr "Névtelenül küldték be"
+
+#: webform.inc:186
+msgid "Submitted values are"
+msgstr "A beküldött értékek"
+
+#: webform.inc:190
+msgid "The results of this submission may be viewed at:"
+msgstr "A űrlapra beküldött eredmények megtekinthetőek itt:"
+
+#: webform.inc:69 webform.module:296;142;1071;1263;1272;1409;1427;0
+#: webform.install:476
+msgid "webform"
+msgstr "űrlap"
+
+#: webform_report.inc:28;94
+msgid "#"
+msgstr "#"
+
+#: webform_report.inc:29;95
+msgid "Submitted"
+msgstr "Elküldve"
+
+#: webform_report.inc:30;96
+msgid "User"
+msgstr "Felhasználó"
+
+#: webform_report.inc:31;97
+msgid "IP Address"
+msgstr "IP cím"
+
+#: webform_report.inc:252
+msgid "Q"
+msgstr ""
+
+#: webform_report.inc:253
+msgid "responses"
+msgstr "válaszok"
+
+#: webform.module:22
+msgid ""
+"Webforms are forms and questionnaires. To add one select <strong>create "
+"content -&gt; webform</strong>. Below you can set different security and "
+"debug options."
+msgstr ""
+"A modullal űrlapok és kérdőívek hozhatók létre. Egy új űrlap létrehozása a "
+"<strong>tartalom beküldése -&gt; űrlap</strong> módon lehetséges. Lentebb "
+"különböző biztonsági és hibakeresési beállítások adhatóak meg."
+
+#: webform.module:25
+msgid ""
+"<p>This module lets you create forms or questionnaires and define their "
+"content. Submissions from these forms are stored in the database and "
+"optionally also sent by e-mail to a predefined address.</p>\n"
+"      <p>Here is how to create one:</p>\n"
+"      <ul>\n"
+"       <li>Go to Create Content and add a webform</li>\n"
+"       <li>Add a description to be displayed as a teaser and above the "
+"actual form.</li>\n"
+"       <li>Add a confirmation message or redirect node that is to be "
+"displayed after successful submission.</li>\n"
+"       <li>Add one or more components to your form.</li>\n"
+"       <li>Optionally add an e-mail address to which submissions will be "
+"sent. If no email address is specified, no e-mail will be sent when "
+"submissions are made through the form.</li>\n"
+"       <li>Optionally select an e-mail (or hidden) component that will be "
+"used to populate the return e-mail address on any sent e-mail.</li>\n"
+"       <li>Optionally select a textfield (or hidden) component that will be "
+"used to populate the subject e-mail field on any sent e-mail.</li>\n"
+"      </ul>\n"
+"      <p>Help on adding and configuring the components will be shown after "
+"you add your first component.</p>\n"
+"      <p>The content of submitted forms is stored in the database table "
+"<i>webform_submitted_data</i> as key-value pairs.</p>\n"
+"      "
+msgstr ""
+
+#: webform.module:41
+msgid ""
+"A webform can be a questionnaires, contact or request forms. It can be used "
+"to let visitors make contact, register for a event or to enable a complex "
+"survey."
+msgstr ""
+"Egy űrlap lehet kérdőív, kapcsolatfelvételi lehetőség vagy igénylőlap is. "
+"Segítségével a látogatók felvehetik a webhely üzemeltetőivel a kapcsolatot, "
+"regisztrálhatnak egy rendezvényre vagy akár egy komplex felmérés kérdéseire "
+"is válaszolhatnak."
+
+#: webform.module:44
+msgid "Available variables are: %username, %useremail, %site, %date."
+msgstr "Az elérhető változók: %username, %usermail, %site, %date."
+
+#: webform.module:45
+msgid ""
+"You can also use %server[key] to add any of the special PHP <a href=\"http://"
+"www.php.net/reserved.variables#reserved.variables.server\">$_SERVER</a> "
+"variables and %get[key] to create prefilled forms from the <a href=\"http://"
+"www.php.net/reserved.variables#reserved.variables.get\">URL</a> (e.g. %server"
+"[HTTP_USER_AGENT] or %get[id])."
+msgstr ""
+
+#: webform.module:47
+msgid ""
+"If you are using the profiles module, you can also access all profile data "
+"using the syntax %profile[form_name]. If you for example have a profile "
+"value named profile_city, add the varible %profile[profile_city]."
+msgstr ""
+
+#: webform.module:74;282;329 webform.install:507 webform.info:0
+msgid "Webform"
+msgstr "Űrlap"
+
+#: webform.module:76
+msgid ""
+"Create a new form or questionnaire accessible to users. Submission results "
+"and statistics are recorded and accessible to privileged users."
+msgstr ""
+
+#: webform.module:168
+msgid "Available Components"
+msgstr "Elérhető összetevők"
+
+#: webform.module:171
+msgid ""
+"Below is a list of supported field types available for webform. You may "
+"disable any of these components by unchecking its corresponding box. Only "
+"checked components will be available in existing or new webforms."
+msgstr ""
+
+#: webform.module:188
+msgid "Default E-mail Values"
+msgstr "Alapértelmezett e-mail értékek"
+
+#: webform.module:195
+msgid "From e-mail address"
+msgstr "Feladó e-mail címe"
+
+#: webform.module:197
+msgid ""
+"Default sender address. This may be the E-mail address of the maintainer of "
+"your forms. This is also used for Reply-To, Return-Path and Errors-To."
+msgstr ""
+
+#: webform.module:202
+msgid "From Name"
+msgstr "Feladó neve"
+
+#: webform.module:204
+msgid "Default sender name which is displayed together with the E-mail address."
+msgstr ""
+
+#: webform.module:209
+msgid "Default Subject"
+msgstr "Alapértelmezett tárgy"
+
+#: webform.module:210;605;1360
+msgid "Form submission from: "
+msgstr "Űrlapbeküldő űrlap"
+
+#: webform.module:211
+msgid ""
+"Default Subject. If not other stated in the form configuration this is "
+"appended to your form title. If you have e.g. defined \"Your \" (note the "
+"space) as a default subject and a form titled with \"Order\" the e-mail "
+"subject will be \"Your Order\"."
+msgstr ""
+
+#: webform.module:216
+msgid "Advanced Options"
+msgstr "Bővebb beállítások"
+
+#: webform.module:224
+msgid "Allow Cookies for Tracking Submissions"
+msgstr "Sütik használata a kitöltések nyomonkövetésére"
+
+#: webform.module:226
+msgid ""
+"<a href=\"http://www.wikipedia.org/wiki/HTTP_cookie\">Cookies</a> can be "
+"used to help prevent the same user from repeatedly submitting a webform. "
+"This feature is not needed for limiting submissions per user, though it can "
+"increase accuracy in some situations. Besides cookies, webform also uses IP "
+"addresses and site usernames to prevent repeated submissions."
+msgstr ""
+
+#: webform.module:231
+msgid "Webforms Debug"
+msgstr "Űrlap hibavizsgálata"
+
+#: webform.module:233
+msgid "OFF"
+msgstr "KI"
+
+#: webform.module:233
+msgid "Log submissions"
+msgstr "Kitöltések naplózása"
+
+#: webform.module:233
+msgid "Full debug"
+msgstr "Teljes debug információk"
+
+#: webform.module:234
+msgid ""
+"Set this option to \"Log submissions\" to log all submissions in the "
+"watchdog. Set it to \"Full debug\" to print debug info on submission. You "
+"probably want to leave this option on \"OFF\"."
+msgstr ""
+
+#: webform.module:250;814
+msgid "Name"
+msgstr "Név"
+
+#: webform.module:250;507;911
+msgid "Description"
+msgstr "Leírás"
+
+#: webform.module:250
+msgid "Enabled"
+msgstr "Engedélyezett"
+
+#: webform.module:272
+msgid "Webforms"
+msgstr "Űrlapok"
+
+#: webform.module:275
+msgid "View and edit all the available webforms on your site."
+msgstr "A webhelyen levő összes űrlap megtekintése és szerkesztése."
+
+#: webform.module:286
+msgid "Global configuration of webform functionality."
+msgstr "Az űrlapkezelő funkció általános beállításai"
+
+#: webform.module:300;1427
+msgid "Results"
+msgstr "Eredmények"
+
+#: webform.module:347
+msgid "Go to form"
+msgstr "Vissza az űrlapra"
+
+#: webform.module:349
+msgid "View this form."
+msgstr "Az űrlap megtekintése."
+
+#: webform.module:369;459;559
+msgid "Delete Selected"
+msgstr "A megjelölt törlés"
+
+#: webform.module:388;969
+msgid "Done"
+msgstr "Kész"
+
+#: webform.module:405;451;564;832
+msgid "Edit Selected"
+msgstr "A megjelölt szerkesztés"
+
+#: webform.module:412
+msgid ""
+"The form component has been changed. Remember to press Submit on the bottom "
+"of this form to save your changes."
+msgstr ""
+"Az űrlap komponense megváltozott. A változtatások mentéséhez a lap alján "
+"található „Megerősít” gombra is kattintani kell."
+
+#: webform.module:414;472;1059;1099 components/markup.inc:41
+msgid "Preview"
+msgstr "Előnézet"
+
+#: webform.module:442;581
+msgid "Add"
+msgstr "Hozzáad"
+
+#: webform.module:464
+msgid "Field deleted, form must be submitted to save changes"
+msgstr "A mező törölve lett, az űrlapot el kell menteni ahhoz, hogy a módosítások érvénybe lépjenek."
+
+#: webform.module:467
+msgid "A component must be selected to delete"
+msgstr "Legalább egy összetevőt ki kell választani a törléshez"
+
+#: webform.module:471;1150;1169;1186;1295
+msgid "Submit"
+msgstr "Beküldés"
+
+#: webform.module:476
+msgid "Submission limit must be a number"
+msgstr "A kitöltési limitnek számnak kell lennie"
+
+#: webform.module:491
+msgid "Webform Settings"
+msgstr "Űrlapok beállításai"
+
+#: webform.module:508
+msgid "Text to be shown as teaser and before the form."
+msgstr "Az a szöveg, amely bevezetőként jelenik meg az űrlap előtt."
+
+#: webform.module:517
+msgid "Confirmation message or redirect URL"
+msgstr "Beküldés utáni üzenet vagy URL az átirányításhoz"
+
+#: webform.module:518
+msgid ""
+"Message to be shown upon successful submission or a path to a redirect page. "
+"Redirect pages must start with <em>http://</em> for external sites or "
+"<em>internal:</em> for an internal path. i.e. <em>http://www.example.com</"
+"em> or <em>internal:node/10</em>"
+msgstr ""
+
+#: webform.module:531
+msgid "Components"
+msgstr "Összetevők"
+
+#: webform.module:573
+msgid "Add a new component"
+msgstr "Új összetevő hozzáadása"
+
+#: webform.module:576
+msgid ""
+"Each component adds a new field to the form. Any number components (even of "
+"the same type) may be added to the form. Select a component type to add "
+"above."
+msgstr ""
+
+#: webform.module:589
+msgid "Mail Settings"
+msgstr "Levél beállításai"
+
+#: webform.module:597
+msgid "E-mail to address"
+msgstr "Az email címzettje"
+
+#: webform.module:599
+msgid "Form submissions will be e-mailed to this address. Leave blank for none."
+msgstr "A beküldött űrlapok erre az email címre lesznek elküldve. Ha erre nincs szükség, akkor üresen kell hagyni."
+
+#: webform.module:603;604;605
+msgid "Default"
+msgstr "Alapértelmezett"
+
+#: webform.module:603;604;605
+msgid "None"
+msgstr "Nincs"
+
+#: webform.module:605
+msgid "$title"
+msgstr "$title"
+
+#: webform.module:622
+msgid "E-mail from name"
+msgstr "Az email feladój"
+
+#: webform.module:625
+msgid ""
+"After adding components to this form, any textfield or hidden form element "
+"may be selected as the sender's name for e-mails."
+msgstr ""
+
+#: webform.module:631
+msgid "E-mail from address"
+msgstr "Az email feladójának címe"
+
+#: webform.module:634
+msgid ""
+"After adding components to this form, any e-mail or hidden form element may "
+"be selected as the sender's address for e-mails."
+msgstr ""
+
+#: webform.module:640
+msgid "E-mail subject"
+msgstr "Az email tárgya"
+
+#: webform.module:643
+msgid ""
+"After adding components to this form, any textfield or hidden form element "
+"may be selected as the subject line for e-mails."
+msgstr ""
+
+#: webform.module:652
+msgid "Advanced Settings"
+msgstr "Bővebb beállítások"
+
+#: webform.module:659
+msgid ""
+"Limit the number of submission a user may send within a specified time "
+"period."
+msgstr ""
+
+#: webform.module:667
+msgid "Unlimited"
+msgstr "Végtelen"
+
+#: webform.module:676
+msgid "Limit to "
+msgstr "Limit: "
+
+#: webform.module:684
+msgid "submission(s)"
+msgstr ""
+
+#: webform.module:695
+msgid "ever"
+msgstr "mindig"
+
+#: webform.module:696
+msgid "every hour"
+msgstr "óránként"
+
+#: webform.module:697
+msgid "every day"
+msgstr "naponta"
+
+#: webform.module:698
+msgid "every week"
+msgstr "hetente"
+
+#: webform.module:711
+msgid ""
+"Enter PHP code to preform additional validation for this form. Include the "
+"&lt;?php ?&gt; tags. $form_id and $form_values are available variables. If "
+"validation fails, use the form_set_error function to prevent the form from "
+"being submitted. Use the same syntax as a _validate function used in the <a "
+"href=\"http://api.drupal.org/api/file/developer/topics/forms_api.html"
+"\">Forms API</a>."
+msgstr ""
+
+#: webform.module:720
+msgid ""
+"Enter PHP code to preform additional processing for this form (after the "
+"validation). Include the &lt;?php ?&gt; tags. $form_id and $form_values are "
+"available variables, use the same syntax as a _submit function used in the "
+"<a href=\"http://api.drupal.org/api/file/developer/topics/forms_api.html"
+"\">Forms API</a>."
+msgstr ""
+
+#: webform.module:739
+msgid "Redirect POST Values"
+msgstr ""
+
+#: webform.module:740
+msgid ""
+"Forward the contents of the POST array to the redirect URL. Use this option "
+"for custom processing of the form information. No processing will be done by "
+"webform. The confirmation option above MUST be a full redirect URL for this "
+"option to have an effect."
+msgstr ""
+
+#: webform.module:810
+msgid "No Components, add a component below."
+msgstr "Nincsenek hozzáadott összetevők."
+
+#: webform.module:815
+msgid "Type"
+msgstr "Típus"
+
+#: webform.module:816 components/markup.inc:17
+msgid "Value"
+msgstr "Érték"
+
+#: webform.module:817;918 components/captcha.inc:25
+msgid "Mandatory"
+msgstr "Szükséges"
+
+#: webform.module:818;944
+msgid "Weight"
+msgstr "Súly"
+
+#: webform.module:837
+msgid "Component not found"
+msgstr "A komponens nem található"
+
+#: webform.module:859
+msgid "Unknown component type %component"
+msgstr "Ismeretlen komponens-típus: %component"
+
+#: webform.module:869
+msgid "Add new %type component"
+msgstr "Új %type összetevő hozzáadása"
+
+#: webform.module:878
+msgid "Field Details"
+msgstr "Mező részletei"
+
+#: webform.module:895
+msgid "Field Key"
+msgstr "Mező kulcs"
+
+#: webform.module:896
+msgid ""
+"Enter a machine readable key for this form element. May contain only "
+"lowercase alphanumeric characters and underscores. This key will be used as "
+"the name attribute of the form element."
+msgstr ""
+
+#: webform.module:903
+msgid "Label"
+msgstr "Címke"
+
+#: webform.module:904
+msgid "This is used as a descriptive label when displaying this form element."
+msgstr "Az űrlap megjelenésekor a mezőt leíró címke szövege."
+
+#: webform.module:913
+msgid ""
+"A short description of the field used as help for the user when he/she uses "
+"the form."
+msgstr "A mező rövid leírásával a felhasználó segíthető az űrlap helyes kitöltésében."
+
+#: webform.module:920
+msgid "Check this option if the user must enter a value."
+msgstr "Be kell jelölni ha a kitöltőnek muszáj megadnia egy értéket."
+
+#: webform.module:925
+msgid "Root"
+msgstr "Gyökér"
+
+#: webform.module:933
+msgid "Parent Fieldset"
+msgstr "Szülő mezőcsoport"
+
+#: webform.module:935
+msgid ""
+"Optional. You may organize your form by placing this component inside inside "
+"another fieldset."
+msgstr ""
+
+#: webform.module:946
+msgid ""
+"Optional. In the menu, the heavier items will sink and the lighter items "
+"will be positioned nearer the top."
+msgstr ""
+
+#: webform.module:958
+msgid "The webform component of type @type does not have an edit function defined."
+msgstr ""
+
+#: webform.module:1002
+msgid ""
+"The field key %field_key is invalid. Please include only lowercase "
+"alphanumeric charaters and underscores."
+msgstr ""
+
+#: webform.module:1007
+msgid ""
+"The field key %field_key is already in use by the field labeled %"
+"existing_field. Please use a unique key."
+msgstr ""
+
+#: webform.module:1071
+msgid "Unauthorized webform access attempt by %name."
+msgstr "%name felhasználótól megtagadott űrlapbeküldések."
+
+#: webform.module:1134
+msgid "Next Page >"
+msgstr "Következő oldal >"
+
+#: webform.module:1135
+msgid "< Previous Page"
+msgstr "Előző oldal <"
+
+#: webform.module:1238
+msgid "The webform component @type is not able to be displayed"
+msgstr "Az alábbi típusú űrlap-összetevő nem megjeleníthető: @type"
+
+#: webform.module:1263
+msgid ""
+"The authenticated user <a href=\"%user_url\">%username</a> attempted to "
+"submit more entries than allowed on the <a href=\"%webform_url\">%"
+"webform_title</a> webform"
+msgstr ""
+
+#: webform.module:1272
+msgid ""
+"An anonymous user with IP address %ip attempted to submit more entries than "
+"allowed on the <a href=\"%webform_url\">%webform_title</a> webform"
+msgstr ""
+
+#: webform.module:1280
+msgid ""
+"You have submitted the maximum number of entries. Check submission "
+"guidelines."
+msgstr ""
+
+#: webform.module:1409
+msgid "Possible spam attempt from @remote_addr"
+msgstr "Lehetséges kéretlen reklám (spam) próbálkozás innen: @remote_addr"
+
+#: webform.module:1410
+msgid "Illegal information. Data not submitted."
+msgstr "Érvénytelen információ. Az adat nem lett elküldve."
+
+#: webform.module:1427
+msgid "Submission posted to %title"
+msgstr "A beküldés postázva erre a címre: %title"
+
+#: webform.module:1483
+msgid "No node with the id '%nid' could be found"
+msgstr ""
+
+#: webform.module:1495
+msgid "Go back to the form"
+msgstr "Vissza az űrlapra"
+
+#: webform.module:65
+msgid "create webforms"
+msgstr "űrlapok létrehozása"
+
+#: webform.module:65
+msgid "edit own webforms"
+msgstr "saját űrlapok szerkesztése"
+
+#: webform.module:65
+msgid "edit webforms"
+msgstr "űrlapok szerkesztése"
+
+#: webform.module:65
+msgid "access webform results"
+msgstr "űrlapok eredményének megtekintése"
+
+#: webform.module:65
+msgid "clear webform results"
+msgstr "űrlapok eredményeinek türéáse"
+
+#: webform.module:65
+msgid "use PHP for additional processing"
+msgstr "PHP használata további feldolgozáshoz"
+
+#: webform.install:125
+msgid "Webform module installed module tables successfully."
+msgstr "Az űrlap modul adatbázis-táblái sikeresen létrejöttek."
+
+#: webform.install:128
+msgid "The installation of webform module was unsuccessful."
+msgstr "Az űrlap modul telepítése nem sikerült."
+
+#: webform.info:0
+msgid "Enables the creation of forms and questionnaires."
+msgstr "Segítségével kérdőívek és űrlapok hozhatók létre."
+
+#: components/captcha.inc:14
+msgid ""
+"Using captcha components in webform requires the <a href='http://drupal.org/"
+"project/captcha'>Captcha</a> and <a href='http://drupal.org/"
+"node/52349'>Textimage</a> modules."
+msgstr ""
+
+#: components/captcha.inc:28
+msgid "Captchas are always mandatory"
+msgstr "A captcha-k kitöltése mindig szükséges"
+
+#: components/captcha.inc:85
+msgid "Unable to render captcha field because the captcha module is not available."
+msgstr "A captcha mező megjelenítése nem lehetséges, mert a captcha modul nem elérhető."
+
+#: components/captcha.inc:135
+msgid ""
+"Require a question to prove the user is human. Requires <a href='http://"
+"drupal.org/project/captcha'>Captcha</a> module."
+msgstr ""
+
+#: components/date.inc:16 components/hidden.inc:16 components/select.inc:26
+#: components/textarea.inc:16 components/textfield.inc:16
+#: components/time.inc:14
+msgid "Default value"
+msgstr "Alapértelmezett érték"
+
+#: components/date.inc:18 components/hidden.inc:18 components/textarea.inc:18
+#: components/textfield.inc:18 components/time.inc:16
+msgid "The default value of the field."
+msgstr "A mező alapértelmezett értéke."
+
+#: components/date.inc:18
+msgid ""
+"Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/"
+"html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as today, "
+"+2 months, and Dec 9 2004 are all valid."
+msgstr ""
+
+#: components/date.inc:25 components/time.inc:24
+msgid "Timezone"
+msgstr ""
+
+#: components/date.inc:27
+msgid ""
+"Adjust the date according to a specific timezone. Website timezone is "
+"defined in the <a href=\"%settings\">Site Settings</a> and is the default."
+msgstr ""
+
+#: components/date.inc:33 components/time.inc:32
+msgid "Observe Daylight Savings"
+msgstr ""
+
+#: components/date.inc:36 components/time.inc:35
+msgid "Automatically adjust the time during daylight savings."
+msgstr ""
+
+#: components/date.inc:79
+msgid "month"
+msgstr "hónap"
+
+#: components/date.inc:79
+msgid "January"
+msgstr "Január"
+
+#: components/date.inc:79
+msgid "February"
+msgstr "Február"
+
+#: components/date.inc:79
+msgid "March"
+msgstr "Március"
+
+#: components/date.inc:79
+msgid "April"
+msgstr "Április"
+
+#: components/date.inc:79
+msgid "May"
+msgstr "Május"
+
+#: components/date.inc:79
+msgid "June"
+msgstr "Június"
+
+#: components/date.inc:79
+msgid "July"
+msgstr "Július"
+
+#: components/date.inc:79
+msgid "August"
+msgstr "Augusztus"
+
+#: components/date.inc:79
+msgid "September"
+msgstr "Szeptember"
+
+#: components/date.inc:79
+msgid "October"
+msgstr "Október"
+
+#: components/date.inc:79
+msgid "November"
+msgstr "November"
+
+#: components/date.inc:79
+msgid "December"
+msgstr "December"
+
+#: components/date.inc:80
+msgid "day"
+msgstr "nap"
+
+#: components/date.inc:92 components/time.inc:105
+msgid "This field is required."
+msgstr "Ezt a mezőt ki kell tölteni."
+
+#: components/date.inc:135
+msgid "@type %name field required"
+msgstr "@type %name mezőt ki kell tölteni"
+
+#: components/date.inc:148
+msgid "Entered %name is not a valid date."
+msgstr "A megadott dátum nem érvényes: %name ."
+
+#: components/date.inc:206
+msgid "Presents month, day, and year fields."
+msgstr "Megjeleníti az év, hónap, nap mezőket."
+
+#: components/date.inc:265 components/email.inc:158 components/file.inc:366
+#: components/textarea.inc:142 components/textfield.inc:143
+#: components/time.inc:260
+msgid "Left Blank"
+msgstr "Kitöltetlen"
+
+#: components/date.inc:266 components/email.inc:159
+#: components/textarea.inc:143 components/textfield.inc:144
+#: components/time.inc:261
+msgid "User entered value"
+msgstr "A felhasználó által megadott érték"
+
+#: components/email.inc:16 components/textarea.inc:25
+#: components/textfield.inc:25
+msgid "Width"
+msgstr "Szélesség"
+
+#: components/email.inc:18 components/textarea.inc:27
+#: components/textfield.inc:27
+msgid "Width of the textfield."
+msgstr "A szövegmező hossza."
+
+#: components/email.inc:24
+msgid "User email as default"
+msgstr "A felhasználó email címe az alapértelmezett."
+
+#: components/email.inc:27
+msgid ""
+"Set the default value of this field to the user email, if he/she is logged "
+"in."
+msgstr ""
+"Az email mező alapértelmezett értéke  a felhasználó email címe lesz, "
+"feltéve, hogy bejelentkezett."
+
+#: components/email.inc:31
+msgid "CC submission to this email"
+msgstr ""
+
+#: components/email.inc:34
+msgid ""
+"Check this option if the email specified in this component should get a CC "
+"submission."
+msgstr ""
+
+#: components/email.inc:35
+msgid ""
+"Note that this opens the risk that the form can be used to send emails to "
+"any address and might be missused as a spam gateway."
+msgstr ""
+
+#: components/email.inc:39 components/textarea.inc:41
+#: components/textfield.inc:43
+msgid "Disabled"
+msgstr "Tiltott"
+
+#: components/email.inc:41 components/textarea.inc:43
+#: components/textfield.inc:45
+msgid ""
+"Make this field non-editable. Useful for setting an unchangeable default "
+"value."
+msgstr ""
+
+#: components/email.inc:94
+msgid "%value is not a valid email address."
+msgstr "Érvénytelen email cím: %value"
+
+#: components/email.inc:123
+msgid "A textfield that automatically fills in logged-in users e-mail."
+msgstr ""
+
+#: components/email.inc:160 components/hidden.inc:113
+#: components/textarea.inc:144 components/textfield.inc:145
+msgid "Average submission length in words (ex blanks)"
+msgstr "A válaszok átlagos hossza szavakban (a szóközök nem számítanak bele)"
+
+#: components/fieldset.inc:16
+msgid "Collapsible"
+msgstr "Összecsukható"
+
+#: components/fieldset.inc:18
+msgid "If this fieldset is collapsible, the user may open or close the fieldset."
+msgstr ""
+
+#: components/fieldset.inc:23
+msgid "Collapsed by Default"
+msgstr ""
+
+#: components/fieldset.inc:25
+msgid ""
+"Collapsible fieldsets are \"open\" by default. Select this option to default "
+"the fieldset to \"closed.\""
+msgstr ""
+
+#: components/fieldset.inc:81
+msgid "Fieldsets allow you to organize complex webforms into groups of fields."
+msgstr ""
+
+#: components/file.inc:18
+msgid "Upload Filtering"
+msgstr "Feltöltés szűrő"
+
+#: components/file.inc:19
+msgid "Select the types of uploads you would like to allow."
+msgstr ""
+
+#: components/file.inc:23
+msgid "Web Images"
+msgstr "Web képek"
+
+#: components/file.inc:29
+msgid "Desktop Images"
+msgstr ""
+
+#: components/file.inc:35
+msgid "Documents"
+msgstr "Dokumentumok"
+
+#: components/file.inc:41
+msgid "Media"
+msgstr "Média"
+
+#: components/file.inc:47
+msgid "Archives"
+msgstr "Archívum"
+
+#: components/file.inc:53
+msgid "Additional Extensions"
+msgstr "További kiegészítések"
+
+#: components/file.inc:55
+msgid ""
+"Enter a list of additional file extensions for this upload field, seperated "
+"by commas.<br /> Entered extensions will be appended to checked items above."
+msgstr ""
+
+#: components/file.inc:62
+msgid "Max Upload Size"
+msgstr "A feltölthető maximális fájlméret"
+
+#: components/file.inc:64
+msgid "Enter the max file size a user may upload (in KB)."
+msgstr ""
+
+#: components/file.inc:71
+msgid "Upload Directory"
+msgstr "Feltöltések könyvtára"
+
+#: components/file.inc:73
+msgid ""
+"Webform uploads are always saved in the site files directory. You may "
+"optionally specify a subfolder to store your files."
+msgstr ""
+
+#: components/file.inc:158
+msgid "Category"
+msgstr "Kategória"
+
+#: components/file.inc:158
+msgid "Types"
+msgstr "Típusok"
+
+#: components/file.inc:204
+msgid "%field field is required."
+msgstr ""
+
+#: components/file.inc:238
+msgid ""
+"Files with the '%ext' extension are not allowed, please upload a file with a "
+"%exts extension."
+msgstr ""
+
+#: components/file.inc:243
+msgid ""
+"The file '%filename' is too large (%filesize KB). Please upload a file %"
+"maxsize KB or smaller."
+msgstr ""
+
+#: components/file.inc:264
+msgid ""
+"The uploaded file %filename was unable to be saved. The destination "
+"directory may not be writable."
+msgstr ""
+
+#: components/file.inc:272
+msgid ""
+"The uploaded file %filename was unable to be saved. The destination "
+"directory does not exist."
+msgstr ""
+
+#: components/file.inc:330
+msgid "Allow users to submit files of the configured types."
+msgstr ""
+
+#: components/file.inc:367
+msgid "User uploaded file"
+msgstr "Felhasználó által feltöltött fájl"
+
+#: components/file.inc:368
+msgid "Average uploaded file size"
+msgstr "A feltöltött fájlok átlagos mérete"
+
+#: components/hidden.inc:76
+msgid ""
+"Create a field which is not visible to the user, but is recorded with the "
+"submission."
+msgstr ""
+
+#: components/hidden.inc:111
+msgid "Empty"
+msgstr "Üres"
+
+#: components/hidden.inc:112
+msgid "Non-empty"
+msgstr "Nemüres"
+
+#: components/markup.inc:19
+msgid "Markup allows you to enter custom HTML or PHP logic into your form."
+msgstr ""
+
+#: components/markup.inc:81
+msgid "Presents a markup area of text. Does not render a field."
+msgstr ""
+
+#: components/pagebreak.inc:38
+msgid "Break up a multi-page form."
+msgstr ""
+
+#: components/select.inc:16
+msgid "Options"
+msgstr "Beállítások"
+
+#: components/select.inc:18
+msgid ""
+"A list of selectable options. One option per line. Key-value pairs may be "
+"entered seperated by pipes. i.e. safe_key|Some readable option"
+msgstr ""
+
+#: components/select.inc:28
+msgid ""
+"The default value of the field. For multiple selects use commas to separate "
+"multiple defaults."
+msgstr ""
+
+#: components/select.inc:35
+msgid "Multiple"
+msgstr "Többszörös választás"
+
+#: components/select.inc:38
+msgid "Check this option if the user should be allowed to choose multiple values."
+msgstr ""
+"Ahhoz, hogy a felhasználó egyszerre több értéket is megjelölhessen, ezt az "
+"opciót be kell jelölni."
+
+#: components/select.inc:42
+msgid "Listbox"
+msgstr "Listadoboz"
+
+#: components/select.inc:45
+msgid ""
+"Check this option if you want the select component to be of listbox type "
+"instead of radiobuttons or checkboxes."
+msgstr ""
+
+#: components/select.inc:56
+msgid ""
+"The options for this select contain illegal characters (quotes or spaces). "
+"Specify your options as <em>safe_value_no_spaces</em>|<em>The Real Value</"
+"em>."
+msgstr ""
+
+#: components/select.inc:87
+msgid "select..."
+msgstr "lista..."
+
+#: components/select.inc:294
+msgid "Allows creation of checkboxes, radio buttons, or select menus."
+msgstr ""
+
+#: components/textarea.inc:33
+msgid "Height"
+msgstr "Magasság"
+
+#: components/textarea.inc:35
+msgid "Height of the textfield."
+msgstr "A szövegdoboz magassága."
+
+#: components/textarea.inc:107
+msgid "A large text area that allows for multiple lines of input."
+msgstr ""
+
+#: components/textfield.inc:34
+msgid "Maxlength"
+msgstr ""
+
+#: components/textfield.inc:36
+msgid "Maxlength of the textfield."
+msgstr "A szövegmező maximális hossza."
+
+#: components/textfield.inc:108
+msgid "Basic textfield type."
+msgstr "Egyszerű szövegmező"
+
+#: components/time.inc:16
+msgid ""
+"Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/"
+"html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as now, +2 "
+"hours, and 10:30pm are all valid."
+msgstr ""
+
+#: components/time.inc:26
+msgid ""
+"Adjust the time according to a specific timezone. Website timezone is "
+"defined in the <a href=\"%settings\">Site Settings</a> and is the default."
+msgstr ""
+
+#: components/time.inc:40
+msgid "Time Format"
+msgstr "Időformátum"
+
+#: components/time.inc:42
+msgid "Format the display of the time in 12 or 24 hours."
+msgstr "Az idő megjelenítése 12 vagy 24 órás formában."
+
+#: components/time.inc:96
+msgid "hour"
+msgstr "óra"
+
+#: components/time.inc:97
+msgid "minute"
+msgstr "perc"
+
+#: components/time.inc:100
+msgid "am"
+msgstr "de"
+
+#: components/time.inc:100
+msgid "pm"
+msgstr "du"
+
+#: components/time.inc:138
+msgid " field is required"
+msgstr " mező szükséges"
+
+#: components/time.inc:204
+msgid "Presents the user with hour and minute fields. Optional am/pm fields."
+msgstr ""
+

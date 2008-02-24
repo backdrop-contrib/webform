@@ -1,17 +1,12 @@
 Requirements
 ------------
-Drupal 4.7.0 or greater
-
-This release of webform will not work on 4.6 or even development versions of
-Drupal 4.7. Make sure your are running 4.7.0 or higher by checking the
-CHANGLOG.txt file in the root of your Drupal installation.
-
+Drupal 5.x
 
 Installation
 ------------
 1. Copy the entire webform directory the Drupal modules directory.
 
-2. Login as an administrator. Enable the module in the "administer" -> "modules"
+2. Login as an administrator. Enable the module in the "administer" -> "build" -> "modules"
 
 3. (Optional) Edit the settings under "administer" -> "settings" -> "webform"
 

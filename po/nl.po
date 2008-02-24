@@ -1,1005 +1,1313 @@
 # $Id$
+#
 # LANGUAGE translation of Drupal (general)
-# Copyright 2007 NAME <gaele@guruburu.com>
+# Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
-# webform.inc,v 1.48.2.10 2007/05/28 19:40:54 quicksketch
-# webform.module,v 1.113.2.36 2007/06/11 03:48:32 quicksketch
-# webform_report.inc,v 1.15.2.3 2007/05/28 19:40:54 quicksketch
-# webform.install,v 1.14.2.9 2007/06/11 03:48:32 quicksketch
-# markup.inc,v 1.3.2.2 2007/05/29 03:00:32 quicksketch
-# captcha.inc,v 1.11.2.2 2007/05/29 03:00:32 quicksketch
-# date.inc,v 1.13.2.7 2007/06/11 19:13:59 quicksketch
-# hidden.inc,v 1.11.2.1 2007/05/27 22:45:20 quicksketch
-# select.inc,v 1.18.2.9 2007/06/11 13:07:11 quicksketch
-# textarea.inc,v 1.11.2.2 2007/05/29 03:00:32 quicksketch
-# textfield.inc,v 1.11.2.3 2007/05/29 03:00:32 quicksketch
-# time.inc,v 1.14.2.3 2007/05/29 03:00:32 quicksketch
-# email.inc,v 1.16.2.3 2007/05/29 03:00:32 quicksketch
-# file.inc,v 1.2.2.7 2007/06/11 13:04:24 quicksketch
-# fieldset.inc,v 1.3.4.2 2007/05/29 03:00:32 quicksketch
-# pagebreak.inc,v 1.1.2.1 2007/05/27 20:17:42 quicksketch
+#  webform.inc,v 1.48.2.15 2007/10/20 05:39:23 quicksketch
+#  webform.module,v 1.113.2.51 2007/10/21 06:46:18 quicksketch
+#  webform_report.inc,v 1.15.2.4 2007/10/20 05:39:23 quicksketch
+#  webform.install,v 1.14.2.11 2007/10/20 05:39:23 quicksketch
+#  markup.inc,v 1.3.2.3 2007/10/20 05:39:23 quicksketch
+#  captcha.inc,v 1.11.2.3 2007/10/20 05:39:23 quicksketch
+#  date.inc,v 1.13.2.9 2007/10/20 05:39:23 quicksketch
+#  hidden.inc,v 1.11.2.2 2007/10/20 05:39:23 quicksketch
+#  select.inc,v 1.18.2.12 2007/10/20 05:39:23 quicksketch
+#  textarea.inc,v 1.11.2.3 2007/10/20 05:39:23 quicksketch
+#  textfield.inc,v 1.11.2.5 2007/10/20 05:39:23 quicksketch
+#  time.inc,v 1.14.2.4 2007/10/20 05:39:23 quicksketch
+#  email.inc,v 1.16.2.5 2007/10/20 05:39:23 quicksketch
+#  file.inc,v 1.2.2.14 2007/10/20 05:39:23 quicksketch
+#  fieldset.inc,v 1.3.4.3 2007/10/20 05:39:23 quicksketch
+#  pagebreak.inc,v 1.1.2.2 2007/10/20 05:39:23 quicksketch
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: webform\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-06-11 23:26+0300\n"
-"PO-Revision-Date: 2007-09-03 22:32+0200\n"
-"Last-Translator: Gaele Strootman <gaele@guruburu.com>\n"
-"Language-Team: Nederlands <nl@li.org>\n"
+"Project-Id-Version: Dutch translation of Webform\n"
+"POT-Creation-Date: 2007-11-06 09:37+0100\n"
+"PO-Revision-Date: 2008-01-03 12:47+0100\n"
+"Last-Translator: Erik Stielstra <sutharsan a t  drupal dot org>\n"
+"Language-Team: Dutch <EMAIL@ADDRESS>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-Language: Dutch\n"
+"X-Poedit-Country: NETHERLANDS\n"
 
-#: webform.inc:17 webform.module:504
+#: webform.inc:17
+#: webform.module:499
+#, fuzzy
 msgid "Title"
 msgstr "Titel"
 
-#: webform.inc:18 webform_report.inc:57
+#: webform.inc:18
+#: webform_report.inc:56
+#, fuzzy
 msgid "View"
 msgstr "Weergeven"
 
-#: webform.inc:20 webform_report.inc:33
+#: webform.inc:19
+#: webform_report.inc:32
+#, fuzzy
 msgid "Operations"
 msgstr "Bewerkingen"
 
-#: webform.inc:28 webform.module:294
-msgid "submissions"
-msgstr "inzendingen"
+#: webform.inc:27
+#: webform.module:304
+msgid "Submissions"
+msgstr "Inzendingen"
 
-#: webform.inc:29 webform.module:299
-msgid "analysis"
-msgstr "analyse"
+#: webform.inc:28
+#: webform.module:309
+msgid "Analysis"
+msgstr "Analyse"
 
-#: webform.inc:30 webform.module:304
-msgid "table"
-msgstr "tabel"
+#: webform.inc:29
+#: webform.module:314
+msgid "Table"
+msgstr "Tabel"
 
-#: webform.inc:31 webform.module:309
-msgid "download"
-msgstr "downloaden"
+#: webform.inc:30
+#: webform.module:319
+msgid "Download"
+msgstr "Downloaden"
 
-#: webform.inc:32
-msgid "edit"
-msgstr "bewerken"
+#: webform.inc:35
+msgid "Edit"
+msgstr "Bewerken"
 
-#: webform.inc:33 webform.module:314
-msgid "clear"
-msgstr "wissen"
-
-#: webform.inc:47
-msgid "Clear Form Submissions"
-msgstr "Inzendingen wissen"
-
-#: webform.inc:51
-msgid "Are you sure you want to delete all submissions for this form?"
-msgstr "Weet u zeker dat u alle inzendingen behorend bij dit formulier wilt verwijderen?"
-
-#: webform.inc:53
+#: webform.inc:36;57
+#: webform.module:324
+#, fuzzy
 msgid "Clear"
 msgstr "Wissen"
 
-#: webform.inc:53;82
+#: webform.inc:51
+#, fuzzy
+msgid "Clear Form Submissions"
+msgstr "Inzendingen wissen"
+
+#: webform.inc:55
+msgid "Are you sure you want to delete all submissions for this form?"
+msgstr "Weet u zeker dat u alle inzendingen van dit formulier wilt verwijderen?"
+
+#: webform.inc:57;88
+#, fuzzy
 msgid "Cancel"
 msgstr "Annuleren"
 
-#: webform.inc:63
+#: webform.inc:67
+#, fuzzy
 msgid "Webform %title entries cleared."
 msgstr "Inzendingen van webformulier %title zijn gewist."
 
-#: webform.inc:75
+#: webform.inc:81
+#, fuzzy
 msgid "Delete Form Submission"
 msgstr "Inzending verwijderen"
 
-#: webform.inc:80
+#: webform.inc:86
+#, fuzzy
 msgid "Are you sure you want to delete this submission?"
 msgstr "Weet u zeker dat u deze inzending wilt verwijderen?"
 
-#: webform.inc:82 webform_report.inc:61
+#: webform.inc:88
+#: webform_report.inc:60
+#, fuzzy
 msgid "Delete"
 msgstr "Verwijderen"
 
-#: webform.inc:92
+#: webform.inc:98
+#, fuzzy
 msgid "Submission deleted"
 msgstr "Inzending verwijderd"
 
-#: webform.inc:167
+#: webform.inc:175
+#, fuzzy
 msgid "Submitted on"
 msgstr "Ingezonden op"
 
-#: webform.inc:171
+#: webform.inc:179
+#, fuzzy
 msgid "Submitted by user"
 msgstr "Ingezonden door gebruiker"
 
-#: webform.inc:174
+#: webform.inc:182
+#, fuzzy
 msgid "Submitted by anonymous user"
 msgstr "Ingezonden door anonieme gebruiker"
 
-#: webform.inc:179
+#: webform.inc:186
+#, fuzzy
 msgid "Submitted values are"
 msgstr "Ingezonden waarden zijn"
 
-#: webform.inc:201
-msgid "The results of this submission may be viewed at:\n"
-msgstr "Het resultaat van deze inzending kan worden bekeken op:\n"
+#: webform.inc:190
+#, fuzzy
+msgid "The results of this submission may be viewed at:"
+msgstr "Het resultaat van deze inzending kan worden bekeken op:"
 
-#: webform.inc:65 webform.module:286;319;133;1066;1257;1266;1404;1422;0 webform.install:473
+#: webform.inc:69
+#: webform.module:296;142;1071;1263;1272;1409;1427;0
+#: webform.install:476
+#, fuzzy
 msgid "webform"
 msgstr "webformulier"
 
-#: webform_report.inc:29;95
+#: webform_report.inc:28;94
+#, fuzzy
 msgid "#"
 msgstr "#"
 
-#: webform_report.inc:30;96
+#: webform_report.inc:29;95
+#, fuzzy
 msgid "Submitted"
 msgstr "Ingezonden"
 
-#: webform_report.inc:31;97
+#: webform_report.inc:30;96
+#, fuzzy
 msgid "User"
 msgstr "Gebruiker"
 
-#: webform_report.inc:32;98
+#: webform_report.inc:31;97
+#, fuzzy
 msgid "IP Address"
 msgstr "IP-adres"
 
-#: webform_report.inc:253
+#: webform_report.inc:252
+#, fuzzy
 msgid "Q"
 msgstr "Q"
 
-#: webform_report.inc:254
+#: webform_report.inc:253
+#, fuzzy
 msgid "responses"
 msgstr "antwoorden"
 
-#: webform.module:26
+#: webform.module:22
 msgid "Webforms are forms and questionnaires. To add one select <strong>create content -&gt; webform</strong>. Below you can set different security and debug options."
-msgstr "Webformulieren zijn formulieren en vragenlijsten. Kies <strong>inhoud aanmaken -&gt; webformulier</strong> om een webformulier aan te maken. Hieronder kunnen beveiligings- en debug-opties worden ingesteld."
+msgstr "Webformulieren zijn formulieren en vragenlijsten. Kies <strong>inhoud aanmaken > webformulier</strong> om een webformulier aan te maken. Hieronder kunnen beveiligings- en debug-opties worden ingesteld."
 
-#: webform.module:29
-msgid "<p>This module lets you create forms or questionnaires and define their content. Submissions from these forms are stored in the database and optionally also sent by e-mail to a predefined address.</p>\n      <p>Here is how to create one:</p>\n      <ul>\n       <li>Go to Create Content and add a webform</li>\n       <li>Add a description to be displayed as a teaser and above the actual form.</li>\n       <li>Add a confirmation message or redirect node that is to be displayed after successful submission.</li>\n       <li>Add one or more components to your form.</li>\n       <li>Optionally add an e-mail address to which submissions will be sent. If no email address is specified, no e-mail will be sent when submissions are made through the form.</li>\n       <li>Optionally select an e-mail (or hidden) component that will be used to populate the return e-mail address on any sent e-mail.</li>\n       <li>Optionally select a textfield (or hidden) component that will be used to populate the subject e-mail field on any sent e-mail.</li>\n      </ul>\n      <p>Help on adding and configuring the components will be shown after you add your first component.</p>\n      <p>The content of submitted forms is stored in the database table <i>webform_submitted_data</i> as key-value pairs.</p>\n      "
-msgstr "<p>Met deze module kunt u formulieren of vragenlijsten aanmaken en de inhoud ervan definiëren. Inzendingen van deze formulieren worden opgeslagen in de database en naar keuze ook per e-mail verstuurd naar een vooraf ingesteld adres.</p>\n      <p>Zo kunt u een formulier aanmaken:</p>\n      <ul>\n       <li>Ga naar Inhoud aanmaken en voeg een webformulier toe</li>\n       <li>Voeg een beschrijving toe die bovenaan het formulier en als voorproefje wordt getoond.</li>\n       <li>Voeg een bevestiging toe, of een omleiding naar een node die wordt getoond na een geslaagde inzending.</li>\n       <li>Voeg een of meer onderdelen toe.</li>\n       <li>Kies naar wens een e-mailadres waar inzendingen naartoe worden gestuurd. Als er geen e-mailadres wordt opgegeven wordt er geen e-mail verstuurd.</li>\n       <li>Kies naar wens een e-mailadres of verborgen veld dat wordt gebruikt als \"Reply-to\"-adres voor een verstuurde e-mail.</li>\n       <li>Kies naar wens een tekstveld of verborgen veld dat wordt gebruikt als onderwerp voor een verstuurde e-mail.</li>\n      </ul>\n      <p>Hulpinformatie voor het toevoegen en instellen van onderdelen wordt getoond na het toevoegen van het eerste onderdeel.</p>\n      <p>De inhoud van verstuurde formulieren wordt opgeslagen in de database-tabel <i>webform_submitted_data</i> als sleutel-waarde-combinaties.</p>\n      "
+#: webform.module:25
+msgid ""
+"<p>This module lets you create forms or questionnaires and define their content. Submissions from these forms are stored in the database and optionally also sent by e-mail to a predefined address.</p>\n"
+"      <p>Here is how to create one:</p>\n"
+"      <ul>\n"
+"       <li>Go to Create Content and add a webform</li>\n"
+"       <li>Add a description to be displayed as a teaser and above the actual form.</li>\n"
+"       <li>Add a confirmation message or redirect node that is to be displayed after successful submission.</li>\n"
+"       <li>Add one or more components to your form.</li>\n"
+"       <li>Optionally add an e-mail address to which submissions will be sent. If no email address is specified, no e-mail will be sent when submissions are made through the form.</li>\n"
+"       <li>Optionally select an e-mail (or hidden) component that will be used to populate the return e-mail address on any sent e-mail.</li>\n"
+"       <li>Optionally select a textfield (or hidden) component that will be used to populate the subject e-mail field on any sent e-mail.</li>\n"
+"      </ul>\n"
+"      <p>Help on adding and configuring the components will be shown after you add your first component.</p>\n"
+"      <p>The content of submitted forms is stored in the database table <i>webform_submitted_data</i> as key-value pairs.</p>\n"
+"      "
+msgstr ""
+"<p>Met deze module kunt u formulieren of vragenlijsten aanmaken en de inhoud ervan definiëren. Inzendingen van deze formulieren worden opgeslagen in de database en naar keuze ook per e-mail verstuurd naar een vooraf ingesteld adres.</p>\n"
+"      <p>Zo kunt u een formulier aanmaken:</p>\n"
+"      <ul>\n"
+"       <li>Ga naar 'Inhoud aanmaken' en voeg een webformulier toe</li>\n"
+"       <li>Voeg een beschrijving toe die bovenaan het formulier en als voorproefje wordt getoond.</li>\n"
+"       <li>Voeg een bevestiging toe, of een omleiding naar een pagaina die wordt getoond na een geslaagde inzending.</li>\n"
+"       <li>Voeg een of meer onderdelen toe.</li>\n"
+"       <li>Kies naar wens een e-mailadres waar inzendingen naartoe worden gestuurd. Als er geen e-mailadres wordt opgegeven wordt er geen e-mail verstuurd.</li>\n"
+"       <li>Kies naar wens een e-mailadres of verborgen veld dat wordt gebruikt als Reply-to-adres voor een verstuurde e-mail.</li>\n"
+"       <li>Kies naar wens een tekstveld of verborgen veld dat wordt gebruikt als onderwerp voor een verstuurde e-mail.</li>\n"
+"      </ul>\n"
+"      <p>Hulpinformatie voor het toevoegen en instellen van onderdelen wordt getoond na het toevoegen van het eerste onderdeel.</p>\n"
+"      <p>De inhoud van verstuurde formulieren wordt opgeslagen in de database-tabel <em>webform_submitted_data</em> als sleutel-waarde-combinaties.</p>\n"
+"      "
 
-#: webform.module:45
+#: webform.module:41
+#, fuzzy
 msgid "A webform can be a questionnaires, contact or request forms. It can be used to let visitors make contact, register for a event or to enable a complex survey."
 msgstr "Een webformulier kan een vragenlijst zijn, een contactformulier of een aanvraagformulier. Het kan worden gebruikt om bezoekers contact te laten opnemen, te laten registreren voor een evenement, of voor een uitgebreide enquête."
 
-#: webform.module:48
+#: webform.module:44
+#, fuzzy
 msgid "Available variables are: %username, %useremail, %site, %date."
 msgstr "Beschikbare variabelen zijn: %username, %useremail, %site, %date."
 
-#: webform.module:49
+#: webform.module:45
+#, fuzzy
 msgid "You can also use %server[key] to add any of the special PHP <a href=\"http://www.php.net/reserved.variables#reserved.variables.server\">$_SERVER</a> variables and %get[key] to create prefilled forms from the <a href=\"http://www.php.net/reserved.variables#reserved.variables.get\">URL</a> (e.g. %server[HTTP_USER_AGENT] or %get[id])."
 msgstr "U kunt ook gebruik maken van %server[key] om een PHP <a href=\"http://www.php.net/reserved.variables#reserved.variables.server\">$_SERVER</a> variabele toe te voegen, en %get[key] om vooraf ingevulde formulieren te maken op basis van de <a href=\"http://www.php.net/reserved.variables#reserved.variables.get\">URL</a> (bijvoorbeeld %server[HTTP_USER_AGENT] of %get[id])."
 
-#: webform.module:51
+#: webform.module:47
+#, fuzzy
 msgid "If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the varible %profile[profile_city]."
 msgstr "Als u de profielmodule gebruikt heeft u toegang tot alle profieldata, door middel van de syntax %profile[form_name]. Als u bijvoorbeeld de profielwaarde genaamd profile_city heeft voeg dan de variabele %profile[profile_city] toe."
 
-#: webform.module:76;272 webform.install:504 webform.info:0
+#: webform.module:74;282;329
+#: webform.install:507
+#: webform.info:0
+#, fuzzy
 msgid "Webform"
 msgstr "Webformulier"
 
-#: webform.module:78
+#: webform.module:76
 msgid "Create a new form or questionnaire accessible to users. Submission results and statistics are recorded and accessible to privileged users."
-msgstr "Een nieuw formulier of vragenlijst aanmaken. Resultaten en statistieken worden opgeslagen, en zijn toegankelijk voor gebruikers met de juiste rechten."
+msgstr "Een nieuw formulier of vragenlijst aanmaken. Resultaten en statistieken worden opgeslagen en zijn toegankelijk voor gebruikers met de juiste rechten."
 
-#: webform.module:158
+#: webform.module:168
 msgid "Available Components"
-msgstr "Beschikbare componenten"
+msgstr "Beschikbare onderdelen"
 
-#: webform.module:161
+#: webform.module:171
 msgid "Below is a list of supported field types available for webform. You may disable any of these components by unchecking its corresponding box. Only checked components will be available in existing or new webforms."
-msgstr "Hieronder worden de voor webformulieren beschikbare veldtypes getoond. U kunt onderdelen uitschakelen door het bijbehorende vakje uit te vinken. Alleen aangevinkte onderdelen zijn beschikbaar, voor bestaande en nieuwe webformulieren."
+msgstr "Hieronder worden de voor webformulieren beschikbare veldtypen getoond. U kunt onderdelen uitschakelen door het bijbehorende keuzevakje uit te vinken. Alleen aangevinkte onderdelen zijn beschikbaar voor bestaande en nieuwe webformulieren."
 
-#: webform.module:178
+#: webform.module:188
+#, fuzzy
 msgid "Default E-mail Values"
 msgstr "Standaard e-mailwaarden"
 
-#: webform.module:185
+#: webform.module:195
+#, fuzzy
 msgid "From e-mail address"
-msgstr "Van e-mailadres"
+msgstr "E-mailadres afzender"
 
-#: webform.module:187
+#: webform.module:197
+#, fuzzy
 msgid "Default sender address. This may be the E-mail address of the maintainer of your forms. This is also used for Reply-To, Return-Path and Errors-To."
 msgstr "Standaard afzenderadres. Dit kan het e-mailadres zijn van de beheerder van de formulieren. Dit adres wordt ook gebruikt voor Reply-To, Return-Path en Errors-To."
 
-#: webform.module:192
+#: webform.module:202
+#, fuzzy
 msgid "From Name"
-msgstr "Van naam"
+msgstr "Naam afzender"
 
-#: webform.module:194
+#: webform.module:204
 msgid "Default sender name which is displayed together with the E-mail address."
-msgstr "Standaard afzendernaam, getoond tezamen met het e-mailadres."
+msgstr "Standaard afzendernaam, wordt samen met het e-mailadres weergegeven."
 
-#: webform.module:199
+#: webform.module:209
+#, fuzzy
 msgid "Default Subject"
 msgstr "Standaard onderwerp"
 
-#: webform.module:200;609;1355
+#: webform.module:210;605;1360
+#, fuzzy
 msgid "Form submission from: "
-msgstr "Formulierinzending van: "
+msgstr "Formulierinzending van:"
 
-#: webform.module:201
+#: webform.module:211
 msgid "Default Subject. If not other stated in the form configuration this is appended to your form title. If you have e.g. defined \"Your \" (note the space) as a default subject and a form titled with \"Order\" the e-mail subject will be \"Your Order\"."
-msgstr "Standaardonderwerp. Als er niets anders is ingesteld in de formulierinstellingen zal dit worden toegevoegd aan de formuliertitel. Als bijvoorbeeld \"Uw \" (let op de spatie) als standaardonderwerp is ingesteld, en het formulier heeft de titel \"Bestelling\", dan zal de e-mail als onderwerp \"Uw Bestelling\" hebben."
+msgstr "Standaardonderwerp. Als in de formulierinstellingen geen ander onderwerp is ingesteld zal deze tekst worden toegevoegd aan de formuliertitel. Als bijvoorbeeld \"Uw \" (let op de spatie) als standaardonderwerp is ingesteld, en het formulier heeft de titel \"bestelling\", dan zal de e-mail als onderwerp \"Uw bestelling\" hebben."
 
-#: webform.module:206
+#: webform.module:216
+#, fuzzy
 msgid "Advanced Options"
 msgstr "Uitgebreide instellingen"
 
-#: webform.module:214
+#: webform.module:224
+#, fuzzy
 msgid "Allow Cookies for Tracking Submissions"
 msgstr "Cookies gebruiken voor het bijhouden van inzendingen"
 
-#: webform.module:216
+#: webform.module:226
+#, fuzzy
 msgid "<a href=\"http://www.wikipedia.org/wiki/HTTP_cookie\">Cookies</a> can be used to help prevent the same user from repeatedly submitting a webform. This feature is not needed for limiting submissions per user, though it can increase accuracy in some situations. Besides cookies, webform also uses IP addresses and site usernames to prevent repeated submissions."
 msgstr "Met <a href=\"http://nl.wikipedia.org/wiki/Cookies\">cookies</a> kan worden voorkomen dat een gebruiker meerdere malen hetzelfde formulier verzendt. Deze functie is niet nodig om het aantal inzendingen per gebruiker te beperken, maar kan in bepaalde gevallen wel de nauwkeurigheid verhogen. Naast cookies gebruikt de webformuliermodule ook IP-adressen en gebruikersnamen om herhaalde inzendingen te voorkomen."
 
-#: webform.module:221
+#: webform.module:231
+#, fuzzy
 msgid "Webforms Debug"
 msgstr "Webformulieren debuggen"
 
-#: webform.module:224
-msgid "Set this option to \"Log submissions\" to log all submissions in the watchdog. Set it to \"Full debug\" to print debug info on submission. You probably want to leave this option on \"OFF\"."
-msgstr "Kies \"Log inzendingen\" om alle inzendingen te loggen in de waakhond. Kies \"Volledig debuggen\" om debug-gegevens af te drukken na een inzending. Waarschijnlijk wilt u deze optie op \"OFF\" laten staan."
+#: webform.module:233
+msgid "OFF"
+msgstr "Uit"
 
-#: webform.module:240;823
+#: webform.module:233
+msgid "Log submissions"
+msgstr "Inzendingen bijhouden in logboek"
+
+#: webform.module:233
+msgid "Full debug"
+msgstr "Maximale debug"
+
+#: webform.module:234
+msgid "Set this option to \"Log submissions\" to log all submissions in the watchdog. Set it to \"Full debug\" to print debug info on submission. You probably want to leave this option on \"OFF\"."
+msgstr "Kies 'Log inzendingen' om alle inzendingen in de log bij te houden. Kies \"Volledig debuggen\" om debug-gegevens af te drukken na een inzending. Waarschijnlijk wilt u deze optie op \"OFF\" laten staan."
+
+#: webform.module:250;814
+#, fuzzy
 msgid "Name"
 msgstr "Naam"
 
-#: webform.module:240;512;923
+#: webform.module:250;507;911
+#, fuzzy
 msgid "Description"
 msgstr "Beschrijving"
 
-#: webform.module:240
+#: webform.module:250
+#, fuzzy
 msgid "Enabled"
 msgstr "Ingeschakeld"
 
-#: webform.module:262
+#: webform.module:272
+#, fuzzy
 msgid "Webforms"
 msgstr "Webformulieren"
 
-#: webform.module:265
+#: webform.module:275
+#, fuzzy
 msgid "View and edit all the available webforms on your site."
 msgstr "Weergeven en bewerken van alle beschikbare webformulieren op de site."
 
-#: webform.module:276
+#: webform.module:286
+#, fuzzy
 msgid "Global configuration of webform functionality."
 msgstr "Algemene instellingen van de webformuliermodule."
 
-#: webform.module:290;1422
+#: webform.module:300;1427
+#, fuzzy
 msgid "Results"
 msgstr "Resultaten"
 
-#: webform.module:338
+#: webform.module:347
+#, fuzzy
 msgid "Go to form"
 msgstr "Naar het formulier"
 
-#: webform.module:340
+#: webform.module:349
+#, fuzzy
 msgid "View this form."
 msgstr "Formulier weergeven."
 
-#: webform.module:361;465;563
+#: webform.module:369;459;559
+#, fuzzy
 msgid "Delete Selected"
 msgstr "Selectie verwijderen"
 
-#: webform.module:380;982
+#: webform.module:388;969
+#, fuzzy
 msgid "Done"
 msgstr "Klaar"
 
-#: webform.module:400;457;568;841
+#: webform.module:405;451;564;832
+#, fuzzy
 msgid "Edit Selected"
 msgstr "Selectie bewerken"
 
-#: webform.module:418
+#: webform.module:412
 msgid "The form component has been changed. Remember to press Submit on the bottom of this form to save your changes."
-msgstr "Het formulieronderdeel is gewijzigd. Klik op \"Indienen\" onderaan dit formulier om de wijzigingen op te slaan."
+msgstr "Het formulieronderdeel is gewijzigd. Klik op 'Indienen' onderaan dit formulier om de wijzigingen op te slaan."
 
-#: webform.module:420;478;1054;1095 components/markup.inc:38
+#: webform.module:414;472;1059;1099
+#: components/markup.inc:41
+#, fuzzy
 msgid "Preview"
 msgstr "Voorbeeldweergave"
 
-#: webform.module:448;585
+#: webform.module:442;581
+#, fuzzy
 msgid "Add"
 msgstr "Toevoegen"
 
-#: webform.module:470
+#: webform.module:464
+#, fuzzy
 msgid "Field deleted, form must be submitted to save changes"
-msgstr "Veld verwijderd. Het formulier moet worden bewaard om de wijzigingen op te slaan"
+msgstr "Veld verwijderd. Het formulier moet worden bewaard om de wijzigingen op te slaan."
 
-#: webform.module:473
+#: webform.module:467
+#, fuzzy
 msgid "A component must be selected to delete"
 msgstr "Selecteer een onderdeel om te verwijderen"
 
-#: webform.module:477;1162;1179;1289
+#: webform.module:471;1150;1169;1186;1295
+#, fuzzy
 msgid "Submit"
 msgstr "Inzenden"
 
-#: webform.module:482
+#: webform.module:476
+#, fuzzy
 msgid "Submission limit must be a number"
 msgstr "Inzendingslimiet moet een getal zijn"
 
-#: webform.module:497
+#: webform.module:491
+#, fuzzy
 msgid "Webform Settings"
 msgstr "Webformulier-instellingen"
 
-#: webform.module:513
+#: webform.module:508
+#, fuzzy
 msgid "Text to be shown as teaser and before the form."
 msgstr "Tekst die wordt getoond bovenaan het formulier en als voorproefje."
 
-#: webform.module:522
+#: webform.module:517
+#, fuzzy
 msgid "Confirmation message or redirect URL"
 msgstr "Bevestigingsbericht of doorstuur-URL"
 
-#: webform.module:523
+#: webform.module:518
 msgid "Message to be shown upon successful submission or a path to a redirect page. Redirect pages must start with <em>http://</em> for external sites or <em>internal:</em> for an internal path. i.e. <em>http://www.example.com</em> or <em>internal:node/10</em>"
-msgstr "Een bericht dat wordt getoond na een geslaagde inzending, of een pad naar een doorstuurpagina. Doorstuurpagina's moeten beginnen met <em>http://</em> voor externe sites of <em>internal:</em> voor een intern pad. Bijvoorbeeld <em>http://www.example.com</em> of <em>internal:node/10</em>"
+msgstr "Een bericht dat wordt getoond na een geslaagde inzending of een pad naar een doorstuurpagina. Doorstuurpagina's moeten beginnen met <em>http://</em> voor externe sites of <em>internal:</em> voor een intern pad. Bijvoorbeeld <em>http://www.example.com</em> of <em>internal:node/10</em>"
 
-#: webform.module:536
+#: webform.module:531
+#, fuzzy
 msgid "Components"
 msgstr "Onderdelen"
 
-#: webform.module:577
+#: webform.module:573
+#, fuzzy
 msgid "Add a new component"
 msgstr "Een nieuw onderdeel toevoegen"
 
-#: webform.module:580
+#: webform.module:576
+#, fuzzy
 msgid "Each component adds a new field to the form. Any number components (even of the same type) may be added to the form. Select a component type to add above."
 msgstr "Elk onderdeel voegt een nieuw veld toe aan het formulier. U mag een onbeperkt aantal onderdelen toevoegen, ook van hetzelfde type. Selecteer hierboven het type onderdeel dat u wilt toevoegen."
 
-#: webform.module:593
+#: webform.module:589
 msgid "Mail Settings"
-msgstr "Mailinstellingen"
+msgstr "E-mailinstellingen"
 
-#: webform.module:601
+#: webform.module:597
+#, fuzzy
 msgid "E-mail to address"
 msgstr "E-mail naar adres"
 
-#: webform.module:603
+#: webform.module:599
 msgid "Form submissions will be e-mailed to this address. Leave blank for none."
-msgstr "Formulierinzendingen worden naar dit adres gestuurd. Laat dit veld leeg om geen e-mails te sturen."
+msgstr "Inzendingen worden naar dit adres gestuurd. Laat dit veld leeg om geen e-mails te sturen."
 
-#: webform.module:607;608;609
+#: webform.module:603;604;605
+#, fuzzy
 msgid "Default"
 msgstr "Standaard"
 
-#: webform.module:607;608;609
+#: webform.module:603;604;605
+#, fuzzy
 msgid "None"
 msgstr "Geen"
 
-#: webform.module:609
+#: webform.module:605
+#, fuzzy
 msgid "$title"
 msgstr "$title"
 
-#: webform.module:626
+#: webform.module:622
 msgid "E-mail from name"
-msgstr "E-mail van naam"
+msgstr "Naam van afzender"
 
-#: webform.module:629
+#: webform.module:625
+#, fuzzy
 msgid "After adding components to this form, any textfield or hidden form element may be selected as the sender's name for e-mails."
 msgstr "Na het toevoegen van onderdelen aan dit formulier kan een tekstveld of verborgen veld worden gebruikt als afzendernaam voor e-mails."
 
-#: webform.module:635
+#: webform.module:631
 msgid "E-mail from address"
-msgstr "E-mail van adres"
+msgstr "E-mailadres van afzender"
 
-#: webform.module:638
+#: webform.module:634
 msgid "After adding components to this form, any e-mail or hidden form element may be selected as the sender's address for e-mails."
-msgstr "Nadat aan dit formulier onderdelen zijn toegevoegd kan een e-mail- of verborgen formulierveld worden geselecteerd als afzenderadres."
+msgstr "Nadat aan dit formulier onderdelen zijn toegevoegd kan een e-mailveld of verborgen veld worden geselecteerd als afzenderadres."
 
-#: webform.module:644
+#: webform.module:640
+#, fuzzy
 msgid "E-mail subject"
 msgstr "E-mailonderwerp"
 
-#: webform.module:647
+#: webform.module:643
+#, fuzzy
 msgid "After adding components to this form, any textfield or hidden form element may be selected as the subject line for e-mails."
 msgstr "Na het toevoegen van onderdelen aan dit formulier kan een tekstveld of verborgen veld worden gebruikt als onderwerpregel voor e-mails."
 
-#: webform.module:657
+#: webform.module:652
+#, fuzzy
 msgid "Advanced Settings"
 msgstr "Uitgebreide instellingen"
 
-#: webform.module:665
-msgid "Limit the number of submission a user may send within a specified time period."
-msgstr "Het aantal inzendingen, dat een gebruiker binnen een bepaalde periode mag sturen, beperken."
+#: webform.module:659
+msgid "Limit the number of submissions a user may send within a specified time period"
+msgstr "Het aantal inzendingen beperken dat een gebruiker binnen een bepaalde periode mag sturen."
 
-#: webform.module:684
+#: webform.module:667
+msgid "Unlimited"
+msgstr "Onbeperkt"
+
+#: webform.module:676
+#, fuzzy
 msgid "Limit to "
 msgstr "Beperk tot"
 
-#: webform.module:692
+#: webform.module:684
+#, fuzzy
 msgid "submission(s)"
 msgstr "inzending(en)"
 
-#: webform.module:704
+#: webform.module:695
+#, fuzzy
 msgid "ever"
 msgstr "ooit"
 
-#: webform.module:705
+#: webform.module:696
+#, fuzzy
 msgid "every hour"
 msgstr "per uur"
 
-#: webform.module:706
+#: webform.module:697
+#, fuzzy
 msgid "every day"
 msgstr "per dag"
 
-#: webform.module:707
+#: webform.module:698
+#, fuzzy
 msgid "every week"
 msgstr "per week"
 
+#: webform.module:711
+msgid "Enter PHP code to preform additional validation for this form. Include the &lt;?php ?&gt; tags. $form_id and $form_values are available variables. If validation fails, use the form_set_error function to prevent the form from being submitted. Use the same syntax as a _validate function used in the <a href=\"http://api.drupal.org/api/file/developer/topics/forms_api.html\">Forms API</a>."
+msgstr "Voer PHP-code in om extra validatie aan dit formulier toe te voegen. Maak gebruik van de <?php ?> tags. $form_id en $form_values zijn beschikbare variabelen. Gebruik, als de validatie mislukt, de functie form_set_error om te voorkomen dat het formulier wordt verstuurd. Gebruik dezelfde syntax als de _validate functie gebruikt in de <a href=\"http://api.drupal.org/api/file/developer/topics/forms_api.html\">Forms API</a>."
+
 #: webform.module:720
-msgid "Enter PHP code to preform additional validation for this form. Include the &lt;?php ?&gt; tags. $form_id and $form_values are available variables. If validation fails, use the form_set_error function to prevent the form from being submitted. Use the same syntax as a _validate function used in the <a href=\"http://api.drupal.org/api/4.7/file/developer/topics/forms_api.html\">Forms API</a>."
-msgstr "Voer PHP-code in om extra validatie aan dit formulier toe te voegen. Maak gebruik van de &lt;?php ?&gt; tags. $form_id en $form_values zijn beschikbare variabelen. Gebruik, als de validatie mislukt, de functie form_set_error om te voorkomen dat het formulier wordt verstuurd. Gebruik dezelfde syntax als de _validate functie gebruikt in de <a href=\"http://api.drupal.org/api/4.7/file/developer/topics/forms_api.html\">Forms API</a>."
+msgid "Enter PHP code to preform additional processing for this form (after the validation). Include the &lt;?php ?&gt; tags. $form_id and $form_values are available variables, use the same syntax as a _submit function used in the <a href=\"http://api.drupal.org/api/file/developer/topics/forms_api.html\">Forms API</a>."
+msgstr "Voer PHP-code in om extra verwerkingsstappen aan dit formulier toe te voegen (na de validatie). Maak gebruik van de <?php ?> tags. $form_id en $form_values zijn beschikbare variabelen. Gebruik dezelfde syntax als de _submit-functie gebruikt in de <a href=\"http://api.drupal.org/api/file/developer/topics/forms_api.html\">Forms API</a>."
 
-#: webform.module:729
-msgid "Enter PHP code to preform additional processing for this form (after the validation). Include the &lt;?php ?&gt; tags. $form_id and $form_values are available variables, use the same syntax as a _submit function used in the <a href=\"http://api.drupal.org/api/4.7/file/developer/topics/forms_api.html\">Forms API</a>."
-msgstr "Voer PHP-code in om extra verwerkingsstappen aan dit formulier toe te voegen (na de validatie). Maak gebruik van de &lt;?php ?&gt; tags. $form_id en $form_values zijn beschikbare variabelen. Gebruik dezelfde syntax als de _submit functie gebruikt in de <a href=\"http://api.drupal.org/api/4.7/file/developer/topics/forms_api.html\">Forms API</a>."
-
-#: webform.module:748
+#: webform.module:739
+#, fuzzy
 msgid "Redirect POST Values"
 msgstr "POST-waarden doorsturen"
 
-#: webform.module:749
+#: webform.module:740
 msgid "Forward the contents of the POST array to the redirect URL. Use this option for custom processing of the form information. No processing will be done by webform. The confirmation option above MUST be a full redirect URL for this option to have an effect."
-msgstr "De inhoud van het \"POST array\" zal worden doorgestuurd naar de doorstuur-URL hierboven. Gebruik deze optie voor zelf te kiezen verwerking van de formuliergegevens. De webformuliermodule zal zelf geen gegevens verwerken. De bevestigingsoptie hierboven MOET bestaan uit een volledige URL om deze optie effect te laten hebben."
+msgstr "De inhoud van het 'POST array' zal worden doorgestuurd naar de redirect-URL hierboven. Gebruik deze optie voor zelf te kiezen verwerking van de formuliergegevens. De webformuliermodule zal zelf geen gegevens verwerken. De bevestigingsoptie hierboven MOET bestaan uit een volledige URL om deze optie effect te laten hebben."
 
-#: webform.module:824
+#: webform.module:810
+msgid "No Components, add a component below."
+msgstr "Geen onderdelen, voeg een onderdeel toe."
+
+#: webform.module:815
+#, fuzzy
 msgid "Type"
 msgstr "Type"
 
-#: webform.module:825 components/markup.inc:16
+#: webform.module:816
+#: components/markup.inc:17
+#, fuzzy
 msgid "Value"
 msgstr "Waarde"
 
-#: webform.module:826;931 components/captcha.inc:24
+#: webform.module:817;918
+#: components/captcha.inc:25
+#, fuzzy
 msgid "Mandatory"
-msgstr "Vereist"
+msgstr "Verplicht"
 
-#: webform.module:827;957
+#: webform.module:818;944
+#, fuzzy
 msgid "Weight"
 msgstr "Gewicht"
 
-#: webform.module:846
+#: webform.module:837
+#, fuzzy
 msgid "Component not found"
 msgstr "Onderdeel niet gevonden"
 
-#: webform.module:868
+#: webform.module:859
+#, fuzzy
 msgid "Unknown component type %component"
 msgstr "Onbekend type van onderdeel %component"
 
-#: webform.module:888
+#: webform.module:869
+msgid "Add new %type component"
+msgstr "Nieuw onderdeel %type toevoegen"
+
+#: webform.module:878
+#, fuzzy
 msgid "Field Details"
 msgstr "Velddetails"
 
-#: webform.module:907
+#: webform.module:895
+#, fuzzy
 msgid "Field Key"
 msgstr "Veldsleutel"
 
-#: webform.module:908
-msgid "Enter a machine readable key for this form element. May contain only alphanumeric characters and underscores. This key will be used as the name attribute of the form element."
-msgstr "Voer een machinaal leesbare sleutel voor de formulieronderdeel in. De sleutel mag alleen alfanumerieke tekens en onderstrepingstekens bevatten. Deze sleutel zal worden gebruikt als het naam-attribuut van het formulieronderdeel."
+#: webform.module:896
+msgid "Enter a machine readable key for this form element. May contain only lowercase alphanumeric characters and underscores. This key will be used as the name attribute of the form element."
+msgstr "Geeft een systeemnaam voor dit onderdeel. De naam mag uit kleine letters, cijfers en onderstrepingstekens bestaan. Wordt gebruikt als naam van het formulierelement."
 
-#: webform.module:915
+#: webform.module:903
+#, fuzzy
 msgid "Label"
 msgstr "Label"
 
-#: webform.module:916
+#: webform.module:904
+#, fuzzy
 msgid "This is used as a descriptive label when displaying this form element."
 msgstr "Dit wordt gebruikt als opschrift bij het weergeven van dit formulieronderdeel."
 
-#: webform.module:925
+#: webform.module:913
 msgid "A short description of the field used as help for the user when he/she uses the form."
-msgstr "Een korte beschrijving van het veld, als hulp aan de gebruiker."
+msgstr "Een korte beschrijving van het veld als hulp aan de gebruiker."
 
-#: webform.module:933
+#: webform.module:920
+#, fuzzy
 msgid "Check this option if the user must enter a value."
 msgstr "Kies deze optie als de gebruiker verplicht een waarde moet invullen."
 
-#: webform.module:946
-msgid "Parent Fieldset"
-msgstr "Bovenliggende veldgroep"
+#: webform.module:925
+msgid "Root"
+msgstr "Root"
 
-#: webform.module:948
+#: webform.module:933
+#, fuzzy
+msgid "Parent Fieldset"
+msgstr "Bovenliggende groep"
+
+#: webform.module:935
+#, fuzzy
 msgid "Optional. You may organize your form by placing this component inside inside another fieldset."
 msgstr "Optioneel. Het formulier kan worden gestructureerd door dit onderdeel in een veldgroep op te nemen."
 
-#: webform.module:959
+#: webform.module:946
+#, fuzzy
 msgid "Optional. In the menu, the heavier items will sink and the lighter items will be positioned nearer the top."
 msgstr "Optioneel. In het menu zullen zwaardere onderdelen naar de bodem zakken en lichtere onderdelen hoger worden gepositioneerd."
 
-#: webform.module:971
+#: webform.module:958
+#, fuzzy
 msgid "The webform component of type @type does not have an edit function defined."
 msgstr "Het webformulieronderdeel van type @type heeft geen gedefinieerde bewerkingsfunctie."
 
-#: webform.module:1015
-msgid "The field name %field_name is invalid."
-msgstr "De veldnaam %field_name is ongeldig."
+#: webform.module:1002
+msgid "The field key %field_key is invalid. Please include only lowercase alphanumeric charaters and underscores."
+msgstr "Veldnaam %field_key is ongeldig. Alleen kleine letters, cijfers en \"_\" zijn toegestaan."
 
-#: webform.module:1066
+#: webform.module:1007
+msgid "The field key %field_key is already in use by the field labeled %existing_field. Please use a unique key."
+msgstr "Veldnaam %field_key is al gebruikt in het veld %existing_field. Gebruik een andere naam."
+
+#: webform.module:1071
+#, fuzzy
 msgid "Unauthorized webform access attempt by %name."
 msgstr "Ongeautoriseerde toegangspoging tot webformulier door %name."
 
-#: webform.module:1129
+#: webform.module:1134
+#, fuzzy
 msgid "Next Page >"
 msgstr "Volgende pagina >"
 
-#: webform.module:1130
+#: webform.module:1135
+#, fuzzy
 msgid "< Previous Page"
 msgstr "< Vorige pagina"
 
-#: webform.module:1232
+#: webform.module:1238
 msgid "The webform component @type is not able to be displayed"
-msgstr "Het webformulieronderdeel @type kan niet worden getoond"
+msgstr "Webformulieronderdeel @type kan niet worden getoond"
 
-#: webform.module:1257
+#: webform.module:1263
+#, fuzzy
 msgid "The authenticated user <a href=\"%user_url\">%username</a> attempted to submit more entries than allowed on the <a href=\"%webform_url\">%webform_title</a> webform"
 msgstr "De geauthenticeerde gebruiker <a href=\"%user_url\">%username</a> heeft geprobeerd meer inzendingen uit te voeren dan toegestaan van webformulier <a href=\"%webform_url\">%webform_title</a>"
 
-#: webform.module:1266
+#: webform.module:1272
+#, fuzzy
 msgid "An anonymous user with IP address %ip attempted to submit more entries than allowed on the <a href=\"%webform_url\">%webform_title</a> webform"
 msgstr "Een anonieme bezoeker met IP-adres %ip heeft geprobeerd meer inzendingen uit te voeren dan toegestaan van webformulier <a href=\"%webform_url\">%webform_title</a>"
 
-#: webform.module:1274
+#: webform.module:1280
 msgid "You have submitted the maximum number of entries. Check submission guidelines."
-msgstr "U heeft het maximum aantal inzendingen bereikt. Controleer de inzendingsrichtlijnen."
+msgstr "U heeft het maximum aantal inzendingen bereikt. Controleer de richtlijnen."
 
-#: webform.module:1404
-msgid "Possible spam attempt from "
-msgstr "Mogelijke spampoging van"
+#: webform.module:1409
+#, fuzzy
+msgid "Possible spam attempt from @remote_addr"
+msgstr "Mogelijke spampoging van @remote_addr"
 
-#: webform.module:1405
+#: webform.module:1410
+#, fuzzy
 msgid "Illegal information. Data not submitted."
 msgstr "Illegale gegevens. Data niet verstuurd."
 
-#: webform.module:1422
+#: webform.module:1427
+#, fuzzy
 msgid "Submission posted to %title"
 msgstr "Inzending voor %title"
 
-#: webform.module:1473
+#: webform.module:1483
+#, fuzzy
 msgid "No node with the id '%nid' could be found"
 msgstr "Er is geen node met het id '%nid' gevonden"
 
-#: webform.module:1485
+#: webform.module:1495
+#, fuzzy
 msgid "Go back to the form"
 msgstr "Terug naar het formulier"
 
-#: webform.module:67
+#: webform.module:65
+#, fuzzy
 msgid "create webforms"
 msgstr "webformulieren aanmaken"
 
-#: webform.module:67
+#: webform.module:65
+#, fuzzy
 msgid "edit own webforms"
 msgstr "eigen webformulieren bewerken"
 
-#: webform.module:67
+#: webform.module:65
+#, fuzzy
 msgid "edit webforms"
 msgstr "webformulieren bewerken"
 
-#: webform.module:67
+#: webform.module:65
+#, fuzzy
 msgid "access webform results"
 msgstr "toegang tot webformulierresultaten"
 
-#: webform.module:67
+#: webform.module:65
+#, fuzzy
 msgid "clear webform results"
 msgstr "webformulierresultaten verwijderen"
 
-#: webform.module:67
+#: webform.module:65
+#, fuzzy
 msgid "use PHP for additional processing"
 msgstr "PHP gebruiken voor verdere verwerking"
 
 #: webform.install:125
 msgid "Webform module installed module tables successfully."
-msgstr "De webformuliermodule heeft de databasetabellen geïnstalleerd."
+msgstr "De Webform-module heeft de databasetabellen geïnstalleerd."
 
 #: webform.install:128
 msgid "The installation of webform module was unsuccessful."
-msgstr "De installatie van de webformuliermodule is mislukt."
+msgstr "De installatie van de Webform-module is mislukt."
 
 #: webform.info:0
+#, fuzzy
 msgid "Enables the creation of forms and questionnaires."
 msgstr "Biedt de mogelijkheid formulieren en vragenlijsten aan te maken."
 
-#: components/captcha.inc:13
+#: components/captcha.inc:14
+#, fuzzy
 msgid "Using captcha components in webform requires the <a href='http://drupal.org/project/captcha'>Captcha</a> and <a href='http://drupal.org/node/52349'>Textimage</a> modules."
-msgstr "Voor het gebruik van captcha-onderdelen in webformulieren zijn de modules <a href='http://drupal.org/project/captcha'>Captcha</a> en <a href='http://drupal.org/node/52349'>Textimage</a> vereist."
+msgstr "Voor het gebruik van captcha-onderdelen in webformulieren zijn de modules <a href='http://drupal.org/project/captcha'>Captcha</a> en <a href='http://drupal.org/node/52349'>Textimage</a> verplicht."
 
-#: components/captcha.inc:27
+#: components/captcha.inc:28
+#, fuzzy
 msgid "Captchas are always mandatory"
 msgstr "Captcha's zijn altijd verplicht"
 
-#: components/captcha.inc:82
+#: components/captcha.inc:85
 msgid "Unable to render captcha field because the captcha module is not available."
-msgstr "Het captcha-veld kan niet worden getoond omdat de captcha-module niet beschikbaar is."
+msgstr "Het captcha-veld kan niet worden getoond omdat de Captcha-module niet beschikbaar is."
 
-#: components/captcha.inc:132
+#: components/captcha.inc:135
 msgid "Require a question to prove the user is human. Requires <a href='http://drupal.org/project/captcha'>Captcha</a> module."
-msgstr "Een verplichte vraag stellen om te bewijzen dat de gebruiker een mens is. De <a href='http://drupal.org/project/captcha'>Captcha</a> module is hiervoor vereist."
+msgstr "Een verplichte vraag stellen om te bewijzen dat de gebruiker een mens is. De <a href='http://drupal.org/project/captcha'>Captcha-module</a> is hiervoor verplicht."
 
-#: components/date.inc:15 components/hidden.inc:15 components/select.inc:25 components/textarea.inc:15 components/textfield.inc:15 components/time.inc:15
+#: components/date.inc:16
+#: components/hidden.inc:16
+#: components/select.inc:26
+#: components/textarea.inc:16
+#: components/textfield.inc:16
+#: components/time.inc:14
+#, fuzzy
 msgid "Default value"
 msgstr "Standaardwaarde"
 
-#: components/date.inc:17 components/hidden.inc:17 components/textarea.inc:17 components/textfield.inc:17 components/time.inc:17
+#: components/date.inc:18
+#: components/hidden.inc:18
+#: components/textarea.inc:18
+#: components/textfield.inc:18
+#: components/time.inc:16
+#, fuzzy
 msgid "The default value of the field."
 msgstr "De standaardwaarde van het veld."
 
-#: components/date.inc:17
+#: components/date.inc:18
 msgid "Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid."
-msgstr "Voer een datum in volgens het <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Invoer zoals today, +2 months, en Dec 9 2004 wordt geaccepteerd."
+msgstr "Voer een datum in volgens het <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU-datum-formaat</a>. Invoer zoals today, +2 months, en Dec 9 2004 wordt geaccepteerd."
 
-#: components/date.inc:24 components/time.inc:25
+#: components/date.inc:25
+#: components/time.inc:24
+#, fuzzy
 msgid "Timezone"
 msgstr "Tijdszone"
 
-#: components/date.inc:26
+#: components/date.inc:27
 msgid "Adjust the date according to a specific timezone. Website timezone is defined in the <a href=\"%settings\">Site Settings</a> and is the default."
-msgstr "De datum aanpassen overeenkomstig een specifieke tijdszone. Standaard wordt de website-tijdszone gebruikt, gedefinieerd in de <a href=\"%settings\">Website-instellingen</a>."
+msgstr "De datum aanpassen aan een specifieke tijdszone. Standaard wordt de website-tijdszone gebruikt, gedefinieerd in de <a href=\"%settings\">Website-instellingen</a>."
 
-#: components/date.inc:32 components/time.inc:33
+#: components/date.inc:33
+#: components/time.inc:32
+#, fuzzy
 msgid "Observe Daylight Savings"
 msgstr "Zomertijdcorrectie"
 
-#: components/date.inc:35 components/time.inc:36
+#: components/date.inc:36
+#: components/time.inc:35
+#, fuzzy
 msgid "Automatically adjust the time during daylight savings."
 msgstr "De tijd automatisch aanpassen tijdens de zomertijd."
 
-#: components/date.inc:77
+#: components/date.inc:79
+#, fuzzy
 msgid "month"
 msgstr "maand"
 
-#: components/date.inc:77
+#: components/date.inc:79
+#, fuzzy
 msgid "January"
 msgstr "januari"
 
-#: components/date.inc:77
+#: components/date.inc:79
+#, fuzzy
 msgid "February"
 msgstr "februari"
 
-#: components/date.inc:77
+#: components/date.inc:79
+#, fuzzy
 msgid "March"
 msgstr "maart"
 
-#: components/date.inc:77
+#: components/date.inc:79
+#, fuzzy
 msgid "April"
 msgstr "april"
 
-#: components/date.inc:77
+#: components/date.inc:79
+#, fuzzy
 msgid "May"
 msgstr "mei"
 
-#: components/date.inc:77
+#: components/date.inc:79
+#, fuzzy
 msgid "June"
 msgstr "juni"
 
-#: components/date.inc:77
+#: components/date.inc:79
+#, fuzzy
 msgid "July"
 msgstr "juli"
 
-#: components/date.inc:77
+#: components/date.inc:79
+#, fuzzy
 msgid "August"
 msgstr "augustus"
 
-#: components/date.inc:77
+#: components/date.inc:79
+#, fuzzy
 msgid "September"
 msgstr "september"
 
-#: components/date.inc:77
+#: components/date.inc:79
+#, fuzzy
 msgid "October"
 msgstr "oktober"
 
-#: components/date.inc:77
+#: components/date.inc:79
+#, fuzzy
 msgid "November"
 msgstr "november"
 
-#: components/date.inc:77
+#: components/date.inc:79
+#, fuzzy
 msgid "December"
 msgstr "december"
 
-#: components/date.inc:78
+#: components/date.inc:80
+#, fuzzy
 msgid "day"
 msgstr "dag"
 
-#: components/date.inc:88 components/time.inc:107
+#: components/date.inc:92
+#: components/time.inc:105
+#, fuzzy
 msgid "This field is required."
-msgstr "Dit veld is vereist."
+msgstr "Dit veld is verplicht."
 
-#: components/date.inc:131
+#: components/date.inc:135
+#, fuzzy
 msgid "@type %name field required"
-msgstr "@type %name veld is vereist"
+msgstr "@type %name veld is verplicht"
 
-#: components/date.inc:144
+#: components/date.inc:148
+#, fuzzy
 msgid "Entered %name is not a valid date."
 msgstr "De ingevoerde %name is geen geldige datum."
 
-#: components/date.inc:195
+#: components/date.inc:206
+#, fuzzy
 msgid "Presents month, day, and year fields."
 msgstr "Dag-, maand- en jaarvelden tonen."
 
-#: components/date.inc:249 components/email.inc:135 components/file.inc:330 components/textarea.inc:130 components/textfield.inc:131 components/time.inc:250
+#: components/date.inc:265
+#: components/email.inc:158
+#: components/file.inc:366
+#: components/textarea.inc:142
+#: components/textfield.inc:143
+#: components/time.inc:260
+#, fuzzy
 msgid "Left Blank"
 msgstr "Leeg laten"
 
-#: components/date.inc:250 components/email.inc:136 components/textarea.inc:131 components/textfield.inc:132 components/time.inc:251
+#: components/date.inc:266
+#: components/email.inc:159
+#: components/textarea.inc:143
+#: components/textfield.inc:144
+#: components/time.inc:261
+#, fuzzy
 msgid "User entered value"
 msgstr "Door gebruiker ingevoerde waarde"
 
-#: components/email.inc:15
-msgid "User email as default"
-msgstr "Standaard e-mailadres van gebruiker"
-
-#: components/email.inc:18
-msgid "Set the default value of this field to the user email, if he/she is logged in."
-msgstr "Als een gebruiker is ingelogd wordt in dit veld standaard zijn/haar geregistreerde e-mailadres ingevuld."
-
-#: components/email.inc:23
-msgid "CC submission to this email"
-msgstr "Stuur dit e-mailadres een CC"
-
-#: components/email.inc:26
-msgid "Check this option if the email specified in this component should get a CC submission."
-msgstr "Kies deze optie als het in dit veld gespecificeerde emailadres een CC moet krijgen."
-
-#: components/email.inc:27
-msgid "Note that this opens the risk that the form can be used to send emails to any address and might be missused as a spam gateway."
-msgstr "Let op: dit levert het risico op dat het formulier wordt gebruikt om e-mails te sturen naar een willekeurig adres, waardoor het kan worden misbruikt als spam-gateway."
-
-#: components/email.inc:31 components/textarea.inc:24 components/textfield.inc:24
+#: components/email.inc:16
+#: components/textarea.inc:25
+#: components/textfield.inc:25
+#, fuzzy
 msgid "Width"
 msgstr "Breedte"
 
-#: components/email.inc:33 components/textarea.inc:26 components/textfield.inc:26
+#: components/email.inc:18
+#: components/textarea.inc:27
+#: components/textfield.inc:27
+#, fuzzy
 msgid "Width of the textfield."
 msgstr "Breedte van het tekstveld."
 
-#: components/email.inc:80
-msgid "'%value' is not a valid email address"
+#: components/email.inc:24
+#, fuzzy
+msgid "User email as default"
+msgstr "Standaard e-mailadres van gebruiker"
+
+#: components/email.inc:27
+#, fuzzy
+msgid "Set the default value of this field to the user email, if he/she is logged in."
+msgstr "Als een gebruiker is ingelogd wordt in dit veld standaard zijn/haar geregistreerde e-mailadres ingevuld."
+
+#: components/email.inc:31
+msgid "CC submission to this email"
+msgstr "Stuur dit e-mailadres een kopie"
+
+#: components/email.inc:34
+msgid "Check this option if the email specified in this component should get a CC submission."
+msgstr "Kies deze optie als het in dit veld opgegeven e-mailadres een kopie (cc) e-mail moet krijgen."
+
+#: components/email.inc:35
+msgid "Note that this opens the risk that the form can be used to send emails to any address and might be missused as a spam gateway."
+msgstr "Let op: dit levert het risico op dat het formulier wordt gebruikt om e-mails te sturen naar een willekeurig adres, waardoor het voor spam kan worden misbruikt."
+
+#: components/email.inc:39
+#: components/textarea.inc:41
+#: components/textfield.inc:43
+#, fuzzy
+msgid "Disabled"
+msgstr "Uitgeschakeld"
+
+#: components/email.inc:41
+#: components/textarea.inc:43
+#: components/textfield.inc:45
+#, fuzzy
+msgid "Make this field non-editable. Useful for setting an unchangeable default value."
+msgstr "Veld niet-aanpasbaar maken. Geschikt voor het instellen van een vaste standaardwaarde."
+
+#: components/email.inc:94
+#, fuzzy
+msgid "%value is not a valid email address."
 msgstr "'%value' is geen geldig e-mailadres"
 
-#: components/email.inc:105
+#: components/email.inc:123
+#, fuzzy
 msgid "A textfield that automatically fills in logged-in users e-mail."
 msgstr "Een tekstveld waarin automatisch het e-mailadres van ingelogde gebruikers wordt ingevuld."
 
-#: components/email.inc:137 components/hidden.inc:101 components/textarea.inc:132 components/textfield.inc:133
+#: components/email.inc:160
+#: components/hidden.inc:113
+#: components/textarea.inc:144
+#: components/textfield.inc:145
+#, fuzzy
 msgid "Average submission length in words (ex blanks)"
 msgstr "Gemiddelde lengte van inzending in woorden (uitgezonderd spaties)"
 
-#: components/fieldset.inc:15
+#: components/fieldset.inc:16
+#, fuzzy
 msgid "Collapsible"
 msgstr "Inklapbaar"
 
-#: components/fieldset.inc:17
+#: components/fieldset.inc:18
 msgid "If this fieldset is collapsible, the user may open or close the fieldset."
-msgstr "Als deze veldgroep inklapbaar is kan de gebruiker de veldgroep naar wens open of dicht klappen."
+msgstr "Als deze veldgroep inklapbaar is kan de gebruiker de veldgroep naar wens in- of uitklappen."
 
-#: components/fieldset.inc:22
+#: components/fieldset.inc:23
+#, fuzzy
 msgid "Collapsed by Default"
 msgstr "Standaard ingeklapt"
 
-#: components/fieldset.inc:24
+#: components/fieldset.inc:25
 msgid "Collapsible fieldsets are \"open\" by default. Select this option to default the fieldset to \"closed.\""
-msgstr "Inklapbare veldgroepen zijn standaard opengeklapt. Kies deze optie om de veldgroep standaard dichtgeklapt te tonen."
+msgstr "Inklapbare veldgroepen zijn standaard uitgeklapt. Kies deze optie om de veldgroep standaard ingeklapt te tonen."
 
-#: components/fieldset.inc:74
+#: components/fieldset.inc:81
+#, fuzzy
 msgid "Fieldsets allow you to organize complex webforms into groups of fields."
 msgstr "Met veldgroepen kunnen complexe webformulieren worden gestructureerd in groepen van velden."
 
+#: components/file.inc:18
+msgid "Upload Filtering"
+msgstr "Filter uploaden"
+
 #: components/file.inc:19
 msgid "Select the types of uploads you would like to allow."
-msgstr "Selecteer de bestandstypes die gebruikers mogen uploaden."
+msgstr "Selecteer de bestandstypen die gebruikers mogen uploaden."
 
 #: components/file.inc:23
+#, fuzzy
 msgid "Web Images"
 msgstr "Webafbeeldingen"
 
 #: components/file.inc:29
+#, fuzzy
 msgid "Desktop Images"
 msgstr "Bureaubladafbeeldingen"
 
 #: components/file.inc:35
+#, fuzzy
 msgid "Documents"
 msgstr "Documenten"
 
 #: components/file.inc:41
+#, fuzzy
 msgid "Media"
 msgstr "Media"
 
 #: components/file.inc:47
+#, fuzzy
 msgid "Archives"
 msgstr "Archieven"
 
 #: components/file.inc:53
+#, fuzzy
 msgid "Additional Extensions"
 msgstr "Overige bestandsextensies"
 
 #: components/file.inc:55
 msgid "Enter a list of additional file extensions for this upload field, seperated by commas.<br /> Entered extensions will be appended to checked items above."
-msgstr "Voer een lijst in met overige extensies voor dit uploadveld, gescheiden door komma's.<br /> Ingevoerde extensies worden toegevoegd aan de aangevinkte extensies hierboven."
+msgstr "Voer een lijst in met overige extensies voor dit uploadveld, gescheiden door komma's.<br /> Ingevoerde extensies worden aan de hierboven aangevinkte extensies toegevoegd."
 
 #: components/file.inc:62
+#, fuzzy
 msgid "Max Upload Size"
 msgstr "Maximale uploadgrootte"
 
 #: components/file.inc:64
+#, fuzzy
 msgid "Enter the max file size a user may upload (in KB)."
 msgstr "Voer de maximale grootte in van een te uploaden bestand (in KB)."
 
 #: components/file.inc:71
+#, fuzzy
 msgid "Upload Directory"
 msgstr "Uploadmap"
 
 #: components/file.inc:73
+#, fuzzy
 msgid "Webform uploads are always saved in the site files directory. You may optionally specify a subfolder to store your files."
 msgstr "Webformulier-uploads worden altijd bewaard in de bestandenmap van de website. Optioneel mag een submap worden opgegeven om bestanden in te bewaren."
 
 #: components/file.inc:158
+#, fuzzy
 msgid "Category"
 msgstr "Categorie"
 
 #: components/file.inc:158
 msgid "Types"
-msgstr "Types"
+msgstr "Typen"
 
-#: components/file.inc:202
-msgid "%fieldname field is required."
-msgstr "Het veld %fieldname is vereist."
+#: components/file.inc:204
+#, fuzzy
+msgid "%field field is required."
+msgstr "Het veld %field is verplicht."
 
-#: components/file.inc:236
+#: components/file.inc:238
+#, fuzzy
 msgid "Files with the '%ext' extension are not allowed, please upload a file with a %exts extension."
 msgstr "Bestanden met de extensie '%ext' zijn niet toegestaan. Upload een bestand met de extensie %exts."
 
-#: components/file.inc:241
+#: components/file.inc:243
+#, fuzzy
 msgid "The file '%filename' is too large (%filesize KB). Please upload a file %maxsize KB or smaller."
 msgstr "Het bestand '%filename' is te groot (%filesize KB). Upload een bestand van %maxsize KB of minder."
 
-#: components/file.inc:258
+#: components/file.inc:264
+#, fuzzy
 msgid "The uploaded file %filename was unable to be saved. The destination directory may not be writable."
 msgstr "Het bestand %filename kan niet worden opgeslagen. Mogelijk is de bestandsmap op de webserver niet beschrijfbaar."
 
-#: components/file.inc:266
+#: components/file.inc:272
+#, fuzzy
 msgid "The uploaded file %filename was unable to be saved. The destination directory does not exist."
 msgstr "Het bestand %filename kan niet worden opgeslagen. De gespecificeerde map op de webserver bestaat niet."
 
-#: components/file.inc:331
-msgid "User uploaded file"
-msgstr "Door gebruiker ge-upload bestand"
+#: components/file.inc:330
+msgid "Allow users to submit files of the configured types."
+msgstr "Gebruikers mogen bestanden van gedefinieerde typen opsturen."
 
-#: components/file.inc:332
+#: components/file.inc:367
+msgid "User uploaded file"
+msgstr "Door gebruiker geupload bestand"
+
+#: components/file.inc:368
+#, fuzzy
 msgid "Average uploaded file size"
 msgstr "Gemiddelde grootte van upload-bestand"
 
-#: components/hidden.inc:69
+#: components/hidden.inc:76
 msgid "Create a field which is not visible to the user, but is recorded with the submission."
-msgstr "Een veld dat niet zichtbaar is voor de gebruiker, maar dat wordt meegestuurd met de formulierinzending."
+msgstr "Maak een veld aan dat niet zichtbaar is voor de gebruiker maar dat in het formulier wordt opgenomen."
 
-#: components/hidden.inc:99
+#: components/hidden.inc:111
+#, fuzzy
 msgid "Empty"
 msgstr "Leeg"
 
-#: components/hidden.inc:100
+#: components/hidden.inc:112
+#, fuzzy
 msgid "Non-empty"
 msgstr "Niet leeg"
 
-#: components/markup.inc:18
+#: components/markup.inc:19
+#, fuzzy
 msgid "Markup allows you to enter custom HTML or PHP logic into your form."
 msgstr "Markup maakt het mogelijk eigen HTML of PHP in het formulier op te nemen."
 
-#: components/markup.inc:74
+#: components/markup.inc:81
+#, fuzzy
 msgid "Presents a markup area of text. Does not render a field."
 msgstr "Een tekstblok voor eigen HTML- of PHP-code. Dit levert geen invoerveld op."
 
 #: components/pagebreak.inc:38
+#, fuzzy
 msgid "Break up a multi-page form."
 msgstr "Formulier opdelen in meerdere pagina's."
 
-#: components/select.inc:15
+#: components/select.inc:16
+#, fuzzy
 msgid "Options"
 msgstr "Keuzes"
 
-#: components/select.inc:17
+#: components/select.inc:18
+#, fuzzy
 msgid "A list of selectable options. One option per line. Key-value pairs may be entered seperated by pipes. i.e. safe_key|Some readable option"
 msgstr "Een lijst van te selecteren keuzes. Eén keuze per regel. Het is mogelijk sleutel-waarde-combinaties in te voeren, gescheiden door een horizontale streep. Bijvoorbeeld: systeem_sleutel|Een voor bezoekers leesbare sleutel."
 
-#: components/select.inc:27
+#: components/select.inc:28
+#, fuzzy
 msgid "The default value of the field. For multiple selects use commas to separate multiple defaults."
 msgstr "De standaardwaarde van het veld. Wanneer meerdere keuzes mogelijk zijn kunnen meerdere standaardwaarden worden ingevoerd, gescheiden door komma's."
 
-#: components/select.inc:34
+#: components/select.inc:35
+#, fuzzy
 msgid "Multiple"
 msgstr "Meerdere"
 
-#: components/select.inc:37
+#: components/select.inc:38
+#, fuzzy
 msgid "Check this option if the user should be allowed to choose multiple values."
 msgstr "Kies deze optie als de gebruiker meerdere waarden tegelijk mag kiezen."
 
-#: components/select.inc:41
+#: components/select.inc:42
+#, fuzzy
 msgid "Listbox"
 msgstr "Keuzelijst"
 
-#: components/select.inc:44
+#: components/select.inc:45
+#, fuzzy
 msgid "Check this option if you want the select component to be of listbox type instead of radiobuttons or checkboxes."
 msgstr "Kies deze optie om het selectieveld weer te geven als keuzelijst in plaats van als keuzerondjes of keuzevakjes."
 
-#: components/select.inc:55
+#: components/select.inc:56
+#, fuzzy
 msgid "The options for this select contain illegal characters (quotes or spaces). Specify your options as <em>safe_value_no_spaces</em>|<em>The Real Value</em>."
 msgstr "De keuzes voor dit selectieveld bevatten illegale tekens (aanhalingstekens of spaties). Noteer keuzes als <em>veilige_waarde_zonder_spaties</em>|<em>De Daadwerkelijke Waarde</em>."
 
-#: components/select.inc:84
+#: components/select.inc:87
+#, fuzzy
 msgid "select..."
-msgstr "selecteer..."
+msgstr "maak een keuze..."
 
-#: components/select.inc:280
+#: components/select.inc:294
+#, fuzzy
 msgid "Allows creation of checkboxes, radio buttons, or select menus."
 msgstr "Keuzevakjes, keuzerondjes of keuzelijsten."
 
-#: components/textarea.inc:32
+#: components/textarea.inc:33
+#, fuzzy
 msgid "Height"
 msgstr "Hoogte"
 
-#: components/textarea.inc:34
+#: components/textarea.inc:35
+#, fuzzy
 msgid "Height of the textfield."
 msgstr "Hoogte van het tekstveld."
 
-#: components/textarea.inc:40 components/textfield.inc:42
-msgid "Disabled"
-msgstr "Uitgeschakeld"
-
-#: components/textarea.inc:42 components/textfield.inc:44
-msgid "Make this field non-editable. Useful for setting an unchangeable default value."
-msgstr "Veld niet-aanpasbaar maken. Geschikt voor het instellen van een vaste standaardwaarde."
-
-#: components/textarea.inc:100
+#: components/textarea.inc:107
+#, fuzzy
 msgid "A large text area that allows for multiple lines of input."
 msgstr "Een groot invoerblok waarin meerdere regels tekst kunnen worden ingevoerd."
 
-#: components/textfield.inc:33
+#: components/textfield.inc:34
+#, fuzzy
 msgid "Maxlength"
 msgstr "Maximale lengte"
 
-#: components/textfield.inc:35
+#: components/textfield.inc:36
+#, fuzzy
 msgid "Maxlength of the textfield."
 msgstr "Maximale lengte van het tekstveld."
 
-#: components/textfield.inc:101
+#: components/textfield.inc:108
+#, fuzzy
 msgid "Basic textfield type."
 msgstr "Standaard tekstveldtype."
 
-#: components/time.inc:17
+#: components/time.inc:16
 msgid "Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid."
-msgstr "Voer een tijd in volgens het <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Invoer zoals now, +2 hours, en 10:30pm wordt geaccepteerd."
+msgstr "Voer een tijd in volgens het <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU-datum-formaat</a>. Invoer zoals now, +2 hours, en 10:30pm wordt geaccepteerd."
 
-#: components/time.inc:27
+#: components/time.inc:26
 msgid "Adjust the time according to a specific timezone. Website timezone is defined in the <a href=\"%settings\">Site Settings</a> and is the default."
-msgstr "Aanpassen van de tijd overeenkomstig een specifieke tijdszone. De standaard website-tijdszone is gedefinieerd in de <a href=\"%settings\">Websiteinstellingen</a>."
+msgstr "De tijd aanpassen aan de specifieke tijdszone. De standaard website-tijdszone is gedefinieerd in de <a href=\"%settings\">Websiteinstellingen</a>."
 
-#: components/time.inc:41
+#: components/time.inc:40
 msgid "Time Format"
-msgstr "Tijdsformaat"
+msgstr "Tijdformaat"
 
-#: components/time.inc:43
+#: components/time.inc:42
 msgid "Format the display of the time in 12 or 24 hours."
-msgstr "Vormgeven van de tijdsaanduiding in 12- of 24-uurs formaat."
+msgstr "Tijdaanduiding in 12- of 24-uurs formaat."
 
-#: components/time.inc:98
+#: components/time.inc:96
+#, fuzzy
 msgid "hour"
 msgstr "uur"
 
-#: components/time.inc:99
+#: components/time.inc:97
+#, fuzzy
 msgid "minute"
 msgstr "minuut"
 
-#: components/time.inc:102
+#: components/time.inc:100
+#, fuzzy
 msgid "am"
 msgstr "am"
 
-#: components/time.inc:102
+#: components/time.inc:100
+#, fuzzy
 msgid "pm"
 msgstr "pm"
 
-#: components/time.inc:140
+#: components/time.inc:138
+#, fuzzy
 msgid " field is required"
-msgstr " veld is vereist"
+msgstr " veld is verplicht"
 
-#: components/time.inc:199
+#: components/time.inc:204
+#, fuzzy
 msgid "Presents the user with hour and minute fields. Optional am/pm fields."
 msgstr "Uur- en minuutvelden tonen. am/pm-velden zijn optioneel."
 

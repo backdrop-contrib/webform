@@ -551,8 +551,8 @@ msgid "Submitted by anonymous user"
 msgstr "Indsendt af anonym bruger"
 
 #: webform.module:1027
-msgid "Submitted values are:"
-msgstr "Indsendte værdier:"
+msgid "Submitted values are"
+msgstr "Indsendte værdier"
 
 #: webform.module:1261
 msgid "Go back"

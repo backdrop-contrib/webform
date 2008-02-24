@@ -1,0 +1,19 @@
+/* $Id$ */
+
+.webform-submission-navigation {
+  text-align: right;
+}
+.webform-submission-next {
+  margin-left: 20px;
+}
+.webform-indentation {
+  width: 20px;
+  float: left;
+}
+.webform-checkbox {
+	text-align: center;
+	width: 40px;
+}
+.webform-default-value {
+  color: #999;
+}

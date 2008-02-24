@@ -23,7 +23,7 @@ on http://drupal.org/user/6096/contact)
 
 Translation
 -----------
-Spanish translation is made by Sergio González González.
+Spanish translation is made by Sergio Gonzalez.
 
 Todo:
 -----
