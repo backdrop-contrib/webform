@@ -61,9 +61,9 @@ function _webform_edit_email($currfield) {
 /**
  * Validation function for the email edit form.
  */
-function _webform_edit_email_validate($form_id, $form_values) {
-  if ($form_values['user_email']) {
-    form_set_value(array('#parents' => array('value')), '%useremail');
+function _webform_edit_email_validate($form, &$form_state) {
+  if ($form_state['values']['user_email']) {
+    $form_state['values']['user_email'] = '%useremail';
   }
 }
 

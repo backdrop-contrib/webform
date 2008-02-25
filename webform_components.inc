@@ -10,7 +10,7 @@
 /**
  * Overview form of all components for this webform.
  */
-function webform_components_form($node) {
+function webform_components_form($form_state, $node) {
   $form = array(
     '#tree' => TRUE,
     '#node' => $node,
@@ -172,14 +172,14 @@ function theme_webform_components_form($form) {
   return $output;
 }
 
-function webform_components_form_submit($form_id, $form_values) {
-  $node = node_load($form_values['nid']);
+function webform_components_form_submit($form, &$form_state) {
+  $node = node_load($form_state['values']['nid']);
 
   // Update all mandatory and weight values.
   foreach ($node->webform['components'] as $cid => $component) {
-    if ($component['weight'] != $form_values['components'][$cid]['weight'] || $component['mandatory'] != $form_values['components'][$cid]['mandatory']) {
-      $component['weight'] = $form_values['components'][$cid]['weight'];
-      $component['mandatory'] = $form_values['components'][$cid]['mandatory'];
+    if ($component['weight'] != $form_state['values']['components'][$cid]['weight'] || $component['mandatory'] != $form_state['values']['components'][$cid]['mandatory']) {
+      $component['weight'] = $form_state['values']['components'][$cid]['weight'];
+      $component['mandatory'] = $form_state['values']['components'][$cid]['mandatory'];
       $component['nid'] = $node->nid;
       webform_component_update($component);
     }
@@ -193,16 +193,16 @@ function webform_components_form_submit($form_id, $form_values) {
   }
 
   // Initiate a new form element if a name has been specified.
-  if (strlen(trim($form_values['add']['name'])) > 0) {
-    $component = $form_values['add'];
-    return array('node/'. $node->nid .'/edit/components/new/'. $component['type'], 'name='. urlencode($component['name']) .'&mandatory='. $component['mandatory'] .'&pid='. $component['pid'] .'&weight='. $component['weight']);
+  if (strlen(trim($form_state['values']['add']['name'])) > 0) {
+    $component = $form_state['values']['add'];
+    $form_state['redirect'] = array('node/'. $node->nid .'/edit/components/new/'. $component['type'], 'name='. urlencode($component['name']) .'&mandatory='. $component['mandatory'] .'&pid='. $component['pid'] .'&weight='. $component['weight']);
   }
   else {
     drupal_set_message(t('The component positions and mandatory values have been updated.'));
   }
 }
 
-function webform_component_edit_form(&$node, $component, $clone = FALSE) {
+function webform_component_edit_form($form_state, &$node, $component, $clone = FALSE) {
   drupal_set_title("Edit component: ". $component['name'] ." (". $component['type'] .")");
 
   // Print the correct field type specification.
@@ -313,62 +313,62 @@ function webform_component_edit_form(&$node, $component, $clone = FALSE) {
 /**
  * Field name validation for the webform unique key. Must be alphanumeric.
  */
-function webform_component_edit_form_validate($form_id, $form_values) {
-  $node = node_load($form_values['nid']);
+function webform_component_edit_form_validate($form, &$form_state) {
+  $node = node_load($form_state['values']['nid']);
 
-  if (!preg_match('!^[a-z0-9_]+$!', $form_values['form_key'])) {
-    form_set_error('form_key', t('The field key %field_key is invalid. Please include only lowercase alphanumeric characters and underscores.', array('%field_key' => $form_values['form_key'])));
+  if (!preg_match('!^[a-z0-9_]+$!', $form_state['values']['form_key'])) {
+    form_set_error('form_key', t('The field key %field_key is invalid. Please include only lowercase alphanumeric characters and underscores.', array('%field_key' => $form_state['values']['form_key'])));
   }
 
   foreach ($node->webform['components'] as $cid => $component) {
-    if (($component['cid'] != $form_values['cid'] || $form_values['clone']) && ($component['pid'] == $form_values['pid']) && (strcasecmp($component['form_key'], $form_values['form_key']) == 0)) {
-      form_set_error('form_key', t('The field key %field_key is already in use by the field labeled %existing_field. Please use a unique key.', array('%field_key' => $form_values['form_key'], '%existing_field' => $component['name'])));
+    if (($component['cid'] != $form_state['values']['cid'] || $form_state['values']['clone']) && ($component['pid'] == $form_state['values']['pid']) && (strcasecmp($component['form_key'], $form_state['values']['form_key']) == 0)) {
+      form_set_error('form_key', t('The field key %field_key is already in use by the field labeled %existing_field. Please use a unique key.', array('%field_key' => $form_state['values']['form_key'], '%existing_field' => $component['name'])));
     }
   }
 
   // Let the field do any additional validation.
-  webform_load_components($form_values['type']);
-  $validate_function = '_webform_edit_validate_'. $form_values['type'];
+  webform_load_components($form_state['values']['type']);
+  $validate_function = '_webform_edit_validate_'. $form_state['values']['type'];
   if (function_exists($validate_function)) {
-    $validate_function($form_values);
+    $validate_function($form, &$form_state);
   }
 }
 
-function webform_component_edit_form_submit($form_id, $form_values) {
-  $node = node_load($form_values['nid']);
+function webform_component_edit_form_submit($form, &$form_state) {
+  $node = node_load($form_state['values']['nid']);
 
   // Remove empty extra values.
-  if (is_array($form_values['extra'])) {
-    foreach ($form_values['extra'] as $key => $value) {
+  if (is_array($form_state['values']['extra'])) {
+    foreach ($form_state['values']['extra'] as $key => $value) {
       if (empty($value)) {
-        unset($form_values['extra'][$key]);
+        unset($form_state['values']['extra'][$key]);
       }
     }
   }
 
   // Remove empty attribute values.
-  if (is_array($form_values['extra']['attributes'])) {
-    foreach ($form_values['extra']['attributes'] as $key => $value) {
+  if (is_array($form_state['values']['extra']['attributes'])) {
+    foreach ($form_state['values']['extra']['attributes'] as $key => $value) {
       if (empty($value)) {
-        unset($form_values['extra']['attributes'][$key]);
+        unset($form_state['values']['extra']['attributes'][$key]);
       }
     }
   }
 
-  if ($form_values['clone']) {
-    drupal_set_message(t('Component %name cloned.', array('%name' => $form_values['name'])));
-    webform_component_clone($node, $form_values);
+  if ($form_state['values']['clone']) {
+    drupal_set_message(t('Component %name cloned.', array('%name' => $form_state['values']['name'])));
+    webform_component_clone($node, $form_state['values']);
   }
-  elseif (!empty($form_values['cid'])) {
-    drupal_set_message(t('Component %name updated.', array('%name' => $form_values['name'])));
-    webform_component_update($form_values);
+  elseif (!empty($form_state['values']['cid'])) {
+    drupal_set_message(t('Component %name updated.', array('%name' => $form_state['values']['name'])));
+    webform_component_update($form_state['values']);
   }
   else {
-    drupal_set_message(t('New component %name added.', array('%name' => $form_values['name'])));
-    webform_component_insert($form_values);
+    drupal_set_message(t('New component %name added.', array('%name' => $form_state['values']['name'])));
+    webform_component_insert($form_state['values']);
   }
 
-  return 'node/'. $form_values['nid'] .'/edit/components';
+  $form_state['redirect'] = 'node/'. $form_state['values']['nid'] .'/edit/components';
 }
 
 function webform_component_delete_form($node, $cid) {
@@ -398,10 +398,10 @@ function webform_component_delete_form($node, $cid) {
   return confirm_form($form, $question, 'node/'. $node->nid .'/components', $description, t('Delete'));
 }
 
-function webform_component_delete_form_submit($form_id, $form_values) {
-  drupal_set_message(t('Component %name deleted.', array('%name' => $form_values['name'])));
-  webform_component_delete($form_values['nid'], $form_values['cid']);
-  return 'node/'. $form_values['nid'] .'/edit/components';
+function webform_component_delete_form_submit($form, $form_state) {
+  drupal_set_message(t('Component %name deleted.', array('%name' => $form_state['values']['name'])));
+  webform_component_delete($form_state['values']['nid'], $form_state['values']['cid']);
+  return 'node/'. $form_state['values']['nid'] .'/edit/components';
 }
 
 /**

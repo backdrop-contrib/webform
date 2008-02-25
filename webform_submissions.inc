@@ -9,25 +9,11 @@
  * @author Nathan Haug <nate@lullabot.com>
  */
 
-function webform_submission_access($node, $submission, $op = 'view', $account = NULL) {
-  global $user;
-  $account = !isset($account) ? $user : $account;
-
-  switch ($op) {
-    case 'view':
-      return user_access('access webform results') || (user_access('access own webform submissions') && ($account->uid == $submission['uid']));
-    case 'edit':
-      return user_access('edit webform submissions') || (user_access('edit own webform submissions') && ($account->uid == $submission['uid']));
-    case 'delete':
-      return user_access('edit webform submissions') || (user_access('edit own webform submissions') && ($account->uid == $submission['uid'])) || user_access('clear webform results');
-  }  
-}
-
 function webform_submission_update($node, $sid, $submitted) {
   global $user;
   // Update submission by first deleting and then inserting it to the database.
   db_query("DELETE FROM {webform_submissions} WHERE sid = %d", $sid);
-  db_query("INSERT INTO {webform_submissions} (nid, sid, uid, submitted, remote_addr) "." VALUES (%d, %d, %d, %d, '%s')", $node->nid, $sid, $user->uid, time(), $_SERVER['REMOTE_ADDR']);
+  db_query("INSERT INTO {webform_submissions} (nid, sid, uid, submitted, remote_addr) "." VALUES (%d, %d, %d, %d, '%s')", $node->nid, $sid, $user->uid, time(), ip_address());
   // Update the submission data by first removing all this submissions data.
   db_query("DELETE FROM {webform_submitted_data} WHERE sid = %d", $sid);
   // Then re-ad it to the database.
@@ -50,9 +36,9 @@ function webform_submission_update($node, $sid, $submitted) {
 function webform_submission_insert($node, $submitted) {
   global $user;
 
-  $sid = db_next_id('{webform_submissions}_sid');
+  db_query("INSERT INTO {webform_submissions} (nid, uid, submitted, remote_addr) "." VALUES (%d, %d, %d, '%s')", $node->nid, $user->uid, time(), ip_address());
 
-  db_query("INSERT INTO {webform_submissions} (nid, sid, uid, submitted, remote_addr) "." VALUES (%d, %d, %d, %d, '%s')", $node->nid, $sid, $user->uid, time(), $_SERVER['REMOTE_ADDR']);
+  $sid = db_last_insert_id();
 
   foreach ($submitted as $cid => $value) {
     if (is_array($value)) {
@@ -110,9 +96,9 @@ function webform_results_clear_form($node) {
   return confirm_form($form, $question, 'node/'. $node->nid .'/results', NULL, t('Clear'), t('Cancel'));
 }
 
-function webform_results_clear_form_submit($form_id, $form_values) {
-  webform_results_clear($form_values['nid']);
-  $node = node_load(array('nid' => $form_values['nid']));
+function webform_results_clear_form_submit($form, $form_state) {
+  webform_results_clear($form_state['values']['nid']);
+  $node = node_load(array('nid' => $form_state['values']['nid']));
   $title = $node->title;
 
   $message = t('Webform %title entries cleared.', array('%title' => $title));
@@ -124,12 +110,15 @@ function webform_results_clear_form_submit($form_id, $form_values) {
 /**
  * Confirm form to delete a single form submission.
  * 
- * @param $nid
- *   ID of node for which this webform was submitted.
- * @param $sid
- *   ID of submission to be deleted (from webform_submitted_data).
+ * @param $node
+ *   The node for which this webform was submitted.
+ * @param $submission
+ *   The submission to be deleted (from webform_submitted_data).
  */
-function webform_submission_delete_form($nid, $sid) {
+function webform_submission_delete_form($node, $submission) {
+  $nid = $node->nid;
+  $sid = $submission['sid'];
+
   drupal_set_title(t("Delete Form Submission"));
 
   $form = array();
@@ -140,10 +129,10 @@ function webform_submission_delete_form($nid, $sid) {
   return confirm_form($form, $question, 'node/'. $nid .'/results', NULL, t('Delete'), t('Cancel'));
 }
 
-function webform_submission_delete_form_submit($form_id, $form_values) {
-  webform_submission_delete($form_values['nid'], $form_values['sid']);
+function webform_submission_delete_form_submit($form, $form_state) {
+  webform_submission_delete($form_state['values']['nid'], $form_state['values']['sid']);
   drupal_set_message(t("Submission deleted"));
-  drupal_goto('node/'. $form_values['nid'] .'/results');
+  drupal_goto('node/'. $form_state['values']['nid'] .'/results');
 }
 
 /**
@@ -201,9 +190,7 @@ function webform_get_submission($nid, $sid, $reset = FALSE) {
              'WHERE sd.sid = %d AND s.nid = %d';
   
     $result = db_query($query, $sid, $nid);
-    $count = db_num_rows($result);
-    if ($count >= 1) {
-      $row = db_fetch_array($result);
+    if ($row = db_fetch_array($result)) {
       $submission['nid'] = $row['nid'];
       $submission['sid'] = $row['sid'];
       $submission['uid'] = $row['uid'];
@@ -240,14 +227,13 @@ function _webform_submission_limit_check($node, $form_values) {
   }
 
   // Retrieve submission data for this IP address or username from the database.
-  $query = "SELECT submitted, uid, remote_addr ".
+  $query = "SELECT count(*) ".
            "FROM {webform_submissions} ".
            "WHERE (( 0 = %d AND remote_addr = '%s') OR uid = %d )".
            "AND submitted > %d AND nid = %d";
 
   // Fetch all the entries from the database within the submit interval with this username and IP.
-  $result = db_query($query, $user->uid, $_SERVER['REMOTE_ADDR'], $user->uid, time() - $node->webform['submit_interval'], $node->nid);
-  $num_submissions_database = db_num_rows($result);
+  $num_submissions_database = db_result(db_query($query, $user->uid, ip_address(), $user->uid, time() - $node->webform['submit_interval'], $node->nid));
 
   // Double check the submission history from the users machine using cookies.
   if (variable_get("webform_use_cookies", 0)) {

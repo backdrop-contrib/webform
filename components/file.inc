@@ -258,21 +258,20 @@ function _webform_validate_file($formelement, $form_key, $fieldname, $filters) {
  *   Nothing.
  */
 function _webform_submit_file(&$data, $component) {
-  if ($file = file_check_upload($component['form_key'])) {
-    $upload_dir = variable_get('file_directory_path', 'files') ."/webform/". $component['extra']['savelocation'];
-    if (file_check_directory($upload_dir, FILE_CREATE_DIRECTORY)) {
-      $file_saved = file_save_upload($component['form_key'], variable_get('file_directory_path', 'files') ."/webform/". $component['extra']['savelocation']);
-      if (!$file_saved) {
-        drupal_set_message(t("The uploaded file %filename was unable to be saved. The destination directory may not be writable.", array('%filename' => $data)), "error");
-        $data = serialize(array('error' => 'Error while uploading file'));
-      }
-      else {
-        $data = serialize((array)$file_saved);
-      }
+  $component['form_key'];
+  $upload_dir = variable_get('file_directory_path', 'files') ."/webform/". $component['extra']['savelocation'];
+  if (file_check_directory($upload_dir, FILE_CREATE_DIRECTORY)) {
+    $file_saved = file_save_upload($component['form_key'], array(), $upload_dir);
+    if (!$file_saved) {
+      drupal_set_message(t("The uploaded file %filename was unable to be saved. The destination directory may not be writable.", array('%filename' => $data)), "error");
+      $data = serialize(array('error' => 'Error while uploading file'));
     }
     else {
-      drupal_set_message(t("The uploaded file %filename was unable to be saved. The destination directory does not exist.", array('%filename' => $data), "error"));
+      $data = serialize((array)$file_saved);
     }
+  }
+  else {
+    drupal_set_message(t("The uploaded file %filename was unable to be saved. The destination directory does not exist.", array('%filename' => $data), "error"));
   }
 }
 
@@ -328,6 +327,20 @@ function _webform_help_file($section) {
       break;
   }
   return $output;
+}
+
+/**
+ * Module specific instance of hook_theme().
+ */
+function _webform_theme_file() {
+  return array(
+    'webform_edit_file' => array(
+      'arguments' => array('form' => NULL),
+    ),
+    'webform_mail_file' => array(
+      'arguments' => array('data' => NULL, 'component' => NULL),
+    ),
+  );
 }
 
 /**

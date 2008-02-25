@@ -314,6 +314,17 @@ function _webform_help_select($section) {
 }
 
 /**
+ * Module specific instance of hook_theme().
+ */
+function _webform_theme_select() {
+  return array(
+    'webform_mail_select' => array(
+      'arguments' => array('data' => NULL, 'component' => NULL),
+    ),
+  );
+}
+
+/**
  * Calculate and returns statistics about results for this component from all
  * submission to this webform. The output of this function will be displayed
  * under the "results" tab then "analysis".

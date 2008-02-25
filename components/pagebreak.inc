@@ -56,6 +56,17 @@ function _webform_render_pagebreak($component) {
 }
 
 /**
+ * Module specific instance of hook_theme().
+ */
+function _webform_theme_pagebreak() {
+  return array(
+    'webform_mail_pagebreak' => array(
+      'arguments' => array('data' => NULL, 'component' => NULL),
+    ),
+  );
+}
+
+/**
  * Format the output of e-mailed data for this component.
  *
  * @param $data

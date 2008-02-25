@@ -1,132 +1,279 @@
 <?php
 // $Id$
 
+/**
+ * Implementation of hook_schema().
+ */
+function webform_schema() {
+  $schema = array();
+
+  $schema['webform'] = array(
+    'description' => t('Table for storing additional properties for webform nodes.'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('The node identifier of a webform'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'confirmation' => array(
+        'description' => t('The confirmation message or URL displayed to the user after submitting a form.'),
+        'type' => 'text',
+      ),
+      'teaser' => array(
+        'description' => t('Boolean value for whether the entire form should be displayed on the teaser.'),
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'submit_text' => array(
+        'description' => t('The title of the submit button on the form.'),
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => NULL,
+      ),
+      'submit_limit' => array(
+        'description' => t('The number of submissions a single user is allowed to submit within an interval. -1 is unlimited.'),
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => -1,
+      ),
+      'submit_interval' => array(
+        'description' => t('The amount of time in seconds that must pass before a user can submit another submission within the set limit.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => -1,
+      ),
+      'email' => array(
+        'description' => t('The primary e-mail address for receiving submission results.'),
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => NULL,
+      ),
+      'email_from_name' => array(
+        'description' => t('The name of the sender in sent submission e-mails.'),
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => NULL,
+      ),
+      'email_from_address' => array(
+        'description' => t('The address of the sender in sent submission e-mails.'),
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => NULL,
+      ),
+      'email_subject' => array(
+        'description' => t('The subject of sent submission e-mails'),
+        'varchar' => 255,
+        'default' =>  NULL,
+      ),
+      'additional_validate' => array(
+        'description' => t('PHP code for additional functionality when validating a form.'),
+        'type' => 'text',
+        'default' => NULL,
+      ),
+      'additional_submit' => array(
+        'description' => t('PHP code for additional functionality when submitting a form.'),
+        'type' => 'text',
+        'default' => NULL,
+      ),
+    ),
+    'primary key' => array('nid'),
+  );
+
+  $schema['webform_component'] = array(
+    'description' => t('Stores information about components for webform nodes.'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('The node identifier of a webform'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'cid' => array(
+        'description' => t('The identifier for this component within this node, starts at 0 for each node.'),
+        'type' => 'int',
+        'size' => 'small',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'pid' => array(
+        'description' => t('If this component has a parent fieldset, the cid of that component.'),
+        'type' => 'int',
+        'size' => 'small',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'form_key' => array(
+        'description' => t('When the form is displayed and processed, this key can be used to reference the results.'),
+        'type' => 'varchar',
+        'length' => 128,
+        'default' => NULL,
+      ),
+      'name' => array(
+        'description' => t('The label for this component.'),
+        'type' => 'varchar',
+        'length' => 128,
+        'default' => NULL,
+      ),
+      'type' => array(
+        'description' => t('The field type of this component (textfield, select, hidden, etc.).'),
+        'type' => 'varchar',
+        'length' => 16,
+        'default' => NULL,
+      ),
+      'value' => array(
+        'description' => t('The default value of the component when displayed to the end-user.'),
+        'type' => 'text',
+        'default' => NULL,
+      ),
+      'extra' => array(
+        'description' => t('Additional information unique to the display or processing of this component.'),
+        'type' => 'text',
+      ),
+      'mandatory' => array(
+        'description' => t('Boolean flag for if this component is required.'),
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'weight' => array(
+        'description' => t('Determines the position of this component in the form.'),
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('nid', 'cid'),
+  );
+
+  $schema['webform_submissions'] = array(
+    'description' => t('Holds general information about submissions outside of field values.'),
+    'fields' => array(
+      'sid' => array(
+        'description' => t('The unique identifier for this submission.'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'description' => t('The node identifier of a webform'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'uid' => array(
+        'description' => t('The id of the user that completed this submission.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'submitted' => array(
+        'description' => t('Timestamp of when the form was submitted.'),
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'remote_addr' => array(
+        'description' => t('The IP address of the user that submitted the form.'),
+        'type' => 'varchar',
+        'length' => 128,
+      ),
+    ),
+    'unique keys' => array('sid', 'nid'),
+    'primary key' => array('sid'),
+  );
+
+  $schema['webform_submitted_data'] = array(
+    'description' => t('Stores all submitted field data for webform submissions.'),
+    'fields' => array(
+      'nid' => array(
+        'description' => t('The node identifier of a webform'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'sid' => array(
+        'description' => t('The unique identifier for this submission.'),
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null',
+        'default' => 0,
+      ),
+      'cid' => array(
+        'description' => t('The identifier for this component within this node, starts at 0 for each node.'),
+        'type' => 'int',
+        'size' => 'small',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'no' => array(
+        'description' => t('Usually this value is 0, but if a field has multiple values (such as a time or date), it may require multiple rows in the database.'),
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'data' => array(
+        'description' => t('The submitted value of this field, may be serialized for some components.'),
+        'type' => 'text',
+        'size' => 'medium',
+      ),
+    ),
+    'indexes' => array(
+      'nid' => array('nid'),
+      'nid_sid' => array('nid', 'sid'),
+    ),
+    'primary key' => array('sid', 'cid', 'no'),
+  );
+}
+
+/**
+ * Implementation fo hook_install().
+ */
 function webform_install() {
-  $success = TRUE;
+  db_query("UPDATE {system} SET weight = -1 WHERE name='webform' AND type='module'");
+  drupal_install_schema('webform');
+}
 
-  switch ($GLOBALS['db_type']) {
-    case 'mysqli':
-    case 'mysql':
-      $success = $success && db_query("CREATE TABLE if not exists {webform} (
-        nid int(10) unsigned NOT NULL default '0',
-        confirmation text,
-        teaser tinyint not null default '0',
-        submit_text varchar(255) default NULL,
-        submit_limit tinyint  not null default '-1',
-        submit_interval int not null default '-1',
-        email varchar(255) default NULL,
-        email_from_name varchar(255) default NULL,
-        email_from_address varchar(255) default NULL,
-        email_subject varchar(255) default NULL,
-        additional_validate text default NULL,
-        additional_submit text default NULL,
-        PRIMARY KEY  (nid)
-        ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
-      );
+/**
+ * Implmentation of hook_uninstall().
+ */
+function webform_uninstall() {
+  // Unset webform variables.
+  variable_del('webform_use_cookies');
+  variable_del('webform_debug');
+  variable_del('webform_enable_fieldset');
+  variable_del('webform_default_from_address');
+  variable_del('webform_default_from_name');
+  variable_del('webform_default_subject');
 
-      $success = $success && db_query("CREATE TABLE if not exists {webform_component} (
-        nid int(10) unsigned NOT NULL default '0',
-        cid smallint unsigned NOT NULL default '0',
-        pid smallint unsigned NOT NULL default '0',
-        form_key varchar(128) default NULL,
-        name varchar(128) default NULL,
-        type varchar(16) default NULL,
-        value text default NULL,
-        extra text,
-        mandatory tinyint NOT NULL default '0',
-        weight smallint NOT NULL default '0',
-        PRIMARY KEY  (nid, cid)
-        ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
-      );
-
-      $success = $success && db_query("CREATE TABLE if not exists {webform_submissions} (
-        nid int(10) unsigned NOT NULL default '0',
-        sid int(10) unsigned NOT NULL default '0',
-        uid int(10) unsigned NOT NULL default '0',
-        submitted int(11) NOT NULL default '0',
-        remote_addr varchar(128),
-        PRIMARY KEY  (nid,sid),
-        KEY sid (sid)
-        ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
-      );
-
-      $success = $success && db_query("CREATE TABLE if not exists {webform_submitted_data} (
-        nid int(10) unsigned NOT NULL default '0',
-        sid int(10) unsigned NOT NULL default '0',
-        cid smallint unsigned NOT NULL default '0',
-        no tinyint unsigned NOT NULL default '0',
-        data longtext,
-        PRIMARY KEY  (nid,sid,cid,no),
-        KEY sid (sid)
-        ) TYPE=MyISAM /*!40100 DEFAULT CHARACTER SET utf8 */"
-      );
-      break;
-
-  case 'pgsql':
-      $success = $success && db_query("CREATE TABLE {webform} (
-        nid integer NOT NULL default '0',
-        confirmation text NOT NULL default '',
-        teaser smallint NOT NULL default '0',
-        submit_text varchar(255) default NULL,
-        submit_limit smallint NOT NULL default '-1',
-        submit_interval integer NOT NULL default '-1',
-        email varchar(255) NOT NULL default '',
-        email_from_name varchar(255) NOT NULL default '',
-        email_from_address varchar(255) NOT NULL default '',
-        email_subject varchar(255) NOT NULL default '',
-        additional_validate text default NULL,
-        additional_submit text default NULL,
-        PRIMARY KEY (nid)
-        )"
-      );
-
-      $success = $success && db_query("CREATE TABLE {webform_component} (
-        nid integer NOT NULL default '0',
-        cid smallint NOT NULL default '0',
-        pid smallint NOT NULL default '0',
-        form_key varchar(128) default NULL,
-        name varchar(128) NOT NULL default '',
-        type varchar(16) NOT NULL default '',
-        value text NOT NULL default '',
-        extra text NOT NULL default '',
-        mandatory smallint NOT NULL default '0',
-        weight smallint NOT NULL default '0',
-        PRIMARY KEY (nid,cid)
-        )"
-      );
-
-      $success = $success && db_query("CREATE TABLE {webform_submissions} (
-        nid integer NOT NULL default '0',
-        sid serial UNIQUE,
-        uid integer NOT NULL default '0',
-        submitted integer NOT NULL default '0',
-        remote_addr varchar(128) NOT NULL default '',
-        PRIMARY KEY (nid,sid)
-        )"
-      );
-      $success = $success && db_query("CREATE INDEX {webform_submissions}_sid_idx ON {webform_submissions}(sid)");
-
-      $success = $success && db_query("CREATE TABLE {webform_submitted_data} (
-        nid integer NOT NULL default '0',
-        sid integer NOT NULL UNIQUE default '0',
-        cid integer NOT NULL default '0',
-        no integer NOT NULL default '0',
-        data text NOT NULL default '',
-        PRIMARY KEY (nid,sid,cid,no)
-        )"
-      );
-      $success = $success && db_query("CREATE INDEX {webform_submitted_data}_sid_idx ON {webform_submitted_data}(sid)");
-      break;
+  $component_list = array();
+  $path = drupal_get_path('module', 'webform') ."/components";
+  $files = file_scan_directory($path, '^.*\.inc$');
+  foreach ($files as $filename => $file) {
+    variable_del('webform_enable_'. $file->name, 1);
   }
 
-  $success = $success && db_query("UPDATE {system} SET weight = -1 WHERE name='webform' AND type='module'");
+  // Delete uploaded files.
+  $filepath = file_create_path('webform');
+  _webform_recursive_delete($filepath);
 
-  if ($success) {
-    drupal_set_message(t('Webform module installed module tables successfully.'));
-  }
-  else {
-    drupal_set_message(t('The installation of webform module was unsuccessful.'), 'error');
-  }
+  // Drop tables.
+  drupal_uninstall_schema('webform');
 }
 
 /**
@@ -579,46 +726,41 @@ function webform_update_19() {
 }
 
 /**
- * Implmentation of hook_uninstall
+ * Set new primary keys for the submissions table.
  */
-function webform_uninstall() {
-  watchdog("webform", "Removing webform module.");
-
-  // Unset webform variables.
-  variable_del('webform_use_cookies');
-  variable_del('webform_debug');
-  variable_del('webform_enable_fieldset');
-  variable_del('webform_default_from_address');
-  variable_del('webform_default_from_name');
-  variable_del('webform_default_subject');
-
-  if (!isset($component_list)) {
-    $component_list = array();
-    $path = drupal_get_path('module', 'webform') ."/components";
-    $files = file_scan_directory($path, '^.*\.inc$');
-    foreach ($files as $filename => $file) {
-      variable_del('webform_enable_'. $file->name, 1);
-    }
+/*
+//In progress... do not run.
+function webform_update_20() {
+  $ret = array();
+  switch ($GLOBALS['db_type']) {
+    case 'mysqli':
+    case 'mysql':
+      // Update the webform_submissions table with sid index.
+      $ret[] = update_sql("ALTER TABLE {webform_submissions} DROP INDEX sid (sid)");
+      $ret[] = update_sql("ALTER TABLE {webform_submissions} DROP PRIMARY KEY"); // Drop the nid, sid index.
+      $ret[] = update_sql("ALTER TABLE {webform_submissions} ADD INDEX sid_nid (sid, nid)");
+      $ret[] = update_sql("ALTER TABLE {webform_submissions} CHANGE sid sid int(10) UNSIGNED NOT NULL DEFAULT '0' AUTO_INCREMENT PRIMARY KEY");
+      break;
+    case 'pgsql':
+      // Update the webform_submissions table with sid serial value.
+      $ret[] = update_sql("DROP INDEX {webform_submissions}_sid_idx");
+      db_change_column($ret, 'webform_submissions', 'sid', 'sid', 'serial');
+      break;
   }
-
-  // Delete uploaded files.
-  $filepath = file_create_path('webform');
-  _webform_recursive_delete($filepath);
-
-  // Drop tables.
-  db_query("DROP TABLE IF EXISTS {webform}");
-  db_query("DROP TABLE IF EXISTS {webform_component}");
-  db_query("DROP TABLE IF EXISTS {webform_submissions}");
-  db_query("DROP TABLE IF EXISTS {webform_submitted_data}");
-
-  // Clear the cache tables.
-  cache_clear_all(null, 'cache');
-  cache_clear_all(null, 'cache_filter');
-  cache_clear_all(null, 'cache_menu');
-  cache_clear_all(null, 'cache_page');
-
-  watchdog("Webform", "Webform module removed.");
+  return $ret;
 }
+*/
+
+/**
+ * Upgrade to Drupal 6. Convert columns to auto-increment.
+ */
+/*
+// In progress, do not run.
+function webform_update_6001() {
+  
+}
+*/
+
 
 /**
  * Recursively delete all files and folders in the specified filepath, then
