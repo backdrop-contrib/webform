@@ -19,6 +19,7 @@ function webform_schema() {
       'confirmation' => array(
         'description' => t('The confirmation message or URL displayed to the user after submitting a form.'),
         'type' => 'text',
+        'not null' => TRUE,
       ),
       'teaser' => array(
         'description' => t('Boolean value for whether the entire form should be displayed on the teaser.'),
@@ -66,18 +67,19 @@ function webform_schema() {
       ),
       'email_subject' => array(
         'description' => t('The subject of sent submission e-mails'),
-        'varchar' => 255,
+        'type' => 'varchar',
+        'length' => 255,
         'default' =>  NULL,
       ),
       'additional_validate' => array(
         'description' => t('PHP code for additional functionality when validating a form.'),
         'type' => 'text',
-        'default' => NULL,
+        'not null' => TRUE,
       ),
       'additional_submit' => array(
         'description' => t('PHP code for additional functionality when submitting a form.'),
         'type' => 'text',
-        'default' => NULL,
+        'not null' => TRUE,
       ),
     ),
     'primary key' => array('nid'),
@@ -130,11 +132,12 @@ function webform_schema() {
       'value' => array(
         'description' => t('The default value of the component when displayed to the end-user.'),
         'type' => 'text',
-        'default' => NULL,
+        'not null' => TRUE,
       ),
       'extra' => array(
         'description' => t('Additional information unique to the display or processing of this component.'),
         'type' => 'text',
+        'not null' => TRUE,
       ),
       'mandatory' => array(
         'description' => t('Boolean flag for if this component is required.'),
@@ -162,7 +165,6 @@ function webform_schema() {
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0,
       ),
       'nid' => array(
         'description' => t('The node identifier of a webform'),
@@ -190,7 +192,9 @@ function webform_schema() {
         'length' => 128,
       ),
     ),
-    'unique keys' => array('sid', 'nid'),
+    'unique keys' => array(
+      'sid_nid' => array('sid', 'nid'),
+    ),
     'primary key' => array('sid'),
   );
 
@@ -231,6 +235,7 @@ function webform_schema() {
         'description' => t('The submitted value of this field, may be serialized for some components.'),
         'type' => 'text',
         'size' => 'medium',
+        'not null' => TRUE,
       ),
     ),
     'indexes' => array(
@@ -239,6 +244,8 @@ function webform_schema() {
     ),
     'primary key' => array('sid', 'cid', 'no'),
   );
+
+  return $schema;
 }
 
 /**
