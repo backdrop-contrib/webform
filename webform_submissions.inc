@@ -36,9 +36,9 @@ function webform_submission_update($node, $sid, $submitted) {
 function webform_submission_insert($node, $submitted) {
   global $user;
 
-  db_query("INSERT INTO {webform_submissions} (nid, uid, submitted, remote_addr) "." VALUES (%d, %d, %d, '%s')", $node->nid, $user->uid, time(), ip_address());
+  $result = db_query("INSERT INTO {webform_submissions} (nid, uid, submitted, remote_addr) "." VALUES (%d, %d, %d, '%s')", $node->nid, $user->uid, time(), ip_address());
 
-  $sid = db_last_insert_id();
+  $sid = db_last_insert_id('webform_submissions', 'sid');
 
   foreach ($submitted as $cid => $value) {
     if (is_array($value)) {
