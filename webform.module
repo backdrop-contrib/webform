@@ -928,6 +928,16 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
 }
 
 /**
+ * Implementation of hook_mail().
+ */
+function webform_mail($key, &$message, $params) {
+  $message['headers'] = $params['headers'];
+  $message['subject'] = $params['subject'];
+  $message['body'] = $params['message'];
+  dsm($message);
+}
+
+/**
  * Menu callback for admin/webform/settings.
  */
 function webform_admin_settings() {
@@ -1481,7 +1491,7 @@ function webform_client_form_submit($form, &$form_state) {
       // to be sent out.
       if (is_array($address)) {
         foreach ($address as $single_address) {
-          drupal_mail('webform-submission', $single_address, $email_subject, $messages[$cid], $froms[$cid], $headers[$cid]);
+          drupal_mail('webform', 'submission', $single_address, user_preferred_language($user), array('message' => $messages[$cid], 'subject' => $email_subject, 'headers' => $headers[$cid]), $froms[$cid]);
 
           // Debugging output for email.
           if (variable_get('webform_debug', 0) >= 2) {
@@ -1490,7 +1500,7 @@ function webform_client_form_submit($form, &$form_state) {
         }
       }
       else {
-        drupal_mail('webform-submission', $address, $email_subject, $messages[$cid], $froms[$cid], $headers[$cid]);
+        drupal_mail('webform', 'submission', $address, user_preferred_language($user), array('message' => $messages[$cid], 'subject' => $email_subject, 'headers' => $headers[$cid]), $froms[$cid]);
 
         // Debugging output for email.
         if (variable_get('webform_debug', 0) >= 2) {
