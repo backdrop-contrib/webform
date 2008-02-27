@@ -128,7 +128,7 @@ function theme_webform_components_form($form) {
 
       // Add each component to a table row.
       $rows[] = array(
-        $indents . l($component['name'], 'node/'. $node->nid .'/edit/components/'. $cid, array('title' => t('Edit this component'))),
+        $indents . l($component['name'], 'node/'. $node->nid .'/edit/components/'. $cid, array('attributes' => array('title' => t('Edit this component')))),
         $component['type'],
         ($component['value'] == "") ? "-" : $component['value'],
         drupal_render($form['components'][$cid]['mandatory']),

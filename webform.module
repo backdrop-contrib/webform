@@ -135,6 +135,7 @@ function webform_menu() {
     'title' => 'Submissions',
     'page callback' => 'webform_results',
     'page arguments' => array(1),
+    'access callback' => 'user_access',
     'access arguments' => array('access webform results'),
     'weight' => 4,
     'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -143,6 +144,7 @@ function webform_menu() {
     'title' => 'Analysis',
     'page callback' => 'webform_results',
     'page arguments' => array(1, 'analysis'),
+    'access callback' => 'user_access',
     'access arguments' => array('access webform results'),
     'weight' => 5,
     'type' => MENU_LOCAL_TASK,
@@ -151,6 +153,7 @@ function webform_menu() {
     'title' => 'Table',
     'page callback' => 'webform_results',
     'page arguments' => array(1, 'table'),
+    'access callback' => 'user_access',
     'access arguments' => array('access webform results'),
     'weight' => 6,
     'type' => MENU_LOCAL_TASK,
@@ -158,6 +161,7 @@ function webform_menu() {
   $items['node/%webform_menu/results/download'] = array(
     'title' => 'Download',
     'page callback' => 'webform_results',
+    'access callback' => 'user_access',
     'page arguments' => array(1, 'download'),
     'access arguments' => array('access webform results'),
     'weight' => 7,
@@ -167,6 +171,7 @@ function webform_menu() {
     'title' => 'Clear',
     'page callback' => 'webform_results',
     'page arguments' => array(1, 'clear'),
+    'access callback' => 'user_access',
     'access arguments' => array('clear webform results'),
     'weight' => 8,
     'type' => MENU_LOCAL_TASK,
@@ -1073,10 +1078,10 @@ function webform_client_form($form_state, &$node, $submission, $enabled = FALSE,
       '#suffix' => '</div>',
     );
     $form['navigation']['previous'] = array(
-      '#value' => $previous ? l(t('Previous submission'), 'node/'. $node->nid .'/submission/'. $previous . ($enabled ? '/edit' : '') , array('class' => 'webform-submission-previous'), ($enabled ? 'destination=node/'. $node->nid .'/submission/'. $previous .'/edit' : NULL)) : '<span class="webform-submission-previous">'. t('Previous submission') .'</span>',
+      '#value' => $previous ? l(t('Previous submission'), 'node/'. $node->nid .'/submission/'. $previous . ($enabled ? '/edit' : '') , array('attributes' => array('class' => 'webform-submission-previous'), 'query' => ($enabled ? 'destination=node/'. $node->nid .'/submission/'. $previous .'/edit' : NULL))) : '<span class="webform-submission-previous">'. t('Previous submission') .'</span>',
     );
     $form['navigation']['next'] = array(
-      '#value' => $next ? l(t('Next submission'), 'node/'. $node->nid .'/submission/'. $next . ($enabled ? '/edit' : ''), array('class' => 'webform-submission-next'), ($enabled ? 'destination=node/'. $node->nid .'/submission/'. $next .'/edit' : NULL)) : '<span class="webform-submission-next">'. t('Next submission') .'</span>',
+      '#value' => $next ? l(t('Next submission'), 'node/'. $node->nid .'/submission/'. $next . ($enabled ? '/edit' : ''), array('attributes' => array('class' => 'webform-submission-next'), 'query' => ($enabled ? 'destination=node/'. $node->nid .'/submission/'. $next .'/edit' : NULL))) : '<span class="webform-submission-next">'. t('Next submission') .'</span>',
     );
 
     $form['submission_info'] = array(
@@ -1504,7 +1509,7 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Log to watchdog if normal debug is on.
   if (variable_get('webform_debug', 0) >= 1) {
-    watchdog('webform', 'Submission posted to %title. <a href="!url">Results</a>. !details', array('%title' => $node->title, '!url' => url('node/'. $node->nid, NULL, 'sid='. $sid), '!results' => "<br />\n<pre>". htmlentities(print_r($form_state['values'], TRUE)) ."</pre>"), WATCHDOG_NOTICE);
+    watchdog('webform', 'Submission posted to %title. <a href="!url">Results</a>. !details', array('%title' => $node->title, '!url' => url('node/'. $node->nid, array('query' =>'sid='. $sid)), '!results' => "<br />\n<pre>". htmlentities(print_r($form_state['values'], TRUE)) ."</pre>"), WATCHDOG_NOTICE);
   }
 
   // Check confirmation field to see if redirect should be to another node or a message.
@@ -1646,7 +1651,7 @@ function theme_webform_mail_message($form_values, $node, $sid, $cid) {
 
   $message .= "\n\n";
   $message .= t("The results of this submission may be viewed at:") ."\n";
-  $message .= url('node/'. $node->nid, "sid=". $sid, NULL, TRUE);
+  $message .= url('node/'. $node->nid, array('query' => "sid=". $sid, 'html' => TRUE));
 
   return $message;
 }
@@ -2049,3 +2054,7 @@ function webform_load_components($return_all = FALSE, $reset = FALSE) {
   return $return_all ? $component_list : array_intersect_assoc($component_list, $enabled_list);
 }
 
+// Poll module compatibility fix (see webform_poll.inc for more info).
+if (module_exists('poll')) {
+  include_once(drupal_get_path('module', 'webform') .'/webform_poll.inc');
+}
