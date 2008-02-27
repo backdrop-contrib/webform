@@ -864,7 +864,7 @@ function webform_form_alter(&$form, $form_state, $form_id) {
  */
 function webform_form_submit($form, &$form_state) {
   // There should be a more effective way to find the new node ID.
-  $nid = db_result(db_query_range('SELECT nid FROM {node} WHERE type = "webform" ORDER BY nid DESC', 0, 1));
+  $nid = db_result(db_query_range("SELECT nid FROM {node} WHERE type = 'webform' ORDER BY nid DESC", 0, 1));
 
   // Remove the the submitted message added by node module.
   unset($_SESSION['messages']['status']);
