@@ -20,7 +20,7 @@ function _webform_edit_markup($currfield) {
     '#weight' => -1,
   );
   // Add the filter form.
-  $edit_fields['extra']['format'] = filter_form($currfield['extra']['format'], 0, array('field', 'extra', 'format'));
+  $edit_fields['extra']['format'] = filter_form($currfield['extra']['format'], 0, array('extra', 'format'));
 
   // No description for markup.
   $edit_fields['extra']['description'] = array();
