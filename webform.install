@@ -240,9 +240,9 @@ function webform_schema() {
     ),
     'indexes' => array(
       'nid' => array('nid'),
-      'nid_sid' => array('nid', 'sid'),
+      'sid_nid' => array('sid', 'nid'),
     ),
-    'primary key' => array('sid', 'cid', 'no'),
+    'primary key' => array('nid', 'sid', 'cid', 'no'),
   );
 
   return $schema;
@@ -516,8 +516,8 @@ function webform_update_11() {
       $ret[] = update_sql("ALTER TABLE {webform_submitted_data} ADD INDEX sid (sid)");
       break;
     case 'pgsql':
-      $ret[] = update_sql("CREATE INDEX {webform_submissions}_sid_idx ON {webform_submissions}(sid)");
-      $ret[] = update_sql("CREATE INDEX {webform_submitted_data}_sid_idx ON {webform_submitted_data}(sid)");
+      $ret[] = update_sql("CREATE INDEX {webform_submissions}_sid_idx ON {webform_submissions} (sid)");
+      $ret[] = update_sql("CREATE INDEX {webform_submitted_data}_sid_idx ON {webform_submitted_data} (sid)");
       break;
   }
 
@@ -735,38 +735,56 @@ function webform_update_19() {
 /**
  * Set new primary keys for the submissions table.
  */
-/*
-//In progress... do not run.
 function webform_update_20() {
   $ret = array();
   switch ($GLOBALS['db_type']) {
     case 'mysqli':
     case 'mysql':
-      // Update the webform_submissions table with sid index.
-      $ret[] = update_sql("ALTER TABLE {webform_submissions} DROP INDEX sid (sid)");
-      $ret[] = update_sql("ALTER TABLE {webform_submissions} DROP PRIMARY KEY"); // Drop the nid, sid index.
-      $ret[] = update_sql("ALTER TABLE {webform_submissions} ADD INDEX sid_nid (sid, nid)");
-      $ret[] = update_sql("ALTER TABLE {webform_submissions} CHANGE sid sid int(10) UNSIGNED NOT NULL DEFAULT '0' AUTO_INCREMENT PRIMARY KEY");
+      // Update the webform_submissions table with sid primary key instead of nid, sid.
+      $ret[] = update_sql("ALTER TABLE {webform_submissions} DROP INDEX sid");
+      $ret[] = update_sql("ALTER TABLE {webform_submissions} DROP PRIMARY KEY");
+      $ret[] = update_sql("ALTER TABLE {webform_submissions} ADD UNIQUE INDEX sid_nid (sid, nid)");
+      $ret[] = update_sql("ALTER TABLE {webform_submissions} ADD PRIMARY KEY (sid)");
+
+      // Update webform_submitted_data table removing nid from the primary key.
+      $ret[] = update_sql("ALTER TABLE {webform_submitted_data} DROP PRIMARY KEY");
+      $ret[] = update_sql("ALTER TABLE {webform_submitted_data} DROP INDEX sid");
+      // While we've got these keys removed, decrease the size of the 'no' column.
+      $ret[] = update_sql("ALTER TABLE {webform_submitted_data} CHANGE no no tinyint NOT NULL DEFAULT 0");
+      $ret[] = update_sql("ALTER TABLE {webform_submitted_data} ADD PRIMARY KEY (sid, cid, no)");
+      $ret[] = update_sql("ALTER TABLE {webform_submitted_data} ADD INDEX nid (nid)");
+      $ret[] = update_sql("ALTER TABLE {webform_submitted_data} ADD INDEX sid_nid (sid, nid)");
       break;
     case 'pgsql':
-      // Update the webform_submissions table with sid serial value.
-      $ret[] = update_sql("DROP INDEX {webform_submissions}_sid_idx");
-      db_change_column($ret, 'webform_submissions', 'sid', 'sid', 'serial');
+      $ret[] = update_sql("ALTER TABLE {webform_submissions} DROP CONSTRAINT {webform_submissions}_sid_idx");
+      $ret[] = update_sql("ALTER TABLE {webform_submissions} ADD PRIMARY KEY (sid)");
+      $ret[] = update_sql("ALTER TABLE {webform_submissions} ADD CONSTRAINT {webform_submissions}_sid_nid_key UNIQUE (sid, nid)");
+
+      $ret[] = update_sql("ALTER TABLE {webform_submitted_data} DROP PRIMARY KEY");
+      $ret[] = update_sql("ALTER TABLE {webform_submitted_data} DROP CONSTRAINT {webform_submitted_data}_sid_idx");
+      db_change_column($ret, 'webform_submitted_data', 'no', 'no', 'smallint', array('not null' => TRUE, 'default' => '0'));
+      $ret[] = update_sql("ALTER TABLE {webform_submitted_data} ADD PRIMARY KEY (sid, cid, no)");
+      $ret[] = update_sql("ALTER TABLE {webform_submissions} ADD INDEX {webform_submissions}_nid_idx (nid)");
+      $ret[] = update_sql("ALTER TABLE {webform_submissions} ADD INDEX {webform_submissions}_sid_nid_idx (sid, nid)");
       break;
   }
   return $ret;
 }
-*/
 
 /**
- * Upgrade to Drupal 6. Convert columns to auto-increment.
+ * Upgrade to Drupal 6. Convert submissions sid column to auto-increment.
  */
-/*
-// In progress, do not run.
 function webform_update_6001() {
-  
+  $ret = array();
+  // Keys must be dropped before altering the column.
+  db_drop_primary_key($ret, 'webform_submissions');
+  db_drop_unique_key($ret, 'webform_submissions', 'sid_nid');
+
+  // Alter to a primary key and add the unique key back.
+  db_change_field($ret, 'webform_submissions', 'sid', 'sid', array('type' => 'serial', 'not null' => TRUE), array('primary key' => array('sid')));
+  db_add_unique_key($ret, 'webform_submissions', 'sid_nid', array('sid', 'nid'));
+  return $ret;
 }
-*/
 
 
 /**
