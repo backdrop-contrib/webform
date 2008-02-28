@@ -555,26 +555,26 @@ function webform_update_13() {
 
   // Set the webform weight to -1. This is needed to have webform's hook_menu()
   // take precedence over node_menu().
-  $ret[] = update_sql('UPDATE {system} SET weight = -1 WHERE type = "module" and name = "webform"');
+  $ret[] = update_sql("UPDATE {system} SET weight = -1 WHERE type = 'module' and name = 'webform'");
 
   // Ensure crufty submission data that was not removed when webform nodes
   // were deleted is cleared out before doing key changes.
-  $ret[] = update_sql('DELETE FROM {webform} WHERE nid NOT IN (SELECT nid FROM {node} WHERE type = "webform")');
-  $ret[] = update_sql('DELETE FROM {webform_component} WHERE nid NOT IN (SELECT nid FROM {node} WHERE type = "webform")');
-  $ret[] = update_sql('DELETE FROM {webform_submissions} WHERE nid NOT IN (SELECT nid FROM {node} WHERE type = "webform")');
-  $ret[] = update_sql('DELETE FROM {webform_submitted_data} WHERE nid NOT IN (SELECT nid FROM {node} WHERE type = "webform")');
+  $ret[] = update_sql("DELETE FROM {webform} WHERE nid NOT IN (SELECT nid FROM {node} WHERE type = 'webform')");
+  $ret[] = update_sql("DELETE FROM {webform_component} WHERE nid NOT IN (SELECT nid FROM {node} WHERE type = 'webform')");
+  $ret[] = update_sql("DELETE FROM {webform_submissions} WHERE nid NOT IN (SELECT nid FROM {node} WHERE type = 'webform')");
+  $ret[] = update_sql("DELETE FROM {webform_submitted_data} WHERE nid NOT IN (SELECT nid FROM {node} WHERE type = 'webform')");
 
   // Convert timestamp-based cids to small integers starting at 1 for each node.
-  $result = db_query('SELECT nid, cid FROM {webform_component} ORDER BY nid ASC, cid ASC');
+  $result = db_query("SELECT nid, cid FROM {webform_component} ORDER BY nid ASC, cid ASC");
   $nid = 0;
   while ($component = db_fetch_array($result)) {
     if ($component['nid'] != $nid) {
       $nid = $component['nid'];
       $cid = 1;
     }
-    $ret[] = update_sql('UPDATE {webform_component} SET cid = '. $cid .' WHERE nid = '. $nid .' AND cid = '. $component['cid']);
-    $ret[] = update_sql('UPDATE {webform_component} SET pid = '. $cid .' WHERE nid = '. $nid .' AND pid = '. $component['cid']);
-    $ret[] = update_sql('UPDATE {webform_submitted_data} SET cid = '. $cid .' WHERE nid = '. $nid .' AND cid = '. $component['cid']);
+    $ret[] = update_sql("UPDATE {webform_component} SET cid = ". $cid ." WHERE nid = ". $nid ." AND cid = ". $component['cid']);
+    $ret[] = update_sql("UPDATE {webform_component} SET pid = ". $cid ." WHERE nid = ". $nid ." AND pid = ". $component['cid']);
+    $ret[] = update_sql("UPDATE {webform_submitted_data} SET cid = ". $cid ." WHERE nid = ". $nid ." AND cid = ". $component['cid']);
     $cid++;
   }
 
@@ -616,7 +616,7 @@ function webform_update_14() {
  */
 function webform_update_15() {
   $ret = array();
-  $result = db_query('SELECT nid, cid, extra, value FROM {webform_component} WHERE type = "email"');
+  $result = db_query("SELECT nid, cid, extra, value FROM {webform_component} WHERE type = 'email'");
   while ($row = db_fetch_array($result)) {
     $extra = unserialize($row['extra']);
     if ($extra['carboncopy']) {
@@ -624,16 +624,16 @@ function webform_update_15() {
       unset($extra['carboncopy']);
     }
     $value = $row['value'] == 'user email' ? '%useremail' : '';
-    db_query('UPDATE {webform_component} SET extra = "%s", value = "%s" WHERE nid = %d and cid = %d', serialize($extra), $value, $row['nid'], $row['cid']);
+    db_query("UPDATE {webform_component} SET extra = '%s', value = '%s' WHERE nid = %d and cid = %d", serialize($extra), $value, $row['nid'], $row['cid']);
   }
 
-  $result = db_query('SELECT nid, cid, extra FROM {webform_component} WHERE type IN ("email", "textfield", "textarea")');
+  $result = db_query("SELECT nid, cid, extra FROM {webform_component} WHERE type IN ('email', 'textfield', 'textarea')");
   while ($row = db_fetch_array($result)) {
     $extra = unserialize($row['extra']);
     if ($extra['attributes']['disabled']) {
       $extra['disabled'] = 1;
       unset($extra['attributes']['disabled']);
-      db_query('UPDATE {webform_component} SET extra = "%s" WHERE nid = %d and cid = %d', serialize($extra), $row['nid'], $row['cid']);
+      db_query("UPDATE {webform_component} SET extra = '%s' WHERE nid = %d and cid = %d", serialize($extra), $row['nid'], $row['cid']);
     }
   }
   return $ret;
@@ -677,16 +677,16 @@ function webform_update_17() {
  */
 function webform_update_18() {
   $ret = array();
-  $result = db_query('SELECT * FROM {webform}');
+  $result = db_query("SELECT * FROM {webform}");
   while ($webform = db_fetch_object($result)) {
     foreach (array('email_from_name', 'email_from_address', 'email_subject') as $key) {
       if ($webform->{$key} == 'Automatic' || $webform->{$key} == 'Default') {
-        $ret[] = update_sql('UPDATE {webform} SET '. $key .' = "default" WHERE nid = '. $webform->nid);
+        $ret[] = update_sql("UPDATE {webform} SET ". $key ." = 'default' WHERE nid = ". $webform->nid);
       }
       elseif (!is_numeric($webform->{$key})) {
-        $cid = db_result(db_query('SELECT cid FROM {webform_component} WHERE name = "%s" AND nid = %d', $webform->{$key}, $webform->nid));
+        $cid = db_result(db_query("SELECT cid FROM {webform_component} WHERE name = '%s' AND nid = %d", $webform->{$key}, $webform->nid));
         if ($cid) {
-          $ret[] = update_sql('UPDATE {webform} SET '. $key .' = "'. $cid .'" WHERE nid = '. $webform->nid);
+          $ret[] = update_sql("UPDATE {webform} SET ". $key ." = '". $cid ."' WHERE nid = ". $webform->nid);
         }
       }
     }
@@ -707,7 +707,7 @@ function webform_update_19() {
     $captcha_exists = db_result(db_query("SELECT table_name FROM {information_schema.tables} WHERE table_schema = 'public' AND table_name LIKE 'captcha_points'"));
   }
   else {
-    $captcha_exists = db_result(db_query('SHOW TABLES LIKE "captcha_points"'));
+    $captcha_exists = db_result(db_query("SHOW TABLES LIKE 'captcha_points'"));
   }
 
   if (module_exists('image_captcha')) {
@@ -719,13 +719,13 @@ function webform_update_19() {
     $captcha_type = 'Math';
   }
 
-  $result = db_query('SELECT nid, cid FROM {webform_component} WHERE type = "captcha"');
+  $result = db_query("SELECT nid, cid FROM {webform_component} WHERE type = 'captcha'");
   while ($component = db_fetch_object($result)) {
-    $ret[] = update_sql('DELETE FROM {webform_component} WHERE cid = '. $component->cid .' AND nid = '. $component->nid);
+    $ret[] = update_sql("DELETE FROM {webform_component} WHERE cid = ". $component->cid ." AND nid = ". $component->nid);
     if ($captcha_exists) {
-      $added = db_result(db_query('SELECT form_id FROM {captcha_points} WHERE form_id = "webform_client_form_'. $component->nid .'"'));
+      $added = db_result(db_query("SELECT form_id FROM {captcha_points} WHERE form_id = 'webform_client_form_". $component->nid ."'"));
       if (!$added) {
-        $ret[] = update_sql('INSERT INTO {captcha_points} (form_id, module, type) VALUES ("webform_client_form_'. $component->nid .'", "'. $captcha_module .'", "'. $captcha_type .'")');
+        $ret[] = update_sql("INSERT INTO {captcha_points} (form_id, module, type) VALUES ('webform_client_form_". $component->nid .'", "'. $captcha_module ."', '". $captcha_type ."')");
       }
     }
   }
