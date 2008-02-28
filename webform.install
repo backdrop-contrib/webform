@@ -646,17 +646,16 @@ function webform_update_16() {
   $ret = array();
 
   switch ($GLOBALS['db_type']) {
-    case 'pgsql':
-      $ret[] = update_sql("ALTER TABLE {webform} DROP redirect_post");
-      $ret[] = update_sql("ALTER TABLE {webform} ADD teaser tinyint NOT NULL DEFAULT 0");
-      $ret[] = update_sql("ALTER TABLE {webform} ADD submit_text varchar(255) NULL DEFAULT NULL");
-      break;
-
     case 'mysqli':
     case 'mysql':
       $ret[] = update_sql("ALTER TABLE {webform} DROP redirect_post");
       $ret[] = update_sql("ALTER TABLE {webform} ADD teaser tinyint NOT NULL DEFAULT 0 AFTER confirmation");
       $ret[] = update_sql("ALTER TABLE {webform} ADD submit_text varchar(255) NULL DEFAULT NULL AFTER teaser");
+      break;
+    case 'pgsql':
+      $ret[] = update_sql("ALTER TABLE {webform} DROP redirect_post");
+      $ret[] = update_sql("ALTER TABLE {webform} ADD teaser smallint NOT NULL DEFAULT 0");
+      $ret[] = update_sql("ALTER TABLE {webform} ADD submit_text varchar(255) NULL DEFAULT NULL");
       break;
   }
 
@@ -756,16 +755,18 @@ function webform_update_20() {
       $ret[] = update_sql("ALTER TABLE {webform_submitted_data} ADD INDEX sid_nid (sid, nid)");
       break;
     case 'pgsql':
-      $ret[] = update_sql("ALTER TABLE {webform_submissions} DROP CONSTRAINT {webform_submissions}_sid_idx");
+      $ret[] = update_sql("ALTER TABLE {webform_submissions} DROP CONSTRAINT {webform_submissions}_pkey");
+      $ret[] = update_sql("DROP INDEX {webform_submissions}_sid_idx");
       $ret[] = update_sql("ALTER TABLE {webform_submissions} ADD PRIMARY KEY (sid)");
       $ret[] = update_sql("ALTER TABLE {webform_submissions} ADD CONSTRAINT {webform_submissions}_sid_nid_key UNIQUE (sid, nid)");
 
-      $ret[] = update_sql("ALTER TABLE {webform_submitted_data} DROP PRIMARY KEY");
-      $ret[] = update_sql("ALTER TABLE {webform_submitted_data} DROP CONSTRAINT {webform_submitted_data}_sid_idx");
+      $ret[] = update_sql("DROP INDEX {webform_submitted_data}_sid_idx");
       db_change_column($ret, 'webform_submitted_data', 'no', 'no', 'smallint', array('not null' => TRUE, 'default' => '0'));
       $ret[] = update_sql("ALTER TABLE {webform_submitted_data} ADD PRIMARY KEY (sid, cid, no)");
-      $ret[] = update_sql("ALTER TABLE {webform_submissions} ADD INDEX {webform_submissions}_nid_idx (nid)");
-      $ret[] = update_sql("ALTER TABLE {webform_submissions} ADD INDEX {webform_submissions}_sid_nid_idx (sid, nid)");
+      $ret[] = update_sql("CREATE INDEX {webform_submitted_data}_nid_idx ON {webform_submitted_data} (nid)");
+      $ret[] = update_sql("CREATE INDEX {webform_submitted_data}_sid_nid_idx ON {webform_submitted_data} (sid, nid)");
+
+      $ret[] = update_sql("ALTER TABLE {webform_component} ADD PRIMARY KEY (nid, cid)");
       break;
   }
   return $ret;
