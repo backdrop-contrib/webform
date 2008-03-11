@@ -14,8 +14,8 @@ assumes use of the phptemplate engine.
 - Open your template.php file located in your theme's directory.
 - Add the following lines of php code:
 
-function phptemplate_webform_create_mailmessage_[node id here]($form_data, $node, $sid, $cid) {
-  return _phptemplate_callback('webform-mail-[node id here]', array('form_data' => $form_data, 'node' => $node, 'sid' => $sid, 'cid' => $cid));
+function phptemplate_webform_mail_message_[node id here]($form_values, $node, $sid, $cid) {
+  return _phptemplate_callback('webform-mail-[node id here]', array('form_values' => $form_values, 'node' => $node, 'sid' => $sid, 'cid' => $cid));
 }
 
 - Create a new file in your theme's directory named
@@ -25,7 +25,7 @@ function phptemplate_webform_create_mailmessage_[node id here]($form_data, $node
 - Open up your new file and customize the webform email. Here's a simple template
   to get you started:
   
-  <?php /* Begin sample create_mailmessage file */ ?>
+  <?php /* Begin sample webform mail message file */ ?>
   
   Company X Official Website Submission
   
@@ -33,27 +33,31 @@ function phptemplate_webform_create_mailmessage_[node id here]($form_data, $node
   
   From the IP address <?php echo $_SERVER['REMOTE_ADDR']; ?>
   
-  The user's favorite color is <?php echo $form_data['submitted_tree']['favorite_color'] ?>
+  The user's favorite color is <?php echo $form_values['submitted_tree']['favorite_color'] ?>
   
   The user's problem is below:
-  <?php echo $form_data['submitted_tree']['problem'] ?>
+  <?php echo $form_values['submitted_tree']['problem'] ?>
   
-  <?php /* End sample create_mailmessage file */ ?>
+  <?php /* End sample webform mail message file */ ?>
 
 - To get a better idea of what variables are available to you, you can include
   the print_r function in your email. Simply include the line:
   
-  <?php print_r($form_data) ?>
+  <?php print_r($form_values) ?>
   
   to get a listing of all the available fields you can use in your mail.
   
 - An Important Note for Webform Themers: When webform added support for fieldsets
   (i.e. nested fields), it became necessary to increase the complexity of themed
-  emails. Previously, the $form_data variable only sent the values of the form in
-  a flat array. Now, $form_data contains two arrays of information:
+  emails. Previously, the $form_values variable only sent the values of the form in
+  a flat array. Now, $form_values contains two arrays of information:
   
-  $form_data['submitted'] => An array of fields and their submitted values (identical to the previous value of $form_data)
-  $form_data['submitted_tree'] => An array of fields and their values structured in a recursive array
+  $form_values['submitted'] => An array of fields and their submitted values (identical to the previous value of $form_values)
+  $form_values['submitted_tree'] => An array of fields and their values structured in a recursive array
+
+- Theming the e-mail headers may also be done in a similar manner. Over ride
+  the theme_webform_mail_headers() function from webform.module to customize
+  the e-mail headers.
 
 Theme the confirmation page
 ---------------------------
