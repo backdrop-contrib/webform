@@ -6,14 +6,16 @@
 .webform-submission-next {
   margin-left: 20px;
 }
-.webform-indentation {
-  width: 20px;
-  float: left;
-}
 .webform-checkbox {
   text-align: center;
   width: 40px;
 }
 .webform-default-value {
   color: #999;
+}
+tr.webform-add-form .tabledrag-changed {
+	display: none;
+}
+#webform-components tr.webform-add-form {
+	background-color: inherit;
 }
