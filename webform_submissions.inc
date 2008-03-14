@@ -93,7 +93,7 @@ function webform_results_clear_form($node) {
   $form['nid'] = array('#type' => 'value', '#value' => $node->nid);
   $question = t("Are you sure you want to delete all submissions for this form?");
 
-  return confirm_form($form, $question, 'node/'. $node->nid .'/results', NULL, t('Clear'), t('Cancel'));
+  return confirm_form($form, $question, 'node/'. $node->nid .'/webform-results', NULL, t('Clear'), t('Cancel'));
 }
 
 function webform_results_clear_form_submit($form, $form_state) {
@@ -126,13 +126,13 @@ function webform_submission_delete_form($node, $submission) {
   $form['sid'] = array('#type' => 'value', '#value' => $sid);
   $question = t("Are you sure you want to delete this submission?");
 
-  return confirm_form($form, $question, 'node/'. $nid .'/results', NULL, t('Delete'), t('Cancel'));
+  return confirm_form($form, $question, 'node/'. $nid .'/webform-results', NULL, t('Delete'), t('Cancel'));
 }
 
 function webform_submission_delete_form_submit($form, $form_state) {
   webform_submission_delete($form_state['values']['nid'], $form_state['values']['sid']);
   drupal_set_message(t("Submission deleted"));
-  drupal_goto('node/'. $form_state['values']['nid'] .'/results');
+  drupal_goto('node/'. $form_state['values']['nid'] .'/webform-results');
 }
 
 /**
