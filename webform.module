@@ -51,7 +51,6 @@ function webform_help($section = "admin/help#webform", $arg = NULL) {
       $output .= '<p>'. t('This page displays all the components currently configured for this webform node. You may add any number of components to the form, even multiple of the same type. To add a new component, fill in a name and select a type from the fields at the bottom of the table. Submit the form to create the new component or update any changed form values.') .'</p>';
       $output .= '<p>'. t('Click on any existing component\'s name to edit its settings.') .'</p>';
       break;
-    
   }
   if (strstr($section, 'admin/settings/webform#')) {
     // Call help hooks in plugins:
@@ -105,6 +104,7 @@ function webform_menu() {
     'access arguments' => array('view', 1),
     'type' => MENU_CALLBACK,
   );
+
   $items['node/%webform_menu/edit/configuration'] = array(
     'title' => 'Configuration',
     'page callback' => 'node_page_edit',
@@ -115,62 +115,72 @@ function webform_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK);
   $items['node/%webform_menu/edit/components'] = array(
     'title' => 'Form components',
-    'page callback' => 'webform_components',
-    'page arguments' => array(1),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('webform_components_form', 1),
     'access callback' => 'node_access',
     'access arguments' => array('update', 1),
+    'file' => 'webform_components.inc',
     'weight' => 2,
     'type' => MENU_LOCAL_TASK,
   );
+
+  // Node component forms.
+  $items['node/%webform_menu/edit/components/%webform_menu_component'] = array(
+    'page arguments' => array('webform_component_edit_form', 1, 4),
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['node/%webform_menu/edit/components/%webform_menu_component/clone'] = array(
+    'page arguments' => array('webform_component_edit_form', 1, 4, TRUE),
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['node/%webform_menu/edit/components/%webform_menu_component/delete'] = array(
+    'page arguments' => array('webform_component_delete_form', 1, 4),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  // Node webform results.
   $items['node/%webform_menu/webform-results'] = array(
     'title' => 'Results',
-    'page callback' => 'webform_results',
+    'page callback' => 'webform_results_submissions',
     'page arguments' => array(1),
     'access callback' => 'user_access',
     'access arguments' => array('access webform results'),
+    'file' => 'webform_report.inc',
     'weight' => 2,
     'type' => MENU_LOCAL_TASK,
   );
   $items['node/%webform_menu/webform-results/submissions'] = array(
     'title' => 'Submissions',
-    'page callback' => 'webform_results',
+    'page callback' => 'webform_results_submissions',
     'page arguments' => array(1),
-    'access callback' => 'user_access',
-    'access arguments' => array('access webform results'),
     'weight' => 4,
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
   $items['node/%webform_menu/webform-results/analysis'] = array(
     'title' => 'Analysis',
-    'page callback' => 'webform_results',
-    'page arguments' => array(1, 'analysis'),
-    'access callback' => 'user_access',
-    'access arguments' => array('access webform results'),
+    'page callback' => 'webform_results_analysis',
+    'page arguments' => array(1),
     'weight' => 5,
     'type' => MENU_LOCAL_TASK,
   );
   $items['node/%webform_menu/webform-results/table'] = array(
     'title' => 'Table',
-    'page callback' => 'webform_results',
-    'page arguments' => array(1, 'table'),
-    'access callback' => 'user_access',
-    'access arguments' => array('access webform results'),
+    'page callback' => 'webform_results_table',
+    'page arguments' => array(1),
     'weight' => 6,
     'type' => MENU_LOCAL_TASK,
   );
   $items['node/%webform_menu/webform-results/download'] = array(
     'title' => 'Download',
-    'page callback' => 'webform_results',
-    'access callback' => 'user_access',
-    'page arguments' => array(1, 'download'),
-    'access arguments' => array('access webform results'),
+    'page callback' => 'webform_results_download',
+    'page arguments' => array(1),
     'weight' => 7,
     'type' => MENU_LOCAL_TASK,
   );
   $items['node/%webform_menu/webform-results/clear'] = array(
     'title' => 'Clear',
-    'page callback' => 'webform_results',
-    'page arguments' => array(1, 'clear'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('webform_results_clear_form', 1),
     'access callback' => 'user_access',
     'access arguments' => array('clear webform results'),
     'weight' => 8,
@@ -235,6 +245,21 @@ function webform_menu_submission_load($sid) {
   include_once(drupal_get_path('module', 'webform') ."/webform_submissions.inc");
   $submission = webform_get_submission(arg(1), $sid);
   return empty($submission) ? FALSE : $submission;
+}
+
+/**
+ * Menu loader callback. Load a webform component if the given cid is a valid.
+ */
+function webform_menu_component_load($cid) {
+  if ($cid == 'new') {
+    $components = webform_load_components();
+    $component = in_array(arg(5), array_keys($components)) ? array('type' => arg(5), 'name' => $_GET['name'], 'mandatory' => $_GET['mandatory'], 'pid' => $_GET['pid'], 'weight' => $_GET['weight']) : FALSE;
+  }
+  else {
+    $node = node_load(arg(1));
+    $component = isset($node->webform['components'][$cid]) ? $node->webform['components'][$cid] : FALSE;
+  }
+  return $component;
 }
 
 function webform_submission_access($node, $submission, $op = 'view', $account = NULL) {
@@ -1853,58 +1878,6 @@ function theme_webform_admin_content($nodes) {
 
   drupal_set_title($node->title);
   return theme('table', $header, $rows);
-}
-
-/**
- * Menu callback for node/[nid]/components.
- */
-function webform_components($node, $cid = NULL, $op = 'edit') {
-  include_once(drupal_get_path('module', 'webform') ."/webform_components.inc");
-  $components = webform_load_components();
-
-  if (isset($node->webform['components'][$cid]) || $cid == 'new') {
-    if ($op == 'delete') {
-      return drupal_get_form('webform_component_delete_form', $node, $cid);
-    }
-    elseif ($cid == 'new' && in_array($op, array_keys($components))) {
-      $component = array('type' => $op, 'name' => $_GET['name'], 'mandatory' => $_GET['mandatory'], 'pid' => $_GET['pid'], 'weight' => $_GET['weight']);
-      return drupal_get_form('webform_component_edit_form', $node, $component);
-    }
-    elseif (isset($node->webform['components'][$cid]) && $op == 'clone') {
-      $component = $node->webform['components'][$cid];
-      return drupal_get_form('webform_component_edit_form', $node, $component, $component['cid']);
-    }
-    elseif (isset($node->webform['components'][$cid])) {
-      return drupal_get_form('webform_component_edit_form', $node, $node->webform['components'][$cid]);
-    }
-  }
-
-  return drupal_get_form('webform_components_form', $node);
-}
-
-/**
- * Menu callback for all content under admin/content/webform.
- */
-function webform_results($node, $op = 'submissions') {
-  include_once(drupal_get_path('module', 'webform') ."/webform_report.inc");
-  include_once(drupal_get_path('module', 'webform') ."/webform_submissions.inc");
-
-  drupal_set_title($node->title);
-
-  switch ($op) {
-    case 'analysis':
-      return webform_results_analysis($node);
-    case 'clear' :
-      return drupal_get_form('webform_results_clear_form', $node);
-    case 'table':
-      return webform_results_table($node);
-    case 'download' :
-      return webform_results_download($node);
-    case 'submissions':
-    default :
-      return webform_results_submissions($node);
-      break;
-  }
 }
 
 /**

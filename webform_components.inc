@@ -414,7 +414,9 @@ function webform_component_edit_form_submit($form, &$form_state) {
   $form_state['redirect'] = array('node/'. $form_state['values']['nid'] .'/edit/components', isset($cid) ? 'cid='. $cid : '');
 }
 
-function webform_component_delete_form($node, $cid) {
+function webform_component_delete_form($form_state, $node, $component) {
+  $cid = $component['cid'];
+
   $form = array();
   $form['nid'] = array(
     '#type' => 'value',
@@ -441,10 +443,10 @@ function webform_component_delete_form($node, $cid) {
   return confirm_form($form, $question, 'node/'. $node->nid .'/components', $description, t('Delete'));
 }
 
-function webform_component_delete_form_submit($form, $form_state) {
+function webform_component_delete_form_submit($form, &$form_state) {
   drupal_set_message(t('Component %name deleted.', array('%name' => $form_state['values']['name'])));
   webform_component_delete($form_state['values']['nid'], $form_state['values']['cid']);
-  return 'node/'. $form_state['values']['nid'] .'/edit/components';
+  $form_state['redirect'] = 'node/'. $form_state['values']['nid'] .'/edit/components';
 }
 
 /**
