@@ -1,5 +1,35 @@
 <?php
 // $Id$
+
+/**
+ * @file
+ *   Webform module textfield component.
+ */
+
+/**
+ * Create a default textfield component.
+ */
+function _webform_defaults_textfield() {
+  return array(
+    'name' => '',
+    'form_key' => NULL,
+    'pid' => 0,
+    'weight' => 0,
+    'value' => '',
+    'mandatory' => 0,
+    'email' => 1,
+    'extra' => array(
+      'width' => '',
+      'maxlength' => '',
+      'field_prefix' => '',
+      'field_suffix' => '',
+      'disabled' => 0,
+      'description' => '',
+      'attributes' => array(),
+    ),
+  );
+}
+
 /**
  * Create a set of form items to be displayed on the form for editing this
  * component. Use care naming the form items, as this correlates directly to the
@@ -13,16 +43,16 @@ function _webform_edit_textfield($currfield) {
   $edit_fields = array();
   $edit_fields['value'] = array(
     '#type' => 'textfield',
-    '#title' => t("Default value"),
+    '#title' => t('Default value'),
     '#default_value' => $currfield['value'],
-    '#description' => t('The default value of the field.') .'<br />'. webform_help('webform/helptext#variables'),
+    '#description' => t('The default value of the field.') . theme('webform_token_help'),
     '#size' => 60,
     '#maxlength' => 127,
     '#weight' => 0,
   );
   $edit_fields['extra']['width'] = array(
     '#type' => 'textfield',
-    '#title' => t("Width"),
+    '#title' => t('Width'),
     '#default_value' => $currfield['extra']['width'],
     '#description' => t('Width of the textfield.') .' '. t('Leaving blank will use the default size.'),
     '#size' => 5,
@@ -31,16 +61,34 @@ function _webform_edit_textfield($currfield) {
   );
   $edit_fields['extra']['maxlength'] = array(
     '#type' => 'textfield',
-    '#title' => t("Maxlength"),
+    '#title' => t('Maxlength'),
     '#default_value' => $currfield['extra']['maxlength'],
     '#description' => t('Maxlength of the textfield.'),
     '#size' => 5,
     '#maxlength' => 10,
     '#weight' => 0,
   );
+  $edit_fields['extra']['field_prefix'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Label placed to the left of the textfield'),
+    '#default_value' => $currfield['extra']['field_prefix'],
+    '#description' => t('Examples: $, #, -.'),
+    '#size' => 20,
+    '#maxlength' => 127,
+    '#weight' => 1.1,
+  );
+  $edit_fields['extra']['field_suffix'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Label placed to the right of the textfield'),
+    '#default_value' => $currfield['extra']['field_suffix'],
+    '#description' => t('Examples: lb, kg, %.'),
+    '#size' => 20,
+    '#maxlength' => 127,
+    '#weight' => 1.2,
+  );
   $edit_fields['extra']['disabled'] = array(
     '#type' => 'checkbox',
-    '#title' => t("Disabled"),
+    '#title' => t('Disabled'),
     '#return_value' => 1,
     '#description' => t('Make this field non-editable. Useful for setting an unchangeable default value.'),
     '#weight' => 3,
@@ -61,15 +109,21 @@ function _webform_render_textfield($component) {
   $form_item = array(
     '#type'          => $component['type'],
     '#title'         => $component['name'],
-    '#default_value' => _webform_filtervalues($component['value']),
+    '#default_value' => _webform_filter_values($component['value']),
     '#required'      => $component['mandatory'],
     '#weight'        => $component['weight'],
-    '#description'   => _webform_filtervalues($component['extra']['description']),
+    '#field_prefix'  => empty($component['extra']['field_prefix']) ? NULL : $component['extra']['field_prefix'],
+    '#field_suffix'  => empty($component['extra']['field_suffix']) ? NULL : $component['extra']['field_suffix'],
+    '#description'   => _webform_filter_descriptions($component['extra']['description']),
     '#attributes'    => $component['extra']['attributes'],
-    '#disabled'      => $component['extra']['disabled'],
     '#prefix'        => '<div class="webform-component-'. $component['type'] .'" id="webform-component-'. $component['form_key'] .'">',
     '#suffix'        => '</div>',
   );
+
+  if ($component['extra']['disabled']) {
+    $form_item['#attributes']['readonly'] = 'readonly';
+  }
+
   // Change the 'width' option to the correct 'size' option.
   if ($component['extra']['width'] > 0) {
     $form_item['#size'] = $component['extra']['width'];
@@ -90,26 +144,56 @@ function _webform_render_textfield($component) {
  * @param $component
  *   An array of information describing the component, directly correlating to
  *   the webform_component database schema.
+ * @param $enabled
+ *   If enabled, the value may be changed. Otherwise it will set to readonly.
  * @return
  *   Textual output formatted for human reading.
  */
-function _webform_submission_display_textfield($data, $component, $enabled = false) {
+function _webform_submission_display_textfield($data, $component, $enabled = FALSE) {
   $form_item = _webform_render_textfield($component);
   $form_item['#default_value'] = $data['value']['0'];
-  $form_item['#disabled'] = !$enabled;
+  if (!$enabled) {
+    $form_item['#attributes']['readonly'] = 'readonly';
+  }
   return $form_item;
 }
 
 /**
- * Module specific instance of hook_help
+ * Format the output of emailed data for this component
+ *
+ * @param $data
+ *   A string or array of the submitted data
+ * @param $component
+ *   An array of information describing the component,
+ *   directly correlating to the webform_component database schema.
+ *
+ * @return string
+ *   Textual output to be included in the email.
+ */
+function theme_webform_mail_textfield($data, $component) {
+  $value = $data == '' ? '' : ' '. $component['extra']['field_prefix'] . $data . $component['extra']['field_suffix'];
+  return $component['name'] .':'. $value;
+}
+
+/**
+ * Module specific instance of hook_theme().
+ */
+function _webform_theme_textfield() {
+  return array(
+    'webform_mail_textfield' => array(
+      'arguments' => array('data' => NULL, 'component' => NULL),
+    ),
+  );
+}
+
+/**
+ * Module specific instance of hook_help().
  */
 function _webform_help_textfield($section) {
   switch ($section) {
     case 'admin/settings/webform#textfield_description':
-      $output = t("Basic textfield type.");
-      break;
+      return t('Basic textfield type.');
   }
-  return $output;
 }
 
 /**
@@ -119,22 +203,27 @@ function _webform_help_textfield($section) {
  * @param $component
  *   An array of information describing the component, directly correlating to
  *   the webform_component database schema
+ * @param $sids
+ *   An optional array of submission IDs (sid). If supplied, the analysis will be limited
+ *   to these sids.
  * @return
  *   An array of data rows, each containing a statistic for this component's
  *   submissions.
  */
-function _webform_analysis_rows_textfield($component) {
+function _webform_analysis_rows_textfield($component, $sids = array()) {
+  $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
+  $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
   $query = 'SELECT data '.
     ' FROM {webform_submitted_data} '.
     ' WHERE nid = %d '.
-    '  AND cid = %d';
+    ' AND cid = %d '. $sidfilter;
   $nonblanks = 0;
   $submissions = 0;
   $wordcount = 0;
 
-  $result = db_query($query, $component['nid'], $component['cid']);
+  $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids));
   while ($data = db_fetch_array($result)) {
-    if ( strlen(trim($data['data'])) > 0 ) {
+    if (drupal_strlen(trim($data['data'])) > 0) {
       $nonblanks++;
       $wordcount += str_word_count(trim($data['data']));
     }
@@ -157,7 +246,7 @@ function _webform_analysis_rows_textfield($component) {
  *   Textual output formatted for human reading.
  */
 function _webform_table_data_textfield($data) {
-  return check_plain(empty($data['value']['0']) ? "" : $data['value']['0']);
+  return check_plain(empty($data['value']['0']) ? '' : $data['value']['0']);
 }
 
 
@@ -191,5 +280,5 @@ function _webform_csv_headers_textfield($component) {
  *   commas.
  */
 function _webform_csv_data_textfield($data) {
-  return !isset($data['value']['0']) ? "" : $data['value']['0'];
+  return !isset($data['value']['0']) ? '' : $data['value']['0'];
 }

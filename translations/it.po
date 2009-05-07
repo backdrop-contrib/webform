@@ -75,8 +75,8 @@ msgid "Available variables are: %username, %useremail, %site, %date."
 msgstr "Le variabili disponibili sono: %username, %useremail, %site, %date."
 
 #: webform.module:57
-msgid "If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the varible %profile[profile_city]."
-msgstr "If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the varible %profile[profile_city]."
+msgid "If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the variable %profile[profile_city]."
+msgstr "If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the variable %profile[profile_city]."
 
 #: webform.module:74;294;297;0
 msgid "webform"

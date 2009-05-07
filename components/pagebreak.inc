@@ -1,5 +1,24 @@
 <?php
 // $Id$
+
+/**
+ * @file
+ *   Webform module page break component.
+ */
+
+/**
+ * Create a default pagebreak component.
+ */
+function _webform_defaults_pagebreak() {
+  return array(
+    'name' => '',
+    'form_key' => NULL,
+    'pid' => 0,
+    'weight' => 0,
+    'extra' => array(),
+  );
+}
+
 /**
  * Create a set of form items to be displayed on the form for editing this
  * component. Use care naming the form items, as this correlates directly to the
@@ -19,12 +38,12 @@ function _webform_edit_pagebreak($currfield) {
       '#value' => '',
   );
   // Force the parent to always be root.
-  $form['pid'] = array(
+  $form['advanced']['pid'] = array(
       '#type' => 'hidden',
       '#value' => '0',
   );
   // Never mandatory.
-  $form['mandatory'] = array(
+  $form['advanced']['mandatory'] = array(
       '#type' => 'hidden',
       '#value' => '',
   );
@@ -32,15 +51,13 @@ function _webform_edit_pagebreak($currfield) {
 }
 
 /**
- * Module specific instance of hook_help
+ * Module specific instance of hook_help().
  */
 function _webform_help_pagebreak($section) {
   switch ($section) {
     case 'admin/settings/webform#pagebreak_description':
-      $output = t("Break up a multi-page form.");
-      break;
+      return t('Break up a multi-page form.');
   }
-  return $output;
 }
 
 function _webform_render_pagebreak($component) {

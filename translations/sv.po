@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "POT-Creation-Date: 2005-04-03 21:51+0200\n"
-"PO-Revision-Date: 2007-03-27 12:14+0100\n"
+"PO-Revision-Date: 2008-07-10 10:09+0200\n"
 "Last-Translator: Hannes Lilljequist <drupal@perrito.se>\n"
 "Language-Team: Swedish <drupal@perrito.se>\n"
 "MIME-Version: 1.0\n"
@@ -29,19 +29,19 @@ msgstr "Operationer"
 
 #: webform.inc:51
 msgid "Do you really want to delete all submissions for this form?"
-msgstr "Är du säker på att du vill radera alla inskickade exemplar av detta formulär?"
+msgstr "√Ñr du s√§ker p√• att du vill radera alla inskickade exemplar av detta formul√§r?"
 
 #: webform.inc:52
 msgid "Do you really want to delete <strong>all</strong> submissions for this form?"
-msgstr "Vill du verkligen radera <strong>alla</strong> inskickade exemplar av detta formulär?"
+msgstr "Vill du verkligen radera <strong>alla</strong> inskickade exemplar av detta formul√§r?"
 
 #: webform.inc:52;72
 msgid "This action cannot be undone."
-msgstr "Denna handling kan inte ångras."
+msgstr "Denna handling kan inte √•ngras."
 
 #: webform.inc:71;72
 msgid "Do you really want to delete this form submission?"
-msgstr "Är du säker på att du vill radera detta inskickade formulär?"
+msgstr "√Ñr du s√§ker p√• att du vill radera detta inskickade formul√§r?"
 
 #: webform.inc:149
 msgid "#"
@@ -53,7 +53,7 @@ msgstr "Datum"
 
 #: webform.inc:286
 msgid "User"
-msgstr "Användare"
+msgstr "Anv√§ndare"
 
 #: webform.inc:286
 msgid "Action"
@@ -65,7 +65,7 @@ msgstr "Ta bort"
 
 #: webform.inc:502
 msgid "Unique Users Only"
-msgstr "Bara unika användare"
+msgstr "Bara unika anv√§ndare"
 
 #: webform.inc:502
 msgid "Unique IPs Only"
@@ -109,15 +109,15 @@ msgstr "Standard"
 
 #: webform.inc:661
 msgid "User entered value"
-msgstr "Värde angivet av användaren"
+msgstr "V√§rde angivet av anv√§ndaren"
 
 #: webform.inc:661
 msgid "Average submission length in words (ex blanks)"
-msgstr "Genomsnittlig svarslängd i antal ord"
+msgstr "Genomsnittlig svarsl√§ngd i antal ord"
 
 #: webform.module:26
 msgid "Webforms are forms and questionnaires. To add one select <strong>create content -&gt; webform</strong>. Below you can set different security and debug options."
-msgstr "Webbformulär kan vara formulär eller enkäter. För att lägga till ett väljer du <strong>Skapa innehåll -&gt; webbformulär</strong>. Nedan kan du göra olika inställningar för säkerhet och felsökning."
+msgstr "Webbformul√§r kan vara formul√§r eller enk√§ter. F√∂r att l√§gga till ett v√§ljer du <strong>Skapa inneh√•ll -&gt; webbformul√§r</strong>. Nedan kan du g√∂ra olika inst√§llningar f√∂r s√§kerhet och fels√∂kning."
 
 #: webform.module:29
 msgid ""
@@ -147,31 +147,31 @@ msgstr ""
 
 #: webform.module:54
 msgid "Enables the creation of forms and questionnaires."
-msgstr "Gör det möjligt att skapa formulär och enkäter."
+msgstr "G√∂r det m√∂jligt att skapa formul√§r och enk√§ter."
 
 #: webform.module:57
 msgid "A webform can be a questionnaires, contact or request forms. It can be used to let visitors make contact, register for a event or to enable a complex survey."
-msgstr "Ett webbformulär kan vara en enkät eller ett formulär för kontakt eller förfrågningar. Det kan användas för att låta användare kontakta er, registrera sig för ett evenemang eller för att skapa ett komplext frågeformulär."
+msgstr "Ett webbformul√§r kan vara en enk√§t eller ett formul√§r f√∂r kontakt eller f√∂rfr√•gningar. Det kan anv√§ndas f√∂r att l√•ta anv√§ndare kontakta er, registrera sig f√∂r ett evenemang eller f√∂r att skapa ett komplext fr√•geformul√§r."
 
 #: webform.module:60
 msgid "Available variables are: %username, %useremail, %site, %date."
-msgstr "Tillgängliga variabler är: %username, %useremail, %site, %date."
+msgstr "Tillg√§ngliga variabler √§r: %username, %useremail, %site, %date."
 
 #: webform.module:61
 msgid "You can also use %server[key] to add any of the special PHP <a href=\"http://www.php.net/reserved.variables#reserved.variables.server\">$_SERVER</a> variables and %get[key] to create prefilled forms from from the <a href=\"http://www.php.net/reserved.variables#reserved.variables.get\">URL</a>."
 msgstr ""
 
 #: webform.module:63
-msgid "If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the varible %profile[profile_city]."
-msgstr ""
+msgid "If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the variable %profile[profile_city]."
+msgstr "Om du anv√§nder Profile-modulen kan du ocks√• komma √•t all profilinformation med syntaxet %profile[form_name]. Om du exempelvis har ett profilv√§rde som heter profile_city, l√§gg till variabeln %profile[profile_city]."
 
 #: webform.module:237
 msgid "Update from version %a to version %b"
-msgstr "Uppdatera från version %a till version %b"
+msgstr "Uppdatera fr√•n version %a till version %b"
 
 #: webform.module:242
 msgid "Allow cross site posting"
-msgstr "Tillåt svar från andra webbplatser"
+msgstr "Till√•t svar fr√•n andra webbplatser"
 
 #: webform.module:244
 msgid "Yes"
@@ -183,15 +183,15 @@ msgstr "Nej"
 
 #: webform.module:245
 msgid "Allow postings to your webforms that do not originating from your sites domain."
-msgstr "Låter formulär från andra domäner skicka in svar till ditt webbformulär."
+msgstr "L√•ter formul√§r fr√•n andra dom√§ner skicka in svar till ditt webbformul√§r."
 
 #: webform.module:247
 msgid "Webforms Debug"
-msgstr ""
+msgstr "Debuggning av webbformul√§r"
 
 #: webform.module:250
 msgid "DEBUG for the webform module"
-msgstr ""
+msgstr "DEBUGGNING f√∂r modulen Webform"
 
 #: webform.module:251
 msgid "Set this option to \"Log submissions\" to log all submissions in the watchdog. Set it to \"Full debug\" to print debug info on submission. You probably want to leave this option on \"OFF\"."
@@ -199,31 +199,31 @@ msgstr ""
 
 #: webform.module:253
 msgid "Show main webform menu"
-msgstr "Visa huvudmenyn för webbformulär"
+msgstr "Visa huvudmenyn f√∂r webbformul√§r"
 
 #: webform.module:255
 msgid "Select the visibility of the main webform item on the main menu"
-msgstr "Välj om webbformulär ska visas på huvudmenyn"
+msgstr "V√§lj om webbformul√§r ska visas p√• huvudmenyn"
 
 #: webform.module:291
 msgid "The form component has been changed. Remember to press Submit on the bottom of this form to save your changes."
-msgstr ""
+msgstr "Formul√§rkomponenten har √§ndrats. Kom ih√•g att trycka p√• Spara l√§ngst ner i detta formul√§r f√∂r att spara dina √§ndringar."
 
 #: webform.module:296
 msgid "The form component has been deleted. Remember to press Submit on the bottom of this form to save your changes."
-msgstr ""
+msgstr "Formul√§rkomponenten har raderats. Kom ih√•g att trycka p√• Spara l√§ngst ner i detta formul√§r f√∂r att spara dina √§ndringar."
 
 #: webform.module:302
 msgid "You have to specify a form description."
-msgstr "Du måste ange en formulärbeskrivning."
+msgstr "Du m√•ste ange en formul√§rbeskrivning."
 
 #: webform.module:310
 msgid "You have to specify a confirmation message."
-msgstr "Du måste ange ett bekräftelsemeddelande."
+msgstr "Du m√•ste ange ett bekr√§ftelsemeddelande."
 
 #: webform.module:337
 msgid "Webform upgrade page"
-msgstr "Sida för webbformulär-uppgradering"
+msgstr "Sida f√∂r webbformul√§r-uppgradering"
 
 #: webform.module:368
 msgid "results"
@@ -231,27 +231,27 @@ msgstr "resultat"
 
 #: webform.module:405
 msgid "go to form"
-msgstr "gå till formulär"
+msgstr "g√• till formul√§r"
 
 #: webform.module:405
 msgid "View this form."
-msgstr "Visa detta formulär."
+msgstr "Visa detta formul√§r."
 
 #: webform.module:408
 msgid "Go back to the form"
-msgstr "Tillbaka till formuläret"
+msgstr "Tillbaka till formul√§ret"
 
 #: webform.module:418
 msgid "textfield"
-msgstr "textfält"
+msgstr "textf√§lt"
 
 #: webform.module:419
 msgid "textarea"
-msgstr "flerradigt textfält"
+msgstr "flerradigt textf√§lt"
 
 #: webform.module:420
 msgid "select"
-msgstr "välj"
+msgstr "v√§lj"
 
 #: webform.module:421
 msgid "label"
@@ -267,11 +267,11 @@ msgstr "e-postadress"
 
 #: webform.module:435
 msgid "Use access"
-msgstr "Användningsbehörighet"
+msgstr "Anv√§ndningsbeh√∂righet"
 
 #: webform.module:435
 msgid "Roles that should be able to submit data using this form."
-msgstr "Roller som ska kunna skicka information med detta formulär."
+msgstr "Roller som ska kunna skicka information med detta formul√§r."
 
 #: webform.module:441;650
 msgid "Description"
@@ -279,11 +279,11 @@ msgstr "Beskrivning"
 
 #: webform.module:442
 msgid "Text to be shown as teaser and before the form."
-msgstr "Text som visas som ingress och före formuläret."
+msgstr "Text som visas som ingress och f√∂re formul√§ret."
 
 #: webform.module:445
 msgid "Confirmation message or redirect URL"
-msgstr "Bekräftelsemeddelande och adress för vidarebefordring"
+msgstr "Bekr√§ftelsemeddelande och adress f√∂r vidarebefordring"
 
 #: webform.module:447
 msgid "Message to be shown upon successful submission or an absolute path to a redirect page (must start with http://)"
@@ -291,35 +291,35 @@ msgstr ""
 
 #: webform.module:473
 msgid "To edit a component, check its \"selected\" box and press \"Edit selected\"."
-msgstr ""
+msgstr "F√∂r att redigera en komponent, kryssa i dess \"vald\"-ruta och tryck p√• \"Redigera valda\"."
 
 #: webform.module:474
 msgid "To delete a component, check its \"selected\" box and press \"Delete selected\"."
-msgstr ""
+msgstr "F√∂r att ta bort en komponent, kryssa i dess \"vald\"-ruta och tryck p√• \"Ta bort valda\"."
 
 #: webform.module:475
 msgid "Use \"value\" to enter a default value."
-msgstr ""
+msgstr "Anv√§nd \"v√§rde\" f√∂r att ange ett standardv√§rde."
 
 #: webform.module:476
 msgid "Check \"mandatory\" box if the field should be mandatory."
-msgstr ""
+msgstr "Kryssa i \"obligatoriskt\"-rutan om f√§ltet ska vara obligatoriskt."
 
 #: webform.module:477
 msgid "Remember to set weight on the components or they will be added to the form in a random order."
-msgstr ""
+msgstr "Gl√∂m inte att ange vikter p√• komponenterna, annars kommer de att l√§ggas i en slumpm√§ssig ordning i formul√§ret."
 
 #: webform.module:478
 msgid "The components are sorted first by weight and then by name."
-msgstr "Komponenterna ordnas i första hand efter vikt och sedan efter namn."
+msgstr "Komponenterna ordnas i f√∂rsta hand efter vikt och sedan efter namn."
 
 #: webform.module:481
 msgid "Form components"
-msgstr "Formulärkomponenter"
+msgstr "Formul√§rkomponenter"
 
 #: webform.module:483
 msgid "Select"
-msgstr ""
+msgstr "V√§lj"
 
 #: webform.module:484;648
 msgid "Name"
@@ -331,7 +331,7 @@ msgstr "Typ"
 
 #: webform.module:486
 msgid "Value"
-msgstr "Värge"
+msgstr "V√§rde"
 
 #: webform.module:487
 msgid "Mandatory"
@@ -347,19 +347,19 @@ msgstr "Redigera valda"
 
 #: webform.module:493
 msgid "Delete selected"
-msgstr "Radera valda"
+msgstr "Ta bort valda"
 
 #: webform.module:497
 msgid "Add a new component"
-msgstr "Lägg till ny komponent"
+msgstr "L√§gg till ny komponent"
 
 #: webform.module:498
 msgid "Select a component type to add."
-msgstr "Välj den komponenttyp som ska läggas till."
+msgstr "V√§lj den komponenttyp som ska l√§ggas till."
 
 #: webform.module:499;628
 msgid "Add"
-msgstr ""
+msgstr "L√§gg till"
 
 #: webform.module:501
 msgid "E-mail to address"
@@ -367,31 +367,31 @@ msgstr "Mottagarens e-postadress"
 
 #: webform.module:503
 msgid "Form submissions will be e-mailed to this address. Leave blank for none."
-msgstr ""
+msgstr "Inskickade formul√§r kommer att skickas till denna adress. L√§mna tomt om ingen e-post ska skickas."
 
 #: webform.module:522
 msgid "E-mail from address"
-msgstr "Avsändarens e-postadress"
+msgstr "Avs√§ndarens e-postadress"
 
 #: webform.module:523
 msgid "Form e-mails will have this return address. Choose Automatic for the default"
-msgstr ""
+msgstr "Formul√§r som skickas med e-post kommer att ha denna svarsadress. V√§lj Automatisk f√∂r standardvalet"
 
 #: webform.module:525
 msgid "E-mail subject"
-msgstr "Ämne för meddelande"
+msgstr "√Ñmne f√∂r meddelande"
 
 #: webform.module:526
 msgid "Form e-mails will have this subject line. Choose Automatic for the default"
-msgstr ""
+msgstr "Formul√§r som skickas med e-post kommer att ha denna √§mnesrad. V√§lj Automatisk f√∂r standardvalet"
 
 #: webform.module:551
 msgid "Unauthorized webform access attempt"
-msgstr "Obehörigt försök att komma åt webbformulär"
+msgstr "Obeh√∂rigt f√∂rs√∂k att komma √•t webbformul√§r"
 
 #: webform.module:586
 msgid "Preview"
-msgstr "Förhandsvisa"
+msgstr "F√∂rhandsvisa"
 
 #: webform.module:589
 msgid "Submit"
@@ -403,51 +403,51 @@ msgstr "Sida anropad i fel ordning"
 
 #: webform.module:649
 msgid "Name of the field. This is used as a descriptive label and as the key when saving data in the database."
-msgstr ""
+msgstr "Namn p√• f√§ltet. Detta anv√§nds som beskrivande etikett och som nyckel n√§r informationen sparas i databasen."
 
 #: webform.module:652
 msgid "A short description of the field used as help for the user when he/she uses the form."
-msgstr ""
+msgstr "En kort beskrivning av f√§ltet som anv√§nds som hj√§lp f√∂r anv√§ndaren n√§r hon eller han anv√§nder formul√§ret."
 
 #: webform.module:659;666;678;685;706
 msgid "Default value"
-msgstr "Standardvärde"
+msgstr "Standardv√§rde"
 
 #: webform.module:659
 msgid "The default value of a email field is always the users email address if he/she is logged in."
-msgstr ""
+msgstr "Standardv√§rdet f√∂r ett e-postf√§lt √§r alltid anv√§ndarens e-postadress om hon eller han √§r inloggad."
 
 #: webform.module:660;672;691
 msgid "Width"
-msgstr ""
+msgstr "Bredd"
 
 #: webform.module:662;674
 msgid "Width of the textfield."
-msgstr ""
+msgstr "Bredd p√• textf√§ltet."
 
 #: webform.module:668
 msgid "The default value of the field."
-msgstr "Fältets standardvärde."
+msgstr "F√§ltets standardv√§rde."
 
 #: webform.module:680
 msgid "The value of the field."
-msgstr "Fältets värde."
+msgstr "F√§ltets v√§rde."
 
 #: webform.module:687
 msgid "The default value of the area."
-msgstr "Fältets standardvärde."
+msgstr "F√§ltets standardv√§rde."
 
 #: webform.module:693
 msgid "Width of the textarea."
-msgstr ""
+msgstr "Bredd p√• textrutan."
 
 #: webform.module:695
 msgid "Height"
-msgstr "Höjd"
+msgstr "H√∂jd"
 
 #: webform.module:697
 msgid "Height of the textarea."
-msgstr "Textfältets höjd."
+msgstr "Textf√§ltets h√∂jd."
 
 #: webform.module:701
 msgid "Options"
@@ -455,11 +455,11 @@ msgstr "Val"
 
 #: webform.module:703
 msgid "Enter one option per line."
-msgstr ""
+msgstr "Skriv in ett alternativ per rad."
 
 #: webform.module:708
 msgid "The preselected value."
-msgstr "Det förvalda värdet."
+msgstr "Det f√∂rvalda v√§rdet."
 
 #: webform.module:711
 msgid "Multiple"
@@ -467,15 +467,15 @@ msgstr "Multipel"
 
 #: webform.module:713
 msgid "Check this option if the user should be allowed to choose multiple values."
-msgstr ""
+msgstr "V√§lj detta alternativ om anv√§ndaren ska kunna v√§lja flera v√§rden."
 
 #: webform.module:714
 msgid "Listbox"
-msgstr ""
+msgstr "Meny"
 
 #: webform.module:716
 msgid "Check this option if you want the select component to be of listbox type instead of radiobuttons or checkboxes."
-msgstr ""
+msgstr "V√§lj detta alternativ om du vill att komponenten ska visas i form av en meny ist√§llet f√∂r radioknappar eller kryssrutor."
 
 #: webform.module:747
 msgid "Done"
@@ -483,35 +483,35 @@ msgstr "Klart"
 
 #: webform.module:748
 msgid "Warning: This button will accept your changes as sub-part of the edit.  You will still have to select <b>'submit'</b> on the next screen to make your changes permanent."
-msgstr ""
+msgstr "Varning: Denna knapp sparar dina √§ndringar tillf√§lligt som en del av redigeringen. Du m√•ste fortfarande klicka p√• <b>'Spara'</b> p√• n√§sta sida f√∂r att √§ndringarna ska sparas permanent."
 
 #: webform.module:766
 msgid "Trying to post to webform from external domain."
-msgstr "Försöker skicka information till ett webbformulär från en extern domän."
+msgstr "F√∂rs√∂ker skicka information till ett webbformul√§r fr√•n en extern dom√§n."
 
 #: webform.module:768
 msgid "Visit referer"
-msgstr "Besök hänvisande webbplats"
+msgstr "Bes√∂k h√§nvisande webbplats"
 
 #: webform.module:769
 msgid "You are not allowed to post to this form from an external domain."
-msgstr "Du har inte behörighet att skicka information till detta formulär från en extern domän."
+msgstr "Du har inte beh√∂righet att skicka information till detta formul√§r fr√•n en extern dom√§n."
 
 #: webform.module:778
 msgid "You are not allowed to submit data using this form."
-msgstr "Du har inte behörighet att skicka information med detta formulär."
+msgstr "Du har inte beh√∂righet att skicka information med detta formul√§r."
 
 #: webform.module:800
 msgid "Form submission from: "
-msgstr "Inskickat formulär från:"
+msgstr "Inskickat formul√§r fr√•n:"
 
 #: webform.module:838
 msgid "Submission posted to "
-msgstr "Inlägg skickat till"
+msgstr "Inl√§gg skickat till"
 
 #: webform.module:966
 msgid "You have not completed the form. %s is a mandatory field."
-msgstr "Du har inte fyllt i formuläret klart. %s är obligatoriskt."
+msgstr "Du har inte fyllt i formul√§ret klart. %s √§r obligatoriskt."
 
 #: webform.module:1018
 msgid "Submitted on"
@@ -519,29 +519,29 @@ msgstr "Skickat den"
 
 #: webform.module:1022
 msgid "Submitted by user"
-msgstr "Skickat av användare"
+msgstr "Skickat av anv√§ndare"
 
 #: webform.module:1025
 msgid "Submitted by anonymous user"
-msgstr "Skickat av anonym användare"
+msgstr "Skickat av anonym anv√§ndare"
 
 #: webform.module:1027
 msgid "Submitted values are"
-msgstr "Inskickade värden är"
+msgstr "Inskickade v√§rden √§r"
 
 #: webform.module:1261
 msgid "Go back"
-msgstr "Gå tillbaka"
+msgstr "G√• tillbaka"
 
 #: webform.module:72
 msgid "maintain webforms"
-msgstr "hantera webbformulär"
+msgstr "hantera webbformul√§r"
 
 #: webform.module:72
 msgid "create webforms"
-msgstr "skapa webbformulär"
+msgstr "skapa webbformul√§r"
 
 #: webform.module:72
 msgid "use all webforms"
-msgstr "använd alla webbformulär"
+msgstr "anv√§nd alla webbformul√§r"
 

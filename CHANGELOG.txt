@@ -16,5 +16,7 @@ Webform 2.x Changelog
 - Theme function theme_webform_create_mailmessage() has been renamed to theme_webform_mail_message().
 - $cid parameter added to theme_webform_mail_message() to create unique e-mails depending on a particular recipient or component.
 - Theme function theme_webform_mail_headers added.
+- Component descriptions are textareas rather than textfields.
+- _webform_filtervalues() has been renamed to _webform_filter_values.
 
 $Id$

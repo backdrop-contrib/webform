@@ -91,8 +91,8 @@ msgid "Delete"
 msgstr "Удалить"
 
 #: webform.inc:94
-msgid "Submission deleted"
-msgstr "Удалено"
+msgid "Submission deleted."
+msgstr "Удалено."
 
 #: webform.inc:154
 msgid "Submitted on"
@@ -180,7 +180,7 @@ msgid "You can also use %server[key] to add any of the special PHP <a href=\"htt
 msgstr "Можно использовать %server[key] для добавления PHP-команд  <a href=\"http://www.php.net/reserved.variables#reserved.variables.server\">$_SERVER</a> и  %get[key] чтобы создать формы с предварительно заполненным полем <a href=\"http://www.php.net/reserved.variables#reserved.variables.get\">URL</a> (т.е. %server[HTTP_USER_AGENT] или %get[id])."
 
 #: webform.module:50
-msgid "If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the varible %profile[profile_city]."
+msgid "If you are using the profiles module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the variable %profile[profile_city]."
 msgstr "Если используется модуль <em> profile </em>, vможн подставлять данные из полей модуля, используя синтаксис  %profile[form_name]. Например, если в профайлах есть поле profile_city, просто добавьте параметр  %profile[profile_city]."
 
 #: webform.module:75
@@ -398,14 +398,14 @@ msgstr "каждый день"
 msgid "every week"
 msgstr "каждая неделя"
 
-# Enter PHP code to preform additional validation for this form. Include the &lt;?php ?&gt; tags. $form_id and $form_values are available variables. If validation fails, use the form_set_error function to prevent the form from being submitted. Use the same syntax as a _validate function used in the <a href=\"http://api.drupal.org/api/file/developer/topics/forms_api.html\">Forms API</a>
+# Enter PHP code to perform additional validation for this form. Include the &lt;?php ?&gt; tags. $form_id and $form_values are available variables. If validation fails, use the form_set_error function to prevent the form from being submitted. Use the same syntax as a _validate function used in the <a href=\"http://api.drupal.org/api/file/developer/topics/forms_api.html\">Forms API</a>
 #: webform.module:677
-msgid "Enter PHP code to preform additional validation for this form. Include the &lt;?php ?&gt; tags. $form_id and $form_values are available variables. If validation fails, use the form_set_error function to prevent the form from being submitted. Use the same syntax as a _validate function used in the <a href=\"http://api.drupal.org/api/file/developer/topics/forms_api.html\">Forms API</a>."
+msgid "Enter PHP code to perform additional validation for this form. Include the &lt;?php ?&gt; tags. $form_id and $form_values are available variables. If validation fails, use the form_set_error function to prevent the form from being submitted. Use the same syntax as a _validate function used in the <a href=\"http://api.drupal.org/api/file/developer/topics/forms_api.html\">Forms API</a>."
 msgstr "Использовать php для дополнительной обработки.  Включите  &lt;?php ?&gt; в код. Доступные операторы: $form_id и $form_values"
 
-# Enter PHP code to preform additional processing for this form (after the validation). Include the &lt;?php ?&gt; tags. $form_id and $form_values are available variables, use the same syntax as a _submit function used in the <a href=\"http://api.drupal.org/api/file/developer/topics/forms_api.html\">Forms API</a>.
+# Enter PHP code to perform additional processing for this form (after the validation). Include the &lt;?php ?&gt; tags. $form_id and $form_values are available variables, use the same syntax as a _submit function used in the <a href=\"http://api.drupal.org/api/file/developer/topics/forms_api.html\">Forms API</a>.
 #: webform.module:686
-msgid "Enter PHP code to preform additional processing for this form (after the validation). Include the &lt;?php ?&gt; tags. $form_id and $form_values are available variables, use the same syntax as a _submit function used in the <a href=\"http://api.drupal.org/api/file/developer/topics/forms_api.html\">Forms API</a>."
+msgid "Enter PHP code to perform additional processing for this form (after the validation). Include the &lt;?php ?&gt; tags. $form_id and $form_values are available variables, use the same syntax as a _submit function used in the <a href=\"http://api.drupal.org/api/file/developer/topics/forms_api.html\">Forms API</a>."
 msgstr "Использовать php для дополнительной обработки.  Включите  &lt;?php ?&gt; в код. Доступные операторы: $form_id и $form_values"
 
 #: webform.module:705
@@ -460,7 +460,7 @@ msgid "Parent Fieldset"
 msgstr "Родительский набор полей"
 
 #: webform.module:893
-msgid "Optional. You may organize your form by placing this component inside inside another fieldset."
+msgid "Optional. You may organize your form by placing this component inside another fieldset."
 msgstr "Опционально. Вы можете группировать компоненты в логические наборы, группируя их."
 
 #: webform.module:904
