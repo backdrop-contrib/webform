@@ -2412,3 +2412,13 @@ function webform_load_components($return_all = FALSE, $reset = FALSE) {
   // Ensure only wanted components are returned, even all are loaded.
   return $return_all ? $component_list : array_intersect_assoc($component_list, $enabled_list);
 }
+
+/**
+ * Implementation of hook_views_api().
+ */
+function webform_views_api() {
+  return array(
+    'api' => 2.0,
+    'path' => drupal_get_path('module', 'webform') .'/views',
+  );
+}
