@@ -13,71 +13,71 @@ function webform_schema() {
   $schema = array();
 
   $schema['webform'] = array(
-    'description' => t('Table for storing additional properties for webform nodes.'),
+    'description' => 'Table for storing additional properties for webform nodes.',
     'fields' => array(
       'nid' => array(
-        'description' => t('The node identifier of a webform'),
+        'description' => 'The node identifier of a webform',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
       'confirmation' => array(
-        'description' => t('The confirmation message or URL displayed to the user after submitting a form.'),
+        'description' => 'The confirmation message or URL displayed to the user after submitting a form.',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'teaser' => array(
-        'description' => t('Boolean value for whether the entire form should be displayed on the teaser.'),
+        'description' => 'Boolean value for whether the entire form should be displayed on the teaser.',
         'type' => 'int',
         'size' => 'tiny',
         'not null' => TRUE,
         'default' => 0,
       ),
       'submit_text' => array(
-        'description' => t('The title of the submit button on the form.'),
+        'description' => 'The title of the submit button on the form.',
         'type' => 'varchar',
         'length' => 255,
       ),
       'submit_limit' => array(
-        'description' => t('The number of submissions a single user is allowed to submit within an interval. -1 is unlimited.'),
+        'description' => 'The number of submissions a single user is allowed to submit within an interval. -1 is unlimited.',
         'type' => 'int',
         'size' => 'tiny',
         'not null' => TRUE,
         'default' => -1,
       ),
       'submit_interval' => array(
-        'description' => t('The amount of time in seconds that must pass before a user can submit another submission within the set limit.'),
+        'description' => 'The amount of time in seconds that must pass before a user can submit another submission within the set limit.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => -1,
       ),
       'email' => array(
-        'description' => t('The primary e-mail address for receiving submission results.'),
+        'description' => 'The primary e-mail address for receiving submission results.',
         'type' => 'varchar',
         'length' => 255,
       ),
       'email_from_name' => array(
-        'description' => t('The name of the sender in sent submission e-mails.'),
+        'description' => 'The name of the sender in sent submission e-mails.',
         'type' => 'varchar',
         'length' => 255,
       ),
       'email_from_address' => array(
-        'description' => t('The address of the sender in sent submission e-mails.'),
+        'description' => 'The address of the sender in sent submission e-mails.',
         'type' => 'varchar',
         'length' => 255,
       ),
       'email_subject' => array(
-        'description' => t('The subject of sent submission e-mails'),
+        'description' => 'The subject of sent submission e-mails',
         'type' => 'varchar',
         'length' => 255,
       ),
       'additional_validate' => array(
-        'description' => t('PHP code for additional functionality when validating a form.'),
+        'description' => 'PHP code for additional functionality when validating a form.',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'additional_submit' => array(
-        'description' => t('PHP code for additional functionality when submitting a form.'),
+        'description' => 'PHP code for additional functionality when submitting a form.',
         'type' => 'text',
         'not null' => TRUE,
       ),
@@ -86,17 +86,17 @@ function webform_schema() {
   );
 
   $schema['webform_component'] = array(
-    'description' => t('Stores information about components for webform nodes.'),
+    'description' => 'Stores information about components for webform nodes.',
     'fields' => array(
       'nid' => array(
-        'description' => t('The node identifier of a webform'),
+        'description' => 'The node identifier of a webform',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
       'cid' => array(
-        'description' => t('The identifier for this component within this node, starts at 0 for each node.'),
+        'description' => 'The identifier for this component within this node, starts at 0 for each node.',
         'type' => 'int',
         'size' => 'small',
         'unsigned' => TRUE,
@@ -104,7 +104,7 @@ function webform_schema() {
         'default' => 0,
       ),
       'pid' => array(
-        'description' => t('If this component has a parent fieldset, the cid of that component.'),
+        'description' => 'If this component has a parent fieldset, the cid of that component.',
         'type' => 'int',
         'size' => 'small',
         'unsigned' => TRUE,
@@ -112,46 +112,46 @@ function webform_schema() {
         'default' => 0,
       ),
       'form_key' => array(
-        'description' => t('When the form is displayed and processed, this key can be used to reference the results.'),
+        'description' => 'When the form is displayed and processed, this key can be used to reference the results.',
         'type' => 'varchar',
         'length' => 128,
       ),
       'name' => array(
-        'description' => t('The label for this component.'),
+        'description' => 'The label for this component.',
         'type' => 'varchar',
         'length' => 255,
       ),
       'type' => array(
-        'description' => t('The field type of this component (textfield, select, hidden, etc.).'),
+        'description' => 'The field type of this component (textfield, select, hidden, etc.).',
         'type' => 'varchar',
         'length' => 16,
       ),
       'value' => array(
-        'description' => t('The default value of the component when displayed to the end-user.'),
+        'description' => 'The default value of the component when displayed to the end-user.',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'extra' => array(
-        'description' => t('Additional information unique to the display or processing of this component.'),
+        'description' => 'Additional information unique to the display or processing of this component.',
         'type' => 'text',
         'not null' => TRUE,
       ),
       'mandatory' => array(
-        'description' => t('Boolean flag for if this component is required.'),
+        'description' => 'Boolean flag for if this component is required.',
         'type' => 'int',
         'size' => 'tiny',
         'not null' => TRUE,
         'default' => 0,
       ),
       'email' => array(
-        'description' => t('Boolean flag for if submitted values for this component will be included in sent e-mails.'),
+        'description' => 'Boolean flag for if submitted values for this component will be included in sent e-mails.',
         'type' => 'int',
         'size' => 'tiny',
         'not null' => TRUE,
         'default' => 0,
       ),
       'weight' => array(
-        'description' => t('Determines the position of this component in the form.'),
+        'description' => 'Determines the position of this component in the form.',
         'type' => 'int',
         'size' => 'small',
         'not null' => TRUE,
@@ -162,17 +162,17 @@ function webform_schema() {
   );
 
   $schema['webform_roles'] = array(
-    'description' => t('Holds access information regarding which roles are allowed to submit which webform nodes. Does not prevent access to the webform node entirely, use the {node_access} table for that purpose.'),
+    'description' => 'Holds access information regarding which roles are allowed to submit which webform nodes. Does not prevent access to the webform node entirely, use the {node_access} table for that purpose.',
     'fields' => array(
       'nid' => array(
-        'description' => t('The node identifier of a webform.'),
+        'description' => 'The node identifier of a webform.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
       'rid' => array(
-        'description' => t('The role identifier.'),
+        'description' => 'The role identifier.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -183,36 +183,36 @@ function webform_schema() {
   );
 
   $schema['webform_submissions'] = array(
-    'description' => t('Holds general information about submissions outside of field values.'),
+    'description' => 'Holds general information about submissions outside of field values.',
     'fields' => array(
       'sid' => array(
-        'description' => t('The unique identifier for this submission.'),
+        'description' => 'The unique identifier for this submission.',
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
       'nid' => array(
-        'description' => t('The node identifier of a webform'),
+        'description' => 'The node identifier of a webform',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
       'uid' => array(
-        'description' => t('The id of the user that completed this submission.'),
+        'description' => 'The id of the user that completed this submission.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
       'submitted' => array(
-        'description' => t('Timestamp of when the form was submitted.'),
+        'description' => 'Timestamp of when the form was submitted.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
       ),
       'remote_addr' => array(
-        'description' => t('The IP address of the user that submitted the form.'),
+        'description' => 'The IP address of the user that submitted the form.',
         'type' => 'varchar',
         'length' => 128,
       ),
@@ -224,24 +224,24 @@ function webform_schema() {
   );
 
   $schema['webform_submitted_data'] = array(
-    'description' => t('Stores all submitted field data for webform submissions.'),
+    'description' => 'Stores all submitted field data for webform submissions.',
     'fields' => array(
       'nid' => array(
-        'description' => t('The node identifier of a webform'),
+        'description' => 'The node identifier of a webform',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
       'sid' => array(
-        'description' => t('The unique identifier for this submission.'),
+        'description' => 'The unique identifier for this submission.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
       'cid' => array(
-        'description' => t('The identifier for this component within this node, starts at 0 for each node.'),
+        'description' => 'The identifier for this component within this node, starts at 0 for each node.',
         'type' => 'int',
         'size' => 'small',
         'unsigned' => TRUE,
@@ -249,7 +249,7 @@ function webform_schema() {
         'default' => 0,
       ),
       'no' => array(
-        'description' => t('Usually this value is 0, but if a field has multiple values (such as a time or date), it may require multiple rows in the database.'),
+        'description' => 'Usually this value is 0, but if a field has multiple values (such as a time or date), it may require multiple rows in the database.',
         'type' => 'int',
         'size' => 'tiny',
         'unsigned' => TRUE,
@@ -257,7 +257,7 @@ function webform_schema() {
         'default' => 0,
       ),
       'data' => array(
-        'description' => t('The submitted value of this field, may be serialized for some components.'),
+        'description' => 'The submitted value of this field, may be serialized for some components.',
         'type' => 'text',
         'size' => 'medium',
         'not null' => TRUE,
@@ -859,17 +859,17 @@ function webform_update_6202() {
   }
 
   db_create_table($ret, 'webform_roles', array(
-    'description' => t('Holds access information regarding which roles are allowed to submit which webform nodes. Does not prevent access to the webform node entirely, use the {node_access} table for that purpose.'),
+    'description' => 'Holds access information regarding which roles are allowed to submit which webform nodes. Does not prevent access to the webform node entirely, use the {node_access} table for that purpose.',
     'fields' => array(
       'nid' => array(
-        'description' => t('The node identifier of a webform.'),
+        'description' => 'The node identifier of a webform.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
       'rid' => array(
-        'description' => t('The role identifier.'),
+        'description' => 'The role identifier.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
