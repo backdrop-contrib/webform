@@ -337,7 +337,7 @@ function webform_theme() {
     ),
     'webform_form' => array(
       'arguments' => array('form' => NULL),
-      'template' => 'webform-form',
+      'template' => 'templates/webform-form',
       'pattern' => 'webform_form_[0-9]+',
     ),
     'webform_mail_components_form' => array(
@@ -354,12 +354,12 @@ function webform_theme() {
     ),
     'webform_confirmation' => array(
       'arguments' => array('node' => NULL, 'sid' => NULL),
-      'template' => 'webform-confirmation',
+      'template' => 'templates/webform-confirmation',
       'pattern' => 'webform_confirmation_[0-9]+',
     ),
     'webform_mail_message' => array(
       'arguments' => array('form_values' => NULL, 'node' => NULL, 'sid' => NULL, 'cid' => NULL),
-      'template' => 'webform-mail',
+      'template' => 'templates/webform-mail',
       'pattern' => 'webform_mail(_[0-9]+)?',
     ),
     'webform_mail_fields' => array(
