@@ -1490,10 +1490,10 @@ function webform_client_form($form_state, &$node, $submission, $enabled = FALSE,
           $page_num = $form_state['values']['details']['page_num'];
           $errors = form_get_errors();
           if (empty($errors)) {
-            if ($form_state['values']['op'] == $prev_page && $page_num > 1) {
+            if (end($form_state['clicked_button']['#parents']) == 'prev' && $page_num > 1) {
               $page_num--;
             }
-            elseif ($form_state['values']['op'] == $next_page && $page_num < $page_count) {
+            elseif (end($form_state['clicked_button']['#parents']) == 'next' && $page_num < $page_count) {
               $page_num++;
             }
           }
