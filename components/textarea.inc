@@ -197,7 +197,7 @@ function _webform_analysis_rows_textarea($component, $sids = array()) {
  *   Textual output formatted for human reading.
  */
 function _webform_table_data_textarea($data) {
-  return empty($data['value']['0']) ? '' : check_markup($data['value']['0'], FILTER_HTML_STRIP, FALSE);
+  return empty($data['value']['0']) ? '' : check_plain($data['value']['0']);
 }
 
 
