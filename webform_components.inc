@@ -242,7 +242,7 @@ function webform_components_form_submit($form, &$form_state) {
 
   // Update all mandatory and weight values.
   foreach ($node->webform['components'] as $cid => $component) {
-    if ($component['weight'] != $form_state['values']['components'][$cid]['weight'] || $component['mandatory'] != $form_state['values']['components'][$cid]['mandatory'] || $component['email'] != $form_state['values']['components'][$cid]['email']) {
+    if ($component['pid'] != $form_state['values']['components'][$cid]['pid'] || $component['weight'] != $form_state['values']['components'][$cid]['weight'] || $component['mandatory'] != $form_state['values']['components'][$cid]['mandatory'] || $component['email'] != $form_state['values']['components'][$cid]['email']) {
       $component['weight'] = $form_state['values']['components'][$cid]['weight'];
       $component['mandatory'] = $form_state['values']['components'][$cid]['mandatory'];
       $component['email'] = $form_state['values']['components'][$cid]['email'];
