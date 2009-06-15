@@ -10,8 +10,8 @@
  * @copyright Pontus Ullgren 2004
  */
 
-// All functions within this file need the webform_submissions.inc.
-module_load_include('inc', 'webform', 'webform_submissions');
+// All functions within this file need the webform.submissions.inc.
+module_load_include('inc', 'webform', 'includes/webform.submissions');
 
 /**
  * Retrieve lists of submissions for a given webform.
@@ -300,7 +300,7 @@ function webform_results_clear_form_submit($form, &$form_state) {
  * Form to configure the download of CSV files.
  */
 function webform_results_download_form(&$form_state, $node) {
-  module_load_include('inc', 'webform', 'webform_export');
+  module_load_include('inc', 'webform', 'includes/webform.export');
 
   $form = array();
 
@@ -377,7 +377,7 @@ function webform_results_download_form_submit(&$form, &$form_state) {
  *
  */
 function webform_results_download($node, $format = 'delimiter', $options = array()) {
-  module_load_include('inc', 'webform', 'webform_export');
+  module_load_include('inc', 'webform', 'includes/webform.export');
 
   if (empty($options)) {
     $options = array(

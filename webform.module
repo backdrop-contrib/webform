@@ -271,7 +271,7 @@ function webform_menu_load($nid) {
  * Menu loader callback. Load a webform submission if the given sid is a valid.
  */
 function webform_menu_submission_load($sid, $nid) {
-  module_load_include('inc', 'webform', 'webform_submissions');
+  module_load_include('inc', 'webform', 'includes/webform.submissions');
   $submission = webform_get_submission($nid, $sid);
   return empty($submission) ? FALSE : $submission;
 }
@@ -280,7 +280,7 @@ function webform_menu_submission_load($sid, $nid) {
  * Menu loader callback. Load a webform component if the given cid is a valid.
  */
 function webform_menu_component_load($cid, $nid, $type) {
-  module_load_include('inc', 'webform', 'webform_components');
+  module_load_include('inc', 'webform', 'includes/webform.components');
   if ($cid == 'new') {
     $components = webform_load_components();
     $component = in_array($type, array_keys($components)) ? array('type' => $type, 'name' => $_GET['name'], 'mandatory' => $_GET['mandatory'], 'email' => $_GET['email'], 'pid' => $_GET['pid'], 'weight' => $_GET['weight']) : FALSE;
@@ -473,7 +473,7 @@ function webform_file_download($file) {
  * Implementation of hook_insert().
  */
 function webform_insert($node) {
-  module_load_include('inc', 'webform', 'webform_components');
+  module_load_include('inc', 'webform', 'includes/webform.components');
 
   // If this is submitted from the node form, do a little extra cleanup.
   if (isset($node->op) && $node->op == $node->submit) {
@@ -513,7 +513,7 @@ function webform_update($node) {
  */
 function webform_delete(&$node) {
   // Allow components clean up extra data, such as uploaded files.
-  module_load_include('inc', 'webform', 'webform_components');
+  module_load_include('inc', 'webform', 'includes/webform.components');
   foreach ($node->webform['components'] as $cid => $component) {
     webform_component_delete($node->nid, $cid);
   }
@@ -530,7 +530,7 @@ function webform_delete(&$node) {
  * Implementation of hook_load().
  */
 function webform_load($node) {
-  module_load_include('inc', 'webform', 'webform_components');
+  module_load_include('inc', 'webform', 'includes/webform.components');
   $additions = new stdClass();
 
   if ($webform = db_fetch_array(db_query('SELECT * FROM {webform} WHERE nid = %d', $node->nid))) {
@@ -1099,7 +1099,7 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
 
   // Check if the user can add another submission.
   if ($node->webform['submit_limit'] != -1) { // -1: Submissions are never throttled.
-    module_load_include('inc', 'webform', 'webform_submissions');
+    module_load_include('inc', 'webform', 'includes/webform.submissions');
 
     if ($limit_exceeded = _webform_submission_limit_check($node)) {
       $enabled = FALSE;
@@ -1235,7 +1235,7 @@ function webform_mail($key, &$message, $params) {
  * Menu callback for admin/webform/settings.
  */
 function webform_admin_settings() {
-  module_load_include('inc', 'webform', 'webform_export');
+  module_load_include('inc', 'webform', 'includes/webform.export');
 
   $form['components'] = array(
     '#type' => 'fieldset',
@@ -1394,7 +1394,7 @@ function webform_client_form_load($node, $submission, $enabled, $preview) {
  *   editing.
  */
 function webform_client_form($form_state, &$node, $submission, $enabled = FALSE, $preview = FALSE) {
-  module_load_include('inc', 'webform', 'webform_components');
+  module_load_include('inc', 'webform', 'includes/webform.components');
   webform_load_components();
 
   if (isset($submission->sid)) {
@@ -1660,7 +1660,7 @@ function webform_client_form_validate($form, $form_state) {
 
 function webform_client_form_submit($form, &$form_state) {
   global $user, $base_url;
-  module_load_include('inc', 'webform', 'webform_submissions');
+  module_load_include('inc', 'webform', 'includes/webform.submissions');
   webform_load_components();
 
   $node = node_load(array('nid' => $form_state['values']['details']['nid']));

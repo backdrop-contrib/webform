@@ -59,7 +59,7 @@ class WebformSubmissionTestCase extends WebformTestCase {
    */
   function webformSubmissionExecute($value_type = 'sample') {
     $path = drupal_get_path('module', 'webform');
-    module_load_include('inc', 'webform', 'webform_submissions');
+    module_load_include('inc', 'webform', 'includes/webform.submissions');
 
     // Create a new Webform test node.
     $node = $this->webformTestForm();

@@ -1,6 +1,10 @@
 Webform 2.x Changelog
 ---------------------
 
+2.x to 3.0
+----------
+- Module directory structure moved around.
+
 1.x to 2.0
 ----------
 - Redirect POST option removed.

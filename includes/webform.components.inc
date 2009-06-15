@@ -527,7 +527,7 @@ function webform_component_delete($node, $component) {
   // load all submissions and allow the component to delete each one.
   $delete_function = '_webform_delete_'. $component['type'];
   if (function_exists($delete_function)) {
-    module_load_include('inc', 'webform', 'webform_submissions');
+    module_load_include('inc', 'webform', 'includes/webform.submissions');
     $submissions = webform_get_submissions($node->nid);
     foreach ($submissions as $submission) {
       if (isset($submission->data[$component['cid']])) {
