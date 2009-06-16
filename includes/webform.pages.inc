@@ -270,8 +270,7 @@ function webform_configure_form_validate($form, &$form_state) {
  */
 function webform_configure_form_submit($form, &$form_state) {
   $node = node_load($form_state['values']['nid']);
-dsm($node);
-dsm($form_state);
+
   // Save the confirmation.
   $node->webform['confirmation'] = $form_state['values']['confirmation'];
   $node->webform['confirmation_format'] = $form_state['values']['confirmation_format'];
@@ -317,7 +316,6 @@ dsm($form_state);
   // Set additional validation and submission code.
   $node->webform['additional_validate'] = $form_state['values']['additional_validate'];
   $node->webform['additional_submit'] = $form_state['values']['additional_submit'];
-dsm($node);
 
   node_save($node);
 }
