@@ -26,6 +26,12 @@ function webform_schema() {
         'type' => 'text',
         'not null' => TRUE,
       ),
+      'confirmation_format' => array(
+        'description' => 'The input format used by the confirmation message.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'teaser' => array(
         'description' => 'Boolean value for whether the entire form should be displayed on the teaser.',
         'type' => 'int',
@@ -1011,6 +1017,26 @@ function webform_update_6205() {
   db_add_primary_key($ret, 'webform_submitted_data', array('nid', 'sid', 'cid', 'no'));
   db_add_index($ret, 'webform_submitted_data', 'nid', array('nid'));
   db_add_index($ret, 'webform_submitted_data', 'sid_nid', array('sid', 'nid'));
+
+  return $ret;
+}
+
+/**
+ * Add a separate column for confirmation message input format.
+ */
+function webform_update_6301() {
+  $ret = array();
+
+  // Safety check to prevent re-adding existing column.
+  if (db_column_exists('webform', 'confirmation_format')) {
+    return $ret;
+  }
+
+  db_add_field($ret, 'webform', 'confirmation_format', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
+  $result = db_query("SELECT n.nid, nr.format FROM {node} n INNER JOIN {node_revisions} nr ON n.vid = nr.vid WHERE n.type = 'webform'");
+  while ($node = db_fetch_object($result)) {
+    db_query('UPDATE {webform} SET confirmation_format = %d WHERE nid = %d', $node->format, $node->nid);
+  }
 
   return $ret;
 }
