@@ -104,13 +104,6 @@ function webform_components_form($form_state, $node) {
     '#weight' => 45,
   );
 
-  $form['publish'] = array(
-    '#type' => 'submit',
-    '#value' => t('Publish'),
-    '#weight' => 50,
-    '#access' => !$node->status,
-  );
-
   return $form;
 }
 

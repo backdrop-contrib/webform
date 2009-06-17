@@ -719,13 +719,6 @@ function webform_form(&$node, &$form_state) {
 function webform_form_alter(&$form, $form_state, $form_id) {
   if ($form_id == 'webform_node_form' && empty($form['nid']['#value'])) {
     $form['buttons']['submit']['#submit'][] = 'webform_form_submit';
-    // Force webforms to be unpublished initially.
-    if (user_access('administer nodes')) {
-      $form['options']['status']['#default_value'] = FALSE;
-    }
-    else {
-      $form['status']['#value'] = FALSE;
-    }
   }
 }
 
@@ -736,18 +729,8 @@ function webform_form_alter(&$form, $form_state, $form_id) {
  * fires after the hook_submit() function above.
  */
 function webform_form_submit($form, &$form_state) {
-  $nid = $form_state['nid'];
-
-  // Remove the the submitted message added by node module.
-  unset($_SESSION['messages']['status']);
-
   drupal_set_message(t('The new webform %title has been created. Add new fields to your webform with the form below.', array('%title' => $form_state['values']['title'])));
-
-  if (!$form_state['values']['status']) {
-    drupal_set_message(t('This webform is currently unpublished. After finishing your changes to the webform, use the <em>Publish</em> button below.'));
-  }
-
-  $form_state['redirect'] = 'node/'. $nid .'/webform/components';
+  $form_state['redirect'] = 'node/'. $form_state['nid'] .'/webform/components';
 }
 
 /**
