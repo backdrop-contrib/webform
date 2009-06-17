@@ -556,7 +556,7 @@ function webform_insert($node) {
   module_load_include('inc', 'webform', 'includes/webform.components');
 
   // Insert the Webform.
-  db_query("INSERT INTO {webform} (nid, confirmation, confirmation_format, teaser, submit_text, submit_limit, submit_interval, email, email_from_name, email_from_address, email_subject, additional_validate, additional_submit) VALUES (%d, '%s', %d, %d, '%s', %d, %d, '%s', '%s', '%s', '%s', '%s', '%s')", $node->nid, $node->webform['confirmation'], $node->webform['confirmation_format'], $node->webform['teaser'], $node->webform['submit_text'], $node->webform['submit_limit'], $node->webform['submit_interval'], $node->webform['email'], $node->webform['email_from_name'], $node->webform['email_from_address'], $node->webform['email_subject'], $node->webform['additional_validate'], $node->webform['additional_submit']);
+  db_query("INSERT INTO {webform} (nid, confirmation, confirmation_format, teaser, submit_text, submit_limit, submit_interval, additional_validate, additional_submit) VALUES (%d, '%s', %d, %d, '%s', %d, %d, '%s', '%s')", $node->nid, $node->webform['confirmation'], $node->webform['confirmation_format'], $node->webform['teaser'], $node->webform['submit_text'], $node->webform['submit_limit'], $node->webform['submit_interval'], $node->webform['additional_validate'], $node->webform['additional_submit']);
 
   // Insert the components into the database. Used with clone.module.
   if (isset($node->webform['components']) && !empty($node->webform['components'])) {
@@ -1255,31 +1255,16 @@ function webform_client_form($form_state, &$node, $submission, $enabled = FALSE,
         $microweight += 0.001;
       }
     }
-    // Do not display the submit button if this is a preview or submission view.
-    if ((!$preview && $enabled)) {
-      // Additional hidden elements.
-      $form['details']['email_subject'] = array(
+
+    $form['details']['nid'] = array(
+      '#type'      => 'value',
+      '#value'     => $node->nid,
+    );
+    if (isset($submission->sid)) {
+      $form['details']['sid'] = array(
         '#type'      => 'hidden',
-        '#value'     => $node->webform['email_subject'],
+        '#value'     => $submission->sid,
       );
-      $form['details']['email_from_name'] = array(
-        '#type'      => 'hidden',
-        '#value'     => $node->webform['email_from_name'],
-      );
-      $form['details']['email_from_address'] = array(
-        '#type'      => 'hidden',
-        '#value'     => $node->webform['email_from_address'],
-      );
-      $form['details']['nid'] = array(
-        '#type'      => 'value',
-        '#value'     => $node->nid,
-      );
-      if (isset($submission->sid)) {
-        $form['details']['sid'] = array(
-          '#type'      => 'hidden',
-          '#value'     => $submission->sid,
-        );
-      }
     }
   }
 
@@ -1634,7 +1619,7 @@ function template_preprocess_webform_form(&$vars) {
   if (isset($vars['form']['details']['nid']['#value'])) {
     $vars['nid'] = $vars['form']['details']['nid']['#value'];
   }
-  else {
+  elseif (isset($vars['form']['submission']['#value'])) {
     $vars['nid'] = $vars['form']['submission']['#value']->nid;
   }
 }

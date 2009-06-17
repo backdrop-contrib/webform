@@ -167,11 +167,6 @@ function webform_configure_form_validate($form, &$form_state) {
       }
     }
   }
-  if ($form_state['values']['email_from_address_option'] == 'custom') {
-    if (!valid_email_address($form_state['values']['email_from_address_custom'])) {
-      form_set_error('email_from_address_custom', t('The entered email address %address is not a valid address.', array('%address' => $node->webform['email_from_address_custom'])));
-    }
-  }
 }
 
 /**

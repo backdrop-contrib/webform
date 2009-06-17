@@ -602,15 +602,11 @@ class WebformTestCase extends DrupalWebTestCase {
         'submit_text' => '',
         'submit_limit' => '-1',
         'submit_interval' => '-1',
-        'email' => 'nate@localhost',
-        'email_from_name' => 'default',
-        'email_from_address' => 'default',
-        'email_subject' => 'default',
         'additional_validate' => '',
         'additional_submit' => '',
         'roles' => array('1', '2'),
         'components' => array(),
-        'additional_emails' => array(),
+        'emails' => array(),
       ),
     );
 
