@@ -21,7 +21,6 @@ function _webform_defaults_email() {
     'extra' => array(
       'width' => '',
       'disabled' => 0,
-      'email' => 0,
       'description' => '',
       'attributes' => array(),
     ),
@@ -65,13 +64,6 @@ function _webform_edit_email($currfield) {
     '#description' => t('Width of the textfield.') .' '. t('Leaving blank will use the default size.'),
     '#size' => 5,
     '#maxlength' => 10,
-  );
-  $edit_fields['extra']['email'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('E-mail a submission copy'),
-    '#return_value' => 1,
-    '#default_value' => $currfield['extra']['email'],
-    '#description' => t('Check this option if this component contains an e-mail address that should get a copy of the submission. Emails are sent individually so other emails will not be shown to the recipient.'),
   );
   $edit_fields['extra']['disabled'] = array(
     '#type' => 'checkbox',

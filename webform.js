@@ -9,6 +9,8 @@ Drupal.behaviors.webform = function(context) {
   Drupal.webform.defaultValues(context);
   // On click or change, make a parent radio button selected.
   Drupal.webform.setActive(context);
+  // Update the template select list upon changing a template.
+  Drupal.webform.updateTemplate(context);
 }
 
 Drupal.webform = new Object();
@@ -39,6 +41,32 @@ Drupal.webform.defaultValues = function(context) {
 };
 
 Drupal.webform.setActive = function(context) {
-  var setActive = function() { $('.form-radio', $(this).parent().parent()).attr('checked', true); };
+  var setActive = function() {
+    $('.form-radio', $(this).parent().parent()).attr('checked', true);
+  };
   $('.webform-set-active', context).click(setActive).change(setActive);
 };
+
+Drupal.webform.updateTemplate = function(context) {
+  var defaultTemplate = $('#edit-templates-default').val();
+  var $templateSelect = $('#webform-template-fieldset select', context);
+  var $templateTextarea = $('#webform-template-fieldset textarea', context);
+
+  var updateTemplateSelect = function() {
+    if ($(this).val() == defaultTemplate) {
+      $templateSelect.val('default');
+    }
+    else {
+      $templateSelect.val('custom');
+    }
+  }
+
+  var updateTemplateText = function() {
+    if ($(this).val() == 'default') {
+      $templateTextarea.val(defaultTemplate);
+    }
+  }
+
+  $templateTextarea.keyup(updateTemplateSelect);
+  $templateSelect.change(updateTemplateText);
+}

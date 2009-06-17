@@ -92,97 +92,6 @@ function webform_configure_form(&$form_state, $node) {
   );
   /* End per-role submission control */
 
-  /* Start E-mail Settings Form */
-  $form['mail_settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Mail settings'),
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-    '#weight' => -2,
-    '#theme' => 'webform_mail_settings_form',
-  );
-
-  $form['mail_settings']['email'] = array(
-    '#type' => 'textfield',
-    '#title' => t('E-mail to address'),
-    '#maxlength' => 255,
-    '#default_value' => $node->webform['email'],
-    '#description' => t('Form submissions will be e-mailed to this address. Leave blank for none. Multiple e-mail addresses may be separated by commas.'),
-  );
-
-  $form['mail_settings']['email_components'] = array(
-    '#type' => 'fieldset',
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#theme' => 'webform_mail_components_form',
-    '#title' => t('Conditional e-mail recipients'),
-    '#description' => t('The settings below allow you to send e-mails to multiple recipients based off the value of a component.'),
-    '#node' => $node,
-  );
-
-  $options = _webform_component_options($node->webform['components'], 'email');
-  $default_value = array();
-  if (is_array($node->webform['components'])) {
-    foreach ($node->webform['components'] as $cid => $component) {
-      if (isset($component['extra']['email']) && $component['extra']['email']) {
-        $default_value[] = $cid;
-      }
-    }
-  }
-  $form['mail_settings']['email_components']['email_components'] = array(
-    '#type' => 'checkboxes',
-    '#options' => $options,
-    '#default_value' => $default_value,
-    '#parents' => array('email_components'),
-  );
-
-  foreach (array('from_name', 'from_address', 'subject') as $field) {
-    switch ($field) {
-      case 'from_name':
-        $default_value = _webform_filter_values(webform_variable_get('webform_default_from_name'), $node);
-        $title = t('E-mail from name');
-        $description = t('After adding components to this form any email, select, or hidden form element may be selected as the sender\'s name for e-mails.');
-        break;
-      case 'from_address':
-        $default_value = _webform_filter_values(webform_variable_get('webform_default_from_address'), $node);
-        $title = t('E-mail from address');
-        $description = t('After adding components to this form any textfield, select, or hidden form element may be selected as the sender\'s e-mail address.');
-        break;
-      case 'subject':
-        $default_value = _webform_filter_values(webform_variable_get('webform_default_subject'), $node);
-        $title = t('E-mail subject');
-        $description = t('After adding components to this form any textfield, select, or hidden form element may be selected as the subject for e-mails.');
-        break;
-    }
-
-    $form['mail_settings']['email_'. $field .'_option'] = array(
-      '#title' => $title,
-      '#type' => 'radios',
-      '#default_value' => is_numeric($node->webform['email_'. $field]) ? 'component' : ((empty($default_value) || ($node->webform['email_'. $field] != 'default' && isset($node->webform['email_'. $field]))) ? 'custom' : 'default'),
-      '#description' => $description,
-    );
-    if (!empty($default_value)) {
-      $form['mail_settings']['email_'. $field .'_option']['#options']['default'] = $default_value;
-    }
-    $form['mail_settings']['email_'. $field .'_option']['#options']['custom'] = 'custom';
-    $form['mail_settings']['email_'. $field .'_option']['#options']['component'] = 'component';
-
-    $form['mail_settings']['email_'. $field .'_custom'] = array(
-      '#type' => 'textfield',
-      '#size' => 40,
-      '#default_value' => (!is_numeric($node->webform['email_'. $field]) && $node->webform['email_'. $field] != 'default') ? $node->webform['email_'. $field] : NULL,
-    );
-    $options = _webform_component_options($node->webform['components'], $field == 'from_address' ? 'email' : 'string');
-    $form['mail_settings']['email_'. $field .'_component'] = array(
-      '#type' => 'select',
-      '#default_value' =>  is_numeric($node->webform['email_'. $field]) ? $node->webform['email_'. $field] : NULL,
-      '#options' => empty($options) ? array('' => 'No available components') : $options,
-      '#disabled' => empty($options) ? TRUE : FALSE,
-      '#weight' => 6,
-    );
-  }
-  /* End mail settings form */
-
   /* Start advanced settings form */
   $form['advanced'] = array(
     '#type' => 'fieldset',
@@ -278,25 +187,6 @@ function webform_configure_form_submit($form, &$form_state) {
   // Save roles.
   $node->webform['roles'] = $form_state['values']['roles'];
 
-  // Save e-mail.
-  $node->webform['email'] = $form_state['values']['email'];
-
-  // Add the conditional e-mail recipients to components.
-  foreach ($form_state['values']['email_components'] as $cid => $checked) {
-    $node->webform['components'][$cid]['extra']['email'] = $checked;
-  }
-
-  // Merge the e-mail name, address, and subject options into single values.
-  foreach (array('from_name', 'from_address', 'subject') as $field) {
-    $option = $form_state['values']['email_'. $field .'_option'];
-    if ($option == 'default') {
-      $node->webform['email_'. $field] = 'default';
-    }
-    else {
-      $node->webform['email_'. $field] = $form_state['values']['email_'. $field .'_'. $option];
-    }
-  }
-
   // Set the Show complete form in teaser setting.
   $node->webform['teaser'] = $form_state['values']['teaser'];
 
@@ -318,61 +208,6 @@ function webform_configure_form_submit($form, &$form_state) {
   $node->webform['additional_submit'] = $form_state['values']['additional_submit'];
 
   node_save($node);
-}
-
-/**
- * Theme the component options for sending e-mails.
- */
-function theme_webform_mail_components_form($form) {
-  drupal_add_css(drupal_get_path('module', 'webform') .'/webform.css');
-  $node = $form['#node'];
-  $header = array(
-    array('data' => t('To'), 'class' => 'webform-checkbox'),
-    t('Name'),
-    t('Type'),
-  );
-  $rows = array();
-  foreach (element_children($form['email_components']) as $cid) {
-    $title = $form['email_components'][$cid]['#title'];
-    unset($form['email_components'][$cid]['#title']);
-    $rows[] = array(
-      array('data' => drupal_render($form['email_components'][$cid]), 'class' => 'webform-checkbox'),
-      $title,
-      $node->webform['components'][$cid]['type'],
-    );
-  }
-  if (empty($rows)) {
-    $rows[] = array(array('colspan' => 5, 'data' => t('No components yet in this webform.')));
-  }
-
-  $form['#children'] = theme('table', $header, $rows);
-  return drupal_render($form);
-}
-
-/**
- * Theme the Webform mail settings section of the node form.
- */
-function theme_webform_mail_settings_form($form) {
-  drupal_add_js(drupal_get_path('module', 'webform') .'/webform.js');
-
-  // Loop through fields, rendering them into radio button options.
-  foreach (array('from_name', 'from_address', 'subject') as $field) {
-    foreach (array('custom' => t('Custom'), 'component' => t('Component')) as $option => $title) {
-      $form['email_'. $field .'_'. $option]['#attributes']['class'] = 'webform-set-active';
-      $form['email_'. $field .'_option'][$option]['#title'] = $title .': '. drupal_render($form['email_'. $field .'_'. $option]);
-    }
-    // For spacing consitency, every option is wrapped in container-inline.
-    foreach (element_children($form['email_'. $field .'_option']) as $option) {
-      $form['email_'. $field .'_option'][$option]['#prefix'] = '<div class="container-inline">';
-      $form['email_'. $field .'_option'][$option]['#suffix'] = '</div>';
-    }
-    // Wrap the default option in a placeholder tag..
-    if (isset($form['email_'. $field .'_option']['#options']['default'])) {
-      $form['email_'. $field .'_option']['default']['#title'] = t('Default') .': '. theme('placeholder', $form['email_'. $field .'_option']['default']['#title']);
-    }
-  }
-
-  return drupal_render($form);
 }
 
 /**

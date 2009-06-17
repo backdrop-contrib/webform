@@ -17,7 +17,6 @@ function _webform_defaults_hidden() {
     'weight' => 0,
     'value' => '',
     'extra' => array(
-      'email' => 0,
     ),
   );
 }
@@ -45,13 +44,6 @@ function _webform_edit_hidden($currfield) {
   $edit_fields['advanced']['mandatory'] = array(
     '#type' => 'hidden',
     '#value' => 1,
-  );
-  $edit_fields['extra']['email'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('E-mail a submission copy'),
-    '#return_value' => 1,
-    '#default_value' => $currfield['extra']['email'],
-    '#description' => t('Check this option if this component contains an e-mail address that should get a copy of the submission. Emails are sent individually so other emails will not be shown to the recipient.'),
   );
   $edit_fields['extra']['description'] = array(); // Hide the description box.
   return $edit_fields;

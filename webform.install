@@ -16,7 +16,7 @@ function webform_schema() {
     'description' => 'Table for storing additional properties for webform nodes.',
     'fields' => array(
       'nid' => array(
-        'description' => 'The node identifier of a webform',
+        'description' => 'The node identifier of a webform.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -57,26 +57,6 @@ function webform_schema() {
         'not null' => TRUE,
         'default' => -1,
       ),
-      'email' => array(
-        'description' => 'The primary e-mail address for receiving submission results.',
-        'type' => 'varchar',
-        'length' => 255,
-      ),
-      'email_from_name' => array(
-        'description' => 'The name of the sender in sent submission e-mails.',
-        'type' => 'varchar',
-        'length' => 255,
-      ),
-      'email_from_address' => array(
-        'description' => 'The address of the sender in sent submission e-mails.',
-        'type' => 'varchar',
-        'length' => 255,
-      ),
-      'email_subject' => array(
-        'description' => 'The subject of sent submission e-mails',
-        'type' => 'varchar',
-        'length' => 255,
-      ),
       'additional_validate' => array(
         'description' => 'PHP code for additional functionality when validating a form.',
         'type' => 'text',
@@ -95,7 +75,7 @@ function webform_schema() {
     'description' => 'Stores information about components for webform nodes.',
     'fields' => array(
       'nid' => array(
-        'description' => 'The node identifier of a webform',
+        'description' => 'The node identifier of a webform.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -167,6 +147,56 @@ function webform_schema() {
     'primary key' => array('nid', 'cid'),
   );
 
+  $schema['webform_emails'] = array(
+    'description' => 'Holds information regarding e-mails that should be sent upon submitting a webform',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'The node identifier of a webform.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'eid' => array(
+        'description' => 'The e-mail identifier for this row\'s settings.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'email' => array(
+        'description' => 'The e-mail address that will be sent to upon submission. This may be an e-mail address, the special key "default" or a numeric value. If a numeric value is used, the value of a component will be substituted on submission.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+      'subject' => array(
+        'description' => 'The e-mail subject that will be used. This may be a string, the special key "default" or a numeric value. If a numeric value is used, the value of a component will be substituted on submission.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'from_name' => array(
+        'description' => 'The e-mail "from" name that will be used. This may be a string, the special key "default" or a numeric value. If a numeric value is used, the value of a component will be substituted on submission.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'from_address' => array(
+        'description' => 'The e-mail "from" e-mail address that will be used. This may be a string, the special key "default" or a numeric value. If a numeric value is used, the value of a component will be substituted on submission.',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'template' => array(
+        'description' => 'A template that will be used for the sent e-mail. This may be a string or the special key "default", which will use the template provided by the theming layer.',
+        'type' => 'text',
+        'not null' => FALSE,
+      )
+    ),
+    'primary key' => array('nid', 'eid'),
+  );
+
   $schema['webform_roles'] = array(
     'description' => 'Holds access information regarding which roles are allowed to submit which webform nodes. Does not prevent access to the webform node entirely, use the {node_access} table for that purpose.',
     'fields' => array(
@@ -198,7 +228,7 @@ function webform_schema() {
         'not null' => TRUE,
       ),
       'nid' => array(
-        'description' => 'The node identifier of a webform',
+        'description' => 'The node identifier of a webform.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -233,7 +263,7 @@ function webform_schema() {
     'description' => 'Stores all submitted field data for webform submissions.',
     'fields' => array(
       'nid' => array(
-        'description' => 'The node identifier of a webform',
+        'description' => 'The node identifier of a webform.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -1037,6 +1067,96 @@ function webform_update_6301() {
   while ($node = db_fetch_object($result)) {
     db_query('UPDATE {webform} SET confirmation_format = %d WHERE nid = %d', $node->format, $node->nid);
   }
+
+  return $ret;
+}
+
+/**
+ * Convert node-level e-mail settings to new webform_emails table.
+ */
+function webform_update_6302() {
+  $ret = array();
+
+  // Safety check to prevent recreating the webform_emails table.
+  if (db_table_exists('webform_emails')) {
+    return $ret;
+  }
+
+  $table = array(
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'eid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'email' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+      ),
+      'subject' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'from_name' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'from_address' => array(
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'template' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+      )
+    ),
+    'primary key' => array('nid', 'eid'),
+  );
+
+  db_create_table($ret, 'webform_emails', $table);
+
+  // Move over data from the webform table.
+  $result = db_query("SELECT w.nid, w.email, w.email_from_name, w.email_from_address, w.email_subject, wc.cid, wc.extra FROM {webform} w LEFT JOIN {webform_component} wc ON w.nid = wc.nid AND type IN ('select', 'hidden', 'email') ORDER BY nid");
+  $nid = 0;
+  while ($row = db_fetch_object($result)) {
+    // Insert an e-mail settings row for the default e-mail.
+    if ($row->nid != $nid) {
+      $nid = $row->nid;
+      $eid = 0;
+      if (!empty($row->email)) {
+        $eid++;
+        db_query("INSERT INTO {webform_emails} (nid, eid, email, subject, from_name, from_address, template) VALUES (%d, %d, '%s', '%s', '%s', '%s', 'default')", $nid, $eid, $row->email, $row->email_subject, $row->email_from_name, $row->email_from_address);
+      }
+    }
+
+    // Check for an e-mail based on a component.
+    if ($row->extra) {
+      $extra = unserialize($row->extra);
+      if ($extra['email']) {
+        $eid++;
+        unset($extra['email']);
+        db_query("INSERT INTO {webform_emails} (nid, eid, email, subject, from_name, from_address, template) VALUES (%d, %d, '%s', '%s', '%s', '%s', 'default')", $nid, $eid, $row->cid, $row->email_subject, $row->email_from_name, $row->email_from_address);
+        db_query("UPDATE {webform_component} SET extra = '%s' WHERE nid = %d AND cid = %d", serialize($extra), $row->nid, $row->cid);
+      }
+    }
+  }
+
+  // Remove columns from webform table.
+  db_drop_field($ret, 'webform', 'email');
+  db_drop_field($ret, 'webform', 'email_from_name');
+  db_drop_field($ret, 'webform', 'email_from_address');
+  db_drop_field($ret, 'webform', 'email_subject');
 
   return $ret;
 }

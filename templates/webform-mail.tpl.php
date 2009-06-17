@@ -23,23 +23,19 @@
  * logic on CIDs you can customize various e-mails.
  */
 ?>
-<?php print t('Submitted on @date', array('@date' => format_date(time(), 'small'))) ?>
+<?php print t('Submitted on %date'); ?>
 
 <?php if ($user->uid): ?>
-<?php print t('Submitted by user: @username [@ip_address]', array('@username' => $user->name, '@ip_address' => $ip_address)) ?>
+<?php print t('Submitted by user: %username'); ?>
 <?php else: ?>
-<?php print t('Submitted by anonymous user: [@ip_address]', array('@ip_address' => $ip_address)) ?>
+<?php print t('Submitted by anonymous user: [%ip_address]'); ?>
 <?php endif; ?>
 
 
 <?php print t('Submitted values are') ?>:
 
-<?php
-  // Print out all the Webform fields. This is purposely a theme function call
-  // so that you may remove items from the submitted tree if you so choose.
-  // unset($form_values['submitted_tree']['element_key']);
-  print theme('webform_mail_fields', 0, $form_values['submitted_tree'], $node);
-?>
+%email_values
 
 <?php print t('The results of this submission may be viewed at:') ?>
-<?php print url('node/'. $node->nid .'/submission/'. $sid, array('absolute' => TRUE)) ?>
+
+%submission_url
