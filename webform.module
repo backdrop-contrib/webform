@@ -556,7 +556,7 @@ function webform_insert($node) {
   module_load_include('inc', 'webform', 'includes/webform.components');
 
   // Insert the Webform.
-  db_query("INSERT INTO {webform} (nid, confirmation, confirmation_format, teaser, submit_text, submit_limit, submit_interval, additional_validate, additional_submit) VALUES (%d, '%s', %d, %d, '%s', %d, %d, '%s', '%s')", $node->nid, $node->webform['confirmation'], $node->webform['confirmation_format'], $node->webform['teaser'], $node->webform['submit_text'], $node->webform['submit_limit'], $node->webform['submit_interval'], $node->webform['additional_validate'], $node->webform['additional_submit']);
+  db_query("INSERT INTO {webform} (nid, confirmation, confirmation_format, teaser, submit_notice, submit_text, submit_limit, submit_interval, additional_validate, additional_submit) VALUES (%d, '%s', %d, %d, %d, '%s', %d, %d, '%s', '%s')", $node->nid, $node->webform['confirmation'], $node->webform['confirmation_format'], $node->webform['teaser'], $node->webform['submit_notice'], $node->webform['submit_text'], $node->webform['submit_limit'], $node->webform['submit_interval'], $node->webform['additional_validate'], $node->webform['additional_submit']);
 
   // Insert the components into the database. Used with clone.module.
   if (isset($node->webform['components']) && !empty($node->webform['components'])) {
@@ -628,6 +628,7 @@ function webform_load($node) {
       'confirmation' => '',
       'confirmation_format' => FILTER_FORMAT_DEFAULT,
       'teaser' => 0,
+      'submit_notice' => 0,
       'submit_text' => '',
       'submit_limit' => -1,
       'submit_interval' => -1,
@@ -891,7 +892,7 @@ function theme_webform_view_messages($node, $teaser, $page, $submission_count, $
   }
 
   // If the user has submitted before, give them a link to their submissions.
-  if ($submission_count > 0) {
+  if ($submission_count > 0 && $node->webform['submit_notice'] == 1) {
     if (empty($message)) {
       $message = t('You have already submitted this form.') .' '. t('<a href="!url">View your previous submissions</a>.', array('!url' => url('node/'. $node->nid .'/submissions')));
     }

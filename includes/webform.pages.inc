@@ -106,6 +106,12 @@ function webform_configure_form(&$form_state, $node) {
     '#default_value' => $node->webform['teaser'],
     '#description' => t('Display the entire form in the teaser display of this node.'),
   );
+  $form['advanced']['submit_notice'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show the notification about previous submissions.'),
+    '#default_value' => $node->webform['submit_notice'],
+    '#description' => t('Show the previous submissions notification that appears when users have previously submitted this form.'),
+  );
   $form['advanced']['submit_text'] = array(
     '#type' => 'textfield',
     '#title' => t('Submit button text'),
@@ -194,6 +200,9 @@ function webform_configure_form_submit($form, &$form_state) {
     $node->webform['submit_limit'] = $form_state['values']['submit_limit'];
     $node->webform['submit_interval'] = $form_state['values']['submit_interval'];
   }
+
+  // Set submit notice.
+  $node->webform['submit_notice'] = $form_state['values']['submit_notice'];
 
   // Set submit button text.
   $node->webform['submit_text'] = $form_state['values']['submit_text'];

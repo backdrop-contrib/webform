@@ -39,6 +39,13 @@ function webform_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'submit_notice' => array(
+        'description' => 'Boolean value for whether to show or hide the previous submissions notification.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'submit_text' => array(
         'description' => 'The title of the submit button on the form.',
         'type' => 'varchar',
@@ -1158,6 +1165,16 @@ function webform_update_6302() {
   db_drop_field($ret, 'webform', 'email_from_address');
   db_drop_field($ret, 'webform', 'email_subject');
 
+  return $ret;
+}
+
+/**
+ * Add the submit_notice field and update all existing webforms to the 2.x previous submissions notice default.
+ */
+function webform_update_6303() {
+  $ret = array();
+  db_add_field($ret, 'webform', 'submit_notice', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
+  $ret[] = update_sql("UPDATE {webform} SET submit_notice = 1 WHERE submit_notice = 0");
   return $ret;
 }
 
