@@ -107,6 +107,7 @@ function _webform_render_email($component) {
     '#suffix'        => '</div>',
     '#element_validate'  => array('_webform_validate_email'),
     '#webform_component' => $component,
+    '#form_builder'  => array('element_type' => 'email'),
   );
 
   if ($component['extra']['disabled']) {
@@ -159,6 +160,41 @@ function _webform_submission_display_email($data, $component, $enabled = FALSE) 
     $form_item['#attributes']['readonly'] = 'readonly';
   }
   return $form_item;
+}
+
+/**
+ * Convert a FAPI form element into settings savable in a component.
+ */
+function _webform_form_builder_save_email(&$component, $form_element) {
+  $component['extra']['width'] = isset($form_element['#size']) ? $form_element['#size'] : NULL;
+  $component['extra']['description'] = isset($form_element['#description']) ? $form_element['#description'] : NULL;
+  $component['extra']['disabled'] = isset($form_element['#disabled']) ? $form_element['#disabled'] : FALSE;
+}
+
+/**
+ * Module specific instance of hook_form_builder_types().
+ */
+function _webform_form_builder_types_email() {
+  $fields = array();
+
+  $fields['email'] = array(
+    'title' => t('E-mail'),
+    'properties' => array(
+      'title',
+      'description',
+      'default_value',
+      'required',
+      'size',
+      'key',
+    ),
+    'default' => array(
+      '#title' => t('New e-mail'),
+      '#type' => 'textfield',
+      '#form_builder' => array('element_type' => 'email'),
+    ),
+  );
+
+  return $fields;
 }
 
 /**

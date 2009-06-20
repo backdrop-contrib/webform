@@ -57,10 +57,11 @@ function _webform_edit_hidden($currfield) {
  * @return
  *   An array of a form item to be displayed on the client-side webform.
  */
-function _webform_render_hidden($component) {
+function _webform_render_hidden($component, $filter = TRUE) {
   $form_item = array(
     '#type'          => 'hidden',
-    '#default_value' => _webform_filter_values($component['value']),
+    '#title'         => $component['name'],
+    '#default_value' => $filter ? _webform_filter_values($component['value']) : $component['value'],
     '#weight'        => $component['weight'],
   );
 
@@ -94,6 +95,39 @@ function _webform_submission_display_hidden($data, $component, $enabled = FALSE)
     }
   }
   return $form_item;
+}
+
+/**
+ * Module specific instance of hook_form_builder_preview_alter().
+ *
+ * Make hidden fields visible while editing.
+ */
+function _webform_form_builder_preview_alter_hidden(&$form_element) {
+  $form_element['#field_suffix'] = '(' . t('hidden') . ')';
+  $form_element['#autocomplete_path'] = NULL; // Needed to avoid notices.
+  $form_element['#type'] = 'textfield';
+}
+
+/**
+ * Module specific instance of hook_form_builder_types().
+ */
+function _webform_form_builder_types_hidden() {
+  $fields = array();
+
+  $fields['hidden'] = array(
+    'title' => t('Hidden'),
+    'properties' => array(
+      'title',
+      'default_value',
+      'key',
+    ),
+    'default' => array(
+      '#title' => t('Hidden field'),
+      '#type' => 'hidden',
+    ),
+  );
+
+  return $fields;
 }
 
 /**

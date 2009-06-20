@@ -58,22 +58,20 @@ function _webform_edit_markup($currfield) {
  * @return
  *   An array of a form item to be displayed on the client-side webform.
  */
-function _webform_render_markup($component) {
-  // We don't want users to be able to execute filters outside of their permissions on preview.
-  if ($_POST['op'] == t('Preview')) {
-    $check_filter = TRUE;
-  }
-  else {
-    $check_filter = FALSE;
-  }
-
+function _webform_render_markup($component, $filter) {
   $form_item = array(
     '#type'   => 'markup',
+    '#title'  => $component['name'],
     '#weight' => $component['weight'],
-    '#value'  => _webform_filter_values(check_markup($component['value'], $component['extra']['format'], $check_filter), NULL, NULL, FALSE),
+    '#markup' => $filter ? _webform_filter_values(check_markup($component['value'], $component['extra']['format'], FALSE), NULL, NULL, FALSE) : $component['value'],
+    '#input_format' => $component['extra']['format'],
     '#prefix' => '<div class="webform-component-'. $component['type'] .'" id="webform-component-'. $component['form_key'] .'">',
     '#suffix' => '</div>',
   );
+
+  // TODO: Remove when #markup becomes available in D7.
+  $form_item['#value'] = $form_item['#markup'];
+
   return $form_item;
 }
 
@@ -92,6 +90,55 @@ function _webform_render_markup($component) {
 function _webform_submission_display_markup($data, $component, $enabled = FALSE) {
   $form_item = _webform_render_markup($component);
   return $form_item;
+}
+
+/**
+ * Convert a FAPI form element into settings savable in a component.
+ */
+function _webform_form_builder_save_markup(&$component, $form_element) {
+  $component['extra']['format'] = $form_element['#input_format'];
+  $component['value'] = $form_element['#markup'];
+}
+
+/**
+ * Module specific instance of hook_form_builder_preview_alter().
+ */
+function _webform_form_builder_preview_alter_markup(&$form_element) {
+  $form_element['#markup'] = isset($form_element['#markup']) ? $form_element['#markup'] : '';
+  $form_element['#value'] = check_markup(_webform_filter_values($form_element['#markup'], NULL, NULL, FALSE), $form_element['#input_format'], FALSE);
+
+  if (strlen(trim($form_element['#value'])) == 0) {
+    $form_element['#value'] = t('This markup element currently does not contain any text.');
+  }
+}
+
+/**
+ * Module specific instance of hook_form_builder_types().
+ */
+function _webform_form_builder_types_markup() {
+  $fields = array();
+
+  $default = '';
+  $default .= '<p><strong>' . t('New HTML Markup') . '</strong></p>' . "\n\n";
+  $default .= '<p>' . t('Enter any text supported by available input formats.') . '</p>';
+
+  $fields['markup'] = array(
+    'title' => t('Markup'),
+    'properties' => array(
+      'title',
+      'markup',
+      'input_format',
+      'key',
+    ),
+    'default' => array(
+      '#title' => t('Markup'),
+      '#type' => 'markup',
+      '#markup' => $default,
+      '#input_format' => FILTER_FORMAT_DEFAULT,
+    ),
+  );
+
+  return $fields;
 }
 
 /**

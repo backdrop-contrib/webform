@@ -60,12 +60,12 @@ function _webform_edit_fieldset($currfield) {
  * @return
  *   An array of a form item to be displayed on the client-side webform.
  */
-function _webform_render_fieldset($component) {
+function _webform_render_fieldset($component, $filter = TRUE) {
   $form_item = array(
     '#type'          => $component['type'],
     '#title'         => htmlspecialchars($component['name'], ENT_QUOTES),
     '#weight'        => $component['weight'],
-    '#description'   => _webform_filter_descriptions($component['extra']['description']),
+    '#description'   => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#collapsible'   => $component['extra']['collapsible'],
     '#collapsed'     => $component['extra']['collapsed'],
     '#attributes'    => array('class' => 'webform-component-'. $component['type'], 'id' => 'webform-component-'. $component['form_key']),
@@ -89,6 +89,41 @@ function _webform_render_fieldset($component) {
 function _webform_submission_display_fieldset($data, $component, $enabled = FALSE) {
   $form_item = _webform_render_fieldset($component);
   return $form_item;
+}
+
+/**
+ * Module specific instance of hook_form_builder_types().
+ */
+function _webform_form_builder_types_fieldset() {
+  $fields = array();
+
+  $fields['fieldset'] = array(
+    'title' => t('Fieldset'),
+    'properties' => array(
+      'title',
+      'description',
+      'collapsible',
+      'collapsed',
+      'key',
+    ),
+    'default' => array(
+      '#title' => t('New fieldset'),
+      '#type' => 'fieldset',
+      '#collapsible' => FALSE,
+      '#collapsed' => FALSE,
+    ),
+  );
+
+  return $fields;
+}
+
+/**
+ * Module specific instance of hook_form_builder_save().
+ */
+function _webform_form_builder_save_fieldset(&$component, $form_element) {
+  $component['extra']['collapsible'] = isset($form_element['#collapsible']) ? $form_element['#collapsible'] : NULL;
+  $component['extra']['collapsed'] = isset($form_element['#collapsed']) ? $form_element['#collapsed'] : NULL;
+  $component['extra']['description'] = isset($form_element['#description']) ? $form_element['#description'] : '';
 }
 
 /**

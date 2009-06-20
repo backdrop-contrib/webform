@@ -91,14 +91,14 @@ function _webform_edit_textarea($currfield) {
  * @return
  *   An array of a form item to be displayed on the client-side webform.
  */
-function _webform_render_textarea($component) {
+function _webform_render_textarea($component, $filter = TRUE) {
   $form_item = array(
     '#type'          => 'textarea',
     '#title'         => $component['name'],
-    '#default_value' => _webform_filter_values($component['value']),
+    '#default_value' => $filter ? _webform_filter_values($component['value']) : $component['value'],
     '#required'      => $component['mandatory'],
     '#weight'        => $component['weight'],
-    '#description'   => _webform_filter_descriptions($component['extra']['description']),
+    '#description'   => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#rows'          => !empty($component['extra']['rows']) ? $component['extra']['rows'] : 5,
     '#cols'          => !empty($component['extra']['cols']) ? $component['extra']['cols'] : 60,
     '#attributes'    => $component['extra']['attributes'],
@@ -135,6 +135,44 @@ function _webform_submission_display_textarea($data, $component, $enabled = FALS
     $form_item['#attributes']['readonly'] = 'readonly';
   }
   return $form_item;
+}
+
+/**
+ * Module specific instance of hook_form_builder_types().
+ */
+function _webform_form_builder_types_textarea() {
+  $fields = array();
+
+  $fields['textarea'] = array(
+    'title' => t('Textarea'),
+    'properties' => array(
+      'title',
+      'description',
+      'default_value',
+      'required',
+      'rows',
+      'cols',
+      'input_format',
+      'key',
+    ),
+    'default' => array(
+      '#title' => t('New textarea'),
+      '#type' => 'textarea',
+    ),
+  );
+
+  return $fields;
+}
+
+/**
+ * Convert a FAPI form element into settings savable in a component.
+ */
+function _webform_form_builder_save_textarea(&$component, $form_element) {
+  $component['extra']['description'] = $form_element['#description'];
+  $component['extra']['cols'] = $form_element['#cols'];
+  $component['extra']['rows'] = $form_element['#rows'];
+  $component['extra']['disabled'] = empty($form_element['#disabled']) ? NULL : TRUE;
+  $component['extra']['format'] = isset($form_element['#input_format']) ? $form_element['#input_format'] : NULL;
 }
 
 /**

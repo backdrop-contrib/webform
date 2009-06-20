@@ -97,8 +97,8 @@ function webform_menu() {
   );
   $items['node/%webform_menu/webform'] = array(
     'title' => 'Webform',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('webform_components_form', 1),
+    'page callback' => 'webform_components_page',
+    'page arguments' => array(1),
     'access callback' => 'node_access',
     'access arguments' => array('update', 1),
     'file' => 'includes/webform.components.inc',
@@ -107,8 +107,8 @@ function webform_menu() {
   );
   $items['node/%webform_menu/webform/components'] = array(
     'title' => 'Form components',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('webform_components_form', 1),
+    'page callback' => 'webform_components_page',
+    'page arguments' => array(1),
     'access callback' => 'node_access',
     'access arguments' => array('update', 1),
     'file' => 'includes/webform.components.inc',
@@ -158,6 +158,7 @@ function webform_menu() {
   // Node component forms.
   $items['node/%webform_menu/webform/components/%webform_menu_component'] = array(
     'load arguments' => array(1, 5),
+    'page callback' => 'drupal_get_form',
     'page arguments' => array('webform_component_edit_form', 1, 4, FALSE),
     'access callback' => 'node_access',
     'access arguments' => array('update', 1),
@@ -165,6 +166,7 @@ function webform_menu() {
   );
   $items['node/%webform_menu/webform/components/%webform_menu_component/clone'] = array(
     'load arguments' => array(1, 5),
+    'page callback' => 'drupal_get_form',
     'page arguments' => array('webform_component_edit_form', 1, 4, TRUE),
     'access callback' => 'node_access',
     'access arguments' => array('update', 1),
@@ -172,6 +174,7 @@ function webform_menu() {
   );
   $items['node/%webform_menu/webform/components/%webform_menu_component/delete'] = array(
     'load arguments' => array(1, 5),
+    'page callback' => 'drupal_get_form',
     'page arguments' => array('webform_component_delete_form', 1, 4),
     'access callback' => 'node_access',
     'access arguments' => array('update', 1),
@@ -389,6 +392,15 @@ function webform_results_access($node, $perm) {
 }
 
 /**
+ * Implementation of hook_init().
+ */
+function webform_init() {
+  if (module_exists('form_builder') && strpos($_GET['q'], 'admin/build/form-builder') !== FALSE) {
+    module_load_include('inc', 'webform', 'includes/webform.form_builder');
+  }
+}
+
+/**
  * Implementation of hook_perm().
  */
 function webform_perm() {
@@ -456,6 +468,9 @@ function webform_theme() {
       'file' => 'includes/webform.emails.inc',
     ),
     // webform_components.inc.
+    'webform_components_page' => array(
+      'arguments' => array('node' => NULL, 'mode' => NULL, 'form' => NULL),
+    ),
     'webform_components_form' => array(
       'arguments' => array('form' => NULL),
     ),
@@ -749,12 +764,10 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
   $submission = array();
   $submission_count = 0;
   $enabled = TRUE;
-  $preview = FALSE;
   $logging_in = FALSE;
   $limit_exceeded = FALSE;
 
   if ($node->build_mode == NODE_BUILD_PREVIEW) {
-    $preview = TRUE;
     $additions = webform_load($node);
     $node->webform['components'] = $additions->webform['components'];
   }
@@ -796,16 +809,16 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
   }
 
   // Render the form and generate the output.
-  $form = drupal_get_form('webform_client_form_'. $node->nid, $node, $submission, $enabled, $preview);
+  $form = drupal_get_form('webform_client_form_'. $node->nid, $node, $submission, $enabled);
   $output = theme('webform_view', $node, $teaser, $page, $form, $enabled);
 
   // Remove the surrounding <form> tag if this is a preview.
-  if ($preview) {
+  if ($node->build_mode == NODE_BUILD_PREVIEW) {
     $output = preg_replace('/<\/?form[^>]*>/', '', $output);
   }
 
   // Print out messages for the webform.
-  if (!$preview && !$logging_in) {
+  if (!$node->build_mode == NODE_BUILD_PREVIEW && !$logging_in) {
     theme('webform_view_messages', $node, $teaser, $page, $submission_count, $limit_exceeded, $allowed_roles);
   }
 
@@ -1068,8 +1081,8 @@ function theme_webform_admin_settings($form) {
 /**
  * Menu callback to load the appropriate node form.
  */
-function webform_client_form_load($node, $submission, $enabled, $preview) {
-  return drupal_get_form('webform_client_form_'. $node->nid, $node, $submission, $enabled, $preview);
+function webform_client_form_load($node, $submission, $enabled) {
+  return drupal_get_form('webform_client_form_'. $node->nid, $node, $submission, $enabled);
 }
 
 /**
@@ -1087,8 +1100,12 @@ function webform_client_form_load($node, $submission, $enabled, $preview) {
  * @param $enabled
  *   If displaying a result, specify if form elements are enabled for
  *   editing.
+ * @param $filter
+ *   Whether or not to filter the contents of descriptions and values when
+ *   building the form. Values need to be unfiltered to be editable by
+ *   Form Builder.
  */
-function webform_client_form($form_state, &$node, $submission, $enabled = FALSE, $preview = FALSE) {
+function webform_client_form($form_state, &$node, $submission, $enabled = FALSE, $filter = TRUE) {
   module_load_include('inc', 'webform', 'includes/webform.components');
   webform_load_components();
 
@@ -1175,7 +1192,7 @@ function webform_client_form($form_state, &$node, $submission, $enabled = FALSE,
     $page_num = 1;
     _webform_components_tree_build($node->webform['components'], $component_tree, 0, $page_count);
 
-    if ((!$preview && $enabled)) {
+    if ((!isset($node->build_mode) || $node->build_mode != NODE_BUILD_PREVIEW) && $enabled) {
       if ($page_count > 1) {
         $next_page = t('Next Page >');
         $prev_page = t('< Previous Page');
@@ -1250,7 +1267,7 @@ function webform_client_form($form_state, &$node, $submission, $enabled = FALSE,
     $microweight = 0.001;
     foreach ($component_tree['children'] as $cid => $component) {
       $component_value = isset($form_state['values']['submitted'][$component['form_key']]) ? $form_state['values']['submitted'][$component['form_key']] : NULL;
-      _webform_client_form_add_component($cid, $component, $component_value, $form['submitted'], $form, $submission, $page_num, $enabled);
+      _webform_client_form_add_component($cid, $component, $component_value, $form['submitted'], $form, $submission, $page_num, $enabled, $filter);
       if (isset($form['submitted'][$component['form_key']])) {
         $form['submitted'][$component['form_key']]['#weight'] += $microweight;
         $microweight += 0.001;
@@ -1272,7 +1289,7 @@ function webform_client_form($form_state, &$node, $submission, $enabled = FALSE,
   return $form;
 }
 
-function _webform_client_form_add_component($cid, $component, $component_value, &$parent_fieldset, &$form, $submission, $page_num, $enabled = FALSE) {
+function _webform_client_form_add_component($cid, $component, $component_value, &$parent_fieldset, &$form, $submission, $page_num, $enabled = FALSE, $filter = TRUE) {
   // Load with submission information if necessary.
   if (!$enabled) {
     // This component is display only.
@@ -1293,7 +1310,8 @@ function _webform_client_form_add_component($cid, $component, $component_value, 
     else {
       $render_function = '_webform_render_'. $component['type'];
       if (function_exists($render_function)) {
-        $parent_fieldset[$component['form_key']] = $render_function($component); // Call the component render function.
+        // Call the component render function.
+        $parent_fieldset[$component['form_key']] = $render_function($component, $filter);
 
         // Set a value if one already exists in the form state.
         if (isset($component_value)) {
@@ -1316,7 +1334,7 @@ function _webform_client_form_add_component($cid, $component, $component_value, 
     $microweight = 0.001;
     foreach ($component['children'] as $scid => $subcomponent) {
       $subcomponent_value = isset($component_value[$subcomponent['form_key']]) ? $component_value[$subcomponent['form_key']] : NULL;
-      _webform_client_form_add_component($scid, $subcomponent, $subcomponent_value, $parent_fieldset[$component['form_key']], $form, $submission, $page_num, $enabled);
+      _webform_client_form_add_component($scid, $subcomponent, $subcomponent_value, $parent_fieldset[$component['form_key']], $form, $submission, $page_num, $enabled, $filter);
       $parent_fieldset[$component['form_key']][$subcomponent['form_key']]['#weight'] += $microweight;
       $microweight += 0.001;
     }

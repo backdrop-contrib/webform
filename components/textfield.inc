@@ -105,16 +105,16 @@ function _webform_edit_textfield($currfield) {
  * @return
  *   An array of a form item to be displayed on the client-side webform.
  */
-function _webform_render_textfield($component) {
+function _webform_render_textfield($component, $filter = TRUE) {
   $form_item = array(
     '#type'          => $component['type'],
     '#title'         => $component['name'],
-    '#default_value' => _webform_filter_values($component['value']),
+    '#default_value' => $filter ? _webform_filter_values($component['value']) : $component['value'],
     '#required'      => $component['mandatory'],
     '#weight'        => $component['weight'],
     '#field_prefix'  => empty($component['extra']['field_prefix']) ? NULL : $component['extra']['field_prefix'],
     '#field_suffix'  => empty($component['extra']['field_suffix']) ? NULL : $component['extra']['field_suffix'],
-    '#description'   => _webform_filter_descriptions($component['extra']['description']),
+    '#description'   => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#attributes'    => $component['extra']['attributes'],
     '#prefix'        => '<div class="webform-component-'. $component['type'] .'" id="webform-component-'. $component['form_key'] .'">',
     '#suffix'        => '</div>',
@@ -156,6 +156,45 @@ function _webform_submission_display_textfield($data, $component, $enabled = FAL
     $form_item['#attributes']['readonly'] = 'readonly';
   }
   return $form_item;
+}
+
+/**
+ * Convert a FAPI form element into settings savable in a component.
+ */
+function _webform_form_builder_save_textfield(&$component, $form_element) {
+  $component['extra']['width'] = isset($form_element['#size']) ? $form_element['#size'] : NULL;
+  $component['extra']['maxlength'] = isset($form_element['#maxlength']) ? $form_element['#maxlength'] : NULL;
+  $component['extra']['field_prefix'] = isset($form_element['#field_prefix']) ? $form_element['#field_prefix'] : NULL;
+  $component['extra']['field_suffix'] = isset($form_element['#field_suffix']) ? $form_element['#field_suffix'] : NULL;
+  $component['extra']['description'] = isset($form_element['#description']) ? $form_element['#description'] : NULL;
+  $component['extra']['disabled'] = isset($form_element['#disabled']) ? $form_element['#disabled'] : FALSE;
+}
+
+/**
+ * Module specific instance of hook_form_builder_types().
+ */
+function _webform_form_builder_types_textfield() {
+  $fields = array();
+
+  $fields['textfield'] = array(
+    'title' => t('Textfield'),
+    'properties' => array(
+      'title',
+      'description',
+      'field_prefix',
+      'field_suffix',
+      'default_value',
+      'required',
+      'size',
+      'key',
+    ),
+    'default' => array(
+      '#title' => t('New textfield'),
+      '#type' => 'textfield',
+    ),
+  );
+
+  return $fields;
 }
 
 /**

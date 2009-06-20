@@ -126,22 +126,25 @@ function _webform_edit_validate_select($element, $form_state) {
  * @param $component
  *   An array of information describing the component, directly correlating to
  *   the webform_component database schema.
+ * @param $filter
+ *   Whether or not to filter the descriptions and values within this component.
+ *   Values need to be unfiltered to be edited in Form Builder.
  * @return
  *   An array of a form item to be displayed on the client-side webform.
  */
-function _webform_render_select($component) {
+function _webform_render_select($component, $filter = TRUE) {
   $form_item = array(
     '#title'         => $component['name'],
     '#required'      => $component['mandatory'],
     '#weight'        => $component['weight'],
-    '#description'   => _webform_filter_descriptions($component['extra']['description']),
+    '#description'   => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#prefix'        => '<div class="webform-component-'. $component['type'] .'" id="webform-component-'. $component['form_key'] .'">',
     '#suffix'        => '</div>',
   );
 
   // Convert the user-entered options list into an array.
-  $default_value = _webform_filter_values($component['value'], NULL, NULL, FALSE);
-  $options = _webform_select_options($component['extra']['items'], $component['extra']['aslist'] !== 'Y');
+  $default_value = $filter ? _webform_filter_values($component['value'], NULL, NULL, FALSE) : $component['value'];
+  $options = _webform_select_options($component['extra']['items'], $component['extra']['aslist'] !== 'Y', $filter);
 
   if ($component['extra']['aslist'] === 'Y' && $component['extra']['multiple'] !== 'Y') {
     $options = array('' => t('select...')) + $options;
@@ -271,6 +274,103 @@ function _webform_submit_select(&$data, $component) {
       }
     }
   }
+}
+
+/**
+ * Module specific instance of hook_form_builder_types().
+ */
+function _webform_form_builder_types_select() {
+  $fields = array();
+
+  $fields['select'] = array(
+    'title' => t('Select list'),
+    'properties' => array(
+      'title',
+      'description',
+      'default_value',
+      'required',
+      'options',
+      'multiple',
+      'key',
+    ),
+    'default' => array(
+      '#title' => t('New select list'),
+      '#type' => 'select',
+      '#options' => array('one' => 'one', 'two' => 'two', 'three' => 'three'),
+      '#default_value' => 'one',
+      '#webform' => array('type' => 'select'),
+    ),
+  );
+
+  $fields['checkboxes'] = array(
+    'title' => t('Checkboxes'),
+    'properties' => array(
+      'title',
+      'description',
+      'default_value',
+      'required',
+      'options',
+      'multiple',
+      'key',
+    ),
+    'default' => array(
+      '#title' => t('New checkboxes'),
+      '#type' => 'checkboxes',
+      '#options' => array('one' => 'one', 'two' => 'two', 'three' => 'three'),
+      '#default_value' => array('one', 'two'),
+      '#multiple' => TRUE,
+      '#webform' => array('type' => 'select'),
+    ),
+  );
+
+  $fields['radios'] = array(
+    'title' => t('Radios'),
+    'properties' => array(
+      'title',
+      'description',
+      'default_value',
+      'required',
+      'options',
+      'key',
+    ),
+    'default' => array(
+      '#title' => t('New radios'),
+      '#type' => 'radios',
+      '#options' => array('one' => 'one', 'two' => 'two', 'three' => 'three'),
+      '#default_value' => 'one',
+      '#webform' => array('type' => 'select'),
+    ),
+  );
+
+  return $fields;
+}
+
+/**
+ * Module specific instance of hook_form_builder_load().
+ */
+function _webform_form_builder_load_select(&$form_element) {
+  if (in_array($form_element['#type'], array('radios', 'checkboxes', 'select'))) {
+    $form_element['#webform']['type'] = 'select';
+    if ($form_element['#type'] == 'checkboxes') {
+      $form_element['#multiple'] = TRUE;
+    }
+  }
+}
+
+/**
+ * Convert a FAPI form element into settings savable in a component.
+ */
+function _webform_form_builder_save_select(&$component, $form_element) {
+  $options = '';
+
+  foreach ($form_element['#options'] as $key => $value) {
+    $options .= $key .'|'. $value ."\n";
+  }
+
+  $component['extra']['items'] = $options;
+  $component['extra']['multiple'] = empty($form_element['#multiple']) ? 'N' : 'Y';
+  $component['extra']['aslist'] = $form_element['#type'] == 'select' ? 'Y' : 'N';
+  $component['extra']['description'] = isset($form_element['#description']) ? $form_element['#description'] : '';
 }
 
 /**
@@ -475,8 +575,10 @@ function _webform_csv_data_select($data, $component) {
  *   Text to be converted into a select option array.
  * @param $flat
  *   Optional. If specified, return the option array and exclude any optgroups.
+ * @param $filter
+ *   Optional. Whether or not to filter returned values.
  */
-function _webform_select_options($text, $flat = FALSE) {
+function _webform_select_options($text, $flat = FALSE, $filter = TRUE) {
   $options = array();
   $rows = array_filter(explode("\n", trim($text)));
   $group = NULL;
@@ -497,16 +599,16 @@ function _webform_select_options($text, $flat = FALSE) {
         unset($group);
       }
       elseif (!$flat) {
-        $group = _webform_filter_values($matches[1], NULL, NULL, FALSE);
+        $group = $filter ? _webform_filter_values($matches[1], NULL, NULL, FALSE) : $matches[1];
       }
     }
     elseif (preg_match('/^([^|]+)\|(.*)$/', $option, $matches)) {
-      $key = _webform_filter_values($matches[1], NULL, NULL, FALSE);
-      $value = _webform_filter_values($matches[2], NULL, NULL, FALSE);
+      $key = $filter ? _webform_filter_values($matches[1], NULL, NULL, FALSE) : $matches[1];
+      $value = $filter ? _webform_filter_values($matches[2], NULL, NULL, FALSE) : $matches[2];
       isset($group) ? $options[$group][$key] = $value : $options[$key] = $value;
     }
     else {
-      $filtered_option = _webform_filter_values($option, NULL, NULL, FALSE);
+      $filtered_option = $filter ? _webform_filter_values($option, NULL, NULL, FALSE) : $option;
       isset($group) ? $options[$group][$filtered_option] = $filtered_option : $options[$filtered_option] = $filtered_option;
     }
   }

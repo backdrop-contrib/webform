@@ -13,7 +13,54 @@
  */
 
 /**
- * Overview form of all components for this webform.
+ * Overview page of all components for this webform.
+ */
+function webform_components_page($node, $mode = 'auto', $page_number = 1) {
+  if (module_exists('form_builder') && $mode != 'overview') {
+    module_load_include('inc', 'webform', 'includes/webform.form_builder');
+    $mode = 'form_builder';
+    $output = webform_form_builder_components($node);
+  }
+
+  if ($mode == 'overview') {
+    $output = drupal_get_form('webform_components_form', $node);
+  }
+
+  return theme('webform_components_page', $node, $mode, $output);
+}
+
+/**
+ * Theme the output of the main components page.
+ *
+ * This theming provides a way to toggle between the editing modes if Form
+ * Builder module is available.
+ */
+function theme_webform_components_page($node, $mode, $form) {
+  $output = '';
+
+  if (module_exists('form_builder')) {
+    $output .= '<div class="webform-components-mode">';
+    $output .= '<span class="webform-components-mode-label">' . t('Display mode') . ':</span> ';
+    if ($mode == 'overview') {
+      $output .= '<a href="' . url('node/' . $node->nid . '/webform') . '">' . t('Form builder') . '</a>';
+      $output .= ' | ';
+      $output .= '<strong>' . t('Overview') . '</strong>';
+    }
+    else {
+      $output .= '<strong>' . t('Form builder') . '</strong>';
+      $output .= ' | ';
+      $output .= '<a href="' . url('node/' . $node->nid . '/webform/overview') . '">' . t('Overview') . '</a>';
+    }
+    $output .= '</div>';
+  }
+
+  $output .= $form;
+
+  return $output;
+}
+
+/**
+ * The table-based listing of all components for this webform.
  */
 function webform_components_form($form_state, $node) {
   $form = array(
