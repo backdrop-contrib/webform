@@ -233,9 +233,9 @@ function theme_webform_components_form($form) {
         drupal_render($form['components'][$cid]['mandatory']),
         drupal_render($form['components'][$cid]['email']),
         drupal_render($form['components'][$cid]['cid']) . drupal_render($form['components'][$cid]['pid']) . drupal_render($form['components'][$cid]['weight']),
-        l(t('Edit'), 'node/'. $node->nid .'/webform/components/'. $cid),
-        l(t('Clone'), 'node/'. $node->nid .'/webform/components/'. $cid .'/clone'),
-        l(t('Delete'), 'node/'. $node->nid .'/webform/components/'. $cid .'/delete'),
+        l(t('Edit'), 'node/'. $node->nid .'/webform/components/'. $cid, array('query' => drupal_get_destination())),
+        l(t('Clone'), 'node/'. $node->nid .'/webform/components/'. $cid .'/clone', array('query' => drupal_get_destination())),
+        l(t('Delete'), 'node/'. $node->nid .'/webform/components/'. $cid .'/delete', array('query' => drupal_get_destination())),
       );
       $row_class = 'draggable'. ($component['type'] != 'fieldset' ? ' tabledrag-leaf' : '');
       $rows[] = array('data' => $row_data, 'class' => $row_class);
@@ -300,7 +300,7 @@ function webform_components_form_submit($form, &$form_state) {
   }
   elseif (isset($_POST['op']) && $_POST['op'] == t('Add')) {
     $component = $form_state['values']['add'];
-    $form_state['redirect'] = array('node/'. $node->nid .'/webform/components/new/'. $component['type'], 'name='. urlencode($component['name']) .'&mandatory='. $component['mandatory'] .'&email='. $component['email'] .'&pid='. $component['pid'] .'&weight='. $component['weight']);
+    $form_state['redirect'] = array('node/'. $node->nid .'/webform/components/new/'. $component['type'], drupal_get_destination() . '&name='. urlencode($component['name']) .'&mandatory='. $component['mandatory'] .'&email='. $component['email'] .'&pid='. $component['pid'] .'&weight='. $component['weight']);
   }
   else {
     drupal_set_message(t('The component positions and mandatory values have been updated.'));
