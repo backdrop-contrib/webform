@@ -21,8 +21,7 @@ function webform_components_page($node, $mode = 'auto', $page_number = 1) {
     $mode = 'form_builder';
     $output = webform_form_builder_components($node);
   }
-
-  if ($mode == 'overview') {
+  else {
     $output = drupal_get_form('webform_components_form', $node);
   }
 
@@ -37,6 +36,10 @@ function webform_components_page($node, $mode = 'auto', $page_number = 1) {
  */
 function theme_webform_components_page($node, $mode, $form) {
   $output = '';
+
+  // Add CSS and JS. Don't preprocess because these files are used rarely.
+  drupal_add_css(drupal_get_path('module', 'webform') .'/webform.css', 'module', 'all', FALSE);
+  drupal_add_js(drupal_get_path('module', 'webform') .'/webform.js', 'module', 'header', FALSE, TRUE, FALSE);
 
   if (module_exists('form_builder')) {
     $output .= '<div class="webform-components-mode">';
