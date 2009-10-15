@@ -1459,7 +1459,7 @@ function webform_client_form_submit($form, &$form_state) {
       }
 
       // Replace tokens in the message.
-      $email['message'] = _webform_filter_values($email['message'], $node, $form_state['values'], FALSE);
+      $email['message'] = _webform_filter_values($email['message'], $node, $form_state['values'], FALSE, TRUE);
 
       // Build the e-mail headers.
       $email['headers'] = theme(array('webform_mail_headers_'. $node->nid, 'webform_mail_headers'), $form_state['values'], $node, $sid, $cid);
@@ -1761,97 +1761,132 @@ function theme_webform_mail_headers($form_values, $node, $sid, $cid) {
 
 /**
  * Filters all special tokens provided by webform, such as %post and %profile.
+ *
+ * @param $string
+ *   The string to have its toknes replaced.
+ * @param $node
+ *   If replacing node-level tokens, the node for which tokens will be created.
+ * @param $submission
+ *   If replacing submission-level tokens, the submission for which tokens will
+ *   be created.
+ * @param $strict
+ *   Boolean value indicating if the results should be run through check_plain.
+ *   This is used any time the values will be output as HTML, but not in
+ *   default values or e-mails.
+ * @param $allow_anonymous
+ *   Boolean value indicating if all tokens should be replaced for anonymous
+ *   users, even if they contain sensitive user information such as %session or
+ *   %ip_address. This is disabled by default to prevent user data from being
+ *   preserved in the anonymous page cache and should only be used in
+ *   non-cached situations, such as e-mails.
  */
-function _webform_filter_values($string, $node = NULL, $submission = NULL, $strict = TRUE) {
+function _webform_filter_values($string, $node = NULL, $submission = NULL, $strict = TRUE, $allow_anonymous = FALSE) {
   global $user;
-  static $find, $replace;
+  static $replacements;
 
   // Setup default token replacements.
-  if (!isset($find)) {
-    $find = array('%site', '%date');
-    $replace = array(variable_get('site_name', 'drupal'), format_date(time(), 'large'));
+  if (!isset($replacements)) {
+    $replacements['unsafe'] = array();
+    $replacements['safe']['%site'] = variable_get('site_name', 'drupal');
+    $replacements['safe']['%date'] = format_date(time(), 'large');
   }
 
   // Node replacements.
-  if (isset($node) && !in_array('%title', $find)) {
-    $find['%title'] = '%title';
-    $replace['%title'] = $node->title;
+  if (isset($node) && !array_key_exists('%title', $replacements)) {
+    $replacements['safe']['%title'] = $node->title;
   }
 
   // Submission replacements.
-  if (isset($submission) && !in_array('%email_values', $find)) {
+  if (isset($submission) && !array_key_exists('%email_values', $replacements)) {
     foreach ($submission['submitted'] as $cid => $value) {
       // Find by CID.
-      $find[] = '%cid[' . $cid . ']';
-      $replace[] = $value;
+      $replacements['unsafe']['%cid[' . $cid . ']'] = $value;
 
       // Find by form key.
-      $find[] = '%value[' . $node->webform['components'][$cid]['form_key'] . ']';
-      $find[] = '%label[' . $node->webform['components'][$cid]['form_key'] . ']';
-      $replace[] = $value;
-      $replace[] = $node->webform['components'][$cid]['name'];
+      $form_key = $node->webform['components'][$cid]['form_key'];
+      $replacements['unsafe']['%value[' . $form_key . ']'] = $value;
+      $replacements['unsafe']['%label[' . $form_key . ']'] = $node->webform['components'][$cid]['name'];
     }
 
     // The entire form tree:
-    $find[] = '%email_values';
-    $replace[] = theme('webform_mail_fields', 0, $submission['submitted_tree'], $node);
+    $replacements['unsafe']['%email_values'] = theme('webform_mail_fields', 0, $submission['submitted_tree'], $node);
 
     // Submission edit URL.
-    $find[] = '%submission_url';
-    $replace[] = url('node/'. $node->nid .'/submission/'. $submission['details']['sid'], array('absolute' => TRUE));
+    $replacements['unsafe']['%submission_url'] = url('node/'. $node->nid .'/submission/'. $submission['details']['sid'], array('absolute' => TRUE));
   }
 
   // Provide a list of candidates for token replacement.
   // Note these tokens are not cached as they may change frequently.
   $special_tokens = array(
-    '%session' => $_SESSION,
-    '%cookie' => $_COOKIE,
-    '%get' => $_GET,
-    '%post' => $_POST,
-    '%request' => $_REQUEST,
+    'safe' => array(
+      '%get' => $_GET,
+    ),
+    'unsafe' => array(
+      '%cookie' => $_COOKIE,
+      '%session' => $_SESSION,
+      '%post' => $_POST,
+      '%request' => $_REQUEST,
+    ),
   );
 
   // User replacements.
-  if (!in_array('%username', $find)) {
-    $find[] = '%username';
-    $find[] = '%useremail';
-    $find[] = '%ip_address';
-    $replace[] = isset($user->name) ? $user->name : '';
-    $replace[] = isset($user->mail) ? $user->mail : '';
-    $replace[] = ip_address();
+  if (!array_key_exists('%username', $replacements['unsafe'])) {
+    $replacements['unsafe']['%username'] = isset($user->name) ? $user->name : '';
+    $replacements['unsafe']['%useremail'] = isset($user->mail) ? $user->mail : '';
+    $replacements['unsafe']['%ip_address'] = ip_address();
     if ($user->uid && module_exists('profile')) {
       profile_load_profile($user);
     }
-    $special_tokens['%profile'] = $user;
+    $special_tokens['unsafe']['%profile'] = $user;
 
     // Doesn't really belong here with user things, but works.
-    $special_tokens['%server'] = $_SERVER;
+    $special_tokens['unsafe']['%server'] = $_SERVER;
   }
 
-  foreach ($special_tokens as $token => $variable) {
-    if (strpos($string, $token) !== FALSE) {
-      foreach ($variable as $key => $value) {
-        $find[] = $token .'['. $key .']';
-
-        // This special case for profile module dates.
-        if ($token == '%profile' && is_array($value) && isset($value['year'])) {
-          $replace[] = format_date(strtotime($value['month'] .'/'. $value['day'] .'/'. $value['year']), 'custom', 'F j, Y', '0');
-        }
-        else {
-          $replace[] = (string)$value;
+  foreach ($special_tokens as $safe_state => $tokens) {
+    foreach ($tokens as $token => $variable) {
+      if (strpos($string, $token) !== FALSE) {
+        foreach ($variable as $key => $value) {
+          // This special case for profile module dates.
+          if ($token == '%profile' && is_array($value) && isset($value['year'])) {
+            $replacement = format_date(strtotime($value['month'] .'/'. $value['day'] .'/'. $value['year']), 'custom', 'F j, Y', '0');
+          }
+          else {
+            $replacement = (string) $value;
+          }
+          $replacements[$safe_state][$token .'['. $key .']'] = $replacement;
         }
       }
     }
   }
 
+  // Make a copy of the replacements so we don't affect the static version.
+  $safe_replacements = $replacements['safe'];
+
+  // Restrict replacements for anonymous users. Not all tokens can be used
+  // because they may expose session or other private data to other users when
+  // anonymous page caching is enabled.
+  if ($user->uid || $allow_anonymous) {
+    $safe_replacements += $replacements['unsafe'];
+  }
+  else {
+    foreach ($replacements['unsafe'] as $key => $value) {
+      $safe_replacements[$key] = '';
+    }
+  }
+
+  $find = array_keys($safe_replacements);
+  $replace = array_values($safe_replacements);
   $string = str_replace($find, $replace, $string);
 
   // Clean up any unused tokens.
-  foreach (array_keys($special_tokens) as $token) {
-    $string = preg_replace('/\\'. $token .'\[\w+\]/', '', $string);
+  foreach ($special_tokens as $safe_state => $tokens) {
+    foreach (array_keys($tokens) as $token) {
+      $string = preg_replace('/\\'. $token .'\[\w+\]/', '', $string);
+    }
   }
 
-  return $strict ? check_plain($string) : $string;
+  return $strict ? filter_xss($string) : $string;
 }
 
 /**
@@ -2079,15 +2114,15 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
   // Address may be an array if a component value was used on checkboxes.
   if (is_array($address)) {
     foreach ($address as $key => $individual_address) {
-      $address[$key] = _webform_filter_values($individual_address, $node, $submission, FALSE);
+      $address[$key] = _webform_filter_values($individual_address, $node, $submission, FALSE, TRUE);
     }
   }
   else {
-    $address = _webform_filter_values($address, $node, $submission, FALSE);
+    $address = _webform_filter_values($address, $node, $submission, FALSE, TRUE);
   }
 
   if ($format == 'long' && isset($name)) {
-    $name = _webform_filter_values($name, $node, $submission, FALSE);
+    $name = _webform_filter_values($name, $node, $submission, FALSE, TRUE);
     if ($encode) {
       $name = mime_header_encode($name);
     }
@@ -2119,7 +2154,7 @@ function webform_format_email_subject($subject, $node = NULL, $submission = NULL
     $subject = reset($subject);
   }
 
-  return _webform_filter_values($subject, $node, $submission, FALSE);
+  return _webform_filter_values($subject, $node, $submission, FALSE, TRUE);
 }
 
 /**
