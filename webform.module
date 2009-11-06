@@ -1105,7 +1105,7 @@ function webform_client_form_load($node, $submission, $enabled) {
  *   building the form. Values need to be unfiltered to be editable by
  *   Form Builder.
  */
-function webform_client_form($form_state, &$node, $submission, $enabled = FALSE, $filter = TRUE) {
+function webform_client_form(&$form_state, $node, $submission, $enabled = FALSE, $filter = TRUE) {
   module_load_include('inc', 'webform', 'includes/webform.components');
   webform_load_components();
 
