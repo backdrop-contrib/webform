@@ -1551,8 +1551,10 @@ function webform_client_form_submit($form, &$form_state) {
   elseif (valid_url(trim($node->webform['confirmation']), TRUE)) {
     $redirect = trim($node->webform['confirmation']);
   }
-  elseif (preg_match('/^internal:/', $node->webform['confirmation'])) {
-    $path = preg_replace('/^internal:/', '', $node->webform['confirmation']);
+  // Check if the form should redirect to an internal URL, strip tags off
+  // first in case a WYSIWYG editor messed it up.
+  elseif (preg_match('/^internal:/', trim(strip_tags($node->webform['confirmation'])))) {
+    $path = preg_replace('/^internal:/', '', trim(strip_tags($node->webform['confirmation'])));
     $redirect = array(trim($path), 'sid='. $sid);
   }
   elseif (preg_match('/^message:/', $node->webform['confirmation'])) {
