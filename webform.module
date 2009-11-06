@@ -1684,7 +1684,7 @@ function template_preprocess_webform_mail_message(&$vars) {
  *   The current amount of indentation being applied to printed components.
  */
 function theme_webform_mail_fields($cid, $value, $node, $indent = "") {
-  $component = $node->webform['components'][$cid];
+  $component = $cid ? $node->webform['components'][$cid] : null;
 
   // Check if this component needs to be included in the email at all.
   if ($cid && !$component['email'] && !in_array($component['type'], array('markup', 'fieldset', 'pagebreak'))) {
