@@ -199,14 +199,14 @@ function webform_expand_checkboxes($element) {
   $default_value = array();
   foreach (element_children($element) as $key) {
     if (isset($element[$key]['#default_value'])) {
-      $default_value[] = $key;
+      $default_value[$key] = $element[$key]['#default_value'];
       unset($element[$key]);
     }
   }
 
   $element = expand_checkboxes($element);
-  foreach ($default_value as $key) {
-    $element[$key]['#default_value'] = 1;
+  foreach ($default_value as $key=>$val) {
+    $element[$key]['#default_value'] = $val;
   }
   return $element;
 }
