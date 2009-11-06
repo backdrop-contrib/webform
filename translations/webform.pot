@@ -1055,7 +1055,7 @@ msgid "The default value of the field."
 msgstr ""
 
 #: components/date.inc:46
-msgid "Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid."
+msgid "Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid."
 msgstr ""
 
 #: components/date.inc:53 components/time.inc:51
@@ -1483,7 +1483,7 @@ msgid "Basic textfield type."
 msgstr ""
 
 #: components/time.inc:43
-msgid "Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid."
+msgid "Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid."
 msgstr ""
 
 #: components/time.inc:53

@@ -1132,10 +1132,10 @@ msgstr "Standardvärdet för fältet."
 #: components/date.inc:46
 msgid ""
 "Accepts any date in any <a "
-"href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU "
+"href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU "
 "Date Input Format</a>. Strings such as today, +2 months, and Dec 9 "
 "2004 are all valid."
-msgstr "Accepterar datum i formatet <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Textsträngar såsom today, +2 months och Dec 9 2004 är alla giltiga."
+msgstr "Accepterar datum i formatet <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Textsträngar såsom today, +2 months och Dec 9 2004 är alla giltiga."
 
 #: components/date.inc:55
 msgid ""
@@ -1565,10 +1565,10 @@ msgstr "Enkelt textfält."
 #: components/time.inc:43
 msgid ""
 "Accepts a time in any <a "
-"href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU "
+"href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU "
 "Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are "
 "all valid."
-msgstr "Accepterar tid i formatet <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Textsträngar såsom now, +2 hours och 10:30pm är alla giltiga."
+msgstr "Accepterar tid i formatet <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Textsträngar såsom now, +2 hours och 10:30pm är alla giltiga."
 
 #: components/time.inc:53
 msgid ""

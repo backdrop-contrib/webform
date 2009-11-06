@@ -631,8 +631,8 @@ msgid "The default value of the field."
 msgstr "El valor por defecto del campo."
 
 #: components/date.inc:18
-msgid "Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid."
-msgstr "Acepta cualquier fecha en cualquier formato <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date</a>. Cadenas como today, +2 months, y Dec 9 2004 son válidasd."
+msgid "Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid."
+msgstr "Acepta cualquier fecha en cualquier formato <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date</a>. Cadenas como today, +2 months, y Dec 9 2004 son válidasd."
 
 #: components/date.inc:25 components/time.inc:24
 msgid "Timezone"
@@ -979,7 +979,7 @@ msgid "Basic textfield type."
 msgstr "Tipo básico textfield."
 
 #: components/time.inc:16
-msgid "Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date</a>. Strings such as now, +2 hours, and 10:30pm are all valid."
+msgid "Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date</a>. Strings such as now, +2 hours, and 10:30pm are all valid."
 msgstr "Acepta una hora en cualquier formato. Expresiones como 'ahora', +2 hours o 10:30pm son válidas."
 
 #: components/time.inc:26

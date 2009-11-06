@@ -881,8 +881,8 @@ msgid "The default value of the field."
 msgstr "項目にあらかじめセットされる値。"
 
 #: components/date.inc:18
-msgid "Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid."
-msgstr "<a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>に記載されているすべての形式で日付を入力することができます。「today」「+2 months」「Dec 9 2004」といった書式となります。"
+msgid "Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid."
+msgstr "<a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>に記載されているすべての形式で日付を入力することができます。「today」「+2 months」「Dec 9 2004」といった書式となります。"
 
 #: components/date.inc:25
 #: components/time.inc:24
@@ -1305,8 +1305,8 @@ msgid "Basic textfield type."
 msgstr "一般的なテキストフィールド。"
 
 #: components/time.inc:16
-msgid "Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid."
-msgstr "<a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU 日付入力の書式</a>にしたがいます。例えば、「now」「+2 hours」「10:30pm」などです。"
+msgid "Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid."
+msgstr "<a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU 日付入力の書式</a>にしたがいます。例えば、「now」「+2 hours」「10:30pm」などです。"
 
 #: components/time.inc:26
 msgid "Adjust the time according to a specific timezone. Website timezone is defined in the <a href=\"%settings\">Site Settings</a> and is the default."

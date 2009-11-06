@@ -40,7 +40,7 @@ function _webform_edit_time($currfield) {
     '#type' => 'textfield',
     '#title' => t('Default value'),
     '#default_value' => $currfield['value'],
-    '#description' => t('The default value of the field.') .'<br />'. t('Accepts a time in any <a href="http://www.gnu.org/software/tar/manual/html_node/tar_109.html">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid.'),
+    '#description' => t('The default value of the field.') .'<br />'. t('Accepts a time in any <a href="http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid.'),
     '#size' => 60,
     '#maxlength' => 127,
     '#weight' => 0,

@@ -570,8 +570,8 @@ msgid "The default value of the field."
 msgstr "Значение поля по-умолчанию"
 
 #: components/date.inc:17
-msgid "Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid."
-msgstr "Можно ввести любую дату в любом формате (см. примеры на <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a> ). Можно вводить, например, дату, как \"сегодня\", \"+2 дня\" или \"9 декабря 2004 года\" (всё без кавычек)."
+msgid "Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid."
+msgstr "Можно ввести любую дату в любом формате (см. примеры на <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a> ). Можно вводить, например, дату, как \"сегодня\", \"+2 дня\" или \"9 декабря 2004 года\" (всё без кавычек)."
 
 #: components/date.inc:24
 #: components/time.inc:25
@@ -924,8 +924,8 @@ msgid "Basic textfield type."
 msgstr "Базовое текстовое поле"
 
 #: components/time.inc:17
-msgid "Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid."
-msgstr "Можно ввести любую дату в любом формате (см. примеры на <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a> ). Можно вводить, например, дату, как \"сегодня\", \"+2 дня\" или \"9 декабря 2004 года\" (всё без кавычек)."
+msgid "Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid."
+msgstr "Можно ввести любую дату в любом формате (см. примеры на <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a> ). Можно вводить, например, дату, как \"сегодня\", \"+2 дня\" или \"9 декабря 2004 года\" (всё без кавычек)."
 
 #: components/time.inc:27
 msgid "Adjust the time according to a specific timezone. Website timezone is defined in the <a href=\"%settings\">Site Settings</a> and is the default."

@@ -1114,8 +1114,8 @@ msgid "The default value of the field."
 msgstr "Der Standardwert des Feldes."
 
 #: components/date.inc:46
-msgid "Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid."
-msgstr "Es werden alle eingegebenen Termine im <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Datums-Eingabeformat</a> akzeptiert. Folgende Zeichenketten sind gültig: 'today', '+2 months' und 'Dec 9 2004'."
+msgid "Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid."
+msgstr "Es werden alle eingegebenen Termine im <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Datums-Eingabeformat</a> akzeptiert. Folgende Zeichenketten sind gültig: 'today', '+2 months' und 'Dec 9 2004'."
 
 #: components/date.inc:53
 #: components/time.inc:51
@@ -1587,8 +1587,8 @@ msgid "Basic textfield type."
 msgstr "Basis Textfeldtyp."
 
 #: components/time.inc:43
-msgid "Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid."
-msgstr "Es wird jedes Datum im <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Datums-Eingabeformat</a> akzeptiert. Folgende Zeichenketten sind z.B. gültig: '+2 hours' und 10:30pm'."
+msgid "Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid."
+msgstr "Es wird jedes Datum im <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Datums-Eingabeformat</a> akzeptiert. Folgende Zeichenketten sind z.B. gültig: '+2 hours' und 10:30pm'."
 
 #: components/time.inc:53
 msgid "Adjust the time according to a specific timezone. Website timezone is defined in the <a href=\"!settings\">Site Settings</a> and is the default."

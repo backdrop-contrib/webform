@@ -1036,8 +1036,8 @@ msgid "The default value of the field."
 msgstr "Η προεπιλεγμένη τιμή του πεδίου."
 
 #: components/date.inc:39
-msgid "Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid."
-msgstr "Δέχεται την ημερομηνία σε οποιαδήποτε <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">Μορφή Εισόδου Ημερομηνίας GNU</a>. Φράσεις όπως σήμερα, +2 μήνες και Δεκ 9 2004 είναι όλες αποδεκτές."
+msgid "Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid."
+msgstr "Δέχεται την ημερομηνία σε οποιαδήποτε <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">Μορφή Εισόδου Ημερομηνίας GNU</a>. Φράσεις όπως σήμερα, +2 μήνες και Δεκ 9 2004 είναι όλες αποδεκτές."
 
 #: components/date.inc:46 components/time.inc:46
 msgid "Timezone"
@@ -1454,8 +1454,8 @@ msgid "Basic textfield type."
 msgstr "Τύπος βασικού πεδίου κειμένου."
 
 #: components/time.inc:38
-msgid "Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid."
-msgstr "Δέχεται την ώρα σε οποιαδήποτε <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">Μορφή Εισόδου Ημερομηνίας GNU</a>. Φράσεις όπως τώρα, +2 ώρες και 10:30πμ είναι όλες αποδεκτές."
+msgid "Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid."
+msgstr "Δέχεται την ώρα σε οποιαδήποτε <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">Μορφή Εισόδου Ημερομηνίας GNU</a>. Φράσεις όπως τώρα, +2 ώρες και 10:30πμ είναι όλες αποδεκτές."
 
 #: components/time.inc:48
 msgid "Adjust the time according to a specific timezone. Website timezone is defined in the <a href=\"!settings\">Site Settings</a> and is the default."

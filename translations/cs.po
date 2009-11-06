@@ -959,8 +959,8 @@ msgid "The default value of the field."
 msgstr "Implicitní hodnota tohoto pole."
 
 #: components/date.inc:39
-msgid "Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid."
-msgstr "Podporuje zápis datumu ve formátu <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Například řetězce 'dnes', '+2 měsíce' nebo '9.prosince 2004' jsou korektní."
+msgid "Accepts any date in any <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid."
+msgstr "Podporuje zápis datumu ve formátu <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Například řetězce 'dnes', '+2 měsíce' nebo '9.prosince 2004' jsou korektní."
 
 #: components/date.inc:46
 #: components/time.inc:46
@@ -1396,8 +1396,8 @@ msgid "Basic textfield type."
 msgstr "Základní textové pole."
 
 #: components/time.inc:38
-msgid "Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid."
-msgstr "Podporuje zápis času ve formátu <a href=\"http://www.gnu.org/software/tar/manual/html_node/tar_109.html\">GNU Date Input Format</a>. Například řetězce 'nyní', '+2 hodiny' nebo '10:30' jsou korektní."
+msgid "Accepts a time in any <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid."
+msgstr "Podporuje zápis času ve formátu <a href=\"http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html\">GNU Date Input Format</a>. Například řetězce 'nyní', '+2 hodiny' nebo '10:30' jsou korektní."
 
 #: components/time.inc:48
 msgid "Adjust the time according to a specific timezone. Website timezone is defined in the <a href=\"!settings\">Site Settings</a> and is the default."
