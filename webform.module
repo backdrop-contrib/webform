@@ -1540,7 +1540,7 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Log to watchdog if normal debug is on.
   if (variable_get('webform_debug', 0) >= 1) {
-    watchdog('webform', t('Submission posted to %title. <a href="!url">Results</a>. !details', array('%title' => $node->title, '!url' => url('node/'. $node->nid .'/submission/'. $sid), '!results' => "<br />\n<pre>". htmlentities(print_r($form_state['values'], TRUE)) .'</pre>')));
+    watchdog('webform', 'Submission posted to %title. <a href="!url">Results</a>. !details', array('%title' => $node->title, '!url' => url('node/'. $node->nid .'/submission/'. $sid), '!results' => "<br />\n<pre>". htmlentities(print_r($form_state['values'], TRUE)) .'</pre>'));
   }
 
   // Check confirmation field to see if redirect should be to another node or a message.
