@@ -70,7 +70,7 @@ function webform_menu() {
     'title' => 'Webforms',
     'page callback' => 'webform_admin_content',
     'access callback' => 'user_access',
-    'access arguments' => array('access webform results'),
+    'access arguments' => array('access all webform results'),
     'description' => 'View and edit all the available webforms on your site.',
     'type' => MENU_NORMAL_ITEM,
   );
@@ -372,15 +372,17 @@ function webform_submission_access($node, $submission, $op = 'view', $account = 
   global $user;
   $account = isset($account) ? $account : $user;
 
+  $general_access = user_access('access all webform results', $account) || (isset($submission) && user_access('access own webform submissions', $account) && ($account->uid == $submission->uid)) || (user_access('access own webform results', $account) && $account->uid == $node->uid);
+
   switch ($op) {
     case 'view':
-      return user_access('access webform results', $account) || (user_access('access own webform submissions', $account) && ($account->uid == $submission->uid)) || (user_access('access own webform results', $account) && $account->uid == $node->uid);
+      return $general_access;
     case 'edit':
-      return user_access('edit webform submissions', $account) || (user_access('edit own webform submissions', $account) && ($account->uid == $submission->uid));
+      return $general_access && (user_access('edit all webform submissions', $account) || (user_access('edit own webform submissions', $account) && $account->uid == $submission->uid));
     case 'delete':
-      return user_access('edit webform submissions', $account) || (user_access('edit own webform submissions', $account) && ($account->uid == $submission->uid)) || user_access('clear webform results', $account);
+      return $general_access && (user_access('delete all webform submissions', $account) || (user_access('delete own webform submissions', $account) && $account->uid == $submission->uid));
     case 'list':
-      return user_access('access webform results', $account) || user_access('access webform submissions', $account) || (user_access('access own webform submissions', $account) && $account->uid) || (user_access('access own webform results', $account) && $account->uid == $node->uid);
+      return user_access('access all webform results', $account) || (user_access('access own webform submissions', $account) && $account->uid) || (user_access('access own webform results', $account) && $account->uid == $node->uid);
   }
 }
 
@@ -391,14 +393,14 @@ function webform_results_access($node, $account = NULL) {
   global $user;
   $account = isset($account) ? $account : $user;
 
-  return (node_access('view', $node, $account) && (user_access('access webform results', $account) || (user_access('access own webform results', $account) && $account->uid == $node->uid)));
+  return node_access('view', $node, $account) && (user_access('access all webform results', $account) || (user_access('access own webform results', $account) && $account->uid == $node->uid));
 }
 
 function webform_results_clear_access($node, $account = NULL) {
   global $user;
   $account = isset($account) ? $account : $user;
 
-  return node_access('view', $node) && user_access('clear webform results', $account);
+  return webform_results_access($node, $account) && user_access('delete all webform submissions', $account);
 }
 
 /**
@@ -414,7 +416,15 @@ function webform_init() {
  * Implementation of hook_perm().
  */
 function webform_perm() {
-  return array('create webforms', 'edit own webforms', 'edit webforms', 'access webform results', 'access own webform results', 'clear webform results', 'access own webform submissions', 'edit own webform submissions', 'edit webform submissions', 'use PHP for additional processing');
+  return array(
+    'access all webform results',
+    'access own webform results',
+    'edit all webform submissions',
+    'delete all webform submissions',
+    'access own webform submissions',
+    'edit own webform submissions',
+    'delete own webform submissions',
+  );
 }
 
 /**
@@ -526,21 +536,6 @@ function webform_node_info() {
 }
 
 /**
- * Implementation of hook_access().
- */
-function webform_access($op, $node, $account) {
-  switch ($op) {
-    case 'create':
-      return user_access('create webforms', $account);
-    case 'update':
-    case 'delete':
-      if (user_access('edit webforms', $account) || (user_access('edit own webforms', $account) && ($account->uid == $node->uid))) {
-        return TRUE;
-      }
-  }
-}
-
-/**
  * Implementation of hook_forms().
  * All webform_client_form forms share the same form handler
  */
@@ -561,7 +556,7 @@ function webform_file_download($file) {
   global $user;
 
   $file = file_check_location(file_directory_path() .'/'. $file, file_directory_path() .'/webform/');
-  if ($file && (user_access('access webform results') || (user_access('access own webform results')))) {
+  if ($file && (user_access('access all webform results') || user_access('access own webform results'))) {
     $info = image_get_info(file_create_path($file));
     if (isset($info['mime_type'])) {
       $headers = array('Content-type: '. $info['mime_type']);
@@ -864,7 +859,7 @@ function webform_node_view(&$node, $teaser, $page) {
   }
 
   // Get a count of previous submissions by this user.
-  if ($user->uid && (user_access('access own webform submissions') || user_access('access webform results') || user_access('access webform submissions') || (user_access('access own webform results') && $user->uid == $node->uid))) {
+  if ($user->uid && (user_access('access own webform submissions') || user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid))) {
     $submission_count = db_result(db_query('SELECT count(*) FROM {webform_submissions} WHERE nid = %d AND uid = %d', $node->nid, $user->uid));
   }
 
@@ -1193,7 +1188,7 @@ function webform_client_form(&$form_state, $node, $submission, $enabled = FALSE,
   }
 
   // Set a header for navigating results.
-  if ($submission && (user_access('access webform results') || (user_access('access own webform results') && $user->uid == $node->uid))) {
+  if ($submission && (user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid))) {
     // Add CSS to display submission info. Don't preprocess because this CSS file is used rarely.
     drupal_add_css(drupal_get_path('module', 'webform') .'/webform.css', 'module', 'all', FALSE);
 
@@ -2045,7 +2040,7 @@ function theme_webform_admin_content($nodes) {
       l(t('Table'), 'node/'. $node->nid .'/webform-results/table'),
       l(t('Download'), 'node/'. $node->nid .'/webform-results/download'),
       node_access('update', $node) ? l(t('Edit'), 'node/'. $node->nid .'/edit') : '',
-      user_access('clear webform results') ? l(t('Clear'), 'node/'. $node->nid .'/webform-results/clear') : '',
+      user_access('delete all webform submissions') ? l(t('Clear'), 'node/'. $node->nid .'/webform-results/clear') : '',
     );
   }
 

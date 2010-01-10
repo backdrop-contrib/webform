@@ -1202,6 +1202,39 @@ function webform_update_6304() {
 }
 
 /**
+ * Migrate the renamed permissions. Add separate permissions for delete.
+ */
+function webform_update_6305() {
+  $ret = array();
+
+  $updated_permissions = array(
+    'create webforms' => array('add webform content'),
+    'edit own webforms' => array('edit own webform content', 'delete own webform content'),
+    'edit webforms' => array('edit any webform content', 'delete any webform content'),
+    'access webform results' => array('access all webform results'),
+    'edit webform submissions' => array('edit all webform submissions'),
+    'edit own webform submissions' => array('edit own webform submissions', 'delete own webform submissions'),
+    'clear webform results' => array('delete all webform submissions'),
+  );
+
+  $result = db_query("SELECT * FROM {role} r INNER JOIN {permission} p ON p.rid = r.rid");
+  while ($role = db_fetch_object($result)) {
+    $role->perm = drupal_map_assoc(explode(', ', $role->perm));
+    foreach ($updated_permissions as $old => $new) {
+      if (isset($role->perm[$old])) {
+        unset($role->perm[$old]);
+        foreach ($new as $perm) {
+          $role->perm[$perm] = $perm;
+        }
+      }
+    }
+    $ret[] = update_sql("UPDATE {permission} SET perm = '" . implode(',', $role->perm) . "' WHERE rid = " . $role->rid);
+  }
+
+  return $ret;
+}
+
+/**
  * Recursively delete all files and folders in the specified filepath, then
  * delete the containing folder.
  *

@@ -94,7 +94,7 @@ function theme_webform_results_submissions_header($node) {
     array('data' => t('#'), 'field' => 'sid', 'sort' => 'asc'),
     array('data' => t('Submitted'), 'field' => 'submitted'),
   );
-  if (user_access('access webform results') || (user_access('access own webform results') && $user->uid == $node->uid)) {
+  if (user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid)) {
     $columns[] = array('data' => t('User'), 'field' => 'name');
     $columns[] = array('data' => t('IP Address'), 'field' => 'remote_addr');
   }
@@ -130,12 +130,12 @@ function theme_webform_results_submissions($node, $submissions, $total_count = 0
       $sid,
       format_date($submission->submitted, 'small'),
     );
-    if (user_access('access webform results') || (user_access('access own webform results') && $user->uid == $node->uid)) {
+    if (user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid)) {
       $row[] = theme('username', $submission);
       $row[] = $submission->remote_addr;
     }
     $row[] = l(t('View'), "node/$node->nid/submission/$sid");
-    if ((user_access('edit own webform submissions') && ($user->uid == $submission->uid)) || user_access('edit webform submissions')) {
+    if ((user_access('edit own webform submissions') && $user->uid == $submission->uid) || user_access('edit all webform submissions')) {
       $row[] = l(t('Edit'), "node/$node->nid/submission/$sid/edit");
       $row[] = l(t('Delete'), "node/$node->nid/submission/$sid/delete", array('query' => drupal_get_destination()));
     }

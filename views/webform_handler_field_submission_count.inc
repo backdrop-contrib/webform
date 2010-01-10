@@ -34,7 +34,7 @@ class webform_handler_field_submission_count extends views_handler_field {
     if ($this->count_type == 'node') {
       module_load_include('inc', 'webform', 'includes/webform.submissions');
       $node = node_load($values->{$this->aliases['nid']});
-      if (webform_results_access($node, 'access webform results')) {
+      if (webform_results_access($node, 'access all webform results')) {
         $count = webform_get_submission_count($node->nid);
         $output = l($count, "node/$node->nid/webform-results");
       }

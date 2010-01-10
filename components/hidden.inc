@@ -85,7 +85,7 @@ function _webform_render_hidden($component, $filter = TRUE) {
 function _webform_submission_display_hidden($data, $component, $enabled = FALSE) {
   $form_item = _webform_render_hidden($component);
   // Only allow administrators that can view or edit all submissions to view or edit hidden fields.
-  if (user_access('edit webform submissions') || user_access('access webform results')) {
+  if (user_access('edit all webform submissions') || user_access('access all webform results')) {
     unset($form_item['#value']);
     $form_item['#default_value'] = $data['value']['0'];
     $form_item['#type'] = 'textfield';

@@ -46,18 +46,18 @@ class WebformTestCase extends DrupalWebTestCase {
       'access content',
       'create webforms',
       'edit own webforms',
-      'access webform results',
+      'access all webform results',
     );
 
     // Create a webform admin that will do all node creation.
     $permissions['admin'] = array(
       'access content',
       'administer nodes',
-      'create webforms',
-      'edit webforms',
-      'edit webform submissions',
-      'access webform results',
-      'clear webform results',
+      'create webform content',
+      'edit any webform content',
+      'access all webform results',
+      'edit all webform submissions',
+      'delete all webform submissions',
     );
 
     foreach ($permissions as $user => $role_permissions) {
