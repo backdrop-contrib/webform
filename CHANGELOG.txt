@@ -4,6 +4,11 @@ Webform 2.x Changelog
 2.x to 3.0
 ----------
 - Module directory structure moved around.
+- Webform configuration moved to an entirely separate tab.
+- E-mail templates are now editable by administrators.
+- Conditional fields.
+- Webform may now be attached to any content type.
+- Form builder integration for live previews and editing of forms.
 
 1.x to 2.0
 ----------

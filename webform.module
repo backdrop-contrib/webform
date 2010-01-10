@@ -304,7 +304,7 @@ function webform_menu_load($nid) {
     return FALSE;
   }
   $node = node_load($nid);
-  if (!isset($node->type) || $node->type != 'webform') {
+  if (!isset($node->type) || !in_array($node->type, webform_variable_get('webform_node_types'))) {
     return FALSE;
   }
   return $node;
@@ -565,9 +565,56 @@ function webform_file_download($file) {
 }
 
 /**
- * Implementation of hook_insert().
+ * Implementation of hook_node_type().
  */
-function webform_insert($node) {
+function webform_node_type($op, $info) {
+  $webform_types = webform_variable_get('webform_node_types');
+  $affected_type = isset($info->old_type) ? $info->old_type : $info->type;
+  $key = array_search($affected_type, $webform_types);
+  if ($key !== FALSE) {
+    if ($op == 'update') {
+      $webform_types[$key] = $info->type;
+    }
+    if ($op == 'delete') {
+      unset($webform_types[$key]);
+    }
+    variable_set('webform_node_types', $webform_types);
+  }
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function webform_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
+  if (!in_array($node->type, webform_variable_get('webform_node_types'))) {
+    return;
+  }
+
+  switch ($op) {
+    case 'insert':
+      webform_node_insert($node);
+      break;
+    case 'update':
+      webform_node_update($node);
+      break;
+    case 'delete':
+      webform_node_delete($node);
+      break;
+    case 'load':
+      return webform_node_load($node);
+    case 'view':
+      return webform_node_view($node, $teaser, $page);
+  }
+}
+
+/**
+ * Implementation of hook_node_insert().
+ */
+function webform_node_insert($node) {
+  if (!in_array($node->type, webform_variable_get('webform_node_types'))) {
+    return;
+  }
+
   module_load_include('inc', 'webform', 'includes/webform.components');
 
   // Insert the Webform.
@@ -588,9 +635,13 @@ function webform_insert($node) {
 }
 
 /**
- * Implementation of hook_update().
+ * Implementation of hook_node_update().
  */
-function webform_update($node) {
+function webform_node_update($node) {
+  if (!in_array($node->type, webform_variable_get('webform_node_types'))) {
+    return;
+  }
+
   // Update the webform by deleting existing data and replacing with the new.
   db_query('DELETE FROM {webform} WHERE nid = %d', $node->nid);
   db_query('DELETE FROM {webform_component} WHERE nid = %d', $node->nid);
@@ -601,7 +652,11 @@ function webform_update($node) {
 /**
  * Implementation of hook_delete().
  */
-function webform_delete(&$node) {
+function webform_node_delete($node) {
+  if (!in_array($node->type, webform_variable_get('webform_node_types'))) {
+    return;
+  }
+
   // Allow components clean up extra data, such as uploaded files.
   module_load_include('inc', 'webform', 'includes/webform.components');
   foreach ($node->webform['components'] as $cid => $component) {
@@ -617,29 +672,29 @@ function webform_delete(&$node) {
 }
 
 /**
- * Implementation of hook_load().
+ * Implementation of hook_node_load().
  */
-function webform_load($node) {
+function webform_node_load($node) {
   module_load_include('inc', 'webform', 'includes/webform.components');
-  $additions = new stdClass();
+  $additions = array();
 
   if ($webform = db_fetch_array(db_query('SELECT * FROM {webform} WHERE nid = %d', $node->nid))) {
-    $additions->webform = $webform;
+    $additions['webform'] = $webform;
 
-    $additions->webform['roles'] = array();
+    $additions['webform']['roles'] = array();
     $result = db_query('SELECT rid FROM {webform_roles} WHERE nid = %d', $node->nid);
     while ($role = db_fetch_object($result)) {
-      $additions->webform['roles'][] = $role->rid;
+      $additions['webform']['roles'][] = $role->rid;
     }
 
-    $additions->webform['emails'] = array();
+    $additions['webform']['emails'] = array();
     $result = db_query('SELECT * FROM {webform_emails} WHERE nid = %d', $node->nid);
     while ($email = db_fetch_array($result)) {
-      $additions->webform['emails'][$email['eid']] = $email;
+      $additions['webform']['emails'][$email['eid']] = $email;
     }
   }
   else {
-    $additions->webform = array(
+    $additions['webform'] = array(
       'confirmation' => '',
       'confirmation_format' => FILTER_FORMAT_DEFAULT,
       'teaser' => 0,
@@ -654,11 +709,11 @@ function webform_load($node) {
     );
   }
 
-  $additions->webform['components'] = array();
-  $additions->webform['additional_emails'] = array();
+  $additions['webform']['components'] = array();
+  $additions['webform']['additional_emails'] = array();
   $result = db_query('SELECT * FROM {webform_component} WHERE nid = %d ORDER BY weight, name', $node->nid);
   while ($c = db_fetch_array($result)) {
-    $component =& $additions->webform['components'][$c['cid']];
+    $component =& $additions['webform']['components'][$c['cid']];
     $component['nid'] = $node->nid;
     $component['cid'] = $c['cid'];
     $component['form_key'] = $c['form_key'] ? $c['form_key'] : $c['cid'];
@@ -671,18 +726,18 @@ function webform_load($node) {
     $component['pid'] = $c['pid'];
     $component['weight'] = $c['weight'];
     if (isset($component['extra']['email']) && $component['extra']['email']) {
-      $additions->webform['additional_emails'][$c['cid']] = $c['cid'];
+      $additions['webform']['additional_emails'][$c['cid']] = $c['cid'];
     }
 
     webform_component_defaults($component);
   }
 
   // Organize the components into a fieldset-based order.
-  if (!empty($additions->webform['components'])) {
+  if (!empty($additions['webform']['components'])) {
     $component_tree = array();
     $page_count = 1;
-    _webform_components_tree_build($additions->webform['components'], $component_tree, 0, $page_count);
-    $additions->webform['components'] = _webform_components_tree_flatten($component_tree['children']);
+    _webform_components_tree_build($additions['webform']['components'], $component_tree, 0, $page_count);
+    $additions['webform']['components'] = _webform_components_tree_flatten($component_tree['children']);
   }
   return $additions;
 }
@@ -706,35 +761,30 @@ function webform_link($type, $node = NULL, $teaser = FALSE) {
 }
 
 /**
- * Implementation of hook_form().
- *
- * Creates the standard form for editing or creating a webform.
- */
-function webform_form(&$node, &$form_state) {
-  // Set node defaults if empty.
-  if (!isset($node->nid) && !isset($node->webform)) {
-    $node->nid = 0;
-    $additions = webform_load($node);
-    $node->webform = $additions->webform;
-    $node->nid = NULL;
-  }
-
-  $form = node_content_form($node, $form_state);
-
-  $form['webform'] = array(
-    '#type' => 'value',
-    '#value' => $node->webform,
-  );
-
-  return $form;
-}
-
-/**
  * Implementation of hook_form_alter().
  */
 function webform_form_alter(&$form, $form_state, $form_id) {
-  if ($form_id == 'webform_node_form' && empty($form['nid']['#value'])) {
-    $form['buttons']['submit']['#submit'][] = 'webform_form_submit';
+  $matches = array();
+  if (isset($form['#node']) && $form_id == $form['#node']->type .'_node_form' && in_array($matches[0], webform_variable_get('webform_node_types'))) {
+    if (empty($form['nid']['#value'])) {
+      $form['buttons']['submit']['#submit'][] = 'webform_form_submit';
+      if (!isset($form['#node']->webform)) {
+        $node = $form['#node'];
+        $node->nid = 0;
+        $additions = module_invoke('webform', 'nodeapi', $node, 'load');
+        $form['webform'] = array(
+          '#type' => 'value',
+          '#value' => $additions['webform'],
+        );
+      }
+    }
+    else {
+      $node = $form['#node'];
+      $form['webform'] = array(
+        '#type' => 'value',
+        '#value' => $node->webform,
+      );
+    }
   }
 }
 
@@ -750,15 +800,13 @@ function webform_form_submit($form, &$form_state) {
 }
 
 /**
- * Implementation of hook_view().
+ * Implementation of hook_node_view().
  */
-function webform_view(&$node, $teaser = 0, $page = 0) {
+function webform_node_view(&$node, $teaser, $page) {
   global $user;
-
   // If a teaser, do not display the form.
   if ($teaser && !$node->webform['teaser']) {
     $node->content['teaser'] = array('#value' => check_markup($node->teaser, $node->format, FALSE));
-    return $node;
   }
 
   $submission = array();
@@ -827,8 +875,6 @@ function webform_view(&$node, $teaser = 0, $page = 0) {
   if (isset($output)) {
     $node->content['webform'] = array('#value' => $output, '#weight' => 1);
   }
-
-  return $node;
 }
 
 /**
@@ -933,6 +979,15 @@ function webform_mail($key, &$message, $params) {
  */
 function webform_admin_settings() {
   module_load_include('inc', 'webform', 'includes/webform.export');
+
+  $node_types = node_get_types('names');
+  $form['node_types'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Webform Node Types'),
+    '#description' => t('Webform allows you to enable the webform components for any content type.  Choose the types on which you would like to associate webform components.'),
+    '#options' => $node_types,
+    '#default_value' => webform_variable_get('webform_node_types'),
+  );
 
   $form['components'] = array(
     '#type' => 'fieldset',
@@ -1052,8 +1107,18 @@ function webform_admin_settings() {
 
   $form = system_settings_form($form);
   $form['#theme'] = 'webform_admin_settings';
+  $form['#submit'][] = 'webform_admin_settings_submit';
 
   return $form;
+}
+
+function webform_admin_settings_submit($form, &$form_state) {
+  foreach ($form_state['values']['node_types'] as $type) {
+    if ($type) {
+      $types[] = $type;
+    }
+  }
+  variable_set('webform_node_types', $types);
 }
 
 function theme_webform_admin_settings($form) {
@@ -2004,6 +2069,9 @@ function webform_variable_get($variable) {
       break;
     case 'webform_default_subject':
       $result = variable_get('webform_default_subject', t('Form submission from: %title'));
+      break;
+    case 'webform_node_types':
+      $result = variable_get('webform_node_types', array('webform'));
       break;
   }
   return $result;
