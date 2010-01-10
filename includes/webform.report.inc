@@ -88,11 +88,13 @@ function theme_webform_results_per_page($total_count, $pager_count) {
  * use it for sorting the results.
  */
 function theme_webform_results_submissions_header($node) {
+  global $user;
+
   $columns = array(
     array('data' => t('#'), 'field' => 'sid', 'sort' => 'asc'),
     array('data' => t('Submitted'), 'field' => 'submitted'),
   );
-  if (user_access('access webform results')) {
+  if (user_access('access webform results') || (user_access('access own webform results') && $user->uid == $node->uid)) {
     $columns[] = array('data' => t('User'), 'field' => 'name');
     $columns[] = array('data' => t('IP Address'), 'field' => 'remote_addr');
   }
@@ -128,7 +130,7 @@ function theme_webform_results_submissions($node, $submissions, $total_count = 0
       $sid,
       format_date($submission->submitted, 'small'),
     );
-    if (user_access('access webform results')) {
+    if (user_access('access webform results') || (user_access('access own webform results') && $user->uid == $node->uid)) {
       $row[] = theme('username', $submission);
       $row[] = $submission->remote_addr;
     }
