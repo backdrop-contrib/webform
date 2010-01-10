@@ -96,6 +96,7 @@ function webform_submission_delete($node, $submission) {
  */
 function webform_submission_delete_form($form_state, $node, $submission) {
   drupal_set_title(t('Delete Form Submission'));
+  webform_set_breadcrumb($node, $submission);
 
   $form = array();
   $form['node'] = array('#type' => 'value', '#value' => $node);

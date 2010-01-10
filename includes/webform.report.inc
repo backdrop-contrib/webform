@@ -26,6 +26,7 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
   $header = theme('webform_results_submissions_header', $node);
   if ($user_filter) {
     drupal_set_title(t('Submissions for %user', array('%user' => $user->name)));
+    webform_set_breadcrumb($node);
     $submissions = webform_get_submissions($node->nid, $header, $user->uid, $pager_count);
     $count = webform_get_submission_count($node->nid, $user->uid);
   }

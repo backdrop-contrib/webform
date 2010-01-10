@@ -1185,6 +1185,7 @@ function webform_client_form(&$form_state, $node, $submission, $enabled = FALSE,
 
   if (isset($submission->sid)) {
     drupal_set_title(t('Submission #@sid', array('@sid' => $submission->sid)));
+    webform_set_breadcrumb($node, $submission);
   }
 
   // Set a header for navigating results.
@@ -1736,6 +1737,7 @@ function _webform_client_form_submit_flatten($node, $fieldset, $parent = 0) {
  */
 function _webform_confirmation($node) {
   drupal_set_title(check_plain($node->title));
+  webform_set_breadcrumb($node);
   if (empty($output)) {
     $output = theme(array('webform_confirmation_'. $node->nid, 'webform_confirmation'), $node, $_GET['sid']);
   }
@@ -2381,6 +2383,29 @@ function webform_load_components($return_all = FALSE, $reset = FALSE) {
 
   // Ensure only wanted components are returned, even all are loaded.
   return $return_all ? $component_list : array_intersect_assoc($component_list, $enabled_list);
+}
+
+/**
+ * Set the necessary breadcrumb for the page we are on.
+ */
+function webform_set_breadcrumb($node, $submission = NULL) {
+  $breadcrumb = drupal_get_breadcrumb();
+
+  if (isset($node)) {
+    $webform_breadcrumb = array();
+    $webform_breadcrumb[] = array_shift($breadcrumb);
+    $webform_breadcrumb[] = l($node->title, 'node/' . $node->nid);
+    if (isset($submission)) {
+      $last_link = array_shift($breadcrumb);
+      $webform_breadcrumb[] = l(t('Submissions'), 'node/' . $node->nid .'/submissions');
+      if (isset($last_link)) {
+        $webform_breadcrumb[] = $last_link;
+      }
+    }
+    $breadcrumb = $webform_breadcrumb;
+  }
+
+  drupal_set_breadcrumb($breadcrumb);
 }
 
 /**
