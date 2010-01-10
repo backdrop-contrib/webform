@@ -646,7 +646,7 @@ function webform_node_update($node) {
   db_query('DELETE FROM {webform} WHERE nid = %d', $node->nid);
   db_query('DELETE FROM {webform_component} WHERE nid = %d', $node->nid);
   db_query('DELETE FROM {webform_roles} WHERE nid = %d', $node->nid);
-  webform_insert($node);
+  webform_node_insert($node);
 }
 
 /**
@@ -765,7 +765,7 @@ function webform_link($type, $node = NULL, $teaser = FALSE) {
  */
 function webform_form_alter(&$form, $form_state, $form_id) {
   $matches = array();
-  if (isset($form['#node']) && $form_id == $form['#node']->type .'_node_form' && in_array($matches[0], webform_variable_get('webform_node_types'))) {
+  if (isset($form['#node']->type) && $form_id == $form['#node']->type . '_node_form' && in_array($form['#node']->type, webform_variable_get('webform_node_types'))) {
     if (empty($form['nid']['#value'])) {
       $form['buttons']['submit']['#submit'][] = 'webform_form_submit';
       if (!isset($form['#node']->webform)) {
@@ -1500,13 +1500,13 @@ function webform_client_form_submit($form, &$form_state) {
       $form_state['values']['submitted'][$key] = $val;
     }
 
-    // Remove the form state storage now that we're done with the pages.
-    unset($form_state['rebuild']);
-    unset($form_state['storage']);
-
     // Remove the variable so it doesn't show up in the additional processing.
     unset($original_values);
   }
+
+  // Remove the form state storage now that we're done with the pages.
+  unset($form_state['rebuild']);
+  unset($form_state['storage']);
 
   // Perform post processing by components.
   _webform_client_form_submit_process($node, $form_state['values']['submitted']);
