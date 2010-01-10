@@ -1447,7 +1447,7 @@ function webform_client_form_submit($form, &$form_state) {
     if (!isset($form_state['storage']['page_num'])) {
       $form_state['storage']['page_num'] = 1;
     }
-    if ($form_state['clicked_button']['#value'] == t('Next Page >')) {
+    if (end($form_state['clicked_button']['#parents']) == 'next') {
       $direction = 1;
     }
     else {
