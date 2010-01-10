@@ -1187,47 +1187,22 @@ function webform_client_form(&$form_state, $node, $submission, $enabled = FALSE,
     );
 
     // Put the components into a tree structure.
-    $component_tree = array();
-    $page_count = 1;
-    $page_num = 1;
-    _webform_components_tree_build($node->webform['components'], $component_tree, 0, $page_count);
+    if (!isset($form_state['storage']['component_tree'])) {
+      $form_state['storage']['component_tree'] = array();
+      $form_state['storage']['page_count'] = 1;
+      $form_state['storage']['page_num'] = 1;
+      _webform_components_tree_build($node->webform['components'], $form_state['storage']['component_tree'], 0, $form_state['storage']['page_count']);
+    }
+
+    // Shorten up our variable names.
+    $component_tree = $form_state['storage']['component_tree'];
+    $page_count = $form_state['storage']['page_count'];
+    $page_num = $form_state['storage']['page_num'];
 
     if ((!isset($node->build_mode) || $node->build_mode != NODE_BUILD_PREVIEW) && $enabled) {
       if ($page_count > 1) {
         $next_page = t('Next Page >');
         $prev_page = t('< Previous Page');
-
-        // Check if we're in a multipage form and determine the page number.
-        if (!empty($form_state['storage']['submitted'])) {
-          $page_num = $form_state['values']['details']['page_num'];
-          $errors = form_get_errors();
-          if (empty($errors)) {
-            if (end($form_state['clicked_button']['#parents']) == 'prev' && $page_num > 1) {
-              $page_num--;
-            }
-            elseif (end($form_state['clicked_button']['#parents']) == 'next' && $page_num < $page_count) {
-              $page_num++;
-            }
-          }
-        }
-        else {
-          $page_num = 1;
-        }
-
-        $form['details']['page_num'] = array(
-          '#type'      => 'hidden',
-          '#value'     => $page_num,
-        );
-
-        $form['details']['page_count'] = array(
-          '#type'      => 'hidden',
-          '#value'     => $page_count,
-        );
-
-        $form['details']['page_count'] = array(
-          '#type'      => 'hidden',
-          '#value'     => $page_count,
-        );
 
         // Add the submit button(s).
         if ($page_num > 1) {
@@ -1253,7 +1228,6 @@ function webform_client_form(&$form_state, $node, $submission, $enabled = FALSE,
         }
       }
       else {
-        $page_num = 1;
         // Add the submit button.
         $form['submit'] = array(
           '#type' => 'submit',
@@ -1267,7 +1241,9 @@ function webform_client_form(&$form_state, $node, $submission, $enabled = FALSE,
     $microweight = 0.001;
     foreach ($component_tree['children'] as $cid => $component) {
       $component_value = isset($form_state['values']['submitted'][$component['form_key']]) ? $form_state['values']['submitted'][$component['form_key']] : NULL;
-      _webform_client_form_add_component($cid, $component, $component_value, $form['submitted'], $form, $submission, $page_num, $enabled, $filter);
+      if (_webform_client_form_rule_check($form_state, $component, $page_num)) {
+        _webform_client_form_add_component($cid, $component, $component_value, $form['submitted'], $form, $submission, $page_num, $enabled, $filter);
+      }
       if (isset($form['submitted'][$component['form_key']])) {
         $form['submitted'][$component['form_key']]['#weight'] += $microweight;
         $microweight += 0.001;
@@ -1275,13 +1251,13 @@ function webform_client_form(&$form_state, $node, $submission, $enabled = FALSE,
     }
 
     $form['details']['nid'] = array(
-      '#type'      => 'value',
-      '#value'     => $node->nid,
+      '#type' => 'value',
+      '#value' => $node->nid,
     );
     if (isset($submission->sid)) {
       $form['details']['sid'] = array(
-        '#type'      => 'hidden',
-        '#value'     => $submission->sid,
+        '#type' => 'hidden',
+        '#value' => $submission->sid,
       );
     }
   }
@@ -1289,6 +1265,25 @@ function webform_client_form(&$form_state, $node, $submission, $enabled = FALSE,
   return $form;
 }
 
+/**
+ * Check if a component should be displayed on the current page.
+ */
+function _webform_client_form_rule_check($form_state, $component, $page_num) {
+  $show_component = TRUE;
+  if (isset($component['extra']['conditional_values']) && strlen(trim($component['extra']['conditional_values'])) && $component['page_num'] == $page_num) {
+    $input_value = $form_state['values']['submitted'][$component['extra']['conditional_component']];
+    $test_values = array_map('trim', explode("\n", $component['extra']['conditional_values']));
+    $show_component = in_array($input_value, $test_values);
+    if ($component['extra']['conditional_operator'] == '!=') {
+      $show_component = !$show_component;
+    }
+  }
+  return $show_component;
+}
+
+/**
+ * Add a component to the form. Called recursively for fieldsets.
+ */
 function _webform_client_form_add_component($cid, $component, $component_value, &$parent_fieldset, &$form, $submission, $page_num, $enabled = FALSE, $filter = TRUE) {
   // Load with submission information if necessary.
   if (!$enabled) {
@@ -1361,7 +1356,7 @@ function webform_client_form_submit($form, &$form_state) {
   module_load_include('inc', 'webform', 'includes/webform.submissions');
   webform_load_components();
 
-  $node = node_load(array('nid' => $form_state['values']['details']['nid']));
+  $node = node_load($form_state['values']['details']['nid']);
 
   // Check for a multi-page form that is not yet complete.
   $submit_op = empty($node->webform['submit_text']) ? t('Submit') : $node->webform['submit_text'];
@@ -1383,9 +1378,49 @@ function webform_client_form_submit($form, &$form_state) {
       }
     }
 
-    // Rebuild the form, allowing the rebuild to determine the next page.
-    $form_state['rebuild'] = TRUE;
-    return;
+    // Set the page number.
+    if (!isset($form_state['storage']['page_num'])) {
+      $form_state['storage']['page_num'] = 1;
+    }
+    if ($form_state['clicked_button']['#value'] == t('Next Page >')) {
+      $direction = 1;
+    }
+    else {
+      $direction = 0;
+    }
+
+    // If the next page has no components that need to be displayed, skip it.
+    if (isset($direction)) {
+      $components = $direction ? $node->webform['components'] : array_reverse($node->webform['components'], TRUE);
+      $last_component = end($node->webform['components']);
+      foreach ($components as $component) {
+        if ($component['type'] == 'pagebreak' && (
+            $direction == 1 && $component['page_num'] >= $form_state['storage']['page_num'] ||
+            $direction == 0 && $component['page_num'] < $form_state['storage']['page_num'])) {
+          $previous_pagebreak = $component;
+          continue;
+        }
+        if (isset($previous_pagebreak)) {
+          $page_num = $previous_pagebreak['page_num'] + $direction;
+          // If we've found an component on this page, advance to that page.
+          if (_webform_client_form_rule_check($form_state, $component, $page_num)) {
+            $form_state['storage']['page_num'] = $page_num;
+            break;
+          }
+          // If we've gotten to the end of the form without finding any more
+          // components, set the page number more than the max, ending the form.
+          elseif ($direction && $component['cid'] == $last_component['cid']) {
+            $form_state['storage']['page_num'] = $page_num + 1;
+          }
+        }
+      }
+    }
+
+    // Rebuild the form and display the next page.
+    if ($form_state['storage']['page_num'] <= $form_state['storage']['page_count']) {
+      $form_state['rebuild'] = TRUE;
+      return;
+    }
   }
 
   if (isset($form_state['storage']['submitted'])) {

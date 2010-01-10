@@ -409,6 +409,75 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
     '#description' => t('Optional. In the menu, the heavier items will sink and the lighter items will be positioned nearer the top.'),
     '#weight' => 4,
   );
+  
+  // Add conditional fields.
+  $component_options = array();
+  $counter = 0;
+  $last_pagebreak_slice = 0;
+  foreach ($node->webform['components'] as $cid => $test_component) {
+    // Only components before the pagebreak can be considered.
+    if ($test_component['type'] == 'pagebreak') {
+      $last_pagebreak_slice = $counter;
+    }
+    if ($test_component['name'] == $component['name']) {
+      break;
+    }
+    if ($test_component['type'] != 'pagebreak') {
+      $component_options[$test_component['form_key']] = $test_component['name'];
+    }
+    $counter++;
+  }
+  if ($component['type'] != 'pagebreak') {
+    $fieldset_description = t('Create a rule to control whether or not to skip this page.');
+  }
+  else {
+    $fieldset_description = t('Create a rule to control whether or not to show this form element.');
+  }
+  $component_options = array_slice($component_options, 0, $last_pagebreak_slice, TRUE);
+  $form['conditional'] = array(
+    '#weight' => 5,
+    '#type' => 'fieldset',
+    '#title' => t('Conditional rules'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('Create a rule to control whether or not to show this form element.'),
+    '#tree' => FALSE,
+  );
+  $form['conditional']['extra'] = array(
+    '#tree' => TRUE,
+  );
+  $form['conditional']['extra']['conditional_component'] = array(
+    '#type' => 'select',
+    '#title' => t('Component'),
+    '#options' => $component_options,
+    '#description' => t('Select another component to decide whether to show or hide this component. You can only select components occurring before the most recent pagebreak.'),
+    '#default_value' => $component['extra']['conditional_component'],
+  );
+  $form['conditional']['extra']['conditional_operator'] = array(
+    '#type' => 'select',
+    '#title' => t('Operator'),
+    '#options' => array(
+      '=' => t('Is one of'),
+      '!=' => t('Is not one of')
+    ),
+    '#description' => t('Determines whether the list below is inclusive or exclusive.'),
+    '#default_value' => $component['extra']['conditional_operator'],
+  );
+  $form['conditional']['extra']['conditional_values'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Values'),
+    '#description' => t('List values, one per line, that will trigger this action. If you leave this blank, this component will always display.'),
+    '#default_value' => $component['extra']['conditional_values'],
+  );
+  if (empty($component_options)) {
+    $form['conditional']['extra']['conditional_component']['#options'] = array('');
+    $form['conditional']['#description'] = t('You cannot set display options for a component appearing before the first pagebreak.');
+    foreach ($form['conditional']['extra'] as &$el) {
+      if (is_array($el)) {
+        $el['#disabled'] = TRUE;
+      }
+    }
+  }
 
   // Add the fields specific to this component type:
   webform_load_components(); // Load all component types.
@@ -632,5 +701,10 @@ function webform_component_defaults(&$component) {
         $component['extra'][$extra] = $default;
       }
     }
+    $component['extra'] += array(
+      'conditional_component' => '',
+      'conditional_operator' => '=',
+      'conditional_values' => '',
+    );
   }
 }
