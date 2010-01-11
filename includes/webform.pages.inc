@@ -106,6 +106,12 @@ function webform_configure_form(&$form_state, $node) {
     '#default_value' => $node->webform['teaser'],
     '#description' => t('Display the entire form in the teaser display of this node.'),
   );
+  $form['advanced']['allow_draft'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Allow users to save a draft'),
+    '#default_value' => $node->webform['allow_draft'],
+    '#description' => t('Allow your users to save and finish the form later.'),
+  );
   $form['advanced']['submit_notice'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show the notification about previous submissions.'),
@@ -190,6 +196,9 @@ function webform_configure_form_submit($form, &$form_state) {
 
   // Set the Show complete form in teaser setting.
   $node->webform['teaser'] = $form_state['values']['teaser'];
+
+  // Set the draft option.
+  $node->webform['allow_draft'] = $form_state['values']['allow_draft'];
 
   // Set the submit limit to -1 if set to unlimited.
   if ($form_state['values']['enforce_limit'] == 'no') {

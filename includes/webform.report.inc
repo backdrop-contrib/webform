@@ -128,7 +128,7 @@ function theme_webform_results_submissions($node, $submissions, $total_count = 0
   $rows = array();
   foreach ($submissions as $sid => $submission) {
     $row = array(
-      $sid,
+      $submission->is_draft ? t('@sid (draft)', array('@sid' => $sid)) : $sid,
       format_date($submission->submitted, 'small'),
     );
     if (user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid)) {

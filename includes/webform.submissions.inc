@@ -9,9 +9,18 @@
  * @author Nathan Haug <nate@lullabot.com>
  */
 
-function webform_submission_update($node, $sid, $submitted) {
-  // Update the submission data by first removing all this submissions data.
-  db_query('DELETE FROM {webform_submitted_data} WHERE sid = %d', $sid);
+function webform_submission_update($node, $sid, $submitted, $is_draft = 0) {
+  // If is draft, only delete data for components submitted, to
+  // preserve any data from form pages not visited in this submission.
+  if ($is_draft) {
+    $submitted_cids = array_keys($submitted);
+    db_query("DELETE FROM {webform_submitted_data} WHERE sid = %d AND cid IN (" . implode(', ', $submitted_cids) . ")", $sid);
+  }
+  else {
+    db_query("UPDATE {webform_submissions} SET is_draft = 0");
+    db_query("DELETE FROM {webform_submitted_data} WHERE sid = %d", $sid);
+  }
+
   // Then re-add it to the database.
   foreach ($submitted as $cid => $value) {
     // Don't save pagebreaks as submitted data.
@@ -34,11 +43,10 @@ function webform_submission_update($node, $sid, $submitted) {
   return $sid;
 }
 
-function webform_submission_insert($node, $submitted) {
+function webform_submission_insert($node, $submitted, $is_draft = 0) {
   global $user;
 
-  $result = db_query("INSERT INTO {webform_submissions} (nid, uid, submitted, remote_addr) VALUES (%d, %d, %d, '%s')", $node->nid, $user->uid, time(), ip_address());
-
+  $result = db_query("INSERT INTO {webform_submissions} (nid, uid, submitted, remote_addr, is_draft) VALUES (%d, %d, %d, '%s', %d)", $node->nid, $user->uid, time(), ip_address(), $is_draft);
   $sid = db_last_insert_id('webform_submissions', 'sid');
 
   foreach ($submitted as $cid => $value) {
@@ -180,6 +188,7 @@ function webform_get_submissions($nid, $header = NULL, $uid = NULL, $pager_count
       $submissions[$row->sid]->uid = $row->uid;
       $submissions[$row->sid]->name = $row->name;
       $submissions[$row->sid]->status = $row->status;
+      $submissions[$row->sid]->is_draft = $row->is_draft;
     }
     $submissions[$row->sid]->data[$row->cid]['value'][$row->no] = $row->data;
     $previous = $row->sid;
@@ -226,6 +235,7 @@ function webform_get_submission($nid, $sid, $reset = FALSE) {
       $submission->uid = $row->uid;
       $submission->remote_addr = $row->remote_addr;
       $submission->submitted = $row->submitted;
+      $submission->is_draft = $row->is_draft;
 
       while ($row) {
         $submission->data[$row->cid]['value'][$row->no] = $row->data;
@@ -268,7 +278,7 @@ function _webform_submission_limit_check($node) {
   $query = 'SELECT count(*) '.
            'FROM {webform_submissions} '.
            "WHERE (( 0 = %d AND remote_addr = '%s') OR (uid > 0 AND uid = %d)) ".
-           'AND submitted > %d AND nid = %d';
+           'AND submitted > %d AND nid = %d AND is_draft = 0';
 
   // Fetch all the entries from the database within the submit interval with this username and IP.
   $num_submissions_database = db_result(db_query($query, $user->uid, ip_address(), $user->uid, ($node->webform['submit_interval'] != -1) ? (time() - $node->webform['submit_interval']) : $node->webform['submit_interval'], $node->nid));

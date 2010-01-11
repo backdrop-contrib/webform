@@ -176,7 +176,7 @@ function webform_form_builder_load($form_builder_type, $form_builder_id) {
     $node = node_load($nid);
     // Get the unfiltered version of the client form.
     $form_state = array();
-    $form = webform_client_form($form_state, $node, array(), TRUE, FALSE);
+    $form = webform_client_form($form_state, $node, array(), TRUE, FALSE, FALSE);
     webform_form_builder_load_process($form['submitted'], $node);
     return $form['submitted'];
   }

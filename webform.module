@@ -625,7 +625,7 @@ function webform_node_insert($node) {
   module_load_include('inc', 'webform', 'includes/webform.components');
 
   // Insert the Webform.
-  db_query("INSERT INTO {webform} (nid, confirmation, confirmation_format, teaser, submit_notice, submit_text, submit_limit, submit_interval, additional_validate, additional_submit) VALUES (%d, '%s', %d, %d, %d, '%s', %d, %d, '%s', '%s')", $node->nid, $node->webform['confirmation'], $node->webform['confirmation_format'], $node->webform['teaser'], $node->webform['submit_notice'], $node->webform['submit_text'], $node->webform['submit_limit'], $node->webform['submit_interval'], $node->webform['additional_validate'], $node->webform['additional_submit']);
+  db_query("INSERT INTO {webform} (nid, confirmation, confirmation_format, teaser, allow_draft, submit_notice, submit_text, submit_limit, submit_interval, additional_validate, additional_submit) VALUES (%d, '%s', %d, %d, %d, %d, '%s', %d, %d, '%s', '%s')", $node->nid, $node->webform['confirmation'], $node->webform['confirmation_format'], $node->webform['teaser'], $node->webform['allow_draft'], $node->webform['submit_notice'], $node->webform['submit_text'], $node->webform['submit_limit'], $node->webform['submit_interval'], $node->webform['additional_validate'], $node->webform['additional_submit']);
 
   // Insert the components into the database. Used with clone.module.
   if (isset($node->webform['components']) && !empty($node->webform['components'])) {
@@ -860,11 +860,23 @@ function webform_node_view(&$node, $teaser, $page) {
 
   // Get a count of previous submissions by this user.
   if ($user->uid && (user_access('access own webform submissions') || user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid))) {
-    $submission_count = db_result(db_query('SELECT count(*) FROM {webform_submissions} WHERE nid = %d AND uid = %d', $node->nid, $user->uid));
+    $submission_count = db_result(db_query('SELECT count(*) FROM {webform_submissions} WHERE nid = %d AND uid = %d AND is_draft = 0', $node->nid, $user->uid));
+  }
+
+  // Check if this user has a draft for this webform.
+  $is_draft = FALSE;
+  if ($node->webform['allow_draft'] && $user->uid != 0) {
+    // Draft found - display form with draft data for further editing.
+    if ($draft_sid = _webform_fetch_draft_sid($node->nid, $user->uid)) {
+      module_load_include('inc', 'webform', 'includes/webform.submissions');
+      $submission = webform_get_submission($node->nid, $draft_sid);
+      $enabled = TRUE;
+      $is_draft = TRUE;
+    }
   }
 
   // Render the form and generate the output.
-  $form = drupal_get_form('webform_client_form_'. $node->nid, $node, $submission, $enabled);
+  $form = drupal_get_form('webform_client_form_'. $node->nid, $node, $submission, $enabled, $is_draft);
   $output = theme('webform_view', $node, $teaser, $page, $form, $enabled);
 
   // Remove the surrounding <form> tag if this is a preview.
@@ -1172,24 +1184,26 @@ function webform_client_form_load($node, $submission, $enabled) {
  * @param $enabled
  *   If displaying a result, specify if form elements are enabled for
  *   editing.
+ * @param $is_draft
+ *   Optional. Set to TRUE if displaying a draft.
  * @param $filter
  *   Whether or not to filter the contents of descriptions and values when
  *   building the form. Values need to be unfiltered to be editable by
  *   Form Builder.
  */
-function webform_client_form(&$form_state, $node, $submission, $enabled = FALSE, $filter = TRUE) {
+function webform_client_form(&$form_state, $node, $submission, $enabled = FALSE, $is_draft = FALSE, $filter = TRUE) {
   global $user;
 
   module_load_include('inc', 'webform', 'includes/webform.components');
   webform_load_components();
 
-  if (isset($submission->sid)) {
+  if (isset($submission->sid) && !$is_draft) {
     drupal_set_title(t('Submission #@sid', array('@sid' => $submission->sid)));
     webform_set_breadcrumb($node, $submission);
   }
 
   // Set a header for navigating results.
-  if ($submission && (user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid))) {
+  if ($submission && !$is_draft && (user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid))) {
     // Add CSS to display submission info. Don't preprocess because this CSS file is used rarely.
     drupal_add_css(drupal_get_path('module', 'webform') .'/webform.css', 'module', 'all', FALSE);
 
@@ -1280,18 +1294,27 @@ function webform_client_form(&$form_state, $node, $submission, $enabled = FALSE,
         $prev_page = t('< Previous Page');
 
         // Add the submit button(s).
+       if ($node->webform['allow_draft'] && (empty($submission) || $submission->is_draft) && $user->uid != 0) {
+          $form['draft'] = array(
+            '#type' => 'submit',
+            '#value' => t('Save Draft'),
+            '#weight' => 950,
+            '#validate' => array(),
+          );
+        }
         if ($page_num > 1) {
           $form['previous'] = array(
             '#type' => 'submit',
             '#value' => $prev_page,
             '#weight' => 1000,
+            '#validate' => array(),
           );
         }
         if ($page_num == $page_count) {
           $form['submit'] = array(
             '#type' => 'submit',
             '#value' => empty($node->webform['submit_text']) ? t('Submit') : $node->webform['submit_text'],
-            '#weight' => 1001,
+            '#weight' => 1050,
           );
         }
         elseif ($page_num < $page_count) {
@@ -1312,16 +1335,11 @@ function webform_client_form(&$form_state, $node, $submission, $enabled = FALSE,
       }
     }
 
-    // Recursively add components to the form. Microweights keep things in webform order.
-    $microweight = 0.001;
+    // Recursively add components to the form.
     foreach ($component_tree['children'] as $cid => $component) {
       $component_value = isset($form_state['values']['submitted'][$component['form_key']]) ? $form_state['values']['submitted'][$component['form_key']] : NULL;
       if (_webform_client_form_rule_check($form_state, $component, $page_num)) {
-        _webform_client_form_add_component($cid, $component, $component_value, $form['submitted'], $form, $submission, $page_num, $enabled, $filter);
-      }
-      if (isset($form['submitted'][$component['form_key']])) {
-        $form['submitted'][$component['form_key']]['#weight'] += $microweight;
-        $microweight += 0.001;
+        _webform_client_form_add_component($component, $component_value, $form['submitted'], $form, $form_state, $submission, $enabled, $filter);
       }
     }
 
@@ -1329,12 +1347,14 @@ function webform_client_form(&$form_state, $node, $submission, $enabled = FALSE,
       '#type' => 'value',
       '#value' => $node->nid,
     );
-    if (isset($submission->sid)) {
-      $form['details']['sid'] = array(
-        '#type' => 'hidden',
-        '#value' => $submission->sid,
-      );
-    }
+    $form['details']['sid'] = array(
+      '#type' => 'hidden',
+      '#value' => isset($submission->sid) ? $submission->sid : '',
+    );
+    $form['details']['finished'] = array(
+      '#type' => 'hidden',
+      '#value' => isset($submission->draft) ? !$submission->draft : 0,
+    );
   }
 
   return $form;
@@ -1359,7 +1379,10 @@ function _webform_client_form_rule_check($form_state, $component, $page_num) {
 /**
  * Add a component to the form. Called recursively for fieldsets.
  */
-function _webform_client_form_add_component($cid, $component, $component_value, &$parent_fieldset, &$form, $submission, $page_num, $enabled = FALSE, $filter = TRUE) {
+function _webform_client_form_add_component($component, $component_value, &$parent_fieldset, &$form, &$form_state, $submission, $enabled = FALSE, $filter = TRUE) {
+  $page_num = $form_state['storage']['page_num'];
+  $cid = $component['cid'];
+
   // Load with submission information if necessary.
   if (!$enabled) {
     // This component is display only.
@@ -1400,19 +1423,27 @@ function _webform_client_form_add_component($cid, $component, $component_value, 
       }
     }
   }
+
+  // Disable validation initially on all elements. We manually validate
+  // all webform elements in webform_client_form_validate().
+  if (isset($parent_fieldset[$component['form_key']])) {
+    $parent_fieldset[$component['form_key']]['#validated'] = TRUE;
+  }
+
   if (isset($component['children']) && is_array($component['children'])) {
-    $microweight = 0.001;
     foreach ($component['children'] as $scid => $subcomponent) {
       $subcomponent_value = isset($component_value[$subcomponent['form_key']]) ? $component_value[$subcomponent['form_key']] : NULL;
-      _webform_client_form_add_component($scid, $subcomponent, $subcomponent_value, $parent_fieldset[$component['form_key']], $form, $submission, $page_num, $enabled, $filter);
-      $parent_fieldset[$component['form_key']][$subcomponent['form_key']]['#weight'] += $microweight;
-      $microweight += 0.001;
+      _webform_client_form_add_component($subcomponent, $subcomponent_value, $parent_fieldset[$component['form_key']], $form, $form_state, $submission, $enabled, $filter);
     }
   }
 }
 
 function webform_client_form_validate($form, $form_state) {
   $node = node_load($form_state['values']['details']['nid']);
+
+  // Run all #element_validate and #required checks. These are skipped initially
+  // by setting #validated = TRUE on all components when they are added.
+  _webform_client_form_validate($form, $form_state);
 
   // Flatten trees within the submission.
   $form_state['values']['submitted_tree'] = $form_state['values']['submitted'];
@@ -1426,6 +1457,76 @@ function webform_client_form_validate($form, $form_state) {
   }
 }
 
+/**
+ * Recursive validation function to trigger normal Drupal validation.
+ *
+ * This function imitates _form_validate in Drupal's form.inc, only it sets
+ * a different property to ensure that validation has occurred.
+ */
+function _webform_client_form_validate($elements, &$form_state, $first_run = TRUE) {
+  static $form;
+  if ($first_run) {
+    $form = $elements;
+  }
+
+  // Recurse through all children.
+  foreach (element_children($elements) as $key) {
+    if (isset($elements[$key]) && $elements[$key]) {
+      _webform_client_form_validate($elements[$key], $form_state, FALSE);
+    }
+  }
+  // Validate the current input.
+  if (!isset($elements['#webform_validated']) || !$elements['#webform_validated']) {
+    if (isset($elements['#needs_validation'])) {
+      // Make sure a value is passed when the field is required.
+      // A simple call to empty() will not cut it here as some fields, like
+      // checkboxes, can return a valid value of '0'. Instead, check the
+      // length if it's a string, and the item count if it's an array.
+      if ($elements['#required'] && (!count($elements['#value']) || (is_string($elements['#value']) && strlen(trim($elements['#value'])) == 0))) {
+        form_error($elements, t('!name field is required.', array('!name' => $elements['#title'])));
+      }
+
+      // Verify that the value is not longer than #maxlength.
+      if (isset($elements['#maxlength']) && drupal_strlen($elements['#value']) > $elements['#maxlength']) {
+        form_error($elements, t('!name cannot be longer than %max characters but is currently %length characters long.', array('!name' => empty($elements['#title']) ? $elements['#parents'][0] : $elements['#title'], '%max' => $elements['#maxlength'], '%length' => drupal_strlen($elements['#value']))));
+      }
+
+      if (isset($elements['#options']) && isset($elements['#value'])) {
+        if ($elements['#type'] == 'select') {
+          $options = form_options_flatten($elements['#options']);
+        }
+        else {
+          $options = $elements['#options'];
+        }
+        if (is_array($elements['#value'])) {
+          $value = $elements['#type'] == 'checkboxes' ? array_keys(array_filter($elements['#value'])) : $elements['#value'];
+          foreach ($value as $v) {
+            if (!isset($options[$v])) {
+              form_error($elements, t('An illegal choice has been detected. Please contact the site administrator.'));
+              watchdog('form', 'Illegal choice %choice in !name element.', array('%choice' => $v, '!name' => empty($elements['#title']) ? $elements['#parents'][0] : $elements['#title']), WATCHDOG_ERROR);
+            }
+          }
+        }
+        elseif (!isset($options[$elements['#value']])) {
+          form_error($elements, t('An illegal choice has been detected. Please contact the site administrator.'));
+          watchdog('form', 'Illegal choice %choice in %name element.', array('%choice' => $elements['#value'], '%name' => empty($elements['#title']) ? $elements['#parents'][0] : $elements['#title']), WATCHDOG_ERROR);
+        }
+      }
+    }
+
+    // Call any element-specific validators. These must act on the element
+    // #value data.
+    if (isset($elements['#element_validate'])) {
+      foreach ($elements['#element_validate'] as $function) {
+        if (function_exists($function))  {
+          $function($elements, $form_state, $form);
+        }
+      }
+    }
+    $elements['#webform_validated'] = TRUE;
+  }
+}
+
 function webform_client_form_submit($form, &$form_state) {
   global $user, $base_url;
   module_load_include('inc', 'webform', 'includes/webform.submissions');
@@ -1435,7 +1536,8 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Check for a multi-page form that is not yet complete.
   $submit_op = empty($node->webform['submit_text']) ? t('Submit') : $node->webform['submit_text'];
-  if ($form_state['values']['op'] != $submit_op) {
+  $draft_op = t('Save Draft');
+  if (!in_array($form_state['values']['op'], array($submit_op, $draft_op))) {
     // Checkboxes need post-processing to maintain their values.
     _webform_client_form_submit_process($node, $form_state['values']['submitted'], array('select', 'grid'));
 
@@ -1532,10 +1634,13 @@ function webform_client_form_submit($form, &$form_state) {
     eval('?>'. $node->webform['additional_submit']);
   }
 
+  // Check if user is submitting as a draft.
+  $is_draft = $form_state['values']['op'] == $draft_op;
+
   // Save the submission to the database.
   if (empty($form_state['values']['details']['sid'])) {
-    // No sid was found thus insert it in the datatabase.
-    $form_state['values']['details']['sid'] = webform_submission_insert($node, $form_state['values']['submitted']);
+    // No sid was found thus insert it in the dataabase.
+    $form_state['values']['details']['sid'] = webform_submission_insert($node, $form_state['values']['submitted'], $is_draft);
     $form_state['values']['details']['is_new'] = TRUE;
 
     // Set a cookie including the server's submission time.
@@ -1547,15 +1652,15 @@ function webform_client_form_submit($form, &$form_state) {
     }
   }
   else {
-    // Sid was found thus update the existing sid in the datatbase.
-    webform_submission_update($node, $form_state['values']['details']['sid'], $form_state['values']['submitted']);
+    // Sid was found thus update the existing sid in the database.
+    webform_submission_update($node, $form_state['values']['details']['sid'], $form_state['values']['submitted'], $is_draft);
     $form_state['values']['details']['is_new'] = FALSE;
   }
 
   $sid = $form_state['values']['details']['sid'];
 
   // Check if this form is sending an email.
-  if ($form_state['values']['details']['is_new']) {
+  if (!$form_state['values']['details']['finished']) {
     // Create a themed message for mailing.
     foreach ($node->webform['emails'] as $eid => $email) {
       $cid = is_numeric($email['email']) && isset($node->webform['components'][$email['email']]) ? $email['email'] : 'custom';
@@ -1654,7 +1759,11 @@ function webform_client_form_submit($form, &$form_state) {
   }
 
   // Check confirmation field to see if redirect should be to another node or a message.
-  if (isset($form_state['values']['submission'])) {
+  if ($is_draft) {
+    drupal_set_message(t('Draft saved.'));
+    $redirect = NULL;
+  }
+  elseif (isset($form_state['values']['submission'])) {
     drupal_set_message(t('Submission updated.'));
     $redirect = NULL;
   }
@@ -1776,6 +1885,18 @@ function template_preprocess_webform_mail_message(&$vars) {
 
   $vars['user'] = $user;
   $vars['ip_address'] = ip_address();
+}
+
+/**
+ * Check if current user has a draft of this webform, and return the sid.
+ */
+function _webform_fetch_draft_sid($nid, $uid) {
+  $result = db_query("SELECT * FROM {webform_submissions} WHERE nid = %d AND uid = %d AND is_draft = 1 ORDER BY submitted DESC", $nid, $uid);
+  $row = db_fetch_array($result);
+  if (isset($row['sid'])) {
+    return (int) $row['sid'];
+  }
+  return FALSE;
 }
 
 /**

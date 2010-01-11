@@ -39,6 +39,13 @@ function webform_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'allow_draft' => array(
+         'description' => t('Boolean value for whether submissions to this form be saved as a draft.'),
+         'type' => 'int',
+         'size' => 'tiny',
+         'not null' => TRUE,
+         'default' => '0',
+      ),
       'submit_notice' => array(
         'description' => 'Boolean value for whether to show or hide the previous submissions notification.',
         'type' => 'int',
@@ -247,6 +254,13 @@ function webform_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
+      ),
+      'is_draft' => array(
+         'description' => t('Is this a draft of the submission?'),
+         'type' => 'int',
+         'size' => 'tiny',
+         'not null' => TRUE,
+         'default' => '0',
       ),
       'submitted' => array(
         'description' => 'Timestamp of when the form was submitted.',
@@ -1231,6 +1245,16 @@ function webform_update_6305() {
     $ret[] = update_sql("UPDATE {permission} SET perm = '" . implode(',', $role->perm) . "' WHERE rid = " . $role->rid);
   }
 
+  return $ret;
+}
+
+/**
+ * Add the ability to save as draft.
+ */
+function webform_update_6306() {
+  $ret = array();
+  db_add_field($ret, 'webform', 'allow_draft', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
+  db_add_field($ret, 'webform_submissions', 'is_draft', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
   return $ret;
 }
 
