@@ -9,6 +9,7 @@ Webform 2.x Changelog
 - Conditional fields.
 - Webform may now be attached to any content type.
 - Form builder integration for live previews and editing of forms.
+- Public API for allowing other modules to provide components.
 
 1.x to 2.0
 ----------

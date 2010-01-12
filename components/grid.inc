@@ -142,7 +142,7 @@ function _webform_display_grid($component, $value) {
 /**
  * Implementation of _webform_submit_component().
  */
-function _webform_submit_grid($component, $value) {
+function _webform_submit_grid($component, $value) {;
   $options = drupal_map_assoc(array_flip(_webform_grid_options($component['extra']['options'])));
 
   // Questions are a bit more tricky, since quotes were removed from them in
@@ -195,16 +195,6 @@ function theme_webform_mail_grid($component, $value) {
 }
 
 /**
- * Implementation of _webform_help_component().
- */
-function _webform_help_grid($section) {
-  switch ($section) {
-    case 'admin/settings/webform#grid_description':
-      return t('Allows creation of grid questions, denoted by radio buttons.');
-  }
-}
-
-/**
  * Implementation of _webform_help_grid().
  */
 function _webform_theme_grid() {
@@ -219,9 +209,9 @@ function _webform_theme_grid() {
 }
 
 /**
- * Implementation of _webform_analysis_rows_component().
+ * Implementation of _webform_analysis_component().
  */
-function _webform_analysis_rows_grid($component, $sids = array()) {
+function _webform_analysis_grid($component, $sids = array()) {
   // Generate the list of options and questions.
   $options = _webform_grid_options($component['extra']['options']);
   $questions = array_values(_webform_grid_options($component['extra']['questions']));
@@ -264,9 +254,9 @@ function _webform_analysis_rows_grid($component, $sids = array()) {
 }
 
 /**
- * Implementation of _webform_table_data_component().
+ * Implementation of _webform_table_component().
  */
-function _webform_table_data_grid($component, $value) {
+function _webform_table_grid($component, $value) {
   $questions = array_values(_webform_grid_options($component['extra']['questions']));
   $output = '';
   // Set the value as a single string.

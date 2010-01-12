@@ -78,9 +78,7 @@ function webform_form_builder_save($node, $element_id, $form) {
   }
   // Populate a new default component.
   elseif (isset($element['#webform']['is_new'])) {
-    $defaults_function = '_webform_defaults_'. $type;
-    if (function_exists($defaults_function)) {
-      $component = $defaults_function();
+    if ($component = webform_component_invoke($type, 'defaults')) {
       $component['type'] = $type;
     }
   }
@@ -104,9 +102,8 @@ function webform_form_builder_save($node, $element_id, $form) {
   }
 
   // Save any specific settings.
-  $save_function = '_webform_form_builder_save_'. $type;
-  if (function_exists($save_function)) {
-    $save_function($component, $element);
+  if ($saved_component = webform_component_invoke($type, 'form_builder_save', $component, $element)) {
+    $component = $saved_component;
   }
 
   if (!isset($component['cid'])) {
@@ -133,11 +130,10 @@ function webform_form_builder_cancel(&$form, &$form_state) {
 function webform_form_builder_types() {
   $fields = array();
 
-  $components = webform_load_components();
-  foreach ($components as $key => $component) {
-    $function = '_webform_form_builder_types_'. $key;
-    if (function_exists($function)) {
-      $fields = array_merge($fields, $function());
+  $components = webform_components();
+  foreach ($components as $type => $component) {
+    if ($additional_fields = webform_component_invoke($type, 'form_builder_types')) {
+      $fields = array_merge($fields, $additional_fields);
     }
   }
 
@@ -152,11 +148,10 @@ function webform_form_builder_properties($form_type) {
   $properties = array();
 
   if ($form_type == 'webform') {
-    $components = webform_load_components();
-    foreach ($components as $key => $component) {
-      $function = '_webform_form_builder_properties_'. $key;
-      if (function_exists($function)) {
-        $properties = array_merge($properties, $function());
+    $components = webform_components();
+    foreach ($components as $type => $component) {
+      if ($additional_properties = webform_component_invoke($type, 'form_builder_properties')) {
+        $properties = array_merge($properties, $additional_properties);
       }
     }
   }
@@ -194,10 +189,9 @@ function webform_form_builder_load_process(&$form, $node, $pid = 0) {
 
       // Add any component-specific loading. Note that all components are
       // invoked here because the component type isn't yet known.
-      foreach (webform_load_components() as $component => $name) {
-        $load_function = '_webform_form_builder_load_' . $component;
-        if (function_exists($load_function)) {
-          $load_function($form[$key]);
+      foreach (webform_components() as $type => $info) {
+        if ($element = webform_component_invoke($type, 'form_builder_load', $form[$key])) {
+          $form[$key] = $element;
         }
       }
       webform_form_builder_load_process($form[$key], $node, $cid);
@@ -236,8 +230,8 @@ function webform_form_builder_preview_alter(&$element, $form_type, $form_id) {
     // Let components do any extra filtering if needed.
     $type = isset($element['#webform']['type']) ? $element['#webform']['type'] : $element['#form_builder']['element_type'];
     $function = '_webform_form_builder_preview_alter_' . $type;
-    if (function_exists($function)) {
-      $function($element);
+    if ($new_element = webform_component_invoke($type, 'form_builder_preview_alter', $element)) {
+      $element = $new_element;
     }
   }
 }

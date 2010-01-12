@@ -74,21 +74,23 @@ function _webform_display_markup($component, $value) {
 /**
  * Implementation of _webform_form_builder_save_component().
  */
-function _webform_form_builder_save_markup(&$component, $form_element) {
+function _webform_form_builder_save_markup($component, $form_element) {
   $component['extra']['format'] = $form_element['#input_format'];
   $component['value'] = $form_element['#markup'];
+  return $component;
 }
 
 /**
  * Module specific instance of hook_form_builder_preview_alter().
  */
-function _webform_form_builder_preview_alter_markup(&$form_element) {
+function _webform_form_builder_preview_alter_markup($form_element) {
   $form_element['#markup'] = isset($form_element['#markup']) ? $form_element['#markup'] : '';
   $form_element['#value'] = check_markup(_webform_filter_values($form_element['#markup'], NULL, NULL, FALSE), $form_element['#input_format'], FALSE);
 
   if (strlen(trim($form_element['#value'])) == 0) {
     $form_element['#value'] = t('This markup element currently does not contain any text.');
   }
+  return $form_element;
 }
 
 /**
@@ -118,14 +120,4 @@ function _webform_form_builder_types_markup() {
   );
 
   return $fields;
-}
-
-/**
- * Implementation of _webform_help_component().
- */
-function _webform_help_markup($section) {
-  switch ($section) {
-    case 'admin/settings/webform#markup_description':
-      return t('Displays text as HTML in the form; does not render a field.');
-  }
 }

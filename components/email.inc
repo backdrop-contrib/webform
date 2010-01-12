@@ -146,10 +146,11 @@ function _webform_display_email($component, $value) {
 /**
  * Implementation of _webform_form_builder_save_component().
  */
-function _webform_form_builder_save_email(&$component, $form_element) {
+function _webform_form_builder_save_email($component, $form_element) {
   $component['extra']['width'] = isset($form_element['#size']) ? $form_element['#size'] : NULL;
   $component['extra']['description'] = isset($form_element['#description']) ? $form_element['#description'] : NULL;
   $component['extra']['disabled'] = isset($form_element['#disabled']) ? $form_element['#disabled'] : FALSE;
+  return $component;
 }
 
 /**
@@ -179,19 +180,9 @@ function _webform_form_builder_types_email() {
 }
 
 /**
- * Implementation of _webform_help_component().
+ * Implementation of _webform_analysis_component().
  */
-function _webform_help_email($section) {
-  switch ($section) {
-    case 'admin/settings/webform#email_description':
-      return t("A textfield that automatically fills in a logged-in user's e-mail.");
-  }
-}
-
-/**
- * Implementation of _webform_analysis_rows_component().
- */
-function _webform_analysis_rows_email($component, $sids = array()) {
+function _webform_analysis_email($component, $sids = array()) {
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
   $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
   $query = 'SELECT data '.
@@ -218,9 +209,9 @@ function _webform_analysis_rows_email($component, $sids = array()) {
 }
 
 /**
- * Implementation of _webform_table_data_component().
+ * Implementation of _webform_table_component().
  */
-function _webform_table_data_email($component, $value) {
+function _webform_table_email($component, $value) {
   return check_plain(empty($value[0]) ? '' : $value[0]);
 }
 

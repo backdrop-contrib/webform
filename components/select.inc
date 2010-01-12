@@ -334,19 +334,20 @@ function _webform_form_builder_types_select() {
 /**
  * Module specific instance of hook_form_builder_load().
  */
-function _webform_form_builder_load_select(&$form_element) {
+function _webform_form_builder_load_select($form_element) {
   if (in_array($form_element['#type'], array('radios', 'checkboxes', 'select'))) {
     $form_element['#webform']['type'] = 'select';
     if ($form_element['#type'] == 'checkboxes') {
       $form_element['#multiple'] = TRUE;
     }
+    return $form_element;
   }
 }
 
 /**
  * Implementation of _webform_form_builder_save_component().
  */
-function _webform_form_builder_save_select(&$component, $form_element) {
+function _webform_form_builder_save_select($component, $form_element) {
   $options = '';
 
   foreach ($form_element['#options'] as $key => $option_value) {
@@ -357,6 +358,7 @@ function _webform_form_builder_save_select(&$component, $form_element) {
   $component['extra']['multiple'] = empty($form_element['#multiple']) ? 'N' : 'Y';
   $component['extra']['aslist'] = $form_element['#type'] == 'select' ? 'Y' : 'N';
   $component['extra']['description'] = isset($form_element['#description']) ? $form_element['#description'] : '';
+  return $component;
 }
 
 /**
@@ -394,16 +396,6 @@ function theme_webform_mail_select($component, $value) {
 }
 
 /**
- * Implementation of _webform_help_component().
- */
-function _webform_help_select($section) {
-  switch ($section) {
-    case 'admin/settings/webform#select_description':
-      return t('Allows creation of checkboxes, radio buttons, or select menus.');
-  }
-}
-
-/**
  * Implementation of _webform_theme_component().
  */
 function _webform_theme_select() {
@@ -415,9 +407,9 @@ function _webform_theme_select() {
 }
 
 /**
- * Implementation of _webform_analysis_rows_component().
+ * Implementation of _webform_analysis_component().
  */
-function _webform_analysis_rows_select($component, $sids = array()) {
+function _webform_analysis_select($component, $sids = array()) {
   $options = _webform_select_options($component['extra']['items'], TRUE);
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
   $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
@@ -443,9 +435,9 @@ function _webform_analysis_rows_select($component, $sids = array()) {
 }
 
 /**
- * Implementation of _webform_table_data_component().
+ * Implementation of _webform_table_component().
  */
-function _webform_table_data_select($component, $value) {
+function _webform_table_select($component, $value) {
   $output = '';
   // Set the value as a single string.
   if (is_array($value)) {

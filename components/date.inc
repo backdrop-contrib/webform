@@ -275,16 +275,6 @@ function theme_webform_mail_date($component, $value) {
 }
 
 /**
- * Implementation of _webform_help_component().
- */
-function _webform_help_date($section) {
-  switch ($section) {
-    case 'admin/settings/webform#date_description':
-      return t('Presents month, day, and year fields.');
-  }
-}
-
-/**
  * Implementation of _webform_theme_component().
  */
 function _webform_theme_date() {
@@ -299,9 +289,9 @@ function _webform_theme_date() {
 }
 
 /**
- * Implementation of _webform_analysis_rows_component().
+ * Implementation of _webform_analysis_component().
  */
-function _webform_analysis_rows_date($component, $sids = array()) {
+function _webform_analysis_date($component, $sids = array()) {
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
   $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
   $query = 'SELECT no,data '.
@@ -350,9 +340,9 @@ function _webform_analysis_rows_date($component, $sids = array()) {
 }
 
 /**
- * Implementation of _webform_table_data_component().
+ * Implementation of _webform_table_component().
  */
-function _webform_table_data_date($component, $value) {
+function _webform_table_date($component, $value) {
   if (drupal_strlen($value[0]) > 0 && drupal_strlen($value[1]) > 0 && drupal_strlen($value[2]) > 0) {
     return check_plain($value[0] .'/'. $value[1] .'/'. $value[2]);
   }

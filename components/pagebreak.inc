@@ -45,16 +45,6 @@ function _webform_edit_pagebreak($component) {
 }
 
 /**
- * Implementation of _webform_help_component().
- */
-function _webform_help_pagebreak($section) {
-  switch ($section) {
-    case 'admin/settings/webform#pagebreak_description':
-      return t('Break up a multi-page form.');
-  }
-}
-
-/**
  * Implementation of _webform_render_component().
  */
 function _webform_render_pagebreak($component, $value = NULL, $filter = TRUE) {

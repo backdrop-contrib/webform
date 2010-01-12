@@ -147,28 +147,19 @@ function _webform_form_builder_types_textarea() {
 /**
  * Implementation of _webform_form_builder_save_component().
  */
-function _webform_form_builder_save_textarea(&$component, $form_element) {
+function _webform_form_builder_save_textarea($component, $form_element) {
   $component['extra']['description'] = $form_element['#description'];
   $component['extra']['cols'] = $form_element['#cols'];
   $component['extra']['rows'] = $form_element['#rows'];
   $component['extra']['disabled'] = empty($form_element['#disabled']) ? NULL : TRUE;
   $component['extra']['format'] = isset($form_element['#input_format']) ? $form_element['#input_format'] : NULL;
+  return $component;
 }
 
 /**
- * Implementation of _webform_help_component().
+ * Implementation of _webform_analysis_component().
  */
-function _webform_help_textarea($section) {
-  switch ($section) {
-    case 'admin/settings/webform#textarea_description':
-      return t('A large text area that allows for multiple lines of input.');
-  }
-}
-
-/**
- * Implementation of _webform_analysis_rows_component().
- */
-function _webform_analysis_rows_textarea($component, $sids = array()) {
+function _webform_analysis_textarea($component, $sids = array()) {
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
   $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
   $query = 'SELECT data '.
@@ -195,9 +186,9 @@ function _webform_analysis_rows_textarea($component, $sids = array()) {
 }
 
 /**
- * Implementation of _webform_table_data_component().
+ * Implementation of _webform_table_component().
  */
-function _webform_table_data_textarea($component, $value) {
+function _webform_table_textarea($component, $value) {
   return empty($value[0]) ? '' : check_plain($value[0]);
 }
 

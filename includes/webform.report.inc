@@ -166,9 +166,6 @@ function theme_webform_results_submissions($node, $submissions, $total_count = 0
  * Create a table containing all submitted values for a webform node.
  */
 function webform_results_table($node, $pager_count = 0) {
-  // Load Components.
-  webform_load_components();
-
   if (isset($_GET['results']) && is_numeric($_GET['results'])) {
     $pager_count = $_GET['results'];
   }
@@ -229,14 +226,11 @@ function theme_webform_results_table($node, $components, $submissions, $total_co
 
     // Generate a cell for each component.
     foreach ($node->webform['components'] as $component) {
-      $table_function = '_webform_table_data_'. $component['type'];
-      if (function_exists($table_function)) {
-        $data = isset($submission->data[$component['cid']]['value']) ? $submission->data[$component['cid']]['value'] : NULL;
-        $submission_output = $table_function($component, $data);
-        if ($submission_output !== NULL) {
-          $component_headers[] = $component['name'];
-          $cell[] = $submission_output;
-        }
+      $data = isset($submission->data[$component['cid']]['value']) ? $submission->data[$component['cid']]['value'] : NULL;
+      $submission_output = webform_component_invoke($component['type'], 'table', $component, $data);
+      if ($submission_output !== NULL) {
+        $component_headers[] = $component['name'];
+        $cell[] = $submission_output;
       }
     }
 
@@ -401,15 +395,12 @@ function webform_results_download($node, $format = 'delimiter', $options = array
   $header[2] = array(t('Serial'), t('SID'), t('Time'), t('IP Address'), t('UID'), t('Username'));
 
   // Compile header information.
-  webform_load_components(); // Load all components.
   foreach ($node->webform['components'] as $cid => $component) {
-    $csv_header_function = '_webform_csv_headers_'. $component['type'];
-    if (function_exists($csv_header_function)) {
-      // Let each component determine its headers.
-      $component_header = $csv_header_function($component);
-      $header[0] = array_merge($header[0], (array)$component_header[0]);
-      $header[1] = array_merge($header[1], (array)$component_header[1]);
-      $header[2] = array_merge($header[2], (array)$component_header[2]);
+    // Let each component determine its headers.
+    if ($component_header = webform_component_invoke($component['type'], 'csv_headers', $component)) {
+      $header[0] = array_merge($header[0], (array) $component_header[0]);
+      $header[1] = array_merge($header[1], (array) $component_header[1]);
+      $header[2] = array_merge($header[2], (array) $component_header[2]);
     }
   }
 
@@ -432,11 +423,10 @@ function webform_results_download($node, $format = 'delimiter', $options = array
     $row[] = $submission->uid;
     $row[] = $submission->name;
     foreach ($node->webform['components'] as $cid => $component) {
-      $csv_data_function = '_webform_csv_data_'. $component['type'];
-      if (function_exists($csv_data_function)) {
-        // Let each component add its data.
-        $raw_data = isset($submission->data[$cid]['value']) ? $submission->data[$cid]['value'] : NULL;
-        $data = $csv_data_function($component, $raw_data);
+      // Let each component add its data.
+      $raw_data = isset($submission->data[$cid]['value']) ? $submission->data[$cid]['value'] : NULL;
+      $data = webform_component_invoke($component['type'], 'csv_data', $component, $raw_data);
+      if ($data !== NULL) {
         if (is_array($data)) {
           $row = array_merge($row, array_values($data));
         }
@@ -474,14 +464,11 @@ function webform_results_analysis($node, $sids = array()) {
     array('data' => t('responses'), 'colspan' => '10')
   );
 
-  webform_load_components(); // Load all component types.
   foreach ($node->webform['components'] as $component) {
     $question_number++;
 
     // Do component specific call.
-    $analysis_function = '_webform_analysis_rows_'. $component['type'];
-    if (function_exists($analysis_function)) {
-      $crows = $analysis_function($component, $sids);
+    if ($crows = webform_component_invoke($component['type'], 'analysis', $component, $sids)) {
       if (is_array($crows)) {
         $row[0] = array('data' => '<strong>'. $question_number .'</strong>', 'rowspan' => count($crows) + 1, 'valign' => 'top');
         $row[1] = array('data' => '<strong>'. $component['name'] .'</strong>', 'colspan' => '10');

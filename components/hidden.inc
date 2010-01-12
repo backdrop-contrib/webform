@@ -82,10 +82,11 @@ function _webform_display_hidden($component, $value) {
  *
  * Make hidden fields visible while editing.
  */
-function _webform_form_builder_preview_alter_hidden(&$form_element) {
+function _webform_form_builder_preview_alter_hidden($form_element) {
   $form_element['#field_suffix'] = '(' . t('hidden') . ')';
   $form_element['#autocomplete_path'] = NULL; // Needed to avoid notices.
   $form_element['#type'] = 'textfield';
+  return $form_element;
 }
 
 /**
@@ -111,19 +112,9 @@ function _webform_form_builder_types_hidden() {
 }
 
 /**
- * Implementation of _webform_help_component().
+ * Implementation of _webform_analysis_component().
  */
-function _webform_help_hidden($section) {
-  switch ($section) {
-    case 'admin/settings/webform#hidden_description':
-      return t('A field which is not visible to the user, but is recorded with the submission.');
-  }
-}
-
-/**
- * Implementation of _webform_analysis_rows_component().
- */
-function _webform_analysis_rows_hidden($component, $sids = array()) {
+function _webform_analysis_hidden($component, $sids = array()) {
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
   $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
   $query = 'SELECT data '.
@@ -153,7 +144,7 @@ function _webform_analysis_rows_hidden($component, $sids = array()) {
 /**
  * Implementation of _webform_csv_data_component().
  */
-function _webform_table_data_hidden($component, $value) {
+function _webform_table_hidden($component, $value) {
   return check_plain(empty($value[0]) ? '' : $value[0]);
 }
 

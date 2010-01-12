@@ -100,18 +100,9 @@ function _webform_form_builder_types_fieldset() {
 /**
  * Implementation of _webform_form_builder_save_component().
  */
-function _webform_form_builder_save_fieldset(&$component, $form_element) {
+function _webform_form_builder_save_fieldset($component, $form_element) {
   $component['extra']['collapsible'] = isset($form_element['#collapsible']) ? $form_element['#collapsible'] : NULL;
   $component['extra']['collapsed'] = isset($form_element['#collapsed']) ? $form_element['#collapsed'] : NULL;
   $component['extra']['description'] = isset($form_element['#description']) ? $form_element['#description'] : '';
-}
-
-/**
- * Implementation of _webform_help_component().
- */
-function _webform_help_fieldset($section) {
-  switch ($section) {
-    case 'admin/settings/webform#fieldset_description':
-      return t('Fieldsets allow you to organize multiple fields into groups.');
-  }
+  return $component;
 }

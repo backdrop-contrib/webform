@@ -141,13 +141,14 @@ function _webform_display_textfield($component, $value) {
 /**
  * Implementation of _webform_form_builder_save_component().
  */
-function _webform_form_builder_save_textfield(&$component, $form_element) {
+function _webform_form_builder_save_textfield($component, $form_element) {
   $component['extra']['width'] = isset($form_element['#size']) ? $form_element['#size'] : NULL;
   $component['extra']['maxlength'] = isset($form_element['#maxlength']) ? $form_element['#maxlength'] : NULL;
   $component['extra']['field_prefix'] = isset($form_element['#field_prefix']) ? $form_element['#field_prefix'] : NULL;
   $component['extra']['field_suffix'] = isset($form_element['#field_suffix']) ? $form_element['#field_suffix'] : NULL;
   $component['extra']['description'] = isset($form_element['#description']) ? $form_element['#description'] : NULL;
   $component['extra']['disabled'] = isset($form_element['#disabled']) ? $form_element['#disabled'] : FALSE;
+  return $component;
 }
 
 /**
@@ -204,19 +205,9 @@ function _webform_theme_textfield() {
 }
 
 /**
- * Implementation of _webform_help_component().
+ * Implementation of _webform_analysis_component().
  */
-function _webform_help_textfield($section) {
-  switch ($section) {
-    case 'admin/settings/webform#textfield_description':
-      return t('Basic textfield type.');
-  }
-}
-
-/**
- * Implementation of _webform_analysis_rows_component().
- */
-function _webform_analysis_rows_textfield($component, $sids = array()) {
+function _webform_analysis_textfield($component, $sids = array()) {
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
   $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
   $query = 'SELECT data '.
@@ -243,9 +234,9 @@ function _webform_analysis_rows_textfield($component, $sids = array()) {
 }
 
 /**
- * Implementation of _webform_table_data_component().
+ * Implementation of _webform_table_component().
  */
-function _webform_table_data_textfield($component, $value) {
+function _webform_table_textfield($component, $value) {
   return check_plain(empty($value[0]) ? '' : $value[0]);
 }
 

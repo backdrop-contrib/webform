@@ -45,16 +45,6 @@ function webform_help($section = 'admin/help#webform', $arg = NULL) {
       $output .= '<p>'. t('Click on any existing component\'s name to edit its settings.') .'</p>';
       break;
   }
-  if (strstr($section, 'admin/settings/webform#')) {
-    // Call help hooks in plugins:
-    $components = webform_load_components(TRUE);
-    foreach ($components as $key => $component) {
-      $help_function = '_webform_help_'. $key;
-      if (function_exists($help_function)) {
-        $output .= $help_function($section);
-      }
-    }
-  }
 
   return $output;
 }
@@ -72,6 +62,7 @@ function webform_menu() {
     'access callback' => 'user_access',
     'access arguments' => array('access all webform results'),
     'description' => 'View and edit all the available webforms on your site.',
+    'file' => 'includes/webform.admin.inc',
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -83,6 +74,7 @@ function webform_menu() {
     'access callback' => 'user_access',
     'access arguments' => array('administer site configuration'),
     'description' => 'Global configuration of webform functionality.',
+    'file' => 'includes/webform.admin.inc',
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -325,14 +317,16 @@ function webform_menu_submission_load($sid, $nid) {
 function webform_menu_component_load($cid, $nid, $type) {
   module_load_include('inc', 'webform', 'includes/webform.components');
   if ($cid == 'new') {
-    $components = webform_load_components();
+    $components = webform_components();
     $component = in_array($type, array_keys($components)) ? array('type' => $type, 'name' => $_GET['name'], 'mandatory' => $_GET['mandatory'], 'email' => $_GET['email'], 'pid' => $_GET['pid'], 'weight' => $_GET['weight']) : FALSE;
   }
   else {
     $node = node_load($nid);
     $component = isset($node->webform['components'][$cid]) ? $node->webform['components'][$cid] : FALSE;
   }
-  webform_component_defaults($component);
+  if ($component) {
+    webform_component_defaults($component);
+  }
   return $component;
 }
 
@@ -448,9 +442,6 @@ function webform_theme() {
       'arguments' => array('form' => NULL),
       'file' => 'includes/webform.pages.inc',
     ),
-    'webform_admin_settings' => array(
-      'arguments' => array('form' => NULL),
-    ),
     'webform_confirmation' => array(
       'arguments' => array('node' => NULL, 'sid' => NULL),
       'template' => 'templates/webform-confirmation',
@@ -468,11 +459,17 @@ function webform_theme() {
       'arguments' => array('form_values' => NULL, 'node' => NULL, 'sid' => NULL, 'cid' => NULL),
       'pattern' => 'webform_mail_headers_[0-9]+',
     ),
-    'webform_admin_content' => array(
-      'arguments' => array('nodes' => NULL),
-    ),
     'webform_token_help' => array(
       'arguments' => array(),
+    ),
+    // webform.admin.inc.
+    'webform_admin_settings' => array(
+      'arguments' => array('form' => NULL),
+      'file' => 'includes/webform.admin.inc',
+    ),
+    'webform_admin_content' => array(
+      'arguments' => array('nodes' => NULL),
+      'file' => 'includes/webform.admin.inc',
     ),
     // webform.emails.inc.
     'webform_emails_form' => array(
@@ -511,32 +508,88 @@ function webform_theme() {
       'arguments' => array('node' => NULL, 'components' => NULL, 'submissions' => NULL, 'node' => NULL, 'total_count' => NULL, 'pager_count' => NULL),
     ),
   );
+
   // Theme functions in all components.
-  $components = webform_load_components(TRUE);
-  foreach ($components as $key => $component) {
-    $theme_hook = '_webform_theme_'. $key;
-    if (function_exists($theme_hook)) {
-      $theme = array_merge($theme, $theme_hook());
+  $components = webform_components(TRUE);
+  foreach ($components as $type => $component) {
+    if ($theme_additions = webform_component_invoke($type, 'theme')) {
+      $theme = array_merge($theme, $theme_additions);
     }
   }
   return $theme;
 }
 
 /**
- * Implementation of hook_node_info().
+ * Implementation of hook_webform_component_info().
  */
-function webform_node_info() {
+function webform_webform_component_info() {
   return array(
-    'webform' => array(
-      'name' => t('Webform'),
-      'module' => 'webform',
-      'description' => t('Create a new form or questionnaire accessible to users. Submission results and statistics are recorded and accessible to privileged users.'),
-    )
+    'date' => array(
+      'label' => t('Date'),
+      'description' => t('Presents month, day, and year fields.'),
+      'file' => 'components/date.inc',
+    ),
+    'email' => array(
+      'label' => t('E-mail'),
+      'description' => t('A special textfield that accepts e-mail addresses.'),
+      'file' => 'components/email.inc',
+    ),
+    'fieldset' => array(
+      'label' => t('Fieldset'),
+      'description' => t('Fieldsets allow you to organize multiple fields into groups.'),
+      'file' => 'components/fieldset.inc',
+    ),
+    'file' => array(
+      'label' => t('File'),
+      'description' => t('Allow users to upload files of configurable types.'),
+      'file' => 'components/file.inc',
+    ),
+    'grid' => array(
+      'label' => t('Grid'),
+      'description' => t('Allows creation of grid questions, denoted by radio buttons.'),
+      'file' => 'components/grid.inc',
+    ),
+    'hidden' => array(
+      'label' => t('Hidden'),
+      'description' => t('A field which is not visible to the user, but is recorded with the submission.'),
+      'file' => 'components/hidden.inc',
+    ),
+    'markup' => array(
+      'label' => t('Markup'),
+      'description' => t('Displays text as HTML in the form; does not render a field.'),
+      'file' => 'components/markup.inc',
+    ),
+    'pagebreak' => array(
+      'label' => t('Page break'),
+      'description' => t('Organize forms into multiple pages.'),
+      'file' => 'components/pagebreak.inc',
+    ),
+    'select' => array(
+      'label' => t('Select options'),
+      'description' => t('Allows creation of checkboxes, radio buttons, or select menus.'),
+      'file' => 'components/select.inc',
+    ),
+    'textarea' => array(
+      'label' => t('Textarea'),
+      'description' => t('A large text area that allows for multiple lines of input.'),
+      'file' => 'components/textarea.inc',
+    ),
+    'textfield' => array(
+      'label' => t('Textfield'),
+      'description' => t('Basic textfield type.'),
+      'file' => 'components/textfield.inc',
+    ),
+    'time' => array(
+      'label' => t('Time'),
+      'description' => t('Presents the user with hour and minute fields. Optional am/pm fields.'),
+      'file' => 'components/time.inc',
+    ),
   );
 }
 
 /**
  * Implementation of hook_forms().
+ *
  * All webform_client_form forms share the same form handler
  */
 function webform_forms($form_id) {
@@ -667,7 +720,7 @@ function webform_node_delete($node) {
   // Allow components clean up extra data, such as uploaded files.
   module_load_include('inc', 'webform', 'includes/webform.components');
   foreach ($node->webform['components'] as $cid => $component) {
-    webform_component_delete($node->nid, $cid);
+    webform_component_delete($node, $component);
   }
 
   // Remove any trace of webform data from the database.
@@ -995,175 +1048,6 @@ function webform_mail($key, &$message, $params) {
 }
 
 /**
- * Menu callback for admin/webform/settings.
- */
-function webform_admin_settings() {
-  module_load_include('inc', 'webform', 'includes/webform.export');
-
-  $node_types = node_get_types('names');
-  $form['node_types'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Webform Node Types'),
-    '#description' => t('Webform allows you to enable the webform components for any content type.  Choose the types on which you would like to associate webform components.'),
-    '#options' => $node_types,
-    '#default_value' => webform_variable_get('webform_node_types'),
-  );
-
-  $form['components'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Available components'),
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-    '#description' => t('These are the available field types for your installation of Webform. You may disable any of these components by unchecking its corresponding box. Only checked components will be available in existing or new webforms.'),
-  );
-
-  // Add each component to the form:
-  $component_types = webform_load_components(TRUE);
-  foreach ($component_types as $key => $component) {
-    $form['components']['webform_enable_'. $key] = array(
-      '#title' => $component,
-      '#description' => module_invoke('webform', 'help', 'admin/settings/webform#'. $key .'_description'),
-      '#type' => 'checkbox',
-      '#checked_value' => 1,
-      '#default_value' => variable_get('webform_enable_'. $key, 1),
-    );
-  }
-
-  $form['email'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Default e-mail values'),
-    '#collapsible' => TRUE,
-    '#collapsed' => FALSE,
-  );
-
-  $form['email']['webform_default_from_address']  = array(
-    '#type' => 'textfield',
-    '#title' => t('From address'),
-    '#default_value' => variable_get('webform_default_from_address', variable_get('site_mail', ini_get('sendmail_from'))),
-    '#description' => t('The default sender address for emailed webform results; often the e-mail address of the maintainer of your forms.'),
-  );
-
-  $form['email']['webform_default_from_name']  = array(
-    '#type' => 'textfield',
-    '#title' => t('From name'),
-    '#default_value' => variable_get('webform_default_from_name', variable_get('site_name', '')),
-    '#description' => t('The default sender name which is used along with the default from address.'),
-  );
-
-  $form['email']['webform_default_subject']  = array(
-    '#type' => 'textfield',
-    '#title' => t('Default subject'),
-    '#default_value' => variable_get('webform_default_subject', t('Form submission from: %title')),
-    '#description' => t('The default subject line of any e-mailed results.'),
-  );
-
-  $form['advanced'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Advanced options'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-  );
-
-  $form['advanced']['webform_use_cookies']  = array(
-    '#type' => 'checkbox',
-    '#checked_value' => 1,
-    '#title' => t('Allow cookies for tracking submissions'),
-    '#default_value' => variable_get('webform_use_cookies', 0),
-    '#description' => t('<a href="http://www.wikipedia.org/wiki/HTTP_cookie">Cookies</a> can be used to help prevent the same user from repeatedly submitting a webform. This feature is not needed for limiting submissions per user, though it can increase accuracy in some situations. Besides cookies, Webform also uses IP addresses and site usernames to prevent repeated submissions.'),
-  );
-
-  $form['advanced']['webform_email_address_format'] = array(
-    '#type' => 'radios',
-    '#title' => t('E-mail address format'),
-    '#options' => array(
-      'long' => t('Long format: "Example Name" &lt;name@example.com&gt;'),
-      'short' => t('Short format: name@example.com'),
-    ),
-    '#default_value' => variable_get('webform_email_address_format', 'long'),
-    '#description' => t('Most servers support the "long" format which will allow for more friendly From addresses in e-mails sent. However many Windows-based servers are unable to send in the long format. Change this option if experiencing problems sending e-mails with Webform.'),
-  );
-
-  $form['advanced']['webform_export_format'] = array(
-    '#type' => 'radios',
-    '#title' => t('Default export format'),
-    '#options' => webform_export_list(),
-    '#default_value' => variable_get('webform_export_format', 'delimited'),
-  );
-
-  $form['advanced']['webform_csv_delimiter']  = array(
-    '#type' => 'select',
-    '#title' => t('Default export delimiter'),
-    '#description' => t('This is the delimiter used in the CSV/TSV file when downloading Webform results. Using tabs in the export is the most reliable method for preserving non-latin characters. You may want to change this to another character depending on the program with which you anticipate importing results.'),
-    '#default_value' => variable_get('webform_csv_delimiter', '\t'),
-    '#options' => array(
-      ','  => t('Comma (,)'),
-      '\t' => t('Tab (\t)'),
-      ';'  => t('Semicolon (;)'),
-      ':'  => t('Colon (:)'),
-      '|'  => t('Pipe (|)'),
-      '.'  => t('Period (.)'),
-      ' '  => t('Space ( )'),
-    ),
-  );
-
-  $form['advanced']['webform_submission_access_control']  = array(
-    '#type' => 'radios',
-    '#title' => t('Submission access control'),
-    '#options' => array(
-      '1' => t('Select the user roles that may submit each individual webform'),
-      '0' => t('Disable Webform submission access control'),
-    ),
-    '#default_value' => variable_get('webform_submission_access_control', 1),
-    '#description' => t('By default, the configuration form for each webform allows the administrator to choose which roles may submit the form. You may want to allow users to always submit the form if you are using a separate node access module to control access to webform nodes themselves.'),
-  );
-
-  $form['advanced']['webform_debug']  = array(
-    '#type' => 'select',
-    '#title' => t('Webforms debug'),
-    '#default_value' => variable_get('webform_debug', 0),
-    '#options' => array(0 => t('Off'), 1 => t('Log submissions'), 2 => t('Full debug')),
-    '#description' => t('Set to "Log submissions" to log all submissions in the watchdog. Set to "Full debug" to print debug info on submission.')
-  );
-
-  $form = system_settings_form($form);
-  $form['#theme'] = 'webform_admin_settings';
-  $form['#submit'][] = 'webform_admin_settings_submit';
-
-  return $form;
-}
-
-function webform_admin_settings_submit($form, &$form_state) {
-  foreach ($form_state['values']['node_types'] as $type) {
-    if ($type) {
-      $types[] = $type;
-    }
-  }
-  variable_set('webform_node_types', $types);
-}
-
-function theme_webform_admin_settings($form) {
-  // Format the components into a table.
-  foreach (element_children($form['components']) as $key) {
-    $row = array();
-    $row[] = $form['components'][$key]['#title'];
-    $row[] = $form['components'][$key]['#description'];
-    unset($form['components'][$key]['#title']);
-    unset($form['components'][$key]['#description']);
-    $row[] = array('data' => drupal_render($form['components'][$key]), 'align' => 'center');
-    $rows[] = $row;
-  }
-  $header = array(t('Name'), t('Description'), t('Enabled'));
-
-  // Create the table inside the form.
-  $form['components']['table'] = array(
-    '#value' => theme('table', $header, $rows)
-  );
-
-  $output = drupal_render($form);
-  return $output;
-}
-
-/**
  * Menu callback to load the appropriate node form.
  */
 function webform_client_form_load($node, $submission, $enabled) {
@@ -1196,7 +1080,6 @@ function webform_client_form(&$form_state, $node, $submission, $enabled = FALSE,
   global $user;
 
   module_load_include('inc', 'webform', 'includes/webform.components');
-  webform_load_components();
 
   if (isset($submission->sid) && !$is_draft) {
     drupal_set_title(t('Submission #@sid', array('@sid' => $submission->sid)));
@@ -1388,17 +1271,16 @@ function _webform_client_form_add_component($component, $component_value, &$pare
   if (!$enabled) {
     // This component is display only.
     $display_function = '_webform_display_'. $component['type'];
-    if (function_exists($display_function)) {
-      $parent_fieldset[$component['form_key']] = $display_function($component, (empty($submission->data[$cid]['value']) ? NULL : $submission->data[$cid]['value']));
+    $data = empty($submission->data[$cid]['value']) ? NULL : $submission->data[$cid]['value'];
+    if ($output = webform_component_invoke($component['type'], 'display', $component, $data)) {
+      $parent_fieldset[$component['form_key']] = $output;
     }
   }
   elseif ($component['page_num'] == $page_num) {
     // Add this user-defined field to the form (with all the values that are always available).
-    $render_function = '_webform_render_'. $component['type'];
-    if (function_exists($render_function)) {
-      // Call the component render function.
-      $data = isset($submission->data[$cid]['value']) ? $submission->data[$cid]['value'] : NULL;
-      $parent_fieldset[$component['form_key']] = $render_function($component, $data, $filter);
+    $data = isset($submission->data[$cid]['value']) ? $submission->data[$cid]['value'] : NULL;
+    if ($element = webform_component_invoke($component['type'], 'render', $component, $data, $filter)) {
+      $parent_fieldset[$component['form_key']] = $element;
 
       // Override the value if one already exists in the form state.
       if (isset($component_value)) {
@@ -1521,7 +1403,6 @@ function _webform_client_form_validate($elements, &$form_state, $first_run = TRU
 function webform_client_form_submit($form, &$form_state) {
   global $user, $base_url;
   module_load_include('inc', 'webform', 'includes/webform.submissions');
-  webform_load_components();
 
   $node = node_load($form_state['values']['details']['nid']);
 
@@ -1651,7 +1532,7 @@ function webform_client_form_submit($form, &$form_state) {
   $sid = $form_state['values']['details']['sid'];
 
   // Check if this form is sending an email.
-  if (!$form_state['values']['details']['finished']) {
+  if (!$is_draft && !$form_state['values']['details']['finished']) {
     // Create a themed message for mailing.
     foreach ($node->webform['emails'] as $eid => $email) {
       $cid = is_numeric($email['email']) && isset($node->webform['components'][$email['email']]) ? $email['email'] : 'custom';
@@ -1799,11 +1680,10 @@ function _webform_client_form_submit_process($node, &$form_values, $types = NULL
       }
 
       if (isset($node->webform['components'][$cid])) {
+        // Call the component process submission function.
         $component = $node->webform['components'][$cid];
-        $submit_function = '_webform_submit_'. $component['type'];
-        if (function_exists($submit_function) && (!isset($types) || in_array($component['type'], $types))) {
-          // Call the component process submission function.
-          $form_values[$component['form_key']] = $submit_function($component, $form_values[$component['form_key']]);
+        if ((!isset($types) || in_array($component['type'], $types)) && ($new_value = webform_component_invoke($component['type'], 'submit', $component, $form_values[$component['form_key']]))) {
+          $form_values[$component['form_key']] = $new_value;
         }
       }
     }
@@ -1915,7 +1795,7 @@ function theme_webform_mail_fields($cid, $value, $node, $indent = "") {
   }
 
   // First check for component-level themes.
-  $themed_output = theme('webform_mail_'. $component['type'], $value, $component);
+  $themed_output = theme('webform_mail_'. $component['type'], $component, $value);
 
   $message = '';
   if ($themed_output) {
@@ -2008,6 +1888,11 @@ function theme_webform_mail_headers($form_values, $node, $sid, $cid) {
 function _webform_filter_values($string, $node = NULL, $submission = NULL, $strict = TRUE, $allow_anonymous = FALSE) {
   global $user;
   static $replacements;
+
+  // Don't do any filtering if the string is empty.
+  if (strlen(trim($string)) == 0) {
+    return;
+  }
 
   // Setup default token replacements.
   if (!isset($replacements)) {
@@ -2118,47 +2003,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $stri
  * Filters all special tokens provided by webform, and allows basic layout in descriptions.
  */
 function _webform_filter_descriptions($string, $node = NULL, $submission = NULL, $strict = TRUE) {
-  return check_markup(_webform_filter_values($string, $node, $submission, $strict));
-}
-
-/**
- * Menu callback for admin/content/webform. Displays all webforms on the site.
- */
-function webform_admin_content() {
-  $result = db_query(db_rewrite_sql("SELECT n.* FROM {node} n WHERE n.type = 'webform'"));
-  $nodes = array();
-  while ($node = db_fetch_object($result)) {
-    $nodes[] = $node;
-  }
-
-  return theme('webform_admin_content', $nodes);
-}
-
-
-/**
- * Generate a list of all webforms avaliable on this site.
- */
-function theme_webform_admin_content($nodes) {
-  $header = array(
-    t('Title'),
-    array('data' => t('View'), 'colspan' => '4'),
-    array('data' => t('Operations'), 'colspan' => '2')
-  );
-
-  $rows = array();
-  foreach ($nodes as $node) {
-    $rows[] = array(
-      l($node->title, 'node/'. $node->nid),
-      l(t('Submissions'), 'node/'. $node->nid .'/webform-results'),
-      l(t('Analysis'), 'node/'. $node->nid .'/webform-results/analysis'),
-      l(t('Table'), 'node/'. $node->nid .'/webform-results/table'),
-      l(t('Download'), 'node/'. $node->nid .'/webform-results/download'),
-      node_access('update', $node) ? l(t('Edit'), 'node/'. $node->nid .'/edit') : '',
-      user_access('delete all webform submissions') ? l(t('Clear'), 'node/'. $node->nid .'/webform-results/clear') : '',
-    );
-  }
-
-  return theme('table', $header, $rows);
+  return strlen($string) == 0 ? '' : check_markup(_webform_filter_values($string, $node, $submission, $strict));
 }
 
 /**
@@ -2471,30 +2316,82 @@ function _webform_components_tree_sort($tree) {
 }
 
 /**
- * Load all necessary component.inc files into memory.
+ * Get a list of all available component definitions.
  */
-function webform_load_components($return_all = FALSE, $reset = FALSE) {
-  static $component_list, $enabled_list;
+function webform_components($include_disabled = FALSE, $reset = FALSE) {
+  static $components, $disabled;
 
-  if (!isset($component_list) || $reset) {
-    $component_list = array();
-    $enabled_list = array();
-    $path = drupal_get_path('module', 'webform') .'/components';
-    $files = file_scan_directory($path, '^.*\.inc$');
-    foreach ($files as $filename => $file) {
-      $enabled = variable_get('webform_enable_'. $file->name, 1);
-      if ($return_all || $enabled) {
-        module_load_include('inc', 'webform', 'components/'. $file->name);
-        $component_list[$file->name] = t($file->name);
+  if (!isset($components) || $reset) {
+    $components = array();
+    $disabled = array_flip(variable_get('webform_disabled_components', array()));
+    foreach (module_implements('webform_component_info') as $module) {
+      $module_components = module_invoke($module, 'webform_component_info');
+      foreach ($module_components as $type => $info) {
+        $module_components[$type]['module'] = $module;
+        $module_components[$type]['enabled'] = !in_array($type, $disabled);
       }
-      if ($enabled) {
-        $enabled_list[$file->name] = t($file->name);
-      }
+      $components += $module_components;
     }
+    drupal_alter('webform_component_info', $components);
+    ksort($components);
   }
 
-  // Ensure only wanted components are returned, even all are loaded.
-  return $return_all ? $component_list : array_intersect_assoc($component_list, $enabled_list);
+  return $include_disabled ? $components : array_diff_key($components, $disabled);
+}
+
+/**
+ * Build a list of components suitable for use as select list options.
+ */
+function webform_component_options($include_disabled = FALSE) {
+  $component_info = webform_components($include_disabled);
+  $options = array();
+  foreach ($component_info as $type => $info) {
+    $options[$type] = $info['label'];
+  }
+  return $options;
+}
+
+/**
+ * Load a component file into memory.
+ *
+ * @param $component_type
+ *   The string machine name of a component.
+ */
+function webform_component_include($component_type) {
+  static $included = array();
+
+  // No need to load components that have already been added once.
+  if (!isset($included[$component_type])) {
+    $components = webform_components(TRUE);
+    $included[$component_type] = TRUE;
+
+    if (($info = $components[$component_type]) && isset($info['file'])) {
+      $pathinfo = pathinfo($info['file']);
+      $path = (!empty($pathinfo['dirname']) ? $pathinfo['dirname'] . '/' : '') . $pathinfo['filename'];
+      module_load_include($pathinfo['extension'], $info['module'], $path);
+    }
+  }
+}
+
+/**
+ * Invoke a component callback.
+ *
+ * @param $type
+ *   The component type as a string.
+ * @param $callback
+ *   The callback to execute.
+ * @param ...
+ *   Any additional parameters required by the $callback.
+ */
+function webform_component_invoke($type, $callback) {
+  $args = func_get_args();
+  $type = array_shift($args);
+  $callback = array_shift($args);
+  $function = '_webform_' . $callback . '_' . $type;
+  webform_component_include($type);
+  if (function_exists($function)) {
+    return call_user_func_array($function, $args);
+  }
 }
 
 /**

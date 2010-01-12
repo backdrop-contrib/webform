@@ -113,11 +113,9 @@ function webform_components_form($form_state, $node) {
     '#size' => 24,
   );
 
-  $component_types = webform_load_components();
-  natcasesort($component_types);
   $form['add']['type'] = array(
     '#type' => 'select',
-    '#options' => $component_types,
+    '#options' => webform_component_options(),
     '#weight' => 3,
     '#default_value' => (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) ? $node->webform['components'][$_GET['cid']]['type'] : 'textfield',
   );
@@ -480,13 +478,8 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
   }
 
   // Add the fields specific to this component type:
-  webform_load_components(); // Load all component types.
-  $edit_function = '_webform_edit_'. $component['type'];
-  $additional_form_elements = array();
-  if (function_exists($edit_function)) {
-    $additional_form_elements = $edit_function($component);
-  }
-  else {
+  $additional_form_elements = (array) webform_component_invoke($component['type'], 'edit', $component);
+  if (empty($additional_form_elements)) {
     drupal_set_message(t('The webform component of type @type does not have an edit function defined.', array('@type' => $component['type'])));
   }
 
@@ -527,13 +520,6 @@ function webform_component_edit_form_validate($form, &$form_state) {
     if (($component['cid'] != $form_state['values']['cid'] || $form_state['values']['clone']) && ($component['pid'] == $form_state['values']['pid']) && (strcasecmp($component['form_key'], $form_state['values']['form_key']) == 0)) {
       form_set_error('form_key', t('The field key %field_key is already in use by the field labeled %existing_field. Please use a unique key.', array('%field_key' => $form_state['values']['form_key'], '%existing_field' => $component['name'])));
     }
-  }
-
-  // Let the field do any additional validation.
-  webform_load_components($form_state['values']['type']);
-  $validate_function = '_webform_edit_validate_'. $form_state['values']['type'];
-  if (function_exists($validate_function)) {
-    $validate_function($form, $form_state);
   }
 }
 
@@ -637,13 +623,15 @@ function webform_component_update($component) {
 function webform_component_delete($node, $component) {
   // Check if a delete function is available for this component. If so,
   // load all submissions and allow the component to delete each one.
+
+  webform_component_include($component['type']);
   $delete_function = '_webform_delete_'. $component['type'];
   if (function_exists($delete_function)) {
     module_load_include('inc', 'webform', 'includes/webform.submissions');
     $submissions = webform_get_submissions($node->nid);
     foreach ($submissions as $submission) {
       if (isset($submission->data[$component['cid']])) {
-        $delete_function($component, $submission->data[$component['cid']]);
+        webform_component_invoke($component['type'], 'delete', $component, $submission->data[$component['cid']]);
       }
     }
   }
@@ -686,11 +674,7 @@ function webform_component_clone(&$node, $component) {
  * Populate a component with the defaults for that type.
  */
 function webform_component_defaults(&$component) {
-  webform_load_components();
-
-  $function = '_webform_defaults_'. $component['type'];
-  if (function_exists($function)) {
-    $defaults = $function();
+  if ($defaults = webform_component_invoke($component['type'], 'defaults')) {
     foreach ($defaults as $key => $default) {
       if (!isset($component[$key])) {
         $component[$key] = $default;

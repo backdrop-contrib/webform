@@ -9,6 +9,79 @@
 /**
  * @defgroup webform_component Sample Webform Component
  * @{
+ * Webform's hooks enable other modules to intercept events within Webform, such
+ * as the completion of a submission or adding validation. Webform's hooks also
+ * allow other modules to provide additional components for use within forms.
+ */
+
+/**
+ * Define components to Webform.
+ *
+ * @return
+ *   An array of components, keyed by machine name. Required properties are
+ *   "label" and "description". An optional "file" may be specified to be loaded
+ *   when the component is needed. A set of callbacks will be established based
+ *   on the name of the component. All components follow the pattern:
+ *
+ *   _webform_[callback]_[component]
+ *
+ *   Where [component] is the name of the key of the component and [callback] is
+ *   any of the following:
+ *
+ *     - defaults
+ *     - theme
+ *     - edit
+ *     - form_builder_types
+ *     - form_builder_save
+ *     - form_builder_preview_alter
+ *     - delete
+ *     - render
+ *     - display
+ *     - analysis
+ *     - table
+ *     - csv_headers
+ *     - csv_data
+ *
+ * See the sample component implementation for details on each one of these
+ * callbacks.
+ *
+ * @see webform_component
+ */
+function hook_webform_component_info() {
+  $components = array();
+
+  $components['textfield'] = array(
+    'label' => t('Textfield'),
+    'description' => t('Basic textfield type.'),
+    'file' => 'components/textfield.inc',
+  );
+
+  return $components;
+}
+
+/**
+ * Alter the list of available Webform components.
+ *
+ * @param $components
+ *   A list of existing components as defined by hook_webform_component_info().
+ *
+ * @see hook_webform_component_info()
+ */
+function hook_webform_component_info_alter(&$components) {
+  // Completely remove a component.
+  unset($components['grid']);
+
+  // Change the name of a component.
+  $components['textarea']['label'] = t('Text box');
+}
+
+/**
+ * @}
+ */
+
+/**
+ * @defgroup webform_component Sample Webform Component
+ * @{
  * In each of these examples, the word "component" should be replaced with the,
  * name of the component type (such as textfield or select). These are not
  * actual hooks, but instead samples of how Webform integrates with its own
@@ -72,21 +145,6 @@ function _webform_edit_component($component) {
     '#required' => TRUE,
   );
   return $form;
-}
-
-/**
- * Validate the configuration form of _webform_edit_component().
- *
- * @param $form
- *   The complete form array for editing a component.
- * @param $form_state
- *   The form state array containing the submitted values.
- */
-function _webform_edit_validate_component($form, $form_state) {
-  $rows = explode('\n', $form['extra']['options']);
-  if (count($rows) < 2) {
-    form_error($form['extra']['options'], t('At least 2 options must be provided.'));
-  }
 }
 
 /**
@@ -286,7 +344,7 @@ function _webform_theme_component() {
  *   An array of data rows, each containing a statistic for this component's
  *   submissions.
  */
-function _webform_analysis_rows_component($component, $sids = array()) {
+function _webform_analysis_component($component, $sids = array()) {
   // Generate the list of options and questions.
   $options = _webform_component_options($component['extra']['options']);
   $questions = array_values(_webform_component_options($component['extra']['questions']));
@@ -342,7 +400,7 @@ function _webform_analysis_rows_component($component, $sids = array()) {
  * @return
  *   Textual output formatted for human reading.
  */
-function _webform_table_data_component($component, $value) {
+function _webform_table_component($component, $value) {
   $questions = array_values(_webform_component_options($component['extra']['questions']));
   $output = '';
   // Set the value as a single string.

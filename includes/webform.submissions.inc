@@ -80,12 +80,8 @@ function webform_submission_insert($node, $submitted, $is_draft = 0) {
  */
 function webform_submission_delete($node, $submission) {
   // Iterate through all components and let each do cleanup if necessary.
-  webform_load_components();
   foreach ($node->webform['components'] as $cid => $component) {
-    $delete_function = '_webform_delete_'. $component['type'];
-    if (function_exists($delete_function) && isset($submission->data[$cid])) {
-      $delete_function($component, $submission->data[$cid]);
-    }
+    webform_component_invoke($component['type'], 'delete', $component, $submission->data[$cid]);
   }
 
   db_query('DELETE FROM {webform_submitted_data} WHERE nid = %d AND sid = %d', $node->nid, $submission->sid);
