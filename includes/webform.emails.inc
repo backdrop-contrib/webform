@@ -428,7 +428,7 @@ function webform_email_delete_form($form_state, $node, $email) {
  */
 function webform_email_delete_form_submit($form, &$form_state) {
   drupal_set_message(t('E-mail settings deleted.'));
-  webform_component_delete($form_state['values']['node'], $form_state['values']['email']);
+  webform_email_delete($form_state['values']['node'], $form_state['values']['email']);
   $form_state['redirect'] = 'node/'. $form_state['values']['node']->nid .'/webform/emails';
 }
 
@@ -461,5 +461,5 @@ function webform_email_update($email) {
  * Delete an e-mail setting.
  */
 function webform_email_delete($node, $email) {
-  db_query('DELETE FROM {webform_emails} WHERE nid = %d AND eid = %d', $node->nid, $email['edit']);
+  db_query('DELETE FROM {webform_emails} WHERE nid = %d AND eid = %d', $node->nid, $email['eid']);
 }
