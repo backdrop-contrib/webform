@@ -231,8 +231,8 @@ function theme_webform_results_table($node, $components, $submissions, $total_co
     foreach ($node->webform['components'] as $component) {
       $table_function = '_webform_table_data_'. $component['type'];
       if (function_exists($table_function)) {
-        $data = isset($submission->data[$component['cid']]) ? $submission->data[$component['cid']] : NULL;
-        $submission_output = $table_function($data, $component);
+        $data = isset($submission->data[$component['cid']]['value']) ? $submission->data[$component['cid']]['value'] : NULL;
+        $submission_output = $table_function($component, $data);
         if ($submission_output !== NULL) {
           $component_headers[] = $component['name'];
           $cell[] = $submission_output;
@@ -435,8 +435,8 @@ function webform_results_download($node, $format = 'delimiter', $options = array
       $csv_data_function = '_webform_csv_data_'. $component['type'];
       if (function_exists($csv_data_function)) {
         // Let each component add its data.
-        $raw_data = isset($submission->data[$cid]) ? $submission->data[$cid] : NULL;
-        $data = $csv_data_function($raw_data, $component);
+        $raw_data = isset($submission->data[$cid]['value']) ? $submission->data[$cid]['value'] : NULL;
+        $data = $csv_data_function($component, $raw_data);
         if (is_array($data)) {
           $row = array_merge($row, array_values($data));
         }

@@ -3,11 +3,11 @@
 
 /**
  * @file
- *   Webform module markup component.
+ * Webform module markup component.
  */
 
 /**
- * Create a default markup component.
+ * Implementation of _webform_defaults_component().
  */
 function _webform_defaults_markup() {
   return array(
@@ -23,42 +23,31 @@ function _webform_defaults_markup() {
 }
 
 /**
- * Create a set of form items to be displayed on the form for editing this
- * component. Use care naming the form items, as this correlates directly to the
- * database schema. The component "Name" and "Description" fields are added to
- * every component type and are not necessary to specify here (although they may
- * be overridden if desired).
- * @return
- *   An array of form items to be displayed on the edit component page.
+ * Implementation of _webform_edit_component().
  */
-function _webform_edit_markup($currfield) {
-  $edit_fields = array();
-  $edit_fields['advanced']['mandatory'] = array(); // Do not render the mandatory checkbox.
-  $edit_fields['value'] = array(
+function _webform_edit_markup($component) {
+  $form = array();
+  $form['advanced']['mandatory'] = array(); // Do not render the mandatory checkbox.
+  $form['value'] = array(
     '#type' => 'textarea',
     '#title' => t('Value'),
-    '#default_value' => $currfield['value'],
+    '#default_value' => $component['value'],
     '#description' => t('Markup allows you to enter custom HTML or PHP logic into your form.') . theme('webform_token_help'),
     '#weight' => -1,
   );
   // Add the filter form.
-  $edit_fields['extra']['format'] = filter_form($currfield['extra']['format'], 0, array('extra', 'format'));
+  $form['extra']['format'] = filter_form($component['extra']['format'], 0, array('extra', 'format'));
 
   // No description for markup.
-  $edit_fields['extra']['description'] = array();
+  $form['extra']['description'] = array();
 
-  return $edit_fields;
+  return $form;
 }
 
 /**
- * Build a form item array containing all the properties of this component.
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @return
- *   An array of a form item to be displayed on the client-side webform.
+ * Implementation of _webform_render_component().
  */
-function _webform_render_markup($component, $filter) {
+function _webform_render_markup($component, $value = NULL, $filter = TRUE) {
   $form_item = array(
     '#type'   => 'markup',
     '#title'  => $component['name'],
@@ -76,24 +65,14 @@ function _webform_render_markup($component, $filter) {
 }
 
 /**
- * Display the markup  in the results. The output of this function will be
- * displayed under the "results" tab then "submissions".
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema.
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @return
- *   Textual output formatted for human reading.
+ * Implementation of _webform_display_component().
  */
-function _webform_submission_display_markup($data, $component, $enabled = FALSE) {
-  $form_item = _webform_render_markup($component);
-  return $form_item;
+function _webform_display_markup($component, $value) {
+  return _webform_render_markup($component, $value);
 }
 
 /**
- * Convert a FAPI form element into settings savable in a component.
+ * Implementation of _webform_form_builder_save_component().
  */
 function _webform_form_builder_save_markup(&$component, $form_element) {
   $component['extra']['format'] = $form_element['#input_format'];
@@ -142,7 +121,7 @@ function _webform_form_builder_types_markup() {
 }
 
 /**
- * Module specific instance of hook_help().
+ * Implementation of _webform_help_component().
  */
 function _webform_help_markup($section) {
   switch ($section) {

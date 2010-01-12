@@ -3,11 +3,11 @@
 
 /**
  * @file
- *   Webform module fieldset component.
+ * Webform module fieldset component.
  */
 
 /**
- * Create a default fieldset component.
+ * Implementation of _webform_defaults_component().
  */
 function _webform_defaults_fieldset() {
   return array(
@@ -24,43 +24,32 @@ function _webform_defaults_fieldset() {
 }
 
 /**
- * Create a set of form items to be displayed on the form for editing this
- * component. Use care naming the form items, as this correlates directly to the
- * database schema. The component "Name" and "Description" fields are added to
- * every component type and are not necessary to specify here (although they may
- * be overridden if desired).
- * @return
- *   An array of form items to be displayed on the edit component page.
+ * Implementation of _webform_edit_component().
  */
-function _webform_edit_fieldset($currfield) {
-  $edit_fields = array();
-  $edit_fields['extra']['collapsible'] = array(
+function _webform_edit_fieldset($component) {
+  $form = array();
+  $form['extra']['collapsible'] = array(
     '#type' => 'checkbox',
     '#title' => t('Collapsible'),
-    '#default_value' => $currfield['extra']['collapsible'],
+    '#default_value' => $component['extra']['collapsible'],
     '#description' => t('If this fieldset is collapsible, the user may open or close the fieldset.'),
     '#weight' => 0,
   );
-  $edit_fields['extra']['collapsed'] = array(
+  $form['extra']['collapsed'] = array(
     '#type' => 'checkbox',
     '#title' => t('Collapsed by Default'),
-    '#default_value' => $currfield['extra']['collapsed'],
+    '#default_value' => $component['extra']['collapsed'],
     '#description' => t('Collapsible fieldsets are "open" by default. Select this option to default the fieldset to "closed."'),
     '#weight' => 3,
   );
-  $edit_fields['advanced']['mandatory'] = array();
-  return $edit_fields;
+  $form['advanced']['mandatory'] = array();
+  return $form;
 }
 
 /**
- * Build a form item array containing all the properties of this component.
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @return
- *   An array of a form item to be displayed on the client-side webform.
+ * Implementation of _webform_render_component().
  */
-function _webform_render_fieldset($component, $filter = TRUE) {
+function _webform_render_fieldset($component, $value = NULL, $filter = TRUE) {
   $form_item = array(
     '#type'          => $component['type'],
     '#title'         => htmlspecialchars($component['name'], ENT_QUOTES),
@@ -75,24 +64,15 @@ function _webform_render_fieldset($component, $filter = TRUE) {
 }
 
 /**
- * Display the result of a fieldset submission. The output of this function will
- * be displayed under the "results" tab then "submissions".
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema.
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @return
- *   Textual output formatted for human reading.
+ * Implementation of _webform_display_component().
  */
-function _webform_submission_display_fieldset($data, $component, $enabled = FALSE) {
-  $form_item = _webform_render_fieldset($component);
+function _webform_display_fieldset($component, $value) {
+  $form_item = _webform_render_fieldset($component, $value);
   return $form_item;
 }
 
 /**
- * Module specific instance of hook_form_builder_types().
+ * Implementation of _webform_form_builder_types_component().
  */
 function _webform_form_builder_types_fieldset() {
   $fields = array();
@@ -118,7 +98,7 @@ function _webform_form_builder_types_fieldset() {
 }
 
 /**
- * Module specific instance of hook_form_builder_save().
+ * Implementation of _webform_form_builder_save_component().
  */
 function _webform_form_builder_save_fieldset(&$component, $form_element) {
   $component['extra']['collapsible'] = isset($form_element['#collapsible']) ? $form_element['#collapsible'] : NULL;
@@ -127,7 +107,7 @@ function _webform_form_builder_save_fieldset(&$component, $form_element) {
 }
 
 /**
- * Module specific instance of hook_help().
+ * Implementation of _webform_help_component().
  */
 function _webform_help_fieldset($section) {
   switch ($section) {

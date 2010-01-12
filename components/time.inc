@@ -3,11 +3,11 @@
 
 /**
  * @file
- *   Webform module time component.
+ * Webform module time component.
  */
 
 /**
- * Create a default time component.
+ * Implementation of _webform_defaults_component().
  */
 function _webform_defaults_time() {
   return array(
@@ -28,55 +28,49 @@ function _webform_defaults_time() {
 }
 
 /**
- * Create a set of form items to be displayed on the form for editing this component.
- * Use care naming the form items, as this correlates directly to the database schema.
- * The component "Name" and "Description" fields are added to every component type and
- * are not necessary to specify here (although they may be overridden if desired).
- * @return An array of form items to be displayed on the edit component page
+ * Implementation of _webform_edit_component().
  */
-function _webform_edit_time($currfield) {
-  $edit_fields = array();
-  $edit_fields['value'] = array(
+function _webform_edit_time($component) {
+  $form = array();
+  $form['value'] = array(
     '#type' => 'textfield',
     '#title' => t('Default value'),
-    '#default_value' => $currfield['value'],
+    '#default_value' => $component['value'],
     '#description' => t('The default value of the field.') .'<br />'. t('Accepts a time in any <a href="http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid.'),
     '#size' => 60,
     '#maxlength' => 127,
     '#weight' => 0,
     '#element_validate' => array('webform_validate_time_string'),
   );
-  $edit_fields['extra']['timezone'] = array(
+  $form['extra']['timezone'] = array(
     '#type' => 'radios',
     '#title' => t('Timezone'),
-    '#default_value' => empty($currfield['extra']['timezone']) ? 'site' : $currfield['extra']['timezone'],
+    '#default_value' => empty($component['extra']['timezone']) ? 'site' : $component['extra']['timezone'],
     '#description' => t('Adjust the time according to a specific timezone. Website timezone is defined in the <a href="!settings">Site Settings</a> and is the default.', array('!settings' => url('admin/settings/date-time'))),
     '#options' => array('site' => 'Website Timezone', 'user' => 'User Timezone', 'gmt' => 'GMT'),
     '#weight' => 0,
   );
-$edit_fields['extra']['check_daylight_savings'] = array(
-  '#type' => 'checkbox',
-  '#title' => t('Observe Daylight Savings'),
-  '#default_value' => $currfield['extra']['check_daylight_savings'],
-  '#checked_value' => 1,
-  '#description' => t('Automatically adjust the time during daylight savings.'),
-  '#weight' => 1,
-);
-  $edit_fields['extra']['hourformat'] = array(
+  $form['extra']['check_daylight_savings'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Observe Daylight Savings'),
+    '#default_value' => $component['extra']['check_daylight_savings'],
+    '#checked_value' => 1,
+    '#description' => t('Automatically adjust the time during daylight savings.'),
+    '#weight' => 1,
+  );
+  $form['extra']['hourformat'] = array(
     '#type' => 'radios',
     '#title' => t('Time Format'),
-    '#default_value' => isset($currfield['extra']['hourformat']) ? $currfield['extra']['hourformat'] : '12-hour',
+    '#default_value' => isset($component['extra']['hourformat']) ? $component['extra']['hourformat'] : '12-hour',
     '#description' => t('Format the display of the time in 12 or 24 hours.'),
     '#options' => array('12-hour' => '12-hour (am/pm)', '24-hour' => '24-hour'),
     '#weight' => 2,
   );
-  return $edit_fields;
+  return $form;
 }
 
 /**
- * Build a form item array containing all the properties of this component
- * @param $component An array of information describing the component, directly correlating to the webform_component database schema
- * @return An array of a form item to be displayed on the client-side webform
+ * Implementation of _webform_render_component().
  */
 function _webform_render_time($component) {
   if (drupal_strlen($component['value']) > 0) {
@@ -118,6 +112,11 @@ function _webform_render_time($component) {
     $minute = gmdate('i', $timestamp);
     $am_pm = gmdate('a', $timestamp);
   }
+  else {
+    $hour = '';
+    $minute = '';
+    $am_pm = 'am';
+  }
 
   // Generate the choices for drop-down selects.
   $hours[''] = t('hour');
@@ -158,6 +157,22 @@ function _webform_render_time($component) {
     );
   }
 
+  if (isset($value)) {
+    $form_item['minute']['#default_value'] = $value[1];
+  
+    // Match the hourly data to the hour format.
+    if ($value[1]) {
+      $timestamp = strtotime($value[0] .':'. $value[1] . (isset($value[2]) ? $value[2] : ''));
+      if ($component['extra']['hourformat'] == '24-hour') {
+        $form_item['hour']['#default_value'] = date('H', $timestamp);
+      }
+      else {
+        $form_item['hour']['#default_value'] = date('g', $timestamp);
+        $form_item['ampm']['#default_value'] = $value[2];
+      }
+    }
+  }
+
   return $form_item;
 }
 
@@ -174,75 +189,63 @@ function webform_validate_time($form_item, $form_state) {
   }
 
   // Check for a valid time.
-  if ($form_item['hour']['#value'] !== '' || $form_item['minute']['#value'] !== '' || (isset($form_item['ampm']) && $form_item['ampm']['#value'] !== '')) {
+  if ($form_item['hour']['#value'] !== '' || $form_item['minute']['#value'] !== '') {
     if (!is_numeric($form_item['hour']['#value']) || !is_numeric($form_item['minute']['#value']) || (isset($form_item['ampm']) && $form_item['ampm']['#value'] === '')) {
-      form_set_error($form_key, t('Entered %name is not a valid time.', array('%name' => $name)));
+      form_error($form_key, t('Entered %name is not a valid time.', array('%name' => $name)));
       return;
     }
   }
 }
 
 /**
- * Display the result of a textfield submission. The output of this function
- * will be displayed under the "results" tab then "submissions".
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema.
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @param $enabled
- *   If enabled, the value may be changed. Otherwise it will set to readonly.
- * @return
- *   Textual output formatted for human reading.
+ * Implementation of _webform_display_component().
  */
-function _webform_submission_display_time($data, $component, $enabled = FALSE) {
-  $form_item = _webform_render_time($component);
-  $form_item['minute']['#default_value'] = $data['value']['1'];
-  $form_item['minute']['#disabled'] = !$enabled;
-  $form_item['hour']['#disabled'] = !$enabled;
-  $form_item['ampm']['#disabled'] = !$enabled;
+function _webform_display_time($component, $value) {
+  $form_item = _webform_render_time($component, $value);
+  $form_item['minute']['#default_value'] = $value[1];
+  $form_item['minute']['#disabled'] = TRUE;
+  $form_item['hour']['#disabled'] = TRUE;
+  $form_item['ampm']['#disabled'] = TRUE;
 
   // Match the hourly data to the hour format.
-  if ($data['value']['1']) {
-    $timestamp = strtotime($data['value']['0'] .':'. $data['value']['1'] . (isset($data['value']['2']) ? $data['value']['2'] : ''));
+  if ($value[1]) {
+    $timestamp = strtotime($value[0] .':'. $value[1] . (isset($value[2]) ? $value[2] : ''));
     if ($component['extra']['hourformat'] == '24-hour') {
       $form_item['hour']['#default_value'] = date('H', $timestamp);
     }
     else {
       $form_item['hour']['#default_value'] = date('g', $timestamp);
-      $form_item['ampm']['#default_value'] = $data['value']['2'];
+      $form_item['ampm']['#default_value'] = $value[2];
     }
   }
   return $form_item;
 }
 
 /**
- * Format the output of emailed data for this component
+ * Format the output of e-mailed data for this component
  *
+ * @param $component
+ *   A Webform component array.
  * @param $data
  *   A string or array of the submitted data
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
  * @return
  *   Textual output to be included in the email.
  */
-function theme_webform_mail_time($data, $component) {
+function theme_webform_mail_time($component, $value) {
   $output = $component['name'] .':';
-  if ($data['hour'] && $data['minute']) {
+  if ($value['hour'] && $value['minute']) {
     if ($component['extra']['hourformat'] == '24-hour') {
-      $output .= ' '. $data['hour'] .':'. $data['minute'];
+      $output .= ' '. $value['hour'] .':'. $value['minute'];
     }
     else {
-      $output .= ' '. $data['hour'] .':'. $data['minute'] .' '. $data['ampm'];
+      $output .= ' '. $value['hour'] .':'. $value['minute'] .' '. $value['ampm'];
     }
   }
   return $output;
 }
 
 /**
- * Module specific instance of hook_help().
+ * Implementation of _webform_help_component().
  */
 function _webform_help_time($section) {
   switch ($section) {
@@ -252,7 +255,7 @@ function _webform_help_time($section) {
 }
 
 /**
- * Module specific instance of hook_theme().
+ * Implementation of _webform_theme_component().
  */
 function _webform_theme_time() {
   return array(
@@ -260,24 +263,13 @@ function _webform_theme_time() {
       'arguments' => array('element' => NULL),
     ),
     'webform_mail_time' => array(
-      'arguments' => array('data' => NULL, 'component' => NULL),
+      'arguments' => array('component' => NULL, 'value' => NULL),
     ),
   );
 }
 
 /**
- * Calculate and returns statistics about results for this component from all
- * submission to this webform. The output of this function will be displayed
- * under the "results" tab then "analysis".
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @param $sids
- *   An optional array of submission IDs (sid). If supplied, the analysis will be limited
- *   to these sids.
- * @return
- *   An array of data rows, each containing a statistic for this component's
- *   submissions.
+ * Implementation of _webform_analysis_rows_component().
  */
 function _webform_analysis_rows_time($component, $sids = array()) {
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
@@ -326,17 +318,11 @@ function _webform_analysis_rows_time($component, $sids = array()) {
 }
 
 /**
- * Return the result of this component's submission for display in a table. The
- * output of this function will be displayed under the "results" tab then "table".
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema.
- * @return
- *   Textual output formatted for human reading.
+ * Implementation of _webform_table_data_component().
  */
-function _webform_table_data_time($data, $component) {
-  if (drupal_strlen($data['value']['0']) > 0 && drupal_strlen($data['value']['1']) > 0) {
-    $timestamp = strtotime($data['value']['0'] .':'. $data['value']['1'] . $data['value']['2']);
+function _webform_table_data_time($component, $value) {
+  if (drupal_strlen($value[0]) > 0 && drupal_strlen($value[1]) > 0) {
+    $timestamp = strtotime($value[0] .':'. $value[1] . $value[2]);
     if ($component['extra']['hourformat'] == '24-hour') {
       return check_plain(date('H:i', $timestamp));
     }
@@ -349,17 +335,8 @@ function _webform_table_data_time($data, $component) {
   }
 }
 
-
 /**
- * Return the header information for this component to be displayed in a comma
- * seperated value file. The output of this function will be displayed under the
- * "results" tab then "download".
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @return
- *   An array of data to be displayed in the first three rows of a CSV file, not
- *   including either prefixed or trailing commas.
+ * Implementation of _webform_csv_headers_component().
  */
 function _webform_csv_headers_time($component) {
   $header = array();
@@ -370,18 +347,11 @@ function _webform_csv_headers_time($component) {
 }
 
 /**
- * Return the result of a textfield submission. The output of this function will
- * be displayed under the "results" tab then "submissions".
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema.
- * @return
- *   Textual output formatted for CSV, not including either prefixed or trailing
- *   commas.
+ * Implementation of _webform_csv_data_component().
  */
-function _webform_csv_data_time($data, $component) {
-  if (drupal_strlen($data['value']['0']) > 0 && drupal_strlen($data['value']['1']) > 0) {
-    $timestamp = strtotime($data['value']['0'] .':'. $data['value']['1'] . $data['value']['2']);
+function _webform_csv_data_time($component, $value) {
+  if (drupal_strlen($value[0]) > 0 && drupal_strlen($value[1]) > 0) {
+    $timestamp = strtotime($value[0] .':'. $value[1] . $value[2]);
     if ($component['extra']['hourformat'] == '24-hour') {
       return date('H:i', $timestamp);
     }

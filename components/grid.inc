@@ -3,11 +3,11 @@
 
 /**
  * @file
- *   Webform module grid component.
+ * Webform module grid component.
  */
 
 /**
- * Create a default grid component.
+ * Implementation of _webform_defaults_component().
  */
 function _webform_defaults_grid() {
   return array(
@@ -28,68 +28,61 @@ function _webform_defaults_grid() {
 }
 
 /**
- * Create a set of form items to be displayed on the form for editing this component.
- * Use care naming the form items, as this correlates directly to the database schema.
- * The component "Name" and "Description" fields are added to every component type and
- * are not necessary to specify here (although they may be overridden if desired).
- * @return
- *   An array of form items to be displayed on the edit component page
+ * Implementation of _webform_edit_component().
  */
-function _webform_edit_grid($currfield) {
-  $edit_fields = array();
-  $edit_fields['extra']['options'] = array(
+function _webform_edit_grid($component) {
+  $form = array();
+  $form['extra']['options'] = array(
     '#type' => 'textarea',
     '#title' => t('Options'),
-    '#default_value' => $currfield['extra']['options'],
+    '#default_value' => $component['extra']['options'],
     '#description' => t('Options to select across the top. One option per line. Key-value pairs may be entered seperated by pipes. i.e. safe_key|Some readable option') . theme('webform_token_help'),
     '#cols' => 60,
     '#rows' => 5,
     '#weight' => -3,
     '#required' => TRUE,
   );
-  $edit_fields['extra']['questions'] = array(
+  $form['extra']['questions'] = array(
     '#type' => 'textarea',
     '#title' => t('Questions'),
-    '#default_value' => $currfield['extra']['questions'],
+    '#default_value' => $component['extra']['questions'],
     '#description' => t('Questions list down the left side. One question per line.') . theme('webform_token_help'),
     '#cols' => 60,
     '#rows' => 5,
     '#weight' => -2,
     '#required' => TRUE,
   );
-  $edit_fields['extra']['optrand'] = array(
+  $form['extra']['optrand'] = array(
     '#type' => 'checkbox',
     '#title' => t('Randomize Options'),
-    '#default_value' => $currfield['extra']['optrand'],
+    '#default_value' => $component['extra']['optrand'],
     '#description' => t('Randomizes the order of options on the top when they are displayed in the form.'),
   );
-  $edit_fields['extra']['qrand'] = array(
+  $form['extra']['qrand'] = array(
     '#type' => 'checkbox',
     '#title' => t('Randomize Questions'),
-    '#default_value' => $currfield['extra']['qrand'],
+    '#default_value' => $component['extra']['qrand'],
     '#description' => t('Randomize the order of the questions on the side when they are displayed in the form.'),
   );
-  return $edit_fields;
+  return $form;
 }
 
-function _webform_edit_validate_grid($form_values) {
-  // Currently no validation for selects.
-  return TRUE;
-}
-
-function _webform_render_grid($component, $random = TRUE) {
+/**
+ * Implementation of _webform_render_component().
+ */
+function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
   $form_item = array(
     '#title' => $component['name'],
     '#required' => $component['mandatory'],
     '#weight' => $component['weight'],
     '#theme' => 'webform_grid',
-    '#description'   => _webform_filter_descriptions($component['extra']['description']),
+    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
   );
 
   $questions = _webform_grid_options($component['extra']['questions']);
   $options = _webform_grid_options($component['extra']['options']);
 
-  if ($component['extra']['optrand'] && $random) {
+  if ($component['extra']['optrand']) {
     // This maneuver shuffles the array keys, then uses them as
     // the basis for ordering the options.
     $aux = array();
@@ -101,7 +94,7 @@ function _webform_render_grid($component, $random = TRUE) {
     }
     $options = $aux;
   }
-  if ($component['extra']['qrand'] && $random) {
+  if ($component['extra']['qrand']) {
     $aux = array();
     $keys = array_keys($questions);
     shuffle($keys);
@@ -125,46 +118,31 @@ function _webform_render_grid($component, $random = TRUE) {
     }
   }
 
+  if (isset($value)) {
+    $cid = 0;
+    foreach (element_children($form_item) as $key) {
+      $form_item[$key]['#default_value'] = $value[$cid++];
+    }
+  }
+
   return $form_item;
 }
 
 /**
- * Display the result of a grid submission. The output of this function will be
- * displayed under the "results" tab then "submissions"
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema
- * @param $enabled
- *   If enabled, the value may be changed. Otherwise it will set to readonly.
- * @return
- *   Textual output formatted for human reading.
+ * Implementation of _webform_display_component().
  */
-function _webform_submission_display_grid($data, $component, $enabled = FALSE) {
-  $form_item = _webform_render_grid($component, FALSE);
-  $cid = 0;
+function _webform_display_grid($component, $value) {
+  $form_item = _webform_render_grid($component, $value);
   foreach (element_children($form_item) as $key) {
-    $form_item[$key]['#default_value'] = $data['value'][$cid++];
-    $form_item[$key]['#disabled'] = !$enabled;
+    $form_item[$key]['#disabled'] = TRUE;
   }
   return $form_item;
 }
 
 /**
- * Translates the submitted 'safe' form values back into their un-edited
- * original form.
- *
- * @param $data
- *   The POST data associated with the component
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema
- * @return
- *   Nothing
+ * Implementation of _webform_submit_component().
  */
-function _webform_submit_grid(&$data, $component) {
+function _webform_submit_grid($component, $value) {
   $options = drupal_map_assoc(array_flip(_webform_grid_options($component['extra']['options'])));
 
   // Questions are a bit more tricky, since quotes were removed from them in
@@ -175,51 +153,49 @@ function _webform_submit_grid(&$data, $component) {
     $questions[$safe_question] = $question;
   }
 
-  if (is_array($data)) {
-    foreach ($data as $key => $value) {
-      if ($value !== '') {
-        $data[$key] = $options[$value];
+  if (is_array($value)) {
+    foreach ($value as $key => $option_value) {
+      if ($option_value !== '') {
+        $value[$key] = $options[$option_value];
       }
     }
   }
-  elseif ($data !== '') {
-    $data = $options[$data];
+  elseif ($value !== '') {
+    $value = $options[$value];
   }
 
   // Put the form in the original option order before saving.
   // Return the final data with the quotes back in place.
-  $ordered_data = array();
+  $ordered_value = array();
   foreach ($questions as $safe_question => $question) {
-    if (isset($data[$safe_question])) {
-      $ordered_data[$question] = $data[$safe_question];
+    if (isset($value[$safe_question])) {
+      $ordered_value[$question] = $value[$safe_question];
     }
   }
 
-  $data = $ordered_data;
+  return $ordered_value;
 }
 /**
- * Format the output of emailed data for this component.
+ * Format the output of e-mailed data for this component.
  *
- * @param $data
- *   A string or array of the submitted data.
  * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
+ *   A Webform component array.
+ * @param $value
+ *   A string or array of the submitted data.
  * @return
  *   Textual output to be included in the email.
  */
-function theme_webform_mail_grid($data, $component) {
+function theme_webform_mail_grid($component, $value) {
   $questions = _webform_grid_options($component['extra']['questions']);
   $output = $component['name'] .":\n";
   foreach ($questions as $key => $question) {
-    $output .= '  - '. $question .':'. ($data[$question] == '' ? '' : ' '. $data[$question]) ."\n";
+    $output .= '  - '. $question .':'. ($value[$question] == '' ? '' : ' '. $value[$question]) ."\n";
   }
   return $output;
 }
 
 /**
- * function _webform_help_select
- * Module specific instance of hook_help().
+ * Implementation of _webform_help_component().
  */
 function _webform_help_grid($section) {
   switch ($section) {
@@ -229,7 +205,7 @@ function _webform_help_grid($section) {
 }
 
 /**
- * Module specific instance of hook_theme().
+ * Implementation of _webform_help_grid().
  */
 function _webform_theme_grid() {
   return array(
@@ -237,25 +213,13 @@ function _webform_theme_grid() {
       'arguments' => array('grid_element' => NULL),
     ),
     'webform_mail_grid' => array(
-      'arguments' => array('data' => NULL, 'component' => NULL),
+      'arguments' => array('component' => NULL, 'value' => NULL),
     ),
   );
 }
 
 /**
- * Calculate and returns statistics about results for this component from all
- * submission to this webform. The output of this function will be displayed
- * under the "results" tab then "analysis".
- *
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @param $sids
- *   An optional array of submission IDs (sid). If supplied, the analysis will be limited
- *   to these sids.
- * @return
- *   An array of data rows, each containing a statistic for this component's
- *   submissions.
+ * Implementation of _webform_analysis_rows_component().
  */
 function _webform_analysis_rows_grid($component, $sids = array()) {
   // Generate the list of options and questions.
@@ -300,39 +264,27 @@ function _webform_analysis_rows_grid($component, $sids = array()) {
 }
 
 /**
- * function _webform_table_data_select
- * Return the result of this component's submission for display in a table. The output of this function will be displayed under the "results" tab then "table"
- * @param $data An array of information containing the submission result, directly correlating to the webform_submitted_data database schema
- * @returns Textual output formatted for human reading.
+ * Implementation of _webform_table_data_component().
  */
-function _webform_table_data_grid($data, $component) {
+function _webform_table_data_grid($component, $value) {
   $questions = array_values(_webform_grid_options($component['extra']['questions']));
   $output = '';
   // Set the value as a single string.
-  if (is_array($data['value'])) {
-    foreach ($data['value'] as $item => $value) {
+  if (is_array($value)) {
+    foreach ($value as $item => $value) {
       if ($value !== '') {
         $output .= $questions[$item] .': '. check_plain($value) .'<br />';
       }
     }
   }
   else {
-    $output = check_plain(!isset($data['value']['0']) ? '' : $data['value']['0']);
+    $output = check_plain(!isset($value[0]) ? '' : $value[0]);
   }
   return $output;
 }
 
 /**
- * Return the header information for this component to be displayed in a comma
- * seperated value file. The output of this function will be displayed under
- * the "results" tab then "download".
- *
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @return
- *   An array of data to be displayed in the first three rows of a CSV file, not
- *   including either prefixed or trailing commas.
+ * Implementation of _webform_csv_headers_component().
  */
 function _webform_csv_headers_grid($component) {
   $header = array();
@@ -355,26 +307,18 @@ function _webform_csv_headers_grid($component) {
 }
 
 /**
- * Return the result of a textfield submission. The output of this function will
- * be displayed under the "results" tab then "submissions".
- *
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema.
- * @return
- *   Textual output formatted for CSV, not including either prefixed or trailing
- *   commas.
+ * Implementation of _webform_csv_data_component().
  */
-function _webform_csv_data_grid($data, $component) {
+function _webform_csv_data_grid($component, $value) {
   $questions = array_keys(_webform_grid_options($component['extra']['questions']));
   $return = array();
   foreach ($questions as $key => $question) {
-    $return[] = isset($data['value'][$key]) ? $data['value'][$key] : '';
+    $return[] = isset($value[$key]) ? $value[$key] : '';
   }
   return $return;
 }
 
-function theme_webform_grid(&$grid_element) {
+function theme_webform_grid($grid_element) {
   $rows = array();
   $header = array('');
   $first = TRUE;
@@ -405,8 +349,7 @@ function theme_webform_grid(&$grid_element) {
 }
 
 /**
- * Utility function to split user-entered values from new-line separated
- * text into an array of options.
+ * Utility function to convert user-entered values into grid options.
  */
 function _webform_grid_options($text) {
   $options = array();

@@ -705,6 +705,7 @@ function webform_node_load($node) {
       'confirmation' => '',
       'confirmation_format' => FILTER_FORMAT_DEFAULT,
       'teaser' => 0,
+      'allow_draft' => 0,
       'submit_notice' => 0,
       'submit_text' => '',
       'submit_limit' => -1,
@@ -813,7 +814,7 @@ function webform_node_view(&$node, $teaser, $page) {
   global $user;
   // If a teaser, do not display the form.
   if ($teaser && !$node->webform['teaser']) {
-    $node->content['teaser'] = array('#value' => check_markup($node->teaser, $node->format, FALSE));
+    return;
   }
 
   $submission = array();
@@ -1386,41 +1387,31 @@ function _webform_client_form_add_component($component, $component_value, &$pare
   // Load with submission information if necessary.
   if (!$enabled) {
     // This component is display only.
-    $display_function = '_webform_submission_display_'. $component['type'];
+    $display_function = '_webform_display_'. $component['type'];
     if (function_exists($display_function)) {
-      $parent_fieldset[$component['form_key']] = $display_function(empty($submission->data[$cid]) ? NULL : $submission->data[$cid], $component, $enabled);
+      $parent_fieldset[$component['form_key']] = $display_function($component, (empty($submission->data[$cid]['value']) ? NULL : $submission->data[$cid]['value']));
     }
   }
   elseif ($component['page_num'] == $page_num) {
     // Add this user-defined field to the form (with all the values that are always available).
-    if (isset($submission->data)) {
-      $display_function = '_webform_submission_display_'. $component['type'];
-      if (function_exists($display_function)) {
-        $data = isset($submission->data[$cid]) ? $submission->data[$cid] : NULL;
-        $parent_fieldset[$component['form_key']] = $display_function($data, $component, $enabled);
-      }
-    }
-    else {
-      $render_function = '_webform_render_'. $component['type'];
-      if (function_exists($render_function)) {
-        // Call the component render function.
-        $parent_fieldset[$component['form_key']] = $render_function($component, $filter);
+    $render_function = '_webform_render_'. $component['type'];
+    if (function_exists($render_function)) {
+      // Call the component render function.
+      $data = isset($submission->data[$cid]['value']) ? $submission->data[$cid]['value'] : NULL;
+      $parent_fieldset[$component['form_key']] = $render_function($component, $data, $filter);
 
-        // Set a value if one already exists in the form state.
-        if (isset($component_value)) {
-          if (is_array($component_value)) {
-            foreach ($component_value as $key => $value) {
-              $parent_fieldset[$component['form_key']][$key]['#default_value'] = $value;
-            }
-          }
-          else {
-            $parent_fieldset[$component['form_key']]['#default_value'] = $component_value;
+      // Override the value if one already exists in the form state.
+      if (isset($component_value)) {
+        $parent_fieldset[$component['form_key']]['#default_value'] = $component_value;
+        if (is_array($component_value)) {
+          foreach ($component_value as $key => $value) {
+            $parent_fieldset[$component['form_key']][$key]['#default_value'] = $value;
           }
         }
       }
-      else {
-        drupal_set_message(t('The webform component @type is not able to be displayed', array('@type' => $component['type'])));
-      }
+    }
+    else {
+      drupal_set_message(t('The webform component @type is not able to be displayed', array('@type' => $component['type'])));
     }
   }
 
@@ -1812,7 +1803,7 @@ function _webform_client_form_submit_process($node, &$form_values, $types = NULL
         $submit_function = '_webform_submit_'. $component['type'];
         if (function_exists($submit_function) && (!isset($types) || in_array($component['type'], $types))) {
           // Call the component process submission function.
-          $submit_function($form_values[$component['form_key']], $component);
+          $form_values[$component['form_key']] = $submit_function($component, $form_values[$component['form_key']]);
         }
       }
     }

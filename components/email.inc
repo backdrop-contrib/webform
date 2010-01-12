@@ -3,11 +3,11 @@
 
 /**
  * @file
- *   Webform module email component.
+ * Webform module email component.
  */
 
 /**
- * Create a default email component.
+ * Implementation of _webform_defaults_component().
  */
 function _webform_defaults_email() {
   return array(
@@ -28,56 +28,50 @@ function _webform_defaults_email() {
 }
 
 /**
- * Create a set of form items to be displayed on the form for editing this
- * component. Use care naming the form items, as this correlates directly to the
- * database schema. The component "Name" and "Description" fields are added to
- * every component type and are not necessary to specify here (although they may
- * be overridden if desired).
- * @return
- *   An array of form items to be displayed on the edit component page.
+ * Implementation of _webform_edit_component().
  */
-function _webform_edit_email($currfield) {
-  $edit_fields['value'] = array(
+function _webform_edit_email($component) {
+  $form['value'] = array(
     '#type' => 'textfield',
     '#title' => t('Default value'),
-    '#default_value' => $currfield['value'],
+    '#default_value' => $component['value'],
     '#description' => t('The default value of the field.') . theme('webform_token_help'),
     '#size' => 60,
     '#maxlength' => 127,
     '#weight' => 0,
-    '#attributes' => ($currfield['value'] == '%useremail' && count(form_get_errors()) == 0) ? array('disabled' => TRUE) : array(),
+    '#attributes' => ($component['value'] == '%useremail' && count(form_get_errors()) == 0) ? array('disabled' => TRUE) : array(),
     '#id' => 'email-value',
   );
-  $edit_fields['user_email'] = array(
+  $form['user_email'] = array(
     '#type' => 'checkbox',
     '#title' => t('User email as default'),
-    '#default_value' => $currfield['value'] == '%useremail' ? 1 : 0,
+    '#default_value' => $component['value'] == '%useremail' ? 1 : 0,
     '#description' => t('Set the default value of this field to the user email, if he/she is logged in.'),
     '#attributes' => array('onclick' => 'getElementById("email-value").value = (this.checked ? "%useremail" : ""); getElementById("email-value").disabled = this.checked;'),
     '#weight' => 0,
     '#element_validate' => array('_webform_edit_email_validate'),
   );
-  $edit_fields['extra']['width'] = array(
+  $form['extra']['width'] = array(
     '#type' => 'textfield',
     '#title' => t('Width'),
-    '#default_value' => $currfield['extra']['width'],
+    '#default_value' => $component['extra']['width'],
     '#description' => t('Width of the textfield.') .' '. t('Leaving blank will use the default size.'),
     '#size' => 5,
     '#maxlength' => 10,
   );
-  $edit_fields['extra']['disabled'] = array(
+  $form['extra']['disabled'] = array(
     '#type' => 'checkbox',
     '#title' => t('Disabled'),
     '#return_value' => 1,
     '#description' => t('Make this field non-editable. Useful for setting an unchangeable default value.'),
     '#weight' => 3,
-    '#default_value' => $currfield['extra']['disabled'],
+    '#default_value' => $component['extra']['disabled'],
   );
-  return $edit_fields;
+  return $form;
 }
 
 /**
- * Validation function for the email edit form.
+ * Element validation function for the email edit form.
  */
 function _webform_edit_email_validate($element, &$form_state) {
   if ($form_state['values']['user_email']) {
@@ -86,14 +80,9 @@ function _webform_edit_email_validate($element, &$form_state) {
 }
 
 /**
- * Build a form item array containing all the properties of this component.
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @return
- *   An array of a form item to be displayed on the client-side webform.
+ * Implementation of _webform_render_component().
  */
-function _webform_render_email($component) {
+function _webform_render_email($component, $value = NULL) {
   global $user;
   $form_item = array(
     '#type'          => 'textfield',
@@ -110,6 +99,10 @@ function _webform_render_email($component) {
     '#form_builder'  => array('element_type' => 'email'),
   );
 
+  if (isset($value)) {
+    $form_item['#default_value'] = $value[0];
+  }
+
   if ($component['extra']['disabled']) {
     $form_item['#attributes']['readonly'] = 'readonly';
   }
@@ -123,8 +116,9 @@ function _webform_render_email($component) {
 }
 
 /**
- * A Drupal Forms API Validation function. Validates the entered values from
+ * A Drupal Form API Validation function. Validates the entered values from
  * email components on the client-side form.
+ *
  * @param $form_element
  *   The e-mail form element.
  * @param $form_state
@@ -140,30 +134,17 @@ function _webform_validate_email($form_element, $form_state) {
 }
 
 /**
- * Display the result of a textfield submission. The output of this function
- * will be displayed under the "results" tab then "submissions".
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema.
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @param $enabled
- *   If enabled, the value may be changed. Otherwise it will set to readonly.
- * @return
- *   Textual output formatted for human reading.
+ * Implementation of _webform_display_component().
  */
-function _webform_submission_display_email($data, $component, $enabled = FALSE) {
-  $form_item = _webform_render_email($component);
-  $form_item['#default_value'] = $data['value']['0'];
-  if (!$enabled) {
-    $form_item['#attributes']['readonly'] = 'readonly';
-  }
+function _webform_display_email($component, $value) {
+  $form_item = _webform_render_email($component, $value);
+  $form_item['#default_value'] = $value[0];
+  $form_item['#attributes']['readonly'] = 'readonly';
   return $form_item;
 }
 
 /**
- * Convert a FAPI form element into settings savable in a component.
+ * Implementation of _webform_form_builder_save_component().
  */
 function _webform_form_builder_save_email(&$component, $form_element) {
   $component['extra']['width'] = isset($form_element['#size']) ? $form_element['#size'] : NULL;
@@ -172,7 +153,7 @@ function _webform_form_builder_save_email(&$component, $form_element) {
 }
 
 /**
- * Module specific instance of hook_form_builder_types().
+ * Implementation of _webform_form_builder_types_component().
  */
 function _webform_form_builder_types_email() {
   $fields = array();
@@ -198,7 +179,7 @@ function _webform_form_builder_types_email() {
 }
 
 /**
- * Module specific instance of hook_help().
+ * Implementation of _webform_help_component().
  */
 function _webform_help_email($section) {
   switch ($section) {
@@ -208,18 +189,7 @@ function _webform_help_email($section) {
 }
 
 /**
- * Calculate and returns statistics about results for this component from all
- * submission to this webform. The output of this function will be displayed
- * under the "results" tab then "analysis".
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema
- * @param $sids
- *   An optional array of submission IDs (sid). If supplied, the analysis will be limited
- *   to these sids.
- * @return
- *   An array of data rows, each containing a statistic for this component's
- *   submissions.
+ * Implementation of _webform_analysis_rows_component().
  */
 function _webform_analysis_rows_email($component, $sids = array()) {
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
@@ -248,29 +218,15 @@ function _webform_analysis_rows_email($component, $sids = array()) {
 }
 
 /**
- * Return the result of this component's submission for display in a table. The
- * output of this function will be displayed under the "results" tab then "table".
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema
- * @return
- *   Textual output formatted for human reading.
+ * Implementation of _webform_table_data_component().
  */
-function _webform_table_data_email($data) {
-  return check_plain(empty($data['value']['0']) ? '' : $data['value']['0']);
+function _webform_table_data_email($component, $value) {
+  return check_plain(empty($value[0]) ? '' : $value[0]);
 }
 
 
 /**
- * Return the header information for this component to be displayed in a comma
- * seperated value file. The output of this function will be displayed under the
- * "results" tab then "download".
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @return
- *   An array of data to be displayed in the first three rows of a CSV file, not
- *   including either prefixed or trailing commas.
+ * Implementation of _webform_csv_headers_component().
  */
 function _webform_csv_headers_email($component) {
   $header = array();
@@ -281,15 +237,8 @@ function _webform_csv_headers_email($component) {
 }
 
 /**
- * Return the result of a textfield submission. The output of this function will
- * be displayed under the "results" tab then "submissions".
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema.
- * @return
- *   Textual output formatted for CSV, not including either prefixed or trailing
- *   commas.
+ * Implementation of _webform_csv_data_component().
  */
-function _webform_csv_data_email($data) {
-  return empty($data['value']['0']) ? '' : $data['value']['0'];
+function _webform_csv_data_email($component, $value) {
+  return empty($value[0]) ? '' : $value[0];
 }

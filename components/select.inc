@@ -3,11 +3,11 @@
 
 /**
  * @file
- *   Webform module multiple select component.
+ * Webform module multiple select component.
  */
 
 /**
- * Create a default select component.
+ * Implementation of _webform_defaults_component().
  */
 function _webform_defaults_select() {
   return array(
@@ -28,20 +28,14 @@ function _webform_defaults_select() {
 }
 
 /**
- * Create a set of form items to be displayed on the form for editing this
- * component. Use care naming the form items, as this correlates directly to the
- * database schema. The component "Name" and "Description" fields are added to
- * every component type and are not necessary to specify here (although they may
- * be overridden if desired).
- * @return
- *   An array of form items to be displayed on the edit component page.
+ * Implementation of _webform_edit_component().
  */
-function _webform_edit_select($currfield) {
-  $edit_fields = array();
-  $edit_fields['extra']['items'] = array(
+function _webform_edit_select($component) {
+  $form = array();
+  $form['extra']['items'] = array(
     '#type' => 'textarea',
     '#title' => t('Options'),
-    '#default_value' => $currfield['extra']['items'],
+    '#default_value' => $component['extra']['items'],
     '#description' => t('A list of selectable options. One option per line. Key-value pairs may be entered seperated by pipes, such as "safe_key|Some readable option". Option groups for lists and menus may be specified with &lt;Group Name&gt;. &lt;&gt; can be used to insert items at the root of the menu after specifying a group.') . theme('webform_token_help'),
     '#cols' => 60,
     '#rows' => 5,
@@ -49,31 +43,31 @@ function _webform_edit_select($currfield) {
     '#required' => TRUE,
     '#element_validate' => array('_webform_edit_validate_select'),
   );
-  $edit_fields['value'] = array(
+  $form['value'] = array(
     '#type' => 'textfield',
     '#title' => t('Default value'),
-    '#default_value' => $currfield['value'],
+    '#default_value' => $component['value'],
     '#description' => t('The default value of the field. For multiple selects use commas to separate multiple defaults.') . theme('webform_token_help'),
     '#size' => 60,
     '#maxlength' => 256,
     '#weight' => 0,
   );
-  $edit_fields['extra']['multiple'] = array(
+  $form['extra']['multiple'] = array(
     '#type' => 'checkbox',
     '#title' => t('Multiple'),
     '#return_value' => 'Y',
-    '#default_value' => $currfield['extra']['multiple'],
+    '#default_value' => $component['extra']['multiple'],
     '#description' => t('Check this option if the user should be allowed to choose multiple values.'),
   );
-  $edit_fields['extra']['aslist'] = array(
+  $form['extra']['aslist'] = array(
     '#type' => 'checkbox',
     '#title' => t('Listbox'),
     '#return_value' => 'Y',
-    '#default_value' => $currfield['extra']['aslist'],
+    '#default_value' => $component['extra']['aslist'],
     '#description' => t('Check this option if you want the select component to be of listbox type instead of radiobuttons or checkboxes.'),
   );
 
-  return $edit_fields;
+  return $form;
 }
 
 /**
@@ -122,17 +116,9 @@ function _webform_edit_validate_select($element, $form_state) {
 }
 
 /**
- * Build a form item array containing all the properties of this component.
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @param $filter
- *   Whether or not to filter the descriptions and values within this component.
- *   Values need to be unfiltered to be edited in Form Builder.
- * @return
- *   An array of a form item to be displayed on the client-side webform.
+ * Implementation of _webform_render_component().
  */
-function _webform_render_select($component, $filter = TRUE) {
+function _webform_render_select($component, $value = NULL, $filter = TRUE) {
   $form_item = array(
     '#title'         => $component['name'],
     '#required'      => $component['mandatory'],
@@ -154,7 +140,23 @@ function _webform_render_select($component, $filter = TRUE) {
   $form_item['#options'] = $options;
 
   // Set the default value.
-  if ($default_value != '') {
+  if (isset($value)) {
+    if ($component['extra']['multiple'] === 'Y') {
+      // Set the value as an array.
+      $form_item['#default_value'] = array();
+      foreach ((array) $value as $key => $option_value) {
+        $form_item['#default_value'][] = $option_value;
+      }
+    }
+    else {
+      // Set the value as a single string.
+      $form_item['#default_value'] = '';
+      foreach ((array) $value as $option_value) {
+        $form_item['#default_value'] = $option_value;
+      }
+    }
+  }
+  elseif ($default_value != '') {
     // Convert default value to a list if necessary.
     if ($component['extra']['multiple'] === 'Y') {
       $varray = array_filter(explode(',', $default_value));
@@ -212,68 +214,52 @@ function webform_expand_checkboxes($element) {
 }
 
 /**
- * Display the result of a textfield submission. The output of this function
- * will be displayed under the "results" tab then "submissions".
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema.
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @param $enabled
- *   If enabled, the value may be changed. Otherwise it will set to readonly.
- * @return
- *   Textual output formatted for human reading.
+ * Implementation of _webform_display_component().
  */
-function _webform_submission_display_select($data, $component, $enabled = FALSE) {
-  $form_item = _webform_render_select($component);
+function _webform_display_select($component, $value) {
+  $form_item = _webform_render_select($component, $value);
   if ($component['extra']['multiple'] === 'Y') {
     // Set the value as an array.
     $form_item['#default_value'] = array();
-    foreach ((array)$data['value'] as $key => $value) {
+    foreach ((array) $value as $key => $value) {
       $form_item['#default_value'][] = $value;
     }
   }
   else {
     // Set the value as a single string.
     $form_item['#default_value'] = '';
-    foreach ((array)$data['value'] as $value) {
+    foreach ((array) $value as $value) {
       $form_item['#default_value'] = $value;
     }
   }
-  $form_item['#disabled'] = !$enabled;
+  $form_item['#disabled'] = TRUE;
   return $form_item;
 }
 
-
 /**
- * Convert FAPI 0/1 values into something saveable.
+ * Implementation of _webform_submit_component().
  *
- * @param $data
- *   The POST data associated with the component.
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @return
- *   Nothing.
+ * Convert FAPI 0/1 values into something saveable.
  */
-function _webform_submit_select(&$data, $component) {
+function _webform_submit_select($component, $value) {
   $options = drupal_map_assoc(array_flip(_webform_select_options($component['extra']['items'], TRUE)));
 
-  if (is_array($data)) {
-    foreach ($data as $key => $value) {
-      if ($value != '') {
-        $data[$key] = $options[$key];
+  if (is_array($value)) {
+    foreach ($value as $key => $option_value) {
+      if ($option_value != '') {
+        $value[$key] = $options[$key];
       }
       // Checkboxes submit a value of 0 when not checked.
-      elseif ($value == 0 && $component['extra']['aslist'] !== 'Y' && $component['extra']['multiple'] === 'Y') {
-        unset($data[$key]);
+      elseif ($option_value == 0 && $component['extra']['aslist'] !== 'Y' && $component['extra']['multiple'] === 'Y') {
+        unset($value[$key]);
       }
       else {
-        unset($data[$key]);
+        unset($value[$key]);
       }
     }
   }
+
+  return $value;
 }
 
 /**
@@ -358,13 +344,13 @@ function _webform_form_builder_load_select(&$form_element) {
 }
 
 /**
- * Convert a FAPI form element into settings savable in a component.
+ * Implementation of _webform_form_builder_save_component().
  */
 function _webform_form_builder_save_select(&$component, $form_element) {
   $options = '';
 
-  foreach ($form_element['#options'] as $key => $value) {
-    $options .= $key .'|'. $value ."\n";
+  foreach ($form_element['#options'] as $key => $option_value) {
+    $options .= $key .'|'. $option_value ."\n";
   }
 
   $component['extra']['items'] = $options;
@@ -374,17 +360,16 @@ function _webform_form_builder_save_select(&$component, $form_element) {
 }
 
 /**
- * Format the output of emailed data for this component.
+ * Format the output of e-mailed data for this component.
  *
- * @param $data
- *   A string or array of the submitted data.
  * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
+ *   A Webform component array.
+ * @param $value
+ *   A string or array of the submitted data.
  * @return
  *   Textual output to be included in the email.
  */
-function theme_webform_mail_select($data, $component) {
+function theme_webform_mail_select($component, $value) {
   // Convert submitted 'safe' values to un-edited, original form.
   $options = _webform_select_options($component['extra']['items'], TRUE);
 
@@ -392,24 +377,24 @@ function theme_webform_mail_select($data, $component) {
   $output = '';
   if ($component['extra']['multiple']) {
     $output .= $component['name'] .":\n";
-    foreach ((array)$data as $value) {
-      if ($value) {
-        if ($options[$value]) {
-          $output .= '    - '. $options[$value] ."\n";
+    foreach ((array) $value as $option_value) {
+      if ($option_value) {
+        if ($options[$option_value]) {
+          $output .= '    - '. $options[$option_value] ."\n";
         }
       }
     }
   }
   else {
-    if ($data !== '' && $options[$data]) {
-      $output .= $component['name'] .": ". $options[$data] ."\n";
+    if ($value !== '' && $options[$value]) {
+      $output .= $component['name'] .": ". $options[$value] ."\n";
     }
   }
   return $output;
 }
 
 /**
- * Module specific instance of hook_help().
+ * Implementation of _webform_help_component().
  */
 function _webform_help_select($section) {
   switch ($section) {
@@ -419,29 +404,18 @@ function _webform_help_select($section) {
 }
 
 /**
- * Module specific instance of hook_theme().
+ * Implementation of _webform_theme_component().
  */
 function _webform_theme_select() {
   return array(
     'webform_mail_select' => array(
-      'arguments' => array('data' => NULL, 'component' => NULL),
+      'arguments' => array('component' => NULL, 'value' => NULL),
     ),
   );
 }
 
 /**
- * Calculate and returns statistics about results for this component from all
- * submission to this webform. The output of this function will be displayed
- * under the "results" tab then "analysis".
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema
- * @param $sids
- *   An optional array of submission IDs (sid). If supplied, the analysis will be limited
- *   to these sids.
- * @return
- *   An array of data rows, each containing a statistic for this component's
- *   submissions.
+ * Implementation of _webform_analysis_rows_component().
  */
 function _webform_analysis_rows_select($component, $sids = array()) {
   $options = _webform_select_options($component['extra']['items'], TRUE);
@@ -469,41 +443,26 @@ function _webform_analysis_rows_select($component, $sids = array()) {
 }
 
 /**
- * Return the result of this component's submission for display in a table. The
- * output of this function will be displayed under the "results" tab then "table".
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema
- * @return
- *   Textual output formatted for human reading.
+ * Implementation of _webform_table_data_component().
  */
-function _webform_table_data_select($data) {
+function _webform_table_data_select($component, $value) {
   $output = '';
   // Set the value as a single string.
-  if (is_array($data['value'])) {
-    foreach ($data['value'] as $value) {
-      if ($value !== '0') {
-        $output .= check_plain($value) .'<br />';
+  if (is_array($value)) {
+    foreach ($value as $option_value) {
+      if ($option_value !== '0') {
+        $output .= check_plain($option_value) .'<br />';
       }
     }
   }
   else {
-    $output .= check_plain(empty($data['value']['0']) ? '' : $data['value']['0']);
+    $output .= check_plain(empty($value[0]) ? '' : $value[0]);
   }
   return $output;
 }
 
-
 /**
- * Return the header information for this component to be displayed in a comma
- * seperated value file. The output of this function will be displayed under the
- * "results" tab then "download".
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @return
- *   An array of data to be displayed in the first three rows of a CSV file, not
- *   including either prefixed or trailing commas.
+ * Implementation of _webform_csv_headers_component().
  */
 function _webform_csv_headers_select($component) {
   $headers = array(
@@ -536,24 +495,16 @@ function _webform_csv_headers_select($component) {
 }
 
 /**
- * Return the result of a textfield submission. The output of this function will
- * be displayed under the "results" tab then "submissions".
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema.
- * @return
- *   Textual output formatted for CSV, not including either prefixed or trailing
- *   commas.
+ * Implementation of _webform_csv_data_component().
  */
-function _webform_csv_data_select($data, $component) {
-  $value = _webform_filter_values($component['value'], NULL, NULL, FALSE);
+function _webform_csv_data_select($component, $value) {
+  $component_values = _webform_filter_values($component['value'], NULL, NULL, FALSE);
   $options = _webform_select_options($component['extra']['items'], TRUE);
   $return = array();
 
   if ($component['extra']['multiple']) {
     foreach ($options as $key => $item) {
-      
-      if (in_array($key, (array)$data['value']) === TRUE) {
+      if (in_array($key, (array) $component_values) === TRUE) {
         $return[] = 'X';
       }
       else {
@@ -562,7 +513,7 @@ function _webform_csv_data_select($data, $component) {
     }
   }
   else {
-    $return = $data['value'][0];
+    $return = $value[0];
   }
   return $return;
 }

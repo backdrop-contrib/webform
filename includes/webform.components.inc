@@ -139,7 +139,7 @@ function webform_components_form($form_state, $node) {
   $form['add']['weight'] = array(
     '#type' => 'weight',
     '#delta' => count($node->webform['components']) > 10 ? count($node->webform['components']) : 10,
-    '#default_value' => (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) ? $node->webform['components'][$_GET['cid']]['weight'] + 1 : count($node->webform['components']),
+    '#default_value' => (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) ? $node->webform['components'][$_GET['cid']]['weight'] + 1: count($node->webform['components']),
   );
 
   $form['add']['add'] = array(
@@ -303,7 +303,7 @@ function webform_components_form_submit($form, &$form_state) {
   }
   elseif (isset($_POST['op']) && $_POST['op'] == t('Add')) {
     $component = $form_state['values']['add'];
-    $form_state['redirect'] = array('node/'. $node->nid .'/webform/components/new/'. $component['type'], drupal_get_destination() . '&name='. urlencode($component['name']) .'&mandatory='. $component['mandatory'] .'&email='. $component['email'] .'&pid='. $component['pid'] .'&weight='. $component['weight']);
+    $form_state['redirect'] = array('node/'. $node->nid .'/webform/components/new/'. $component['type'], 'name='. urlencode($component['name']) .'&mandatory='. $component['mandatory'] .'&email='. $component['email'] .'&pid='. $component['pid'] .'&weight='. $component['weight']);
   }
   else {
     drupal_set_message(t('The component positions and mandatory values have been updated.'));
@@ -484,7 +484,7 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
   $edit_function = '_webform_edit_'. $component['type'];
   $additional_form_elements = array();
   if (function_exists($edit_function)) {
-    $additional_form_elements = $edit_function($component); // Call the component render function.
+    $additional_form_elements = $edit_function($component);
   }
   else {
     drupal_set_message(t('The webform component of type @type does not have an edit function defined.', array('@type' => $component['type'])));
@@ -507,7 +507,7 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
-    '#weight' => 5,
+    '#weight' => 20,
   );
 
   return $form;
@@ -643,7 +643,7 @@ function webform_component_delete($node, $component) {
     $submissions = webform_get_submissions($node->nid);
     foreach ($submissions as $submission) {
       if (isset($submission->data[$component['cid']])) {
-        $delete_function($submission->data[$component['cid']], $component);
+        $delete_function($component, $submission->data[$component['cid']]);
       }
     }
   }

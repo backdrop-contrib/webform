@@ -3,11 +3,11 @@
 
 /**
  * @file
- *   Webform module hidden component.
+ * Webform module hidden component.
  */
 
 /**
- * Create a default hidden component.
+ * Implementation of _webform_defaults_component().
  */
 function _webform_defaults_hidden() {
   return array(
@@ -22,42 +22,31 @@ function _webform_defaults_hidden() {
 }
 
 /**
- * Create a set of form items to be displayed on the form for editing this
- * component. Use care naming the form items, as this correlates directly to the
- * database schema. The component "Name" and "Description" fields are added to
- * every component type and are not necessary to specify here (although they may
- * be overridden if desired).
- * @return
- *   An array of form items to be displayed on the edit component page.
+ * Implementation of _webform_edit_component().
  */
-function _webform_edit_hidden($currfield) {
-  $edit_fields = array();
-  $edit_fields['value'] = array(
+function _webform_edit_hidden($component) {
+  $form = array();
+  $form['value'] = array(
     '#type' => 'textarea',
     '#title' => t('Default value'),
-    '#default_value' => $currfield['value'],
+    '#default_value' => $component['value'],
     '#description' => t('The default value of the field.') . theme('webform_token_help'),
     '#cols' => 60,
     '#rows' => 5,
     '#weight' => 0,
   );
-  $edit_fields['advanced']['mandatory'] = array(
+  $form['advanced']['mandatory'] = array(
     '#type' => 'hidden',
     '#value' => 1,
   );
-  $edit_fields['extra']['description'] = array(); // Hide the description box.
-  return $edit_fields;
+  $form['extra']['description'] = array(); // Hide the description box.
+  return $form;
 }
 
 /**
- * Build a form item array containing all the properties of this component.
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @return
- *   An array of a form item to be displayed on the client-side webform.
+ * Implementation of _webform_render_component().
  */
-function _webform_render_hidden($component, $filter = TRUE) {
+function _webform_render_hidden($component, $value = NULL, $filter = TRUE) {
   $form_item = array(
     '#type'          => 'hidden',
     '#title'         => $component['name'],
@@ -65,40 +54,31 @@ function _webform_render_hidden($component, $filter = TRUE) {
     '#weight'        => $component['weight'],
   );
 
+  if (isset($value[0])) {
+    $form_item['#default_value'] = $value[0];
+  }
+
   return $form_item;
 }
 
 /**
- * Display the result of a textfield submission. The output of this function
- * will be displayed under the "results" tab then "submissions".
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema.
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @param $enabled
- *   If enabled, the value may be changed. Otherwise it will set to readonly.
- * @return
- *   Textual output formatted for human reading.
+ * Implementation of _webform_display_component().
  */
-function _webform_submission_display_hidden($data, $component, $enabled = FALSE) {
-  $form_item = _webform_render_hidden($component);
+function _webform_display_hidden($component, $value) {
+  $form_item = _webform_render_hidden($component, $value);
   // Only allow administrators that can view or edit all submissions to view or edit hidden fields.
   if (user_access('edit all webform submissions') || user_access('access all webform results')) {
     unset($form_item['#value']);
-    $form_item['#default_value'] = $data['value']['0'];
+    $form_item['#default_value'] = $value[0];
     $form_item['#type'] = 'textfield';
     $form_item['#title'] = t('@name (hidden)', array('@name' => $component['name']));
-    if (!$enabled) {
-      $form_item['#attributes']['readonly'] = 'readonly';
-    }
+    $form_item['#disabled'] = TRUE;
   }
   return $form_item;
 }
 
 /**
- * Module specific instance of hook_form_builder_preview_alter().
+ * Implementation of _webform_form_builder_preview_alter_component().
  *
  * Make hidden fields visible while editing.
  */
@@ -109,7 +89,7 @@ function _webform_form_builder_preview_alter_hidden(&$form_element) {
 }
 
 /**
- * Module specific instance of hook_form_builder_types().
+ * Implementation of _webform_form_builder_types_component().
  */
 function _webform_form_builder_types_hidden() {
   $fields = array();
@@ -131,7 +111,7 @@ function _webform_form_builder_types_hidden() {
 }
 
 /**
- * Module specific instance of hook_help().
+ * Implementation of _webform_help_component().
  */
 function _webform_help_hidden($section) {
   switch ($section) {
@@ -141,18 +121,7 @@ function _webform_help_hidden($section) {
 }
 
 /**
- * Calculate and returns statistics about results for this component from all
- * submission to this webform. The output of this function will be displayed
- * under the "results" tab then "analysis".
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema
- * @param $sids
- *   An optional array of submission IDs (sid). If supplied, the analysis will be limited
- *   to these sids.
- * @return
- *   An array of data rows, each containing a statistic for this component's
- *   submissions.
+ * Implementation of _webform_analysis_rows_component().
  */
 function _webform_analysis_rows_hidden($component, $sids = array()) {
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
@@ -182,29 +151,14 @@ function _webform_analysis_rows_hidden($component, $sids = array()) {
 }
 
 /**
- * Return the result of this component's submission for display in a table. The
- * output of this function will be displayed under the "results" tab then "table".
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema
- * @return
- *   Textual output formatted for human reading.
+ * Implementation of _webform_csv_data_component().
  */
-function _webform_table_data_hidden($data) {
-  return check_plain(empty($data['value']['0']) ? '' : $data['value']['0']);
+function _webform_table_data_hidden($component, $value) {
+  return check_plain(empty($value[0]) ? '' : $value[0]);
 }
 
-
 /**
- * Return the header information for this component to be displayed in a comma
- * seperated value file. The output of this function will be displayed under the
- * "results" tab then "download".
- * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
- * @return
- *   An array of data to be displayed in the first three rows of a CSV file, not
- *   including either prefixed or trailing commas.
+ * Implementation of _webform_csv_data_component().
  */
 function _webform_csv_headers_hidden($component) {
   $header = array();
@@ -215,15 +169,8 @@ function _webform_csv_headers_hidden($component) {
 }
 
 /**
- * Return the result of a textfield submission. The output of this function will
- * be displayed under the "results" tab then "submissions".
- * @param $data
- *   An array of information containing the submission result, directly
- *   correlating to the webform_submitted_data database schema.
- * @return
- *   Textual output formatted for CSV, not including either prefixed or trailing
- *   commas.
+ * Implementation of _webform_csv_data_component().
  */
-function _webform_csv_data_hidden($data) {
-  return empty($data['value']['0']) ? '' : $data['value']['0'];
+function _webform_csv_data_hidden($component, $value) {
+  return empty($value[0]) ? '' : $value[0];
 }

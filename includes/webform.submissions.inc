@@ -84,7 +84,7 @@ function webform_submission_delete($node, $submission) {
   foreach ($node->webform['components'] as $cid => $component) {
     $delete_function = '_webform_delete_'. $component['type'];
     if (function_exists($delete_function) && isset($submission->data[$cid])) {
-      $delete_function($submission->data[$cid], $component);
+      $delete_function($component, $submission->data[$cid]);
     }
   }
 

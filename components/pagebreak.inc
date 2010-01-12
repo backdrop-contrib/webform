@@ -3,11 +3,11 @@
 
 /**
  * @file
- *   Webform module page break component.
+ * Webform module page break component.
  */
 
 /**
- * Create a default pagebreak component.
+ * Implementation of _webform_defaults_component().
  */
 function _webform_defaults_pagebreak() {
   return array(
@@ -20,15 +20,9 @@ function _webform_defaults_pagebreak() {
 }
 
 /**
- * Create a set of form items to be displayed on the form for editing this
- * component. Use care naming the form items, as this correlates directly to the
- * database schema. The component "Name" and "Description" fields are added to
- * every component type and are not necessary to specify here (although they may
- * be overridden if desired).
- * @return
- *   An array of form items to be displayed on the edit component page.
+ * Implementation of _webform_edit_component().
  */
-function _webform_edit_pagebreak($currfield) {
+function _webform_edit_pagebreak($component) {
   drupal_set_message(t('Use caution when combining the pagebreak and file components. File components will not be submitted unless they are after the last pagebreak in the form.'), 'warning');
 
   $form = array();
@@ -51,7 +45,7 @@ function _webform_edit_pagebreak($currfield) {
 }
 
 /**
- * Module specific instance of hook_help().
+ * Implementation of _webform_help_component().
  */
 function _webform_help_pagebreak($section) {
   switch ($section) {
@@ -60,25 +54,28 @@ function _webform_help_pagebreak($section) {
   }
 }
 
-function _webform_render_pagebreak($component) {
-  $form = array();
+/**
+ * Implementation of _webform_render_component().
+ */
+function _webform_render_pagebreak($component, $value = NULL, $filter = TRUE) {
+  $form_item = array();
   // Render page breaks as hidden elements so that they can be displayed in
   // emails as separators.
-  $form = array(
+  $form_item = array(
     '#type' => 'hidden',
     '#value' => $component['name'],
     '#weight' => $component['weight'],
   );
-  return $form;
+  return $form_item;
 }
 
 /**
- * Module specific instance of hook_theme().
+ * Implementation of _webform_theme_component().
  */
 function _webform_theme_pagebreak() {
   return array(
     'webform_mail_pagebreak' => array(
-      'arguments' => array('data' => NULL, 'component' => NULL),
+      'arguments' => array('component' => NULL, 'value' => NULL),
     ),
   );
 }
@@ -86,14 +83,13 @@ function _webform_theme_pagebreak() {
 /**
  * Format the output of e-mailed data for this component.
  *
- * @param $data
- *   A string or array of the submitted data.
  * @param $component
- *   An array of information describing the component, directly correlating to
- *   the webform_component database schema.
+ *   A Webform component array.
+ * @param $value
+ *   A string or array of the submitted data.
  * @return
  *   Textual output to be included in the email.
  */
-function theme_webform_mail_pagebreak($data, $component) {
+function theme_webform_mail_pagebreak($component, $value) {
   return "\n-- ". $component['name'] ." --\n";
 }
