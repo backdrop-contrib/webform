@@ -1,5 +1,12 @@
 /* $Id$ */
 
+.webform-display-item {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+.webform-display-item label {
+  display: inline;
+}
 .webform-submission-navigation {
   text-align: right;
 }

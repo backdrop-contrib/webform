@@ -28,6 +28,20 @@ function _webform_defaults_time() {
 }
 
 /**
+ * Implementation of _webform_theme_component().
+ */
+function _webform_theme_time() {
+  return array(
+    'webform_time' => array(
+      'arguments' => array('element' => NULL),
+    ),
+    'webform_display_time' => array(
+      'arguments' => array('element' => NULL),
+    ),
+  );
+}
+
+/**
  * Implementation of _webform_edit_component().
  */
 function _webform_edit_time($component) {
@@ -125,7 +139,7 @@ function _webform_render_time($component) {
   for ($i = 0; $i <= 59; $i++) $minutes[$i < 10 ? "0$i" : $i] = $i < 10 ? "0$i" : $i;
   $am_pms = array('am' => t('am'), 'pm' => t('pm'));
 
-  $form_item = array(
+  $element = array(
     '#title' => $component['name'],
     '#required' => $component['mandatory'],
     '#weight' => $component['weight'],
@@ -137,20 +151,20 @@ function _webform_render_time($component) {
     '#webform_component' => $component,
   );
 
-  $form_item['hour'] = array(
+  $element['hour'] = array(
     '#prefix' => '',
     '#type' => 'select',
     '#default_value' => $hour,
     '#options' => $hours,
   );
-  $form_item['minute'] = array(
+  $element['minute'] = array(
     '#prefix' => ':',
     '#type' => 'select',
     '#default_value' => $minute,
     '#options' => $minutes,
   );
   if ($component['extra']['hourformat'] == '12-hour') {
-    $form_item['ampm'] = array(
+    $element['ampm'] = array(
       '#type' => 'radios',
       '#default_value' => $am_pm,
       '#options' => $am_pms,
@@ -158,39 +172,39 @@ function _webform_render_time($component) {
   }
 
   if (isset($value)) {
-    $form_item['minute']['#default_value'] = $value[1];
+    $element['minute']['#default_value'] = $value[1];
   
     // Match the hourly data to the hour format.
     if ($value[1]) {
       $timestamp = strtotime($value[0] .':'. $value[1] . (isset($value[2]) ? $value[2] : ''));
       if ($component['extra']['hourformat'] == '24-hour') {
-        $form_item['hour']['#default_value'] = date('H', $timestamp);
+        $element['hour']['#default_value'] = date('H', $timestamp);
       }
       else {
-        $form_item['hour']['#default_value'] = date('g', $timestamp);
-        $form_item['ampm']['#default_value'] = $value[2];
+        $element['hour']['#default_value'] = date('g', $timestamp);
+        $element['ampm']['#default_value'] = $value[2];
       }
     }
   }
 
-  return $form_item;
+  return $element;
 }
 
-function webform_validate_time($form_item, $form_state) {
-  $form_key = $form_item['#webform_component']['form_key'];
-  $name = $form_item['#webform_component']['name'];
+function webform_validate_time($element, $form_state) {
+  $form_key = $element['#webform_component']['form_key'];
+  $name = $element['#webform_component']['name'];
 
   // Check if the user filled the required fields.
-  foreach ($form_item['#webform_component'] == '12-hour' ? array('hour', 'minute', 'ampm') : array('hour', 'minute') as $field_type) {
-    if (!is_numeric($form_item[$field_type]['#value']) && $form_item['#required']) {
+  foreach ($element['#webform_component'] == '12-hour' ? array('hour', 'minute', 'ampm') : array('hour', 'minute') as $field_type) {
+    if (!is_numeric($element[$field_type]['#value']) && $element['#required']) {
       form_set_error($form_key, t('%field field is required.', array('%field' => $name)));
       return;
     }
   }
 
   // Check for a valid time.
-  if ($form_item['hour']['#value'] !== '' || $form_item['minute']['#value'] !== '') {
-    if (!is_numeric($form_item['hour']['#value']) || !is_numeric($form_item['minute']['#value']) || (isset($form_item['ampm']) && $form_item['ampm']['#value'] === '')) {
+  if ($element['hour']['#value'] !== '' || $element['minute']['#value'] !== '') {
+    if (!is_numeric($element['hour']['#value']) || !is_numeric($element['minute']['#value']) || (isset($element['ampm']) && $element['ampm']['#value'] === '')) {
       form_error($form_key, t('Entered %name is not a valid time.', array('%name' => $name)));
       return;
     }
@@ -200,62 +214,40 @@ function webform_validate_time($form_item, $form_state) {
 /**
  * Implementation of _webform_display_component().
  */
-function _webform_display_time($component, $value) {
-  $form_item = _webform_render_time($component, $value);
-  $form_item['minute']['#default_value'] = $value[1];
-  $form_item['minute']['#disabled'] = TRUE;
-  $form_item['hour']['#disabled'] = TRUE;
-  $form_item['ampm']['#disabled'] = TRUE;
+function _webform_display_time($component, $value, $format = 'html') {
+  $value = array(
+    'hour' => isset($value[0]) ? $value[0] : NULL,
+    'minute' => isset($value[1]) ? $value[1] : NULL,
+    'ampm' => isset($value[2]) ? $value[2] : NULL,
+  );
 
-  // Match the hourly data to the hour format.
-  if ($value[1]) {
-    $timestamp = strtotime($value[0] .':'. $value[1] . (isset($value[2]) ? $value[2] : ''));
-    if ($component['extra']['hourformat'] == '24-hour') {
-      $form_item['hour']['#default_value'] = date('H', $timestamp);
-    }
-    else {
-      $form_item['hour']['#default_value'] = date('g', $timestamp);
-      $form_item['ampm']['#default_value'] = $value[2];
-    }
-  }
-  return $form_item;
+  return array(
+    '#title' => $component['name'],
+    '#weight' => $component['weight'],
+    '#theme' => 'webform_display_time',
+    '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
+    '#post_render' => array('webform_element_wrapper'),
+    '#component' => $component,
+    '#format' => $format,
+    '#hourformat' => $component['extra']['hourformat'],
+    '#value' => $value,
+  );
 }
 
 /**
- * Format the output of e-mailed data for this component
- *
- * @param $component
- *   A Webform component array.
- * @param $data
- *   A string or array of the submitted data
- * @return
- *   Textual output to be included in the email.
+ * Format the output of data for this component.
  */
-function theme_webform_mail_time($component, $value) {
-  $output = $component['name'] .':';
-  if ($value['hour'] && $value['minute']) {
-    if ($component['extra']['hourformat'] == '24-hour') {
-      $output .= ' '. $value['hour'] .':'. $value['minute'];
+function theme_webform_display_time($element) {
+  $output = ' ';
+  if ($element['#value']['hour'] && $element['#value']['minute']) {
+    if ($element['#hourformat'] == '24-hour') {
+      $output = $element['#value']['hour'] .':'. $element['#value']['minute'];
     }
     else {
-      $output .= ' '. $value['hour'] .':'. $value['minute'] .' '. $value['ampm'];
+      $output = $element['#value']['hour'] .':'. $element['#value']['minute'] .' '. $element['#value']['ampm'];
     }
   }
   return $output;
-}
-
-/**
- * Implementation of _webform_theme_component().
- */
-function _webform_theme_time() {
-  return array(
-    'webform_time' => array(
-      'arguments' => array('element' => NULL),
-    ),
-    'webform_mail_time' => array(
-      'arguments' => array('component' => NULL, 'value' => NULL),
-    ),
-  );
 }
 
 /**

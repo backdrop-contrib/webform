@@ -238,17 +238,34 @@ function _webform_render_component($component, $value = NULL) {
  * @param $value
  *   An array of information containing the submission result, directly
  *   correlating to the webform_submitted_data database table schema.
+ * @param $format
+ *   Either 'html' or 'text'. Defines the format that the content should be
+ *   returned as. Make sure that returned content is run through check_plain()
+ *   or other filtering functions when returning HTML.
  * @return
- *   Textual output formatted for human reading.
+ *   A renderable element containing at the very least these properties:
+ *    - #title
+ *    - #weight
+ *    - #component
+ *    - #format
+ *    - #value
+ *   Webform also uses #theme_wrappers to output the end result to the user,
+ *   which will properly format the label and content for use within an e-mail
+ *   (such as wrapping the text) or as HTML (ensuring consistent output).
  */
-function _webform_display_component($component, $value, $enabled = FALSE) {
-  $form_item = _webform_render_component($component, FALSE);
-  $cid = 0;
-  foreach (element_children($form_item) as $key) {
-    $form_item[$key]['#default_value'] = $value[$cid++];
-    $form_item[$key]['#disabled'] = !$enabled;
-  }
-  return $form_item;
+function _webform_display_component($component, $value, $format = 'html') {
+  return array(
+    '#title' => $component['name'],
+    '#weight' => $component['weight'],
+    '#theme' => 'webform_display_textfield',
+    '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
+    '#post_render' => array('webform_element_wrapper'),
+    '#field_prefix' => $component['extra']['field_prefix'],
+    '#field_suffix' => $component['extra']['field_suffix'],
+    '#component' => $component,
+    '#format' => $format,
+    '#value' => isset($value[0]) ? $value[0] : '',
+  );
 }
 
 /**

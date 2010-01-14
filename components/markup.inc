@@ -48,7 +48,7 @@ function _webform_edit_markup($component) {
  * Implementation of _webform_render_component().
  */
 function _webform_render_markup($component, $value = NULL, $filter = TRUE) {
-  $form_item = array(
+  $element = array(
     '#type'   => 'markup',
     '#title'  => $component['name'],
     '#weight' => $component['weight'],
@@ -59,16 +59,16 @@ function _webform_render_markup($component, $value = NULL, $filter = TRUE) {
   );
 
   // TODO: Remove when #markup becomes available in D7.
-  $form_item['#value'] = $form_item['#markup'];
+  $element['#value'] = $element['#markup'];
 
-  return $form_item;
+  return $element;
 }
 
 /**
  * Implementation of _webform_display_component().
  */
-function _webform_display_markup($component, $value) {
-  return _webform_render_markup($component, $value);
+function _webform_display_markup($component, $value, $format = 'html') {
+  return array();
 }
 
 /**

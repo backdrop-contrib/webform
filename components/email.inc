@@ -28,6 +28,17 @@ function _webform_defaults_email() {
 }
 
 /**
+ * Implementation of _webform_theme_component().
+ */
+function _webform_theme_email() {
+  return array(
+    'webform_display_email' => array(
+      'arguments' => array('component' => NULL, 'value' => NULL, 'format' => 'plain'),
+    ),
+  );
+}
+
+/**
  * Implementation of _webform_edit_component().
  */
 function _webform_edit_email($component) {
@@ -84,7 +95,7 @@ function _webform_edit_email_validate($element, &$form_state) {
  */
 function _webform_render_email($component, $value = NULL) {
   global $user;
-  $form_item = array(
+  $element = array(
     '#type'          => 'textfield',
     '#title'         => $component['name'],
     '#default_value' => _webform_filter_values($component['value']),
@@ -100,19 +111,19 @@ function _webform_render_email($component, $value = NULL) {
   );
 
   if (isset($value)) {
-    $form_item['#default_value'] = $value[0];
+    $element['#default_value'] = $value[0];
   }
 
   if ($component['extra']['disabled']) {
-    $form_item['#attributes']['readonly'] = 'readonly';
+    $element['#attributes']['readonly'] = 'readonly';
   }
 
   // Change the 'width' option to the correct 'size' option.
   if ($component['extra']['width'] > 0) {
-    $form_item['#size'] = $component['extra']['width'];
+    $element['#size'] = $component['extra']['width'];
   }
 
-  return $form_item;
+  return $element;
 }
 
 /**
@@ -136,11 +147,25 @@ function _webform_validate_email($form_element, $form_state) {
 /**
  * Implementation of _webform_display_component().
  */
-function _webform_display_email($component, $value) {
-  $form_item = _webform_render_email($component, $value);
-  $form_item['#default_value'] = $value[0];
-  $form_item['#attributes']['readonly'] = 'readonly';
-  return $form_item;
+function _webform_display_email($component, $value, $format = 'html') {
+  return array(
+    '#title' => $component['name'],
+    '#weight' => $component['weight'],
+    '#theme' => 'webform_display_email',
+    '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
+    '#post_render' => array('webform_element_wrapper'),
+    '#component' => $component,
+    '#format' => $format,
+    '#value' => isset($value[0]) ? $value[0] : '',
+  );
+}
+
+/**
+ * Format the text output for this component.
+ */
+function theme_webform_display_email($element) {
+  $element['#value'] = empty($element['#value']) ? ' ' : $element['#value'];
+  return $element['#format'] == 'html' ? check_plain($element['#value']) : $element['#value'];
 }
 
 /**

@@ -29,6 +29,20 @@ function _webform_defaults_date() {
 }
 
 /**
+ * Implementation of _webform_theme_component().
+ */
+function _webform_theme_date() {
+  return array(
+    'webform_date' => array(
+      'arguments' => array('element' => NULL),
+    ),
+    'webform_display_date' => array(
+      'arguments' => array('element' => NULL),
+    ),
+  );
+}
+
+/**
  * Implementation of _webform_edit_component().
  */
 function _webform_edit_date($component) {
@@ -92,7 +106,7 @@ function _webform_edit_date($component) {
  * Implementation of _webform_render_component().
  */
 function _webform_render_date($component, $value = NULL) {
-  $form_item = array(
+  $element = array(
     '#title' => $component['name'],
     '#weight' => $component['weight'],
     '#type' => 'date',
@@ -106,12 +120,12 @@ function _webform_render_date($component, $value = NULL) {
   );
 
   if (isset($value)) {
-    $form_item['month']['#default_value'] = $value[0];
-    $form_item['day']['#default_value'] = $value[1];
-    $form_item['year']['#default_value'] = $value[2];
+    $element['month']['#default_value'] = $value[0];
+    $element['day']['#default_value'] = $value[1];
+    $element['year']['#default_value'] = $value[2];
   }
 
-  return $form_item;
+  return $element;
 }
 
 /**
@@ -211,28 +225,28 @@ function webform_expand_date($element) {
 /**
  * Element validation for Webform date fields.
  */
-function webform_validate_date($form_item, $form_state) {
-  $component = $form_item['#webform_component'];
+function webform_validate_date($element, $form_state) {
+  $component = $element['#webform_component'];
   $form_key = $component['form_key'];
   $name = $component['name'];
 
   // Check if the user filled the required fields.
   foreach (array('day', 'month', 'year') as $field_type) {
-    if (!is_numeric($form_item[$field_type]['#value']) && $form_item['#required']) {
+    if (!is_numeric($element[$field_type]['#value']) && $element['#required']) {
       form_set_error($form_key, t('!name field is required.', array('!name' => $name)));
       return;
     }
   }
   // Check for a valid date.
-  if ($form_item['month']['#value'] !== '' || $form_item['day']['#value'] !== '' || $form_item['year']['#value'] !== '') {
-    if (!checkdate((int)$form_item['month']['#value'], (int)$form_item['day']['#value'], (int)$form_item['year']['#value'])) {
+  if ($element['month']['#value'] !== '' || $element['day']['#value'] !== '' || $element['year']['#value'] !== '') {
+    if (!checkdate((int)$element['month']['#value'], (int)$element['day']['#value'], (int)$element['year']['#value'])) {
       form_set_error($form_key, t('Entered !name is not a valid date.', array('!name' => $name)));
       return;
     }
   }
   // Check the date is between allowed years.
-  if ($form_item['year']['#value'] !== '' && is_numeric($component['extra']['year_start']) && is_numeric($component['extra']['year_end'])) {
-    if ($form_item['year']['#value'] < $component['extra']['year_start'] || $form_item['year']['#value'] > $component['extra']['year_end']) {
+  if ($element['year']['#value'] !== '' && is_numeric($component['extra']['year_start']) && is_numeric($component['extra']['year_end'])) {
+    if ($element['year']['#value'] < $component['extra']['year_start'] || $element['year']['#value'] > $component['extra']['year_end']) {
       form_set_error($form_key .'][year', t('The entered date needs to be between the years @start and @end.', array('@start' => $component['extra']['year_start'], '@end' => $component['extra']['year_end'])));
       return;
     }
@@ -251,41 +265,37 @@ function _webform_submit_date($component, $value) {
 /**
  * Implementation of _webform_display_component().
  */
-function _webform_display_date($component, $value) {
-  $form_item = _webform_render_date($component, $value);
-  $form_item['month']['#default_value'] = $value[0];
-  $form_item['day']['#default_value'] = $value[1];
-  $form_item['year']['#default_value'] = $value[2];
-  $form_item['#disabled'] = TRUE;
-  return $form_item;
+function _webform_display_date($component, $value, $format = 'html') {
+  $value = array(
+    'month' => isset($value[0]) ? $value[0] : NULL,
+    'day' => isset($value[1]) ? $value[1] : NULL,
+    'year' => isset($value[2]) ? $value[2] : NULL,
+  );
+
+  return array(
+    '#title' => $component['name'],
+    '#weight' => $component['weight'],
+    '#theme' => 'webform_display_date',
+    '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
+    '#post_render' => array('webform_element_wrapper'),
+    '#component' => $component,
+    '#format' => $format,
+    '#value' => $value,
+  );
 }
 
 /**
- * Format the output of e-mailed data for this component.
+ * Format the text output for this component.
  */
-function theme_webform_mail_date($component, $value) {
-  $output = $component['name'] .':';
-  if ($value[0] && $value[1]) {
-    $timestamp = strtotime($value[0] .'/'. $value[1] .'/'. $value[2]);
+function theme_webform_display_date($element) {
+  $output = ' ';
+  if ($element['#value']) {
+    $timestamp = strtotime($element['#value']['month'] .'/'. $element['#value']['day'] .'/'. $element['#value']['year']);
     $format = webform_date_format('medium');
-    $output .= ' '. format_date($timestamp, 'custom', $format);
+    $output = format_date($timestamp, 'custom', $format, 0);
   }
 
   return $output;
-}
-
-/**
- * Implementation of _webform_theme_component().
- */
-function _webform_theme_date() {
-  return array(
-    'webform_date' => array(
-      'arguments' => array('element' => NULL),
-    ),
-    'webform_mail_date' => array(
-      'arguments' => array('component' => NULL, 'value' => NULL),
-    ),
-  );
 }
 
 /**

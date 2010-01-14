@@ -28,6 +28,17 @@ function _webform_defaults_select() {
 }
 
 /**
+ * Implementation of _webform_theme_component().
+ */
+function _webform_theme_select() {
+  return array(
+    'webform_display_select' => array(
+      'arguments' => array('element' => NULL),
+    ),
+  );
+}
+
+/**
  * Implementation of _webform_edit_component().
  */
 function _webform_edit_select($component) {
@@ -119,7 +130,7 @@ function _webform_edit_validate_select($element, $form_state) {
  * Implementation of _webform_render_component().
  */
 function _webform_render_select($component, $value = NULL, $filter = TRUE) {
-  $form_item = array(
+  $element = array(
     '#title'         => $component['name'],
     '#required'      => $component['mandatory'],
     '#weight'        => $component['weight'],
@@ -137,22 +148,22 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
   }
 
   // Set the component options.
-  $form_item['#options'] = $options;
+  $element['#options'] = $options;
 
   // Set the default value.
   if (isset($value)) {
     if ($component['extra']['multiple'] === 'Y') {
       // Set the value as an array.
-      $form_item['#default_value'] = array();
+      $element['#default_value'] = array();
       foreach ((array) $value as $key => $option_value) {
-        $form_item['#default_value'][] = $option_value;
+        $element['#default_value'][] = $option_value;
       }
     }
     else {
       // Set the value as a single string.
-      $form_item['#default_value'] = '';
+      $element['#default_value'] = '';
       foreach ((array) $value as $option_value) {
-        $form_item['#default_value'] = $option_value;
+        $element['#default_value'] = $option_value;
       }
     }
   }
@@ -161,34 +172,34 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
     if ($component['extra']['multiple'] === 'Y') {
       $varray = array_filter(explode(',', $default_value));
       foreach ($varray as $key => $v) {
-        $form_item['#default_value'][] = $v;
+        $element['#default_value'][] = $v;
       }
     }
     else {
-      $form_item['#default_value'] = $default_value;
+      $element['#default_value'] = $default_value;
     }
   }
 
   if ($component['extra']['aslist'] === 'Y') {
     // Set display as a select list:
-    $form_item['#type'] = 'select';
+    $element['#type'] = 'select';
     if ($component['extra']['multiple'] === 'Y') {
-      $form_item['#multiple'] = TRUE;
+      $element['#multiple'] = TRUE;
     }
   }
   else {
     if ($component['extra']['multiple'] === 'Y') {
       // Set display as a checkbox set.
-      $form_item['#type'] = 'checkboxes';
+      $element['#type'] = 'checkboxes';
       // Drupal 6 hack to properly render on multipage forms.
-      $form_item['#process'] = array('webform_expand_checkboxes');
+      $element['#process'] = array('webform_expand_checkboxes');
     }
     else {
       // Set display as a radio set.
-      $form_item['#type'] = 'radios';
+      $element['#type'] = 'radios';
     }
   }
-  return $form_item;
+  return $element;
 }
 
 /**
@@ -216,24 +227,17 @@ function webform_expand_checkboxes($element) {
 /**
  * Implementation of _webform_display_component().
  */
-function _webform_display_select($component, $value) {
-  $form_item = _webform_render_select($component, $value);
-  if ($component['extra']['multiple'] === 'Y') {
-    // Set the value as an array.
-    $form_item['#default_value'] = array();
-    foreach ((array) $value as $key => $value) {
-      $form_item['#default_value'][] = $value;
-    }
-  }
-  else {
-    // Set the value as a single string.
-    $form_item['#default_value'] = '';
-    foreach ((array) $value as $value) {
-      $form_item['#default_value'] = $value;
-    }
-  }
-  $form_item['#disabled'] = TRUE;
-  return $form_item;
+function _webform_display_select($component, $value, $format = 'html') {
+  return array(
+    '#title' => $component['name'],
+    '#weight' => $component['weight'],
+    '#theme' => 'webform_display_select',
+    '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
+    '#post_render' => array('webform_element_wrapper'),
+    '#component' => $component,
+    '#format' => $format,
+    '#value' => $value,
+  );
 }
 
 /**
@@ -362,48 +366,47 @@ function _webform_form_builder_save_select($component, $form_element) {
 }
 
 /**
- * Format the output of e-mailed data for this component.
- *
- * @param $component
- *   A Webform component array.
- * @param $value
- *   A string or array of the submitted data.
- * @return
- *   Textual output to be included in the email.
+ * Format the text output for this component.
  */
-function theme_webform_mail_select($component, $value) {
+function theme_webform_display_select($element) {
+  $component = $element['#component'];
+
   // Convert submitted 'safe' values to un-edited, original form.
   $options = _webform_select_options($component['extra']['items'], TRUE);
 
-  // Generate the output.
-  $output = '';
+  $items = array();
   if ($component['extra']['multiple']) {
-    $output .= $component['name'] .":\n";
-    foreach ((array) $value as $option_value) {
-      if ($option_value) {
-        if ($options[$option_value]) {
-          $output .= '    - '. $options[$option_value] ."\n";
+    foreach ((array) $element['#value'] as $option_value) {
+      if ($option_value !== '') {
+        if (isset($options[$option_value])) {
+          $items[] = $options[$option_value];
         }
       }
     }
   }
   else {
-    if ($value !== '' && $options[$value]) {
-      $output .= $component['name'] .": ". $options[$value] ."\n";
+    if (isset($element['#value'][0]) && $element['#value'][0] !== '' && $options[$element['#value'][0]]) {
+      $items[] = $options[$element['#value'][0]];
     }
   }
-  return $output;
-}
 
-/**
- * Implementation of _webform_theme_component().
- */
-function _webform_theme_select() {
-  return array(
-    'webform_mail_select' => array(
-      'arguments' => array('component' => NULL, 'value' => NULL),
-    ),
-  );
+  if ($element['#format'] == 'html') {
+    array_walk($items, 'check_plain');
+    $output = count($items) > 1 ? theme('item_list', $items) : (isset($items[0]) ? $items[0] : ' ');
+  }
+  else {
+    if (count($items) > 1) {
+      foreach ($items as $key => $item) {
+        $items[$key] = ' - ' . $item;
+      }
+      $output = implode("\n", $items);
+    }
+    else {
+      $output = isset($items[0]) ? $items[0] : ' ';
+    }
+  }
+
+  return $output;
 }
 
 /**

@@ -32,6 +32,20 @@ function _webform_defaults_file() {
 }
 
 /**
+ * Implementation of _webform_theme_component().
+ */
+function _webform_theme_file() {
+  return array(
+    'webform_edit_file' => array(
+      'arguments' => array('form' => NULL),
+    ),
+    'webform_display_file' => array(
+      'arguments' => array('element' => NULL),
+    ),
+  );
+}
+
+/**
  * Implementation of _webform_edit_component().
  */
 function _webform_edit_file($component) {
@@ -266,7 +280,7 @@ function theme_webform_edit_file($form) {
  * Implementation of _webform_render_component().
  */
 function _webform_render_file($component, $value = NULL) {
-  $form_item[$component['form_key']] = array(
+  $element[$component['form_key']] = array(
     '#type'          => $component['type'],
     '#title'         => $component['name'],
     //'#required'      => $component['mandatory'], // Drupal core bug with required file uploads.
@@ -282,8 +296,8 @@ function _webform_render_file($component, $value = NULL) {
     ),
     '#webform_component' => $component,
   );
-  $form_item['#weight'] = $component['weight'];
-  $form_item['new'] = array(
+  $element['#weight'] = $component['weight'];
+  $element['new'] = array(
     '#type' => 'hidden',
     '#weight' => $component['weight'],
     '#value' => $component['form_key'],
@@ -293,9 +307,9 @@ function _webform_render_file($component, $value = NULL) {
   if (isset($value)) {
     $file_data = unserialize($value[0]);
     if (isset($file_data['filename'])) {
-      $form_item['#suffix'] = ' <a href="'. webform_file_url($file_data['filepath']) .'">Download '. $file_data['filename'] .'</a>'. $form_item['#suffix'];
-      $form_item['#description'] = t('Uploading a new file will replace the current file.');
-      $form_item['existing'] = array(
+      $element['#suffix'] = ' ' . l(t('Download !filename', array('!filename' => $file_data['filename'])), webform_file_url($file_data['filepath'])) . (isset($element['#suffix']) ? $element['#suffix'] : '');
+      $element['#description'] = t('Uploading a new file will replace the current file.');
+      $element['existing'] = array(
         '#type' => 'value',
         '#value' => $file_data,
       );
@@ -304,10 +318,10 @@ function _webform_render_file($component, $value = NULL) {
 
   // Change the 'width' option to the correct 'size' option.
   if ($component['extra']['width'] > 0) {
-    $form_item[$component['form_key']]['#size'] = $component['extra']['width'];
+    $element[$component['form_key']]['#size'] = $component['extra']['width'];
   }
 
-  return $form_item;
+  return $element;
 }
 
 /**
@@ -397,32 +411,29 @@ function _webform_submit_file($component, $value) {
 }
 
 /**
- * Format the output of emailed data for this component
- *
- * @param $component
- *   A Webform component array.
- * @param $data
- *   A string or array of the submitted data.
- * @return
- *   Textual output to be included in the email.
- */
-function theme_webform_mail_file($component, $value) {
-  $file = is_string($value) ? unserialize($value) : $value;
-  $output = $component['name'] .': '. (!empty($file['filepath']) ? webform_file_url($file['filepath']) : '') ."\n";
-  return $output;
-}
-/**
  * Implementation of _webform_display_component().
  */
-function _webform_display_file($component, $value) {
-  $file_data = unserialize($value[0]);
-  $form_item = _webform_render_file($component, $value);
-  $form_item['#type'] = 'textfield';
-  $form_item['#tree'] = TRUE;
-  $form_item['#attributes']['readonly'] = 'readonly';
-  $form_item['#default_value'] = empty($file_data['filepath']) ? '' : $file_data['filepath'];
+function _webform_display_file($component, $value, $format = 'html') {
+  $file_data = isset($value[0]) ? unserialize($value[0]) : array();
+  return array(
+     '#title' => $component['name'],
+     '#value' => $file_data,
+     '#weight' => $component['weight'],
+     '#theme' => 'webform_display_file',
+     '#theme_wrappers' => $format == 'text' ? array('webform_element_text') : array('webform_element'),
+     '#post_render' => array('webform_element_wrapper'),
+     '#component' => $component,
+     '#format' => $format,
+  );
+}
 
-  return $form_item;
+/**
+ * Format the output of text data for this component
+ */
+function theme_webform_display_file($element) {
+  $file = $element['#value'];
+  $url = !empty($file) ? webform_file_url($file['filepath']) : t('no upload');
+  return !empty($file) ? ($element['#format'] == 'plain' ? $url : l($file['filename'], $url)) : '';
 }
 
 /**
@@ -437,20 +448,6 @@ function _webform_delete_file($component, $value) {
       db_query("DELETE FROM {files} WHERE filepath = '%s'", $file_data['filepath']);
     }
   }
-}
-
-/**
- * Implementation of _webform_theme_component().
- */
-function _webform_theme_file() {
-  return array(
-    'webform_edit_file' => array(
-      'arguments' => array('form' => NULL),
-    ),
-    'webform_mail_file' => array(
-      'arguments' => array('component' => NULL, 'value' => NULL),
-    ),
-  );
 }
 
 /**

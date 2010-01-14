@@ -10,6 +10,7 @@ Webform 2.x Changelog
 - Webform may now be attached to any content type.
 - Form builder integration for live previews and editing of forms.
 - Public API for allowing other modules to provide components.
+- New rendering capabilities for HTML presentation of submissions and e-mails.
 
 1.x to 2.0
 ----------

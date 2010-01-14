@@ -10,8 +10,8 @@
  * "webform-mail.tpl.php" to affect all webform e-mails on your site.
  *
  * Available variables:
- * - $form_values: The values submitted by the user.
  * - $node: The node object for this webform.
+ * - $submission: The webform submission.
  * - $user: The current user submitting the form.
  * - $ip_address: The IP address of the user submitting the form.
  * - $sid: The unique submission ID of this submission.

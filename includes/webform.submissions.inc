@@ -99,7 +99,6 @@ function webform_submission_delete($node, $submission) {
  *   The submission to be deleted (from webform_submitted_data).
  */
 function webform_submission_delete_form($form_state, $node, $submission) {
-  drupal_set_title(t('Delete Form Submission'));
   webform_set_breadcrumb($node, $submission);
 
   $form = array();
@@ -107,7 +106,7 @@ function webform_submission_delete_form($form_state, $node, $submission) {
   $form['submission'] = array('#type' => 'value', '#value' => $submission);
   $question = t('Are you sure you want to delete this submission?');
 
-  return confirm_form($form, $question, isset($_GET['destination']) ? $_GET['destination'] : 'node/'. $node->nid .'/webform-results', NULL, t('Delete'), t('Cancel'));
+  return confirm_form($form, NULL, isset($_GET['destination']) ? $_GET['destination'] : 'node/'. $node->nid .'/webform-results', $question, t('Delete'), t('Cancel'));
 }
 
 function webform_submission_delete_form_submit($form, &$form_state) {
@@ -115,6 +114,56 @@ function webform_submission_delete_form_submit($form, &$form_state) {
   drupal_set_message(t('Submission deleted.'));
 
   $form_state['redirect'] = 'node/'. $form_state['values']['node']->nid .'/webform-results';
+}
+
+/**
+ * Menu title callback; Return the submission number as a title.
+ */
+function webform_submission_title($node, $submission) {
+  return t('Submission #@sid', array('@sid' => $submission->sid));
+}
+
+/**
+ * Menu callback; Present a Webform submission page for display or editing.
+ */
+function webform_submission_page($node, $submission, $format) {
+  webform_set_breadcrumb($node, $submission);
+
+  if ($format == 'form') {
+    $output = drupal_get_form('webform_client_form_'. $node->nid, $node, $submission);
+  }
+  else {
+    $output = webform_submission_render($node, $submission, $format);
+  }
+
+  if (user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid)) {
+    $navigation = theme('webform_submission_navigation', $node, $submission, $format != 'form' ? 'display' : 'form');
+    $information = theme('webform_submission_information', $node, $submission);
+  }
+  else {
+    $navigation = NULL;
+    $information = NULL;
+  }
+
+  return theme('webform_submission_page', $output, $navigation, $information);
+}
+
+/**
+ * Print a Webform submission for display on a page or in an e-mail.
+ */
+function webform_submission_render($node, $submission, $format) {
+  $component_tree = array();
+  $renderable = array();
+  $page_count = 1;
+
+  _webform_components_tree_build($node->webform['components'], $component_tree, 0, $page_count);
+
+  // Recursively add components to the form.
+  foreach ($component_tree['children'] as $cid => $component) {
+    _webform_client_form_add_component($component, NULL, $renderable, $renderable, $submission, $format);
+  }
+
+  return drupal_render($renderable);
 }
 
 /**
@@ -244,7 +293,6 @@ function webform_get_submission($nid, $sid, $reset = FALSE) {
   return $submissions[$nid][$sid];
 }
 
-
 function _webform_submission_spam_check($to, $subject, $from, $headers = array()) {
   $headers = implode('\n', (array)$headers);
   // Check if they are attempting to spam using a bcc or content type hack.
@@ -306,4 +354,21 @@ function _webform_submission_limit_check($node) {
 
   // Limit not exceeded.
   return FALSE;
+}
+
+/**
+ * Preprocess function for webform-submission-navigation.tpl.php
+ */
+function template_preprocess_webform_submission_navigation(&$vars) {
+  $vars['previous'] = db_result(db_query('SELECT MAX(sid) FROM {webform_submissions} WHERE nid = %d AND sid < %d', array($vars['node']->nid, $vars['submission']->sid)));
+  $vars['next'] = db_result(db_query('SELECT MIN(sid) FROM {webform_submissions} WHERE nid = %d AND sid > %d', array($vars['node']->nid, $vars['submission']->sid)));
+  $vars['previous_url'] = 'node/' . $vars['node']->nid . '/submission/' . $vars['previous'] . ($vars['mode'] == 'form' ? '/edit' : '');
+  $vars['next_url'] = 'node/' . $vars['node']->nid . '/submission/' . $vars['next'] . ($vars['mode'] == 'form' ? '/edit' : '');
+}
+
+/**
+ * Preprocess function for webform-submission-navigation.tpl.php
+ */
+function template_preprocess_webform_submission_information(&$vars) {
+  $vars['account'] = user_load(array('uid' => $vars['submission']->uid));
 }

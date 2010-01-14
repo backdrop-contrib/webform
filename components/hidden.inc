@@ -22,6 +22,17 @@ function _webform_defaults_hidden() {
 }
 
 /**
+ * Implementation of _webform_theme_component().
+ */
+function _webform_theme_hidden() {
+  return array(
+    'webform_display_hidden' => array(
+      'arguments' => array('element' => NULL),
+    ),
+  );
+}
+
+/**
  * Implementation of _webform_edit_component().
  */
 function _webform_edit_hidden($component) {
@@ -47,7 +58,7 @@ function _webform_edit_hidden($component) {
  * Implementation of _webform_render_component().
  */
 function _webform_render_hidden($component, $value = NULL, $filter = TRUE) {
-  $form_item = array(
+  $element = array(
     '#type'          => 'hidden',
     '#title'         => $component['name'],
     '#default_value' => $filter ? _webform_filter_values($component['value']) : $component['value'],
@@ -55,26 +66,33 @@ function _webform_render_hidden($component, $value = NULL, $filter = TRUE) {
   );
 
   if (isset($value[0])) {
-    $form_item['#default_value'] = $value[0];
+    $element['#default_value'] = $value[0];
   }
 
-  return $form_item;
+  return $element;
 }
 
 /**
  * Implementation of _webform_display_component().
  */
-function _webform_display_hidden($component, $value) {
-  $form_item = _webform_render_hidden($component, $value);
-  // Only allow administrators that can view or edit all submissions to view or edit hidden fields.
-  if (user_access('edit all webform submissions') || user_access('access all webform results')) {
-    unset($form_item['#value']);
-    $form_item['#default_value'] = $value[0];
-    $form_item['#type'] = 'textfield';
-    $form_item['#title'] = t('@name (hidden)', array('@name' => $component['name']));
-    $form_item['#disabled'] = TRUE;
-  }
-  return $form_item;
+function _webform_display_hidden($component, $value, $format = 'html') {
+  $element = array(
+    '#title' => t('!name (hidden)', array('!name' => $component['name'])),
+    '#value' => isset($value[0]) ? $value[0] : NULL,
+    '#weight' => $component['weight'],
+    '#theme' => 'webform_display_hidden',
+    '#component' => $component,
+    '#format' => $format,
+    '#theme' => 'webform_display_hidden',
+    '#theme_wrappers' => $format == 'text' ? array('webform_element_text') : array('webform_element'),
+    '#post_render' => array('webform_element_wrapper'),
+    '#access' => user_access('edit all webform submissions') || user_access('access all webform results'),
+  );
+  return $element;
+}
+
+function theme_webform_display_hidden($element) {
+  return $element['#format'] == 'html' ? check_plain($element['#value']) : $element['#value'];
 }
 
 /**

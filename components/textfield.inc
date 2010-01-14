@@ -31,6 +31,17 @@ function _webform_defaults_textfield() {
 }
 
 /**
+ * Implementation of _webform_theme_component().
+ */
+function _webform_theme_textfield() {
+  return array(
+    'webform_display_textfield' => array(
+      'arguments' => array('element' => NULL),
+    ),
+  );
+}
+
+/**
  * Implementation of _webform_edit_component().
  */
 function _webform_edit_textfield($component) {
@@ -95,7 +106,7 @@ function _webform_edit_textfield($component) {
  * Implementation of _webform_render_component().
  */
 function _webform_render_textfield($component, $value = NULL, $filter = TRUE) {
-  $form_item = array(
+  $element = array(
     '#type'          => $component['type'],
     '#title'         => $component['name'],
     '#default_value' => $filter ? _webform_filter_values($component['value']) : $component['value'],
@@ -110,32 +121,40 @@ function _webform_render_textfield($component, $value = NULL, $filter = TRUE) {
   );
 
   if ($component['extra']['disabled']) {
-    $form_item['#attributes']['readonly'] = 'readonly';
+    $element['#attributes']['readonly'] = 'readonly';
   }
 
   // Change the 'width' option to the correct 'size' option.
   if ($component['extra']['width'] > 0) {
-    $form_item['#size'] = $component['extra']['width'];
+    $element['#size'] = $component['extra']['width'];
   }
   if ($component['extra']['maxlength'] > 0) {
-    $form_item['#maxlength'] = $component['extra']['maxlength'];
+    $element['#maxlength'] = $component['extra']['maxlength'];
   }
 
   if (isset($value)) {
-    $form_item['#default_value'] = $value[0];
+    $element['#default_value'] = $value[0];
   }
 
-  return $form_item;
+  return $element;
 }
 
 /**
  * Implementation of _webform_display_component().
  */
-function _webform_display_textfield($component, $value) {
-  $form_item = _webform_render_textfield($component);
-  $form_item['#default_value'] = $value[0];
-  $form_item['#attributes']['readonly'] = 'readonly';
-  return $form_item;
+function _webform_display_textfield($component, $value, $format = 'html') {
+  return array(
+    '#title' => $component['name'],
+    '#weight' => $component['weight'],
+    '#theme' => 'webform_display_textfield',
+    '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
+    '#post_render' => array('webform_element_wrapper'),
+    '#field_prefix' => $component['extra']['field_prefix'],
+    '#field_suffix' => $component['extra']['field_suffix'],
+    '#component' => $component,
+    '#format' => $format,
+    '#value' => isset($value[0]) ? $value[0] : '',
+  );
 }
 
 /**
@@ -179,29 +198,13 @@ function _webform_form_builder_types_textfield() {
 }
 
 /**
- * Format the output of e-mailed data for this component
- *
- * @param $component
- *   A Webform component array.
- * @param $value
- *   A string or array of the submitted data
- * @return string
- *   Textual output to be included in the email.
+ * Format the output of data for this component.
  */
-function theme_webform_mail_textfield($component, $value) {
-  $value = $value == '' ? '' : ' '. $component['extra']['field_prefix'] . $value . $component['extra']['field_suffix'];
-  return $component['name'] .':'. $value;
-}
-
-/**
- * Implementation of _webform_theme_component().
- */
-function _webform_theme_textfield() {
-  return array(
-    'webform_mail_textfield' => array(
-      'arguments' => array('component' => NULL, 'value' => NULL),
-    ),
-  );
+function theme_webform_display_textfield($element) {
+  $prefix = $element['#format'] == 'html' ? filter_xss($element['#field_prefix']) : $element['#field_prefix'];
+  $suffix = $element['#format'] == 'html' ? filter_xss($element['#field_suffix']) : $element['#field_suffix'];
+  $value = $element['#format'] == 'html' ? check_plain($element['#value']) : $element['#value'];
+  return $value ? ($prefix . $value . $suffix) : ' ';
 }
 
 /**

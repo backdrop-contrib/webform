@@ -29,6 +29,18 @@ function _webform_defaults_textarea() {
   );
 }
 
+
+/**
+ * Implementation of _webform_theme_component().
+ */
+function _webform_theme_textarea() {
+  return array(
+    'webform_display_textarea' => array(
+      'arguments' => array('element' => NULL),
+    ),
+  );
+}
+
 /**
  * Implementation of _webform_edit_component().
  */
@@ -81,7 +93,7 @@ function _webform_edit_textarea($component) {
  * Implementation of _webform_render_component().
  */
 function _webform_render_textarea($component, $value = NULL, $filter = TRUE) {
-  $form_item = array(
+  $element = array(
     '#type'          => 'textarea',
     '#title'         => $component['name'],
     '#default_value' => $filter ? _webform_filter_values($component['value']) : $component['value'],
@@ -97,24 +109,41 @@ function _webform_render_textarea($component, $value = NULL, $filter = TRUE) {
   );
 
   if ($component['extra']['disabled']) {
-    $form_item['#attributes']['readonly'] = 'readonly';
+    $element['#attributes']['readonly'] = 'readonly';
   }
 
   if (isset($value)) {
-    $form_item['#default_value'] = $value[0];
+    $element['#default_value'] = $value[0];
   }
 
-  return $form_item;
+  return $element;
 }
 
 /**
  * Implementation of _webform_display_component().
  */
-function _webform_display_textarea($component, $value) {
-  $form_item = _webform_render_textarea($component, $value);
-  $form_item['#default_value'] = $value[0];
-  $form_item['#attributes']['readonly'] = 'readonly';
-  return $form_item;
+function _webform_display_textarea($component, $value, $format = 'html') {
+  return array(
+    '#title' => $component['name'],
+    '#weight' => $component['weight'],
+    '#theme' => 'webform_display_textarea',
+    '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
+    '#post_render' => array('webform_element_wrapper'),
+    '#component' => $component,
+    '#format' => $format,
+    '#value' => isset($value[0]) ? $value[0] : '',
+  );
+}
+
+/**
+ * Format the output of data for this component.
+ */
+function theme_webform_display_textarea($element) {
+  $output = $element['#format'] == 'html' ? str_replace("\n", '<br />', check_plain($element['#value'])) : $element['#value'];
+  if (strlen($output) > 80) {
+    $output = ($element['#format'] == 'html') ? '<div class="webform-long-answer">' . $output . '</div>' : $output;
+  }
+  return $output ? $output : ' ';
 }
 
 /**

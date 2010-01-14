@@ -50,7 +50,7 @@ function _webform_edit_fieldset($component) {
  * Implementation of _webform_render_component().
  */
 function _webform_render_fieldset($component, $value = NULL, $filter = TRUE) {
-  $form_item = array(
+  $element = array(
     '#type'          => $component['type'],
     '#title'         => htmlspecialchars($component['name'], ENT_QUOTES),
     '#weight'        => $component['weight'],
@@ -60,15 +60,28 @@ function _webform_render_fieldset($component, $value = NULL, $filter = TRUE) {
     '#attributes'    => array('class' => 'webform-component-'. $component['type'], 'id' => 'webform-component-'. $component['form_key']),
   );
 
-  return $form_item;
+  return $element;
 }
 
 /**
  * Implementation of _webform_display_component().
  */
-function _webform_display_fieldset($component, $value) {
-  $form_item = _webform_render_fieldset($component, $value);
-  return $form_item;
+function _webform_display_fieldset($component, $value, $format = 'html') {
+  if ($format == 'text') {
+    $element = array(
+      '#title' => $component['name'],
+      '#post_render' => array('webform_element_wrapper'),
+      '#theme_wrappers' => array('webform_element_text'),
+    );
+  }
+  else {
+    $element = _webform_render_fieldset($component, $value);
+  }
+
+  $element['#component'] = $component;
+  $element['#format'] = $format;
+
+  return $element;
 }
 
 /**

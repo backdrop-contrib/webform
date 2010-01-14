@@ -20,6 +20,17 @@ function _webform_defaults_pagebreak() {
 }
 
 /**
+ * Implementation of _webform_theme_component().
+ */
+function _webform_theme_pagebreak() {
+  return array(
+    'webform_display_pagebreak' => array(
+      'arguments' => array('element' => NULL),
+    ),
+  );
+}
+
+/**
  * Implementation of _webform_edit_component().
  */
 function _webform_edit_pagebreak($component) {
@@ -48,38 +59,31 @@ function _webform_edit_pagebreak($component) {
  * Implementation of _webform_render_component().
  */
 function _webform_render_pagebreak($component, $value = NULL, $filter = TRUE) {
-  $form_item = array();
-  // Render page breaks as hidden elements so that they can be displayed in
-  // emails as separators.
-  $form_item = array(
+  $element = array(
     '#type' => 'hidden',
     '#value' => $component['name'],
     '#weight' => $component['weight'],
   );
-  return $form_item;
+  return $element;
 }
 
 /**
- * Implementation of _webform_theme_component().
+ * Implementation of _webform_render_component().
  */
-function _webform_theme_pagebreak() {
-  return array(
-    'webform_mail_pagebreak' => array(
-      'arguments' => array('component' => NULL, 'value' => NULL),
-    ),
+function _webform_display_pagebreak($component, $value = NULL, $format = 'html') {
+  $element = array(
+    '#theme' => 'webform_display_pagebreak',
+    '#title' => $component['name'],
+    '#weight' => $component['weight'],
+    '#component' => $component,
+    '#format' => $format,
   );
+  return $element;
 }
 
 /**
- * Format the output of e-mailed data for this component.
- *
- * @param $component
- *   A Webform component array.
- * @param $value
- *   A string or array of the submitted data.
- * @return
- *   Textual output to be included in the email.
+ * Format the text output data for this component.
  */
-function theme_webform_mail_pagebreak($component, $value) {
-  return "\n-- ". $component['name'] ." --\n";
+function theme_webform_display_pagebreak($element) {
+  return $element['#format'] == 'html' ? '<h2 class="webform-page">' . check_plain($element['#title']) . '</h2>' : "--" . $element['#title'] . "--\n";
 }
