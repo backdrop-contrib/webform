@@ -190,8 +190,8 @@ function theme_webform_admin_settings($form) {
  */
 function webform_admin_content() {
   $webform_types = webform_variable_get('webform_node_types');
-  $placeholders = implode(', ', array_fill(0, sizeof($webform_types), '%d'));
-  $result = db_query(db_rewrite_sql("SELECT n.* FROM {node} n WHERE n.type IN ($placeholders)", $webform_types));
+  $placeholders = implode(', ', array_fill(0, sizeof($webform_types), "'%s'"));
+  $result = db_query(db_rewrite_sql("SELECT n.*, r.* FROM {node} n INNER JOIN {node_revisions} r ON n.vid = r.vid WHERE n.type IN ($placeholders)", 'n', 'nid', $webform_types), $webform_types);
   $nodes = array();
   while ($node = db_fetch_object($result)) {
     $nodes[] = $node;
