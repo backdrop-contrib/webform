@@ -601,7 +601,7 @@ function webform_component_insert(&$component) {
   $component['value'] = isset($component['value']) ? $component['value'] : NULL;
   $component['mandatory'] = isset($component['mandatory']) ? $component['mandatory'] : 0;
   db_query("INSERT INTO {webform_component} (nid, cid, pid, form_key, name, type, value, extra, mandatory, weight, email) VALUES (%d, %d, %d, '%s', '%s', '%s', '%s', '%s', %d, %d, %d)", $component['nid'], $component['cid'], $component['pid'], $component['form_key'], $component['name'], $component['type'], $component['value'], serialize($component['extra']), $component['mandatory'], $component['weight'], $component['email']);
-  db_unlock_tables('webform_component');
+  db_unlock_tables();
   return $component['cid'];
 }
 
