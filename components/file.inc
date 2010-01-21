@@ -497,7 +497,7 @@ function _webform_display_file($component, $value, $format = 'html') {
 function theme_webform_display_file($element) {
   $file = $element['#value'];
   $url = !empty($file) ? webform_file_url($file->filepath) : t('no upload');
-  return !empty($file) ? ($element['#format'] == 'text' ? $url : l($file->filename, $url)) : '';
+  return !empty($file) ? ($element['#format'] == 'text' ? $url : l($file->filename, $url)) : ' ';
 }
 
 /**
