@@ -353,15 +353,34 @@ function theme_webform_render_file($element) {
  */
 function _webform_required_file($element, $form_state) {
   $component = $element['#webform_component'];
-  $form_key = implode('_', $element['#parents']);
+  $parents = $element['#array_parents'];
+  array_pop($parents);
+  $form_key = implode('_', $parents);
 
   // Do not validate requiredness on back or draft button.
   if (isset($form_state['clicked_button']['#validate']) && empty($form_state['clicked_button']['#validate'])) {
     return;
   }
 
-  if (empty($_FILES['files']['name'][$form_key]) && $component['mandatory']) {
-    form_error($element, t('%field field is required.', array('%field' => $component['name'])));
+  // Check if a value is already set in the hidden field.
+  $values = $form_state['values'];
+  $key = array_shift($parents);
+  $found = FALSE;
+  while (isset($values[$key])) {
+    if (isset($values[$key])) {
+      $values = $values[$key];
+      $found = TRUE;
+    }
+    else {
+      $found = FALSE;
+    }
+    $key = array_shift($parents);
+  }
+
+  if (!$found || (empty($values['_fid']) && empty($values['_old']))) {
+    if (empty($_FILES['files']['name'][$form_key]) && $component['mandatory']) {
+      form_error($element, t('%field field is required.', array('%field' => $component['name'])));
+    }
   }
 }
 
