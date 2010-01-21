@@ -334,7 +334,7 @@ function theme_webform_render_file($element) {
   // Add information about the existing file, if any.
   $value = $element['_fid']['#value'] ? $element['_fid']['#value'] : $element['_old']['#value'];
   if ($value && ($file = webform_get_file($value))) {
-    $element['#suffix'] = ' ' . l(t('Download !filename', array('!filename' => $file->filename)), webform_file_url($file->filepath)) . (isset($element['#suffix']) ? $element['#suffix'] : '');
+    $element['#suffix'] = ' ' . l(t('Download !filename', array('!filename' => webform_file_name($file->filepath))), webform_file_url($file->filepath)) . (isset($element['#suffix']) ? $element['#suffix'] : '');
     $element['#description'] = t('Uploading a new file will replace the current file.');
   }
 
@@ -424,7 +424,7 @@ function _webform_validate_file($element, &$form_state) {
 
   // Now let's check the file size (limit is set in KB).
   if ($_FILES['files']['size'][$form_key] > $component['extra']['filtering']['size'] * 1024) {
-    form_error($element, t("The file '%filename' is too large (%filesize KB). Please upload a file %maxsize KB or smaller.", array('%filename' => $_FILES['files']['name'][$form_key], '%filesize' => (int)($_FILES['files']['size'][$form_key]/1024), '%maxsize' => $component['extra']['filtering']['size'])));
+    form_error($element, t("The file '%filename' is too large (%filesize KB). Please upload a file %maxsize KB or smaller.", array('%filename' => $_FILES['files']['name'][$form_key], '%filesize' => (int) ($_FILES['files']['size'][$form_key]/1024), '%maxsize' => $component['extra']['filtering']['size'])));
     $file_error = TRUE;
   }
 
@@ -537,7 +537,7 @@ function _webform_analysis_file($component, $sids = array()) {
 
   $rows[0] = array(t('Left Blank'), ($submissions - $nonblanks));
   $rows[1] = array(t('User uploaded file'), $nonblanks);
-  $rows[2] = array(t('Average uploaded file size'), ($sizetotal !=0 ? (int)(($sizetotal/$nonblanks)/1024) .' KB' : '0'));
+  $rows[2] = array(t('Average uploaded file size'), ($sizetotal !=0 ? (int) (($sizetotal/$nonblanks)/1024) .' KB' : '0'));
   return $rows;
 }
 
@@ -548,12 +548,11 @@ function _webform_table_file($component, $value) {
   $output = '';
   $file = webform_get_file($value[0]);
   if (!empty($file->fid)) {
-    $output = '<a href="'. base_path() . $file->filepath .'">'. $file->filename .'</a>';
-    $output .= ' ('. (int)($file->filesize/1024) .' KB)';
+    $output = '<a href="' . webform_file_url($file->filepath) . '">' . webform_file_name($file->filepath) . '</a>';
+    $output .= ' (' . (int) ($file->filesize/1024) . ' KB)';
   }
   return $output;
 }
-
 
 /**
  * Implementation of _webform_csv_headers_component().
@@ -572,7 +571,18 @@ function _webform_csv_headers_file($component) {
  */
 function _webform_csv_data_file($component, $value) {
   $file = webform_get_file($value[0]);
-  return empty($file->filename) ? array('', '') : array($file->filename, (int) ($file->filesize/1024));
+  return empty($file->filename) ? array('', '') : array(webform_file_url($file->filepath), (int) ($file->filesize/1024));
+}
+
+/**
+ * Helper function to create proper file names for uploaded file.
+ */
+function webform_file_name($filepath) {
+  if (!empty($filepath)) {
+    $info = pathinfo($filepath);
+    $file_name = $info['basename'];
+  }
+  return isset($file_name) ? $file_name : '';
 }
 
 /**
