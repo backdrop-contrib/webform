@@ -185,7 +185,7 @@ function webform_email_edit_form($form_state, &$node, $email = array()) {
       case 'subject':
         $default_value = _webform_filter_values(webform_variable_get('webform_default_subject'), $node);
         $title = t('E-mail subject');
-        $description = t('Aany textfield, select, or hidden form element may be selected as the subject for e-mails.');
+        $description = t('Any textfield, select, or hidden form element may be selected as the subject for e-mails.');
         break;
       case 'from_address':
         $default_value = _webform_filter_values(webform_variable_get('webform_default_from_address'), $node);
@@ -268,7 +268,7 @@ function webform_email_edit_form($form_state, &$node, $email = array()) {
   $form['templates']['default'] = array(
     '#type' => 'textarea',
     '#value' => $default_template,
-    '#attributes' => array('style' => 'display: none'),
+    '#attributes' => array('style' => 'display: none;'),
     '#resizable' => FALSE,
   );
 

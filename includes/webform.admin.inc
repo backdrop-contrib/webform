@@ -7,7 +7,7 @@
  */
 
 /**
- * Menu callback for admin/webform/settings.
+ * Menu callback for admin/settings/webform.
  */
 function webform_admin_settings() {
   module_load_include('inc', 'webform', 'includes/webform.export');
