@@ -62,7 +62,7 @@ function webform_configure_form(&$form_state, $node) {
     '#type' => 'select',
     '#options' => array(
       '-1' => t('ever'),
-      '1600' => t('every hour'),
+      '3600' => t('every hour'),
       '86400' => t('every day'),
       '604800' => t('every week'),
     ),
