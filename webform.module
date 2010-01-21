@@ -1275,7 +1275,9 @@ function _webform_client_form_add_component($component, $component_value, &$pare
         $parent_fieldset[$component['form_key']]['#default_value'] = $component_value;
         if (is_array($component_value)) {
           foreach ($component_value as $key => $value) {
-            $parent_fieldset[$component['form_key']][$key]['#default_value'] = $value;
+            if (isset($parent_fieldset[$component['form_key']][$key])) {
+              $parent_fieldset[$component['form_key']][$key]['#default_value'] = $value;
+            }
           }
         }
       }
@@ -1937,13 +1939,8 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $stri
       $replacements['unsafe']['%cid[' . $cid . ']'] = drupal_render(webform_component_invoke($component['type'], 'display', $component, $value['value'], 'text'));
 
       // Find by form key.
-      $parents = array($component['form_key']);
-      $pid = $component['pid'];
-      while ($pid) {
-        $parents[] = $node->webform['components'][$pid]['form_key'];
-        $pid = $node->webform['components'][$pid]['pid'];
-      }
-      $form_key = implode('][', array_reverse($parents));
+      $parents = webform_component_parent_keys($node, $component);
+      $form_key = implode('][', $parents);
       $replacements['unsafe']['%email[' . $form_key . ']'] = $replacements['unsafe']['%cid[' . $cid . ']'];
     }
 

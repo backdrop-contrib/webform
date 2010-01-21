@@ -1259,6 +1259,39 @@ function webform_update_6306() {
 }
 
 /**
+ * Convert the file component to use only FIDs instead of serialized arrays.
+ */
+function webform_update_6307() {
+  $ret = array();
+
+  $result = db_query("SELECT d.*, s.uid, s.submitted FROM {webform_submitted_data} d INNER JOIN {webform_component} c ON d.cid = c.cid AND d.nid = c.nid AND c.type = 'file' INNER JOIN {webform_submissions} s ON d.sid = s.sid");
+  while ($row = db_fetch_object($result)) {
+    $file = @unserialize($row->data);
+    // File name should always exist, even when upgrading from Drupal 5.
+    if ($file && isset($file['filename'])) {
+      // Create an entry in the files table if needed.
+      if (!isset($file['fid'])) {
+        db_query("INSERT INTO {files} (uid, filename, filepath, filemime, filesize, status, timestamp) VALUES (%d, %d, '%s', '%s', '%s', %d, 1, %d)", $row->uid, $file['filename'], $file['filepath'], $file['filemime'], $file['filesize'], $row->submitted);
+        $fid = db_last_insert_id('files', 'fid');
+      }
+      else {
+        $fid = $file['fid'];
+      }
+      // Update the submitted data with the FID.
+      db_query("UPDATE {webform_submitted_data} SET data = '%d' WHERE nid = %d AND sid = %d AND cid = %d", $fid, $row->nid, $row->sid, $row->cid);
+    }
+    // Insert an empty entry, now just an empty string.
+    else {
+      db_query("UPDATE {webform_submitted_data} SET data = '' WHERE nid = %d AND sid = %d AND cid = %d", $row->nid, $row->sid, $row->cid);
+    }
+  }
+
+  $ret[] = array('success' => TRUE, 'query' => t('Updated file components to use numeric file IDs in the submitted values.'));
+
+  return $ret;
+}
+
+/**
  * Recursively delete all files and folders in the specified filepath, then
  * delete the containing folder.
  *

@@ -3,7 +3,7 @@
 
 /**
  * @file
- *   Webform module components handling.
+ * Webform module component handling.
  */
 
 /**
@@ -668,6 +668,19 @@ function webform_component_clone(&$node, $component) {
     }
   }
   return $new_cid;
+}
+
+/**
+ * Find a components parents within a node.
+ */
+function webform_component_parent_keys($node, $component) {
+  $parents = array($component['form_key']);
+  $pid = $component['pid'];
+  while ($pid) {
+    $parents[] = $node->webform['components'][$pid]['form_key'];
+    $pid = $node->webform['components'][$pid]['pid'];
+  }
+  return array_reverse($parents);
 }
 
 /**
