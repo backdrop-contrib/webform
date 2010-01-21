@@ -284,7 +284,7 @@ function webform_results_clear_form($form_state, $node) {
 
 function webform_results_clear_form_submit($form, &$form_state) {
   webform_results_clear($form_state['values']['nid']);
-  $node = node_load(array('nid' => $form_state['values']['nid']));
+  $node = node_load($form_state['values']['nid']);
   $title = $node->title;
 
   $message = t('Webform %title entries cleared.', array('%title' => $title));
