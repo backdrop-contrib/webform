@@ -1148,7 +1148,7 @@ function webform_client_form(&$form_state, $node, $submission, $is_draft = FALSE
       // Recursively add components to the form.
       foreach ($component_tree['children'] as $cid => $component) {
         $component_value = isset($form_state['values']['submitted'][$component['form_key']]) ? $form_state['values']['submitted'][$component['form_key']] : NULL;
-        if (_webform_client_form_rule_check($form_state, $component, $page_num)) {
+        if (_webform_client_form_rule_check($node, $component, $form_state, $page_num)) {
           _webform_client_form_add_component($component, $component_value, $form['submitted'], $form, $submission, 'form', $page_num, $filter);
         }
       }
@@ -1221,11 +1221,24 @@ function webform_client_form(&$form_state, $node, $submission, $is_draft = FALSE
 /**
  * Check if a component should be displayed on the current page.
  */
-function _webform_client_form_rule_check($form_state, $component, $page_num) {
+function _webform_client_form_rule_check($node, $component, $form_state, $page_num) {
   $show_component = TRUE;
-  if (isset($component['extra']['conditional_values']) && strlen(trim($component['extra']['conditional_values'])) && $component['page_num'] == $page_num) {
-    $input_value = $form_state['values']['submitted'][$component['extra']['conditional_component']];
-    $test_values = array_map('trim', explode("\n", $component['extra']['conditional_values']));
+  $conditional_values = isset($component['extra']['conditional_values']) ? $component['extra']['conditional_values'] : NULL;
+  $conditional_component = isset($component['extra']['conditional_component']) && isset($node->webform['components'][$component['extra']['conditional_component']]) ? $node->webform['components'][$component['extra']['conditional_component']] : NULL;
+  if ($component['page_num'] == $page_num && $conditional_component && strlen(trim($conditional_values))) {
+    $parents = webform_component_parent_keys($node, $conditional_component);
+    $input_value = $form_state['values']['submitted'];
+    foreach ($parents as $parent) {
+      if (isset($input_value[$parent])) {
+        $input_value = $input_value[$parent];
+      }
+      else {
+        $input_value = NULL;
+        break;
+      }
+    }
+
+    $test_values = array_map('trim', explode("\n", $conditional_values));
     $show_component = in_array($input_value, $test_values);
     if ($component['extra']['conditional_operator'] == '!=') {
       $show_component = !$show_component;
@@ -1453,7 +1466,7 @@ function webform_client_form_submit($form, &$form_state) {
         if (isset($previous_pagebreak)) {
           $page_num = $previous_pagebreak['page_num'] + $direction;
           // If we've found an component on this page, advance to that page.
-          if (_webform_client_form_rule_check($form_state, $component, $page_num)) {
+          if (_webform_client_form_rule_check($node, $component, $form_state, $page_num)) {
             $form_state['storage']['page_num'] = $page_num;
             break;
           }

@@ -417,11 +417,11 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
     if ($test_component['type'] == 'pagebreak') {
       $last_pagebreak_slice = $counter;
     }
-    if ($test_component['name'] == $component['name']) {
+    if (isset($component['cid']) && $cid == $component['cid']) {
       break;
     }
-    if ($test_component['type'] != 'pagebreak') {
-      $component_options[$test_component['form_key']] = $test_component['name'];
+    if (in_array($test_component['type'], array('textfield', 'email', 'hidden', 'select', 'textarea'))) {
+      $component_options[$cid] = $test_component['name'];
     }
     $counter++;
   }
@@ -470,10 +470,8 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
   if (empty($component_options)) {
     $form['conditional']['extra']['conditional_component']['#options'] = array('');
     $form['conditional']['#description'] = t('You cannot set display options for a component appearing before the first pagebreak.');
-    foreach ($form['conditional']['extra'] as &$el) {
-      if (is_array($el)) {
-        $el['#disabled'] = TRUE;
-      }
+    foreach (element_children($form['conditional']['extra']) as $conditional_key) {
+      $form['conditional']['extra'][$conditional_key]['#disabled'] = TRUE;
     }
   }
 
