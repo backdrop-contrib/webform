@@ -1148,7 +1148,7 @@ function webform_client_form(&$form_state, $node, $submission, $is_draft = FALSE
       // Recursively add components to the form.
       foreach ($component_tree['children'] as $cid => $component) {
         $component_value = isset($form_state['values']['submitted'][$component['form_key']]) ? $form_state['values']['submitted'][$component['form_key']] : NULL;
-        if (_webform_client_form_rule_check($node, $component, $form_state, $page_num)) {
+        if (_webform_client_form_rule_check($node, $component, $page_num, $form_state)) {
           _webform_client_form_add_component($component, $component_value, $form['submitted'], $form, $submission, 'form', $page_num, $filter);
         }
       }
@@ -1221,29 +1221,63 @@ function webform_client_form(&$form_state, $node, $submission, $is_draft = FALSE
 /**
  * Check if a component should be displayed on the current page.
  */
-function _webform_client_form_rule_check($node, $component, $form_state, $page_num) {
-  $show_component = TRUE;
+function _webform_client_form_rule_check($node, $component, $page_num, $form_state = NULL, $submission = NULL) {
   $conditional_values = isset($component['extra']['conditional_values']) ? $component['extra']['conditional_values'] : NULL;
   $conditional_component = isset($component['extra']['conditional_component']) && isset($node->webform['components'][$component['extra']['conditional_component']]) ? $node->webform['components'][$component['extra']['conditional_component']] : NULL;
-  if ($component['page_num'] == $page_num && $conditional_component && strlen(trim($conditional_values))) {
-    $parents = webform_component_parent_keys($node, $conditional_component);
-    $input_value = $form_state['values']['submitted'];
-    foreach ($parents as $parent) {
-      if (isset($input_value[$parent])) {
-        $input_value = $input_value[$parent];
+
+  // Check the rules for this entire page. Note individual page breaks are
+  // checked down below in the individual component rule checks.
+  $show_page = TRUE;
+  if ($component['page_num'] > 1 && $component['type'] != 'pagebreak') {
+    foreach ($node->webform['components'] as $cid => $page_component) {
+      if ($page_component['type'] == 'pagebreak' && $page_component['page_num'] == $page_num) {
+        $show_page = _webform_client_form_rule_check($node, $page_component, $page_num, $form_state, $submission);
+        break;
       }
-      else {
-        $input_value = NULL;
+    }
+  }
+
+  // Check any parents' visibility rules.
+  $show_parent = $show_page;
+  if ($show_parent && $component['pid'] && isset($node->webform['components'][$component['pid']])) {
+    $parent_component = $node->webform['components'][$component['pid']];
+    $show_parent = _webform_client_form_rule_check($node, $parent_component, $page_num, $form_state, $submission);
+  }
+
+  // Check the individual component rules.
+  $show_component = $show_parent;
+  if ($show_component && $component['page_num'] == $page_num && $conditional_component && strlen(trim($conditional_values))) {
+    $input_values = array();
+    if (isset($form_state)) {
+      $parents = webform_component_parent_keys($node, $conditional_component);
+      $input_value = isset($form_state['values']['submitted']) ? $form_state['values']['submitted'] : array();
+      foreach ($parents as $parent) {
+        if (isset($input_value[$parent])) {
+          $input_value = $input_value[$parent];
+        }
+        else {
+          $input_value = NULL;
+          break;
+        }
+      }
+      $input_values = is_array($input_value) ? array_keys($input_value) : array($input_value);
+    }
+    elseif (isset($submission)) {
+      $input_values = $submission->data[$conditional_component['cid']]['value'];
+    }
+
+    $test_values = array_map('trim', explode("\n", $conditional_values));
+    foreach ($input_values as $input_value) {
+      if ($show_component = in_array($input_value, $test_values)) {
         break;
       }
     }
 
-    $test_values = array_map('trim', explode("\n", $conditional_values));
-    $show_component = in_array($input_value, $test_values);
     if ($component['extra']['conditional_operator'] == '!=') {
       $show_component = !$show_component;
     }
   }
+
   return $show_component;
 }
 
@@ -1458,15 +1492,15 @@ function webform_client_form_submit($form, &$form_state) {
       $last_component = end($node->webform['components']);
       foreach ($components as $component) {
         if ($component['type'] == 'pagebreak' && (
-            $direction == 1 && $component['page_num'] >= $form_state['storage']['page_num'] ||
-            $direction == 0 && $component['page_num'] < $form_state['storage']['page_num'])) {
+            $direction == 1 && $component['page_num'] > $form_state['storage']['page_num'] ||
+            $direction == 0 && $component['page_num'] <= $form_state['storage']['page_num'])) {
           $previous_pagebreak = $component;
           continue;
         }
         if (isset($previous_pagebreak)) {
-          $page_num = $previous_pagebreak['page_num'] + $direction;
+          $page_num = $previous_pagebreak['page_num'] + $direction - 1;
           // If we've found an component on this page, advance to that page.
-          if (_webform_client_form_rule_check($node, $component, $form_state, $page_num)) {
+          if ($component['page_num'] == $page_num && _webform_client_form_rule_check($node, $component, $page_num, $form_state)) {
             $form_state['storage']['page_num'] = $page_num;
             break;
           }
@@ -2314,11 +2348,11 @@ function _webform_components_tree_build($src, &$tree, $parent, &$page_count) {
   foreach ($src as $cid => $component) {
     if ($component['pid'] == $parent) {
       _webform_components_tree_build($src, $component, $cid, $page_count);
-      $tree['children'][$cid] = $component;
-      $tree['children'][$cid]['page_num'] = $page_count;
       if ($component['type'] == 'pagebreak') {
         $page_count++;
       }
+      $tree['children'][$cid] = $component;
+      $tree['children'][$cid]['page_num'] = $page_count;
     }
   }
   return $tree;
