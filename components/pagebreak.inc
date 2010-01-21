@@ -34,8 +34,6 @@ function _webform_theme_pagebreak() {
  * Implementation of _webform_edit_component().
  */
 function _webform_edit_pagebreak($component) {
-  drupal_set_message(t('Use caution when combining the pagebreak and file components. File components will not be submitted unless they are after the last pagebreak in the form.'), 'warning');
-
   $form = array();
   // No description.
   $form['extra']['description'] = array(
