@@ -561,6 +561,9 @@ function webform_webform_component_info() {
     'date' => array(
       'label' => t('Date'),
       'description' => t('Presents month, day, and year fields.'),
+      'features' => array(
+        'conditional' => FALSE,
+      ),
       'file' => 'components/date.inc',
     ),
     'email' => array(
@@ -571,16 +574,27 @@ function webform_webform_component_info() {
     'fieldset' => array(
       'label' => t('Fieldset'),
       'description' => t('Fieldsets allow you to organize multiple fields into groups.'),
+      'features' => array(
+        'csv' => FALSE,
+        'required' => FALSE,
+        'conditional' => FALSE,
+      ),
       'file' => 'components/fieldset.inc',
     ),
     'file' => array(
       'label' => t('File'),
       'description' => t('Allow users to upload files of configurable types.'),
+      'features' => array(
+        'conditional' => FALSE,
+      ),
       'file' => 'components/file.inc',
     ),
     'grid' => array(
       'label' => t('Grid'),
       'description' => t('Allows creation of grid questions, denoted by radio buttons.'),
+      'features' => array(
+        'conditional' => FALSE,
+      ),
       'file' => 'components/grid.inc',
     ),
     'hidden' => array(
@@ -591,11 +605,21 @@ function webform_webform_component_info() {
     'markup' => array(
       'label' => t('Markup'),
       'description' => t('Displays text as HTML in the form; does not render a field.'),
+      'features' => array(
+        'csv' => FALSE,
+        'email' => FALSE,
+        'required' => FALSE,
+        'conditional' => FALSE,
+      ),
       'file' => 'components/markup.inc',
     ),
     'pagebreak' => array(
       'label' => t('Page break'),
       'description' => t('Organize forms into multiple pages.'),
+      'features' => array(
+        'csv' => FALSE,
+        'required' => FALSE,
+      ),
       'file' => 'components/pagebreak.inc',
     ),
     'select' => array(
@@ -616,6 +640,9 @@ function webform_webform_component_info() {
     'time' => array(
       'label' => t('Time'),
       'description' => t('Presents the user with hour and minute fields. Optional am/pm fields.'),
+      'features' => array(
+        'conditional' => FALSE,
+      ),
       'file' => 'components/time.inc',
     ),
   );
@@ -2160,7 +2187,7 @@ function theme_webform_token_help($node = NULL) {
   if (isset($node)) {
     $submission_keys = array();
     foreach ($node->webform['components'] as $cid => $component) {
-      if (!in_array($component['type'], array('markup', 'fieldset', 'pagebreak'))) {
+      if (webform_component_feature($component['type'], 'email')) {
         $submission_keys[] = $component['form_key'];
       }
     }

@@ -19,9 +19,25 @@
  *
  * @return
  *   An array of components, keyed by machine name. Required properties are
- *   "label" and "description". An optional "file" may be specified to be loaded
- *   when the component is needed. A set of callbacks will be established based
- *   on the name of the component. All components follow the pattern:
+ *   "label" and "description". The "features" array defines which capabilities
+ *   the component has, such as being displayed in e-mails or csv downloads.
+ *   A component like "markup" for example would not show in these locations.
+ *   The possible features of a component include:
+ *
+ *     - csv
+ *     - email
+ *     - required
+ *     - conditional
+ *
+ *   Note that these features do not indicate the default state, but determine
+ *   if the component can have this property at all. Setting "required" to TRUE
+ *   does not mean that a field will always be required, but instead give the
+ *   option to the administrator to choose the requiredness. See the example
+ *   implementation for details on how these features may be set.
+ *
+ *   An optional "file" may be specified to be loaded when the component is
+ *   needed. A set of callbacks will be established based on the name of the
+ *   component. All components follow the pattern:
  *
  *   _webform_[callback]_[component]
  *
@@ -53,6 +69,18 @@ function hook_webform_component_info() {
   $components['textfield'] = array(
     'label' => t('Textfield'),
     'description' => t('Basic textfield type.'),
+    'features' => array(
+      // Add content to CSV downloads. Defaults to TRUE.
+      'csv' => TRUE,
+      // Show this field in e-mailed submissions. Defaults to TRUE.
+      'email' => TRUE,
+      // This field may be toggled as required or not. Defaults to TRUE.
+      'required' => TRUE,
+      // If this field can be used as a conditional SOURCE. All fields may
+      // always be displayed conditionally, regardless of this setting.
+      // Defaults to TRUE.
+      'conditonal' => TRUE,
+    ),
     'file' => 'components/textfield.inc',
   );
 

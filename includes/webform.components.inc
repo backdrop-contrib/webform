@@ -98,13 +98,13 @@ function webform_components_form($form_state, $node) {
       '#type' => 'checkbox',
       '#title' => t('Mandatory'),
       '#default_value' => $component['mandatory'],
-      '#access' => !in_array($component['type'], array('markup', 'fieldset', 'pagebreak')),
+      '#access' => webform_component_feature($component['type'], 'required'),
     );
     $form['components'][$cid]['email'] = array(
       '#type' => 'checkbox',
       '#title' => t('E-mail'),
       '#default_value' => $component['email'],
-      '#access' => !in_array($component['type'], array('markup', 'fieldset', 'pagebreak')),
+      '#access' => webform_component_feature($component['type'], 'email'),
     );
   }
 
@@ -371,7 +371,7 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
     '#default_value' => ($component['mandatory'] == '1' ? TRUE : FALSE),
     '#description' => t('Check this option if the user must enter a value.'),
     '#weight' => 2,
-    '#access' => !in_array($component['type'], array('pagebreak', 'fieldset')),
+    '#access' => webform_component_feature($component['type'], 'required'),
   );
   $form['advanced']['email'] = array(
     '#type' => 'checkbox',
@@ -379,7 +379,7 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
     '#default_value' => ($component['email'] == '1' ? TRUE : FALSE),
     '#description' => t('If checked, submitted values from this component will be included in e-mails.'),
     '#weight' => 2,
-    '#access' => !in_array($component['type'], array('pagebreak', 'fieldset', 'markup')),
+    '#access' => webform_component_feature($component['type'], 'email'),
   );
 
   if (variable_get('webform_enable_fieldset', TRUE) && is_array($node->webform['components'])) {
@@ -409,7 +409,7 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
   );
   
   // Add conditional fields.
-  $component_options = array();
+  $conditional_components = array();
   $counter = 0;
   $last_pagebreak_slice = 0;
   foreach ($node->webform['components'] as $cid => $test_component) {
@@ -420,8 +420,8 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
     if (isset($component['cid']) && $cid == $component['cid']) {
       break;
     }
-    if (in_array($test_component['type'], array('textfield', 'email', 'hidden', 'select', 'textarea'))) {
-      $component_options[$cid] = $test_component['name'];
+    if (webform_component_feature($test_component['type'], 'conditional')) {
+      $conditional_components[$cid] = $test_component;
     }
     $counter++;
   }
@@ -431,7 +431,7 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
   else {
     $fieldset_description = t('Create a rule to control whether or not to show this form element.');
   }
-  $component_options = array_slice($component_options, 0, $last_pagebreak_slice, TRUE);
+  $conditional_components = array_slice($conditional_components, 0, $last_pagebreak_slice, TRUE);
   $form['conditional'] = array(
     '#weight' => 5,
     '#type' => 'fieldset',
@@ -447,7 +447,7 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
   $form['conditional']['extra']['conditional_component'] = array(
     '#type' => 'select',
     '#title' => t('Component'),
-    '#options' => $component_options,
+    '#options' => webform_component_list($node, $conditional_components, FALSE, TRUE),
     '#description' => t('Select another component to decide whether to show or hide this component. You can only select components occurring before the most recent pagebreak.'),
     '#default_value' => $component['extra']['conditional_component'],
   );
@@ -467,7 +467,7 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
     '#description' => t('List values, one per line, that will trigger this action. If you leave this blank, this component will always display.'),
     '#default_value' => $component['extra']['conditional_values'],
   );
-  if (empty($component_options)) {
+  if (empty($conditional_components)) {
     $form['conditional']['extra']['conditional_component']['#options'] = array('');
     $form['conditional']['#description'] = t('You cannot set display options for a component appearing before the first pagebreak.');
     foreach (element_children($form['conditional']['extra']) as $conditional_key) {
@@ -666,6 +666,77 @@ function webform_component_clone(&$node, &$component) {
     }
   }
   return $new_cid;
+}
+
+/**
+ * Check if a component has a particular feature.
+ */
+function webform_component_feature($type, $feature) {
+  $components = webform_components();
+  $defaults = array(
+    'csv' => TRUE,
+    'email' => TRUE,
+    'required' => TRUE,
+    'conditional' => TRUE,
+  );
+  return isset($components[$type]['features'][$feature]) ? $components[$type]['features'][$feature] : $defaults[$feature];
+}
+
+/**
+ * Create a list of components suitable for a select list.
+ *
+ * @param $node
+ *   The webform node.
+ * @param $component_filter
+ *   Either an array of components, or a string containing a feature name (csv,
+ *   email, required, conditional) on which this list of components will be
+ *   restricted.
+ * @param $indent
+ *   Indent components placed under fieldsets with hyphens.
+ * @param $optgroups
+ *   Determine if pagebreaks should be converted to option groups in the
+ *   returned list of options.
+ */
+function webform_component_list($node, $component_filter = NULL, $indent = TRUE, $optgroups = FALSE) {
+  $options = array();
+  $page_names = array();
+
+  $components = is_array($component_filter) ? $component_filter : $node->components;
+  $feature = is_string($component_filter) ? $component_filter : NULL;
+
+  foreach ($components as $cid => $component) {
+    if (!isset($feature) || webform_component_feature($component['type'], $feature)) {
+      $prefix = '';
+      $page_num = $component['page_num'];
+      if ($indent && ($parent_count = count(webform_component_parent_keys($node, $component)) - 1)) {
+        $prefix = str_repeat('-', $parent_count);
+      }
+      if ($component['type'] == 'pagebreak') {
+        $page_names[$page_num] = $component['name'];
+      }
+      elseif ($optgroups && $page_num > 1) {
+        $options[$page_num][$cid] = $prefix . $component['name'];
+      }
+      else {
+        $options[$cid] = $prefix . $component['name'];
+      }
+    }
+  }
+
+  if ($optgroups) {
+    $grouped_options = $options;
+    $options = array();
+    foreach ($grouped_options as $key => $values) {
+      if (is_array($values) && isset($page_names[$key])) {
+        $options[$page_names[$key]] = $values;
+      }
+      else {
+        $options[$key] = $values;
+      }
+    }
+  }
+
+  return $options;
 }
 
 /**
