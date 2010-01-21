@@ -2183,8 +2183,8 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
     $name = webform_variable_get('webform_default_from_name');
   }
   elseif (is_numeric($name) && isset($node->webform['components'][$name])) {
-    if (isset($submission['submitted'][$name])) {
-      $name = $submission['submitted'][$name];
+    if (isset($submission->data[$name]['value'])) {
+      $name = $submission->data[$name]['value'];
     }
     else {
       $name = t('Value of !component', array('!component' => $node->webform['components'][$name]['name']));
@@ -2195,8 +2195,8 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
     $address = webform_variable_get('webform_default_from_address');
   }
   elseif (is_numeric($address) && isset($node->webform['components'][$address])) {
-    if (isset($submission['submitted'][$address])) {
-      $address = $submission['submitted'][$address];
+    if (isset($submission->data[$address]['value'])) {
+      $address = $submission->data[$address]['value'];
     }
     else {
       $address = t('Value of "!component"', array('!component' => $node->webform['components'][$address]['name']));
@@ -2239,8 +2239,8 @@ function webform_format_email_subject($subject, $node = NULL, $submission = NULL
     $subject = webform_variable_get('webform_default_subject');
   }
   elseif (is_numeric($subject) && isset($node->webform['components'][$subject])) {
-    if (isset($submission['submitted'][$subject])) {
-      $subject = $submission['submitted'][$subject];
+    if (isset($submission->data[$subject]['value'])) {
+      $subject = $submission->data[$subject]['value'];
     }
     else {
       $subject = t('Value of "!component"', array('!component' => $node->webform['components'][$subject]['name']));
