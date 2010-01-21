@@ -372,7 +372,17 @@ function webform_submission_access($node, $submission, $op = 'view', $account = 
   global $user;
   $account = isset($account) ? $account : $user;
 
-  $general_access = user_access('access all webform results', $account) || (isset($submission) && user_access('access own webform submissions', $account) && ($account->uid == $submission->uid)) || (user_access('access own webform results', $account) && $account->uid == $node->uid);
+  $access_all = user_access('access all webform results', $account);
+  $access_own_submission = isset($submission) && user_access('access own webform submissions', $account) && (($account->uid && $account->uid == $submission->uid) || isset($_SESSION['webform_submission'][$submission->sid]));
+  $access_node_submissions = user_access('access own webform results', $account) && $account->uid == $node->uid;
+
+  $general_access = $access_all || $access_own_submission || $access_node_submissions;
+
+  // Disable the page cache for anonymous users in this access callback,
+  // otherwise the "Access denied" page gets cached.
+  if (!$account->uid && user_access('access own webform submissions', $account)) {
+    webform_disable_page_cache();
+  }
 
   switch ($op) {
     case 'view':
@@ -382,7 +392,7 @@ function webform_submission_access($node, $submission, $op = 'view', $account = 
     case 'delete':
       return $general_access && (user_access('delete all webform submissions', $account) || (user_access('delete own webform submissions', $account) && $account->uid == $submission->uid));
     case 'list':
-      return user_access('access all webform results', $account) || (user_access('access own webform submissions', $account) && $account->uid) || (user_access('access own webform results', $account) && $account->uid == $node->uid);
+      return user_access('access all webform results', $account) || (user_access('access own webform submissions', $account) && ($account->uid || isset($_SESSION['webform_submission']))) || (user_access('access own webform results', $account) && $account->uid == $node->uid);
   }
 }
 
@@ -937,8 +947,9 @@ function webform_node_view(&$node, $teaser, $page) {
   }
 
   // Get a count of previous submissions by this user.
-  if ($user->uid && (user_access('access own webform submissions') || user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid))) {
-    $submission_count = db_result(db_query('SELECT count(*) FROM {webform_submissions} WHERE nid = %d AND uid = %d AND is_draft = 0', $node->nid, $user->uid));
+  if ($page && webform_submission_access($node, NULL, 'list')) {
+    module_load_include('inc', 'webform', 'includes/webform.submissions');
+    $submission_count = webform_get_submission_count($node->nid, $user->uid);
   }
 
   // Check if this user has a draft for this webform.
@@ -1513,6 +1524,12 @@ function webform_client_form_submit($form, &$form_state) {
       $time = time();
       setcookie($cookie_name .'['. $time .']', $time, $time + $node->webform['submit_interval'] + 86400);
     }
+
+    // Save session information about this submission for anonymous users,
+    // allowing them to access or edit their submissions.
+    if (!$user->uid && user_access('access own webform submissions')) {
+      $_SESSION['webform_submission'][$form_state['values']['details']['sid']] = $node->nid;
+    }
   }
   else {
     // Sid was found thus update the existing sid in the database.
@@ -1600,7 +1617,8 @@ function webform_client_form_submit($form, &$form_state) {
           return FALSE;
         }
 
-        drupal_mail('webform', 'submission', $address, user_preferred_language($user), array('message' => $email['message'], 'subject' => $email['subject'], 'headers' => $email['headers']), $email['from']);
+        $language = $user->uid ? user_preferred_language($user) : language_default();
+        drupal_mail('webform', 'submission', $address, $language, array('message' => $email['message'], 'subject' => $email['subject'], 'headers' => $email['headers']), $email['from']);
   
         // Debugging output for email.
         if (variable_get('webform_debug', 0) >= 2) {
@@ -2416,6 +2434,20 @@ function webform_component_invoke($type, $callback) {
   webform_component_include($type);
   if (function_exists($function)) {
     return call_user_func_array($function, $args);
+  }
+}
+
+/**
+ * Disable the Drupal page cache.
+ */
+function webform_disable_page_cache() {
+  // PressFlow and Drupal 7 method.
+  if (function_exists('drupal_page_is_cacheable')) {
+    drupal_page_is_cacheable(FALSE);
+  }
+  // Drupal 6 hack to disable page cache.
+  else {
+    $GLOBALS['conf']['cache'] = FALSE;
   }
 }
 

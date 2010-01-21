@@ -25,7 +25,13 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
 
   $header = theme('webform_results_submissions_header', $node);
   if ($user_filter) {
-    drupal_set_title(t('Submissions for %user', array('%user' => $user->name)));
+    if ($user->uid) {
+      drupal_set_title(t('Submissions for %user', array('%user' => $user->name)));
+    }
+    else {
+      drupal_set_title(t('Your submissions'));
+      webform_disable_page_cache();
+    }
     webform_set_breadcrumb($node);
     $submissions = webform_get_submissions($node->nid, $header, $user->uid, $pager_count);
     $count = webform_get_submission_count($node->nid, $user->uid);
@@ -136,12 +142,17 @@ function theme_webform_results_submissions($node, $submissions, $total_count = 0
       $row[] = $submission->remote_addr;
     }
     $row[] = l(t('View'), "node/$node->nid/submission/$sid");
+    $operation_count = 1;
     if ((user_access('edit own webform submissions') && $user->uid == $submission->uid) || user_access('edit all webform submissions')) {
-      $row[] = l(t('Edit'), "node/$node->nid/submission/$sid/edit");
-      $row[] = l(t('Delete'), "node/$node->nid/submission/$sid/delete", array('query' => drupal_get_destination()));
+      $row[] = l(t('Edit'), "node/$node->nid/submission/$sid/edit", array('query' => drupal_get_destination()));
+      $operation_count++;
     }
-    else {
-      $row[count($row) - 1] = array('data' => $row[count($row) - 1], 'colspan' => 3);
+    if ((user_access('delete own webform submissions') && $user->uid == $submission->uid) || user_access('delete all webform submissions')) {
+      $row[] = l(t('Delete'), "node/$node->nid/submission/$sid/delete", array('query' => drupal_get_destination()));
+      $operation_count++;
+    }
+    if ($operation_count < 3) {
+      $row[count($row) - 1] = array('data' => $row[count($row) - 1], 'colspan' => 4 - $operation_count);
     }
     $rows[] = $row;
   }

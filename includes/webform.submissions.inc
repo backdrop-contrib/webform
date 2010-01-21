@@ -81,7 +81,14 @@ function webform_submission_insert($node, $submitted, $is_draft = 0) {
 function webform_submission_delete($node, $submission) {
   // Iterate through all components and let each do cleanup if necessary.
   foreach ($node->webform['components'] as $cid => $component) {
-    webform_component_invoke($component['type'], 'delete', $component, $submission->data[$cid]);
+    if (isset($submission->data[$cid])) {
+      webform_component_invoke($component['type'], 'delete', $component, $submission->data[$cid]);
+    }
+  }
+
+  // Delete any anonymous session information.
+  if (isset($_SESSION['webform_submission'][$submission->sid])) {
+    unset($_SESSION['webform_submission'][$submission->sid]);
   }
 
   db_query('DELETE FROM {webform_submitted_data} WHERE nid = %d AND sid = %d', $node->nid, $submission->sid);
@@ -127,6 +134,7 @@ function webform_submission_title($node, $submission) {
  * Menu callback; Present a Webform submission page for display or editing.
  */
 function webform_submission_page($node, $submission, $format) {
+  global $user;
   webform_set_breadcrumb($node, $submission);
 
   if ($format == 'form') {
@@ -136,6 +144,7 @@ function webform_submission_page($node, $submission, $format) {
     $output = webform_submission_render($node, $submission, $format);
   }
 
+  // Add navigation for administrators.
   if (user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid)) {
     $navigation = theme('webform_submission_navigation', $node, $submission, $format != 'form' ? 'display' : 'form');
     $information = theme('webform_submission_information', $node, $submission);
@@ -143,6 +152,11 @@ function webform_submission_page($node, $submission, $format) {
   else {
     $navigation = NULL;
     $information = NULL;
+  }
+
+  // Disable the page cache for anonymous users viewing or editing submissions.
+  if (!$user->uid) {
+    webform_disable_page_cache();
   }
 
   return theme('webform_submission_page', $output, $navigation, $information);
@@ -181,14 +195,22 @@ function webform_submission_render($node, $submission, $format) {
  */
 function webform_get_submissions($nid, $header = NULL, $uid = NULL, $pager_count = 0) {
   $sids = NULL;
-  if ($pager_count) {
+  $arguments = array($nid);
+  if ($pager_count || $uid === 0) {
     $pager_query = 'SELECT * FROM {webform_submissions} WHERE nid = %d';
-    if ($uid) {
+    if ($uid !== NULL) {
       $pager_query .= ' AND uid = %d';
+      $arguments[] = $uid;
     }
-    $res = pager_query($pager_query, $pager_count, 0, NULL, $nid, $uid);
+    if ($uid === 0) {
+      $submissions = array_keys($_SESSION['webform_submission']);
+      $placeholders = count($submissions) ? array_fill(0, count($submissions), "%d") : array();
+      $pager_query .= count($submissions) ? ' AND sid IN (' . implode(',', $placeholders) . ')' : ' AND sid = 0';
+      $arguments = array_merge($arguments, $submissions);
+    }
+    $result = pager_query($pager_query, $pager_count, 0, NULL, $arguments);
     $sids = array();
-    while ($row = db_fetch_object($res)) {
+    while ($row = db_fetch_object($result)) {
       $sids[] = $row->sid;
     }
     $sids = implode($sids, ',');
@@ -200,8 +222,8 @@ function webform_get_submissions($nid, $header = NULL, $uid = NULL, $pager_count
            'LEFT JOIN {users} u ON u.uid = s.uid '.
            'WHERE sd.nid = %d';
 
-  if ($pager_count && !empty($sids)) {
-    $query .= ' AND s.sid IN (%s)';
+  if ($pager_count && isset($sids)) {
+    $query .= empty($sids) ? ' AND s.sid = 0' : ' AND s.sid IN (%s)';
   }
 
   if ($uid) {
@@ -252,12 +274,26 @@ function webform_get_submissions($nid, $header = NULL, $uid = NULL, $pager_count
  * @return
  *   An integer value of the number of submissions.
  */
-function webform_get_submission_count($nid, $uid = NULL) {
-  $query = 'SELECT count(*) FROM {webform_submissions} WHERE nid = %d';
-  if ($uid) {
-    $query .= ' AND uid = %d';
+function webform_get_submission_count($nid, $uid = NULL, $reset = FALSE) {
+  static $counts;
+
+  if (!isset($counts[$nid][$uid]) || $reset) {
+    $query = 'SELECT count(*) FROM {webform_submissions} WHERE nid = %d';
+    $arguments = array($nid);
+    if ($uid !== NULL) {
+      $query .= ' AND uid = %d';
+      $arguments[] = $uid;
+    }
+    if ($uid === 0) {
+      $submissions = $_SESSION['webform_submission'];
+      $placeholders = count($submissions) ? array_fill(0, count($submissions), "%d") : array();
+      $query .= count($submissions) ? ' AND sid IN (' . implode(',', $placeholders) . ')' : ' AND sid = 0';
+      $arguments = array_merge($arguments, array_keys($_SESSION['webform_submission']));
+    }
+
+    $counts[$nid][$uid] = db_result(db_query($query, $arguments));
   }
-  return db_result(db_query($query, $nid, $uid));
+  return $counts[$nid][$uid];
 }
 
 /**
