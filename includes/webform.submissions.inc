@@ -144,9 +144,18 @@ function webform_submission_page($node, $submission, $format) {
     $output = webform_submission_render($node, $submission, $format);
   }
 
+  // Determine the mode in which we're displaying this submission.
+  $mode = ($format != 'form') ? 'display' : 'form';
+  if (preg_match("!^q=print/!", $_SERVER['QUERY_STRING'])) {
+    $mode = 'print';
+  }
+  if (preg_match("!^q=printpdf/!", $_SERVER['QUERY_STRING'])) {
+    $mode = 'pdf';
+  }
+
   // Add navigation for administrators.
   if (user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid)) {
-    $navigation = theme('webform_submission_navigation', $node, $submission, $format != 'form' ? 'display' : 'form');
+    $navigation = ($mode != 'pdf') ? theme('webform_submission_navigation', $node, $submission, $mode) : NULL;
     $information = theme('webform_submission_information', $node, $submission);
   }
   else {
@@ -396,10 +405,11 @@ function _webform_submission_limit_check($node) {
  * Preprocess function for webform-submission-navigation.tpl.php
  */
 function template_preprocess_webform_submission_navigation(&$vars) {
+  $start_path = ($vars['mode'] == 'print') ? 'print/' : 'node/';
   $vars['previous'] = db_result(db_query('SELECT MAX(sid) FROM {webform_submissions} WHERE nid = %d AND sid < %d', array($vars['node']->nid, $vars['submission']->sid)));
   $vars['next'] = db_result(db_query('SELECT MIN(sid) FROM {webform_submissions} WHERE nid = %d AND sid > %d', array($vars['node']->nid, $vars['submission']->sid)));
-  $vars['previous_url'] = 'node/' . $vars['node']->nid . '/submission/' . $vars['previous'] . ($vars['mode'] == 'form' ? '/edit' : '');
-  $vars['next_url'] = 'node/' . $vars['node']->nid . '/submission/' . $vars['next'] . ($vars['mode'] == 'form' ? '/edit' : '');
+  $vars['previous_url'] = $start_path . $vars['node']->nid . '/submission/' . $vars['previous'] . ($vars['mode'] == 'form' ? '/edit' : '');
+  $vars['next_url'] = $start_path . $vars['node']->nid . '/submission/' . $vars['next'] . ($vars['mode'] == 'form' ? '/edit' : '');
 }
 
 /**

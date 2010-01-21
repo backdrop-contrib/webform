@@ -105,7 +105,7 @@ function theme_webform_results_submissions_header($node) {
     $columns[] = array('data' => t('User'), 'field' => 'name');
     $columns[] = array('data' => t('IP Address'), 'field' => 'remote_addr');
   }
-  $columns[] = array('data' => t('Operations'), 'colspan' => 3);
+  $columns[] = array('data' => t('Operations'), 'colspan' => module_exists('print') ? 5 : 3);
 
   return $columns;
 }
@@ -130,6 +130,8 @@ function theme_webform_results_submissions($node, $submissions, $total_count = 0
   // This header has to be generated separately so we can add the SQL necessary
   // to sort the results.
   $header = theme('webform_results_submissions_header', $node);
+  $operation_column = end($header);
+  $operation_total = $operation_column['colspan'];
 
   $rows = array();
   foreach ($submissions as $sid => $submission) {
@@ -143,6 +145,14 @@ function theme_webform_results_submissions($node, $submissions, $total_count = 0
     }
     $row[] = l(t('View'), "node/$node->nid/submission/$sid");
     $operation_count = 1;
+    if (module_exists('print_pdf') && user_access('access PDF version')) {
+      $row[] = l(t('PDF'), "printpdf/$node->nid/submission/$sid", array('query' => drupal_get_destination()));
+      $operation_count++;
+    }
+    if (module_exists('print') && user_access('access print')) {
+      $row[] = l(t('Print'), "print/$node->nid/submission/$sid");
+      $operation_count++;
+    }
     if ((user_access('edit own webform submissions') && $user->uid == $submission->uid) || user_access('edit all webform submissions')) {
       $row[] = l(t('Edit'), "node/$node->nid/submission/$sid/edit", array('query' => drupal_get_destination()));
       $operation_count++;
@@ -151,8 +161,8 @@ function theme_webform_results_submissions($node, $submissions, $total_count = 0
       $row[] = l(t('Delete'), "node/$node->nid/submission/$sid/delete", array('query' => drupal_get_destination()));
       $operation_count++;
     }
-    if ($operation_count < 3) {
-      $row[count($row) - 1] = array('data' => $row[count($row) - 1], 'colspan' => 4 - $operation_count);
+    if ($operation_count < $operation_total) {
+      $row[count($row) - 1] = array('data' => $row[count($row) - 1], 'colspan' => $operation_total - $operation_count + 1);
     }
     $rows[] = $row;
   }
