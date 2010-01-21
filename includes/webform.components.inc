@@ -595,7 +595,7 @@ function webform_component_delete_form_submit($form, &$form_state) {
  * @param $component
  *   A full component containing fields from the component form.
  */
-function webform_component_insert($component) {
+function webform_component_insert(&$component) {
   db_lock_table('webform_component');
   $component['cid'] = isset($component['cid']) ? $component['cid'] : db_result(db_query('SELECT MAX(cid) FROM {webform_component} WHERE nid = %d', $component['nid'])) + 1;
   $component['value'] = isset($component['value']) ? $component['value'] : NULL;
@@ -653,7 +653,7 @@ function webform_component_delete($node, $component) {
  * @param $component
  *   A full component containing fields from the component form.
  */
-function webform_component_clone(&$node, $component) {
+function webform_component_clone(&$node, &$component) {
   $original_cid = $component['cid'];
   unset($component['cid']);
   $new_cid = webform_component_insert($component);
