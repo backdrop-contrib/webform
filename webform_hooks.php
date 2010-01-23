@@ -470,11 +470,13 @@ function _webform_table_component($component, $value) {
  *
  * @param $component
  *   A Webform component array.
+ * @param $export_options
+ *   An array of options that may configure export of this field.
  * @return
  *   An array of data to be displayed in the first three rows of a CSV file, not
  *   including either prefixed or trailing commas.
  */
-function _webform_csv_headers_component($component) {
+function _webform_csv_headers_component($component, $export_options) {
   $header = array();
   $header[0] = array('');
   $header[1] = array($component['name']);
@@ -502,6 +504,8 @@ function _webform_csv_headers_component($component) {
  *
  * @param $component
  *   A Webform component array.
+ * @param $export_options
+ *   An array of options that may configure export of this field.
  * @param $value
  *   An array of information containing the submission result, directly
  *   correlating to the webform_submitted_data database schema.
@@ -510,7 +514,7 @@ function _webform_csv_headers_component($component) {
  *   will be another column within the file. This function is called once for
  *   every row of data.
  */
-function _webform_csv_data_component($component, $value) {
+function _webform_csv_data_component($component, $export_options, $value) {
   $questions = array_keys(_webform_select_options($component['extra']['questions']));
   $return = array();
   foreach ($questions as $key => $question) {

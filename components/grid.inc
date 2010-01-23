@@ -322,7 +322,7 @@ function _webform_table_grid($component, $value) {
 /**
  * Implementation of _webform_csv_headers_component().
  */
-function _webform_csv_headers_grid($component) {
+function _webform_csv_headers_grid($component, $export_options) {
   $header = array();
   $header[0] = array('');
   $header[1] = array($component['name']);
@@ -345,7 +345,7 @@ function _webform_csv_headers_grid($component) {
 /**
  * Implementation of _webform_csv_data_component().
  */
-function _webform_csv_data_grid($component, $value) {
+function _webform_csv_data_grid($component, $export_options, $value) {
   $questions = array_keys(_webform_grid_options($component['extra']['questions']));
   $return = array();
   foreach ($questions as $key => $question) {

@@ -350,6 +350,25 @@ function webform_results_download_form(&$form_state, $node) {
     ),
   );
 
+  $form['select_options'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Select list options'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+
+  $form['select_options']['select_format'] = array(
+    '#type' => 'radios',
+    '#title' => t('Select list format'),
+    '#options' => array(
+      'separate' => t('Separate'),
+      'compact' => t('Compact'),
+    ),
+    '#default_value' => 'separate',
+    '#attributes' => array('class' => 'webform-select-list-format'),
+    '#theme' => 'webform_results_download_select_format',
+  );
+
   $csv_components = array(
     '' => t('Submission information'),
     'serial' => '-' . t('Submission Number'),
@@ -384,6 +403,7 @@ function webform_results_download_form_submit(&$form, &$form_state) {
   $options = array(
     'delimiter' => $form_state['values']['delimiter'],
     'components' => array_keys(array_filter($form_state['values']['components'])),
+    'select_format' => $form_state['values']['select_format'],
   );
   webform_results_download($form_state['values']['node'], $form_state['values']['format'], $options);
 }
@@ -395,6 +415,44 @@ function theme_webform_results_download_form($form) {
   drupal_add_css(drupal_get_path('module', 'webform') .'/webform.css', 'theme', 'all', FALSE);
 
   return drupal_render($form);
+}
+
+/**
+ * Theme the output of the select list format radio buttons.
+ */
+function theme_webform_results_download_select_format($element) {
+  drupal_add_css(drupal_get_path('module', 'webform') .'/webform.css', 'theme', 'all', FALSE);
+
+  $output = '';
+
+  // Build an example table for the separate option.
+  $header = array(t('Option A'), t('Option B'), t('Option C'));
+  $rows = array(
+    array('X', '', ''),
+    array('X', '', 'X'),
+    array('', 'X', 'X'),
+  );
+
+  $element['separate']['#description'] = theme('table', $header, $rows);
+  $element['separate']['#description'] .= t('Separate options are more suitable for building reports, graphs, and statistics in a spreadsheet application.');
+  $output .= drupal_render($element['separate']);
+
+  // Build an example table for the compact option.
+  $header = array(t('My select list'));
+  $rows = array(
+    array('Option A'),
+    array('Option A,Option C'),
+    array('Option B,Option C'),
+  );
+
+  $element['compact']['#description'] = theme('table', $header, $rows);
+  $element['compact']['#description'] .= t('Compact options are more suitable for importing data into other systems.');
+  $output .= drupal_render($element['compact']);
+
+  $element['#type'] = 'markup';
+  $element['#value'] = $output;
+
+  return $output;
 }
 
 /**
@@ -445,6 +503,7 @@ function webform_results_download($node, $format = 'delimiter', $options = array
     $options = array(
       'delimiter' => variable_get('webform_csv_delimiter', '\t'),
       'components' => array_keys($submission_information) + array_keys(webform_component_list($node, 'csv', TRUE)),
+      'select_format' => 'separate',
     );
   }
   else {
@@ -478,7 +537,7 @@ function webform_results_download($node, $format = 'delimiter', $options = array
       $component = $node->webform['components'][$cid];
 
       // Let each component determine its headers.
-      if ($component_header = webform_component_invoke($component['type'], 'csv_headers', $component)) {
+      if ($component_header = webform_component_invoke($component['type'], 'csv_headers', $component, $options)) {
         $header[0] = array_merge($header[0], (array) $component_header[0]);
         $header[1] = array_merge($header[1], (array) $component_header[1]);
         $header[2] = array_merge($header[2], (array) $component_header[2]);
@@ -524,7 +583,7 @@ function webform_results_download($node, $format = 'delimiter', $options = array
         $component = $node->webform['components'][$cid];
         // Let each component add its data.
         $raw_data = isset($submission->data[$cid]['value']) ? $submission->data[$cid]['value'] : NULL;
-        $data = webform_component_invoke($component['type'], 'csv_data', $component, $raw_data);
+        $data = webform_component_invoke($component['type'], 'csv_data', $component, $options, $raw_data);
         if ($data !== NULL) {
           if (is_array($data)) {
             $row = array_merge($row, array_values($data));

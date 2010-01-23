@@ -459,14 +459,14 @@ function _webform_table_select($component, $value) {
 /**
  * Implementation of _webform_csv_headers_component().
  */
-function _webform_csv_headers_select($component) {
+function _webform_csv_headers_select($component, $export_options) {
   $headers = array(
     0 => array(),
     1 => array(),
     2 => array(),
   );
 
-  if ($component['extra']['multiple']) {
+  if ($component['extra']['multiple'] && $export_options['select_format'] == 'separate') {
     $headers[0][] = '';
     $headers[1][] = $component['name'];
     $items = _webform_select_options($component['extra']['items'], TRUE);
@@ -492,16 +492,16 @@ function _webform_csv_headers_select($component) {
 /**
  * Implementation of _webform_csv_data_component().
  */
-function _webform_csv_data_select($component, $value) {
+function _webform_csv_data_select($component, $export_options, $value) {
   $options = _webform_select_options($component['extra']['items'], TRUE);
   $return = array();
 
   if ($component['extra']['multiple']) {
     foreach ($options as $key => $item) {
       if (in_array($key, (array) $value) === TRUE) {
-        $return[] = 'X';
+        $return[] = ($export_options['select_format'] == 'separate') ? 'X' : $key;
       }
-      else {
+      elseif ($export_options['select_format'] == 'separate') {
         $return[] = '';
       }
     }
@@ -509,6 +509,11 @@ function _webform_csv_data_select($component, $value) {
   else {
     $return = $value[0];
   }
+
+  if ($component['extra']['multiple'] && $export_options['select_format'] == 'compact') {
+    $return = implode(',', (array) $return);
+  }
+
   return $return;
 }
 

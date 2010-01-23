@@ -320,7 +320,7 @@ function _webform_table_time($component, $value) {
 /**
  * Implementation of _webform_csv_headers_component().
  */
-function _webform_csv_headers_time($component) {
+function _webform_csv_headers_time($component, $export_options) {
   $header = array();
   $header[0] = '';
   $header[1] = '';
@@ -331,7 +331,7 @@ function _webform_csv_headers_time($component) {
 /**
  * Implementation of _webform_csv_data_component().
  */
-function _webform_csv_data_time($component, $value) {
+function _webform_csv_data_time($component, $export_options, $value) {
   if (drupal_strlen($value[0]) > 0 && drupal_strlen($value[1]) > 0) {
     $timestamp = strtotime($value[0] .':'. $value[1] . $value[2]);
     if ($component['extra']['hourformat'] == '24-hour') {

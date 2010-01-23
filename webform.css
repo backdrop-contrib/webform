@@ -29,6 +29,15 @@
   height: 12px;
   margin: 0 2px 2px;
 }
+.webform-select-list-format table {
+  border: 1px solid;
+  width: auto;
+  font-size: 90%;
+}
+.webform-select-list-format td,
+.webform-select-list-format th {
+  border: 1px solid;
+}
 .webform-checkbox {
   text-align: center;
   width: 40px;

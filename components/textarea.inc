@@ -224,7 +224,7 @@ function _webform_table_textarea($component, $value) {
 /**
  * Implementation of _webform_csv_headers_component().
  */
-function _webform_csv_headers_textarea($component) {
+function _webform_csv_headers_textarea($component, $export_options) {
   $header = array();
   $header[0] = '';
   $header[1] = '';
@@ -235,6 +235,6 @@ function _webform_csv_headers_textarea($component) {
 /**
  * Implementation of _webform_csv_data_component().
  */
-function _webform_csv_data_textarea($component, $value) {
+function _webform_csv_data_textarea($component, $export_options, $value) {
   return empty($value[0]) ? '' : $value[0];
 }

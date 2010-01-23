@@ -169,7 +169,7 @@ function _webform_table_hidden($component, $value) {
 /**
  * Implementation of _webform_csv_data_component().
  */
-function _webform_csv_headers_hidden($component) {
+function _webform_csv_headers_hidden($component, $export_options) {
   $header = array();
   $header[0] = '';
   $header[1] = '';
@@ -180,6 +180,6 @@ function _webform_csv_headers_hidden($component) {
 /**
  * Implementation of _webform_csv_data_component().
  */
-function _webform_csv_data_hidden($component, $value) {
+function _webform_csv_data_hidden($component, $export_options, $value) {
   return empty($value[0]) ? '' : $value[0];
 }

@@ -557,7 +557,7 @@ function _webform_table_file($component, $value) {
 /**
  * Implementation of _webform_csv_headers_component().
  */
-function _webform_csv_headers_file($component) {
+function _webform_csv_headers_file($component, $export_options) {
   $header = array();
   // Two columns in header.
   $header[0] = array('', '');
@@ -569,7 +569,7 @@ function _webform_csv_headers_file($component) {
 /**
  * Implementation of _webform_csv_data_component().
  */
-function _webform_csv_data_file($component, $value) {
+function _webform_csv_data_file($component, $export_options, $value) {
   $file = webform_get_file($value[0]);
   return empty($file->filename) ? array('', '') : array(webform_file_url($file->filepath), (int) ($file->filesize/1024));
 }

@@ -246,7 +246,7 @@ function _webform_table_textfield($component, $value) {
 /**
  * Implementation of _webform_csv_headers_component().
  */
-function _webform_csv_headers_textfield($component) {
+function _webform_csv_headers_textfield($component, $export_options) {
   $header = array();
   $header[0] = '';
   $header[1] = '';
@@ -257,6 +257,6 @@ function _webform_csv_headers_textfield($component) {
 /**
  * Implementation of _webform_csv_data_component().
  */
-function _webform_csv_data_textfield($component, $value) {
+function _webform_csv_data_textfield($component, $export_options, $value) {
   return !isset($value[0]) ? '' : $value[0];
 }

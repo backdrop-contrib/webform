@@ -542,6 +542,10 @@ function webform_theme() {
       'arguments' => array('form' => NULL),
       'file' => 'includes/webform.report.inc',
     ),
+    'webform_results_download_select_format' => array(
+      'arguments' => array('element' => NULL),
+      'file' => 'includes/webform.report.inc',
+    ),
     // webform.submissions.inc
     'webform_submission_page' => array(
       'arguments' => array('submission' => NULL, 'submission_navigation' => NULL, 'submission_information' => NULL),
