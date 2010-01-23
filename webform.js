@@ -11,6 +11,8 @@ Drupal.behaviors.webform = function(context) {
   Drupal.webform.setActive(context);
   // Update the template select list upon changing a template.
   Drupal.webform.updateTemplate(context);
+  // Enhance the normal tableselect.js file to support indentations.
+  Drupal.webform.tableSelectIndentation(context);
 }
 
 Drupal.webform = new Object();
@@ -70,3 +72,21 @@ Drupal.webform.updateTemplate = function(context) {
   $templateTextarea.keyup(updateTemplateSelect);
   $templateSelect.change(updateTemplateText);
 }
+
+Drupal.webform.tableSelectIndentation = function(context) {
+  var $tables = $('th.select-all', context).parents('table');
+  $tables.find('input.form-checkbox').change(function() {
+    var $rows = $(this).parents('table:first').find('tr');
+    var row = $(this).parents('tr:first').get(0);
+    var rowNumber = $rows.index(row);
+    var rowTotal = $rows.size();
+    var indentLevel = $(row).find('div.indentation').size();
+    for (var n = rowNumber + 1; n < rowTotal; n++) {
+      if ($rows.eq(n).find('div.indentation').size() <= indentLevel) {
+        break;
+      }
+      $rows.eq(n).find('input.form-checkbox').attr('checked', this.checked);
+    }
+  });
+}
+

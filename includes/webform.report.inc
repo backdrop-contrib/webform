@@ -350,6 +350,28 @@ function webform_results_download_form(&$form_state, $node) {
     ),
   );
 
+  $csv_components = array(
+    '' => t('Submission information'),
+    'serial' => '-' . t('Submission Number'),
+    'sid' => '-' . t('Submission ID'),
+    'time' => '-' . t('Time'),
+    'ip_address' => '-' . t('IP Address'),
+    'uid' => '-' . t('User ID'),
+    'username' => '-' . t('Username'),
+  );
+  $csv_components += webform_component_list($node, 'csv', TRUE);
+
+  $form['components'] = array(
+    '#type' => 'select',
+    '#title' => t('Included export components'),
+    '#options' => $csv_components,
+    '#default_value' => array_keys($csv_components),
+    '#multiple' => TRUE,
+    '#size' => 10,
+    '#description' => t('The selected components will be included in the export.'),
+    '#process' => array('webform_component_select'),
+  );
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Download'),
@@ -359,7 +381,20 @@ function webform_results_download_form(&$form_state, $node) {
 }
 
 function webform_results_download_form_submit(&$form, &$form_state) {
-  webform_results_download($form_state['values']['node'], $form_state['values']['format'], $form_state['values']);
+  $options = array(
+    'delimiter' => $form_state['values']['delimiter'],
+    'components' => array_keys(array_filter($form_state['values']['components'])),
+  );
+  webform_results_download($form_state['values']['node'], $form_state['values']['format'], $options);
+}
+
+/**
+ * Theme the output of the export form.
+ */
+function theme_webform_results_download_form($form) {
+  drupal_add_css(drupal_get_path('module', 'webform') .'/webform.css', 'theme', 'all', FALSE);
+
+  return drupal_render($form);
 }
 
 /**
@@ -397,11 +432,27 @@ function webform_results_download_form_submit(&$form, &$form_state) {
 function webform_results_download($node, $format = 'delimiter', $options = array()) {
   module_load_include('inc', 'webform', 'includes/webform.export');
 
+  $submission_information = array(
+    'serial' => t('Serial'),
+    'sid' => t('SID'),
+    'time' => t('Time'),
+    'ip_address' => t('IP Address'),
+    'uid' => t('UID'),
+    'username' => t('Username'),
+  );
+
   if (empty($options)) {
     $options = array(
       'delimiter' => variable_get('webform_csv_delimiter', '\t'),
-      'format' => variable_get('webform_export_format', 'delimited'),
+      'components' => array_keys($submission_information) + array_keys(webform_component_list($node, 'csv', TRUE)),
     );
+  }
+  else {
+    foreach ($submission_information as $key => $label) {
+      if (!in_array($key, $options['components'])) {
+        unset($submission_information[$key]);
+      }
+    }
   }
 
   // Open a new Webform exporter object.
@@ -411,17 +462,27 @@ function webform_results_download($node, $format = 'delimiter', $options = array
   $handle = @fopen($file_name, 'w'); // The @ suppresses errors.
   $exporter->bof($handle);
 
-  $header[0] = array($node->title, '', '', '', '', '');
-  $header[1] = array(t('Submission Details'), '', '', '', '', '');
-  $header[2] = array(t('Serial'), t('SID'), t('Time'), t('IP Address'), t('UID'), t('Username'));
+  // Fill in the header for the submission information (if any).
+  $header[2] = $header[1] = $header[0] = count($submission_information) ? array_fill(0, count($submission_information), '') : array();
+  if (count($submission_information)) {
+    $header[0][0] = $node->title;
+    $header[1][0] = t('Submission Details');
+    foreach (array_values($submission_information) as $column => $label) {
+      $header[2][$column] = $label;
+    }
+  }
 
-  // Compile header information.
-  foreach ($node->webform['components'] as $cid => $component) {
-    // Let each component determine its headers.
-    if ($component_header = webform_component_invoke($component['type'], 'csv_headers', $component)) {
-      $header[0] = array_merge($header[0], (array) $component_header[0]);
-      $header[1] = array_merge($header[1], (array) $component_header[1]);
-      $header[2] = array_merge($header[2], (array) $component_header[2]);
+  // Compile header information for components.
+  foreach ($options['components'] as $cid) {
+    if (isset($node->webform['components'][$cid])) {
+      $component = $node->webform['components'][$cid];
+
+      // Let each component determine its headers.
+      if ($component_header = webform_component_invoke($component['type'], 'csv_headers', $component)) {
+        $header[0] = array_merge($header[0], (array) $component_header[0]);
+        $header[1] = array_merge($header[1], (array) $component_header[1]);
+        $header[2] = array_merge($header[2], (array) $component_header[2]);
+      }
     }
   }
 
@@ -436,26 +497,45 @@ function webform_results_download($node, $format = 'delimiter', $options = array
   // Generate a row for each submission.
   $row_count = 0;
   foreach ($submissions as $sid => $submission) {
+    $row_count++;
+
     $row = array();
-    $row[] = ++$row_count;
-    $row[] = $sid;
-    $row[] = format_date($submission->submitted, 'small');
-    $row[] =  $submission->remote_addr;
-    $row[] = $submission->uid;
-    $row[] = $submission->name;
-    foreach ($node->webform['components'] as $cid => $component) {
-      // Let each component add its data.
-      $raw_data = isset($submission->data[$cid]['value']) ? $submission->data[$cid]['value'] : NULL;
-      $data = webform_component_invoke($component['type'], 'csv_data', $component, $raw_data);
-      if ($data !== NULL) {
-        if (is_array($data)) {
-          $row = array_merge($row, array_values($data));
-        }
-        else {
-          $row[] = $data;
+    if (isset($submission_information['serial'])) {
+      $row[] = $row_count;
+    }
+    if (isset($submission_information['sid'])) {
+      $row[] = $sid;
+    }
+    if (isset($submission_information['time'])) {
+      $row[] = format_date($submission->submitted, 'small');
+    }
+    if (isset($submission_information['ip_address'])) {
+      $row[] =  $submission->remote_addr;
+    }
+    if (isset($submission_information['uid'])) {
+      $row[] = $submission->uid;
+    }
+    if (isset($submission_information['username'])) {
+      $row[] = $submission->name;
+    }
+
+    foreach ($options['components'] as $cid) {
+      if (isset($node->webform['components'][$cid])) {
+        $component = $node->webform['components'][$cid];
+        // Let each component add its data.
+        $raw_data = isset($submission->data[$cid]['value']) ? $submission->data[$cid]['value'] : NULL;
+        $data = webform_component_invoke($component['type'], 'csv_data', $component, $raw_data);
+        if ($data !== NULL) {
+          if (is_array($data)) {
+            $row = array_merge($row, array_values($data));
+          }
+          else {
+            $row[] = $data;
+          }
         }
       }
     }
+
     // Write data from submissions.
     $data = $exporter->add_row($handle, $row);
   }

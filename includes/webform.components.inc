@@ -747,6 +747,7 @@ function webform_component_select($element) {
  */
 function theme_webform_component_select($element) {
   drupal_add_js('misc/tableselect.js');
+  drupal_add_js(drupal_get_path('module', 'webform') .'/webform.js', 'module', 'header', FALSE, TRUE, FALSE);
 
   $rows = array();
   $header = array();
@@ -759,15 +760,8 @@ function theme_webform_component_select($element) {
   $element['#collapsible'] = TRUE;
   $element['#collapsed'] = TRUE;
 
-  $output = '';
-  $output .= '<p>' . $element['#description'] . '</p>';
-  $output .= '<div class="webform-component-select-table">';
-  $output .= theme('table', $header, $rows);
-  $output .= '</div>';
-
-  unset($element['#description']);
-
-  $element['#children'] = $output;
+  $element['#attributes']['class'] = 'webform-component-select-table';
+  $element['#children'] = theme('table', $header, $rows);;
   return theme('fieldset', $element);
 }
 

@@ -520,23 +520,33 @@ function webform_theme() {
     // webform.report.inc.
     'webform_results_per_page' => array(
       'arguments' => array('total_count' => NULL, 'pager_count' => NULL),
+      'file' => 'includes/webform.report.inc',
     ),
     'webform_results_submissions_header' => array(
       'arguments' => array('node' => NULL),
+      'file' => 'includes/webform.report.inc',
     ),
     'webform_results_submissions' => array(
       'arguments' => array('node' => NULL, 'submissions' => NULL, 'total_count' => NULL, 'pager_count' => NULL),
+      'file' => 'includes/webform.report.inc',
     ),
     'webform_results_table_header' => array(
       'arguments' => array('node' => NULL),
+      'file' => 'includes/webform.report.inc',
     ),
     'webform_results_table' => array(
       'arguments' => array('node' => NULL, 'components' => NULL, 'submissions' => NULL, 'node' => NULL, 'total_count' => NULL, 'pager_count' => NULL),
+      'file' => 'includes/webform.report.inc',
+    ),
+    'webform_results_download_form' => array(
+      'arguments' => array('form' => NULL),
+      'file' => 'includes/webform.report.inc',
     ),
     // webform.submissions.inc
     'webform_submission_page' => array(
       'arguments' => array('submission' => NULL, 'submission_navigation' => NULL, 'submission_information' => NULL),
       'template' => 'templates/webform-submission-page',
+      'file' => 'includes/webform.submissions.inc',
     ),
     'webform_submission_information' => array(
       'arguments' => array('node' => NULL, 'submission' => NULL),
@@ -582,7 +592,6 @@ function webform_webform_component_info() {
       'label' => t('Fieldset'),
       'description' => t('Fieldsets allow you to organize multiple fields into groups.'),
       'features' => array(
-        'csv' => FALSE,
         'required' => FALSE,
         'conditional' => FALSE,
       ),

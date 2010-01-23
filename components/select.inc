@@ -493,13 +493,12 @@ function _webform_csv_headers_select($component) {
  * Implementation of _webform_csv_data_component().
  */
 function _webform_csv_data_select($component, $value) {
-  $component_values = _webform_filter_values($component['value'], NULL, NULL, NULL, FALSE);
   $options = _webform_select_options($component['extra']['items'], TRUE);
   $return = array();
 
   if ($component['extra']['multiple']) {
     foreach ($options as $key => $item) {
-      if (in_array($key, (array) $component_values) === TRUE) {
+      if (in_array($key, (array) $value) === TRUE) {
         $return[] = 'X';
       }
       else {
