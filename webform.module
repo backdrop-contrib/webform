@@ -324,7 +324,7 @@ function webform_menu_component_load($cid, $nid, $type) {
   module_load_include('inc', 'webform', 'includes/webform.components');
   if ($cid == 'new') {
     $components = webform_components();
-    $component = in_array($type, array_keys($components)) ? array('type' => $type, 'name' => $_GET['name'], 'mandatory' => $_GET['mandatory'], 'email' => $_GET['email'], 'pid' => $_GET['pid'], 'weight' => $_GET['weight']) : FALSE;
+    $component = in_array($type, array_keys($components)) ? array('type' => $type, 'name' => $_GET['name'], 'mandatory' => $_GET['mandatory'], 'pid' => $_GET['pid'], 'weight' => $_GET['weight']) : FALSE;
   }
   else {
     $node = node_load($nid);
@@ -350,6 +350,7 @@ function webform_menu_email_load($eid, $nid) {
       'from_name' => 'default',
       'from_address' => 'default',
       'template' => 'default',
+      'excluded_components' => array(),
     );
     if (isset($_GET['option']) && isset($_GET['email'])) {
       $type = $_GET['option'];
@@ -503,14 +504,20 @@ function webform_theme() {
       'arguments' => array('form' => NULL),
       'file' => 'includes/webform.emails.inc',
     ),
-    // webform_components.inc.
+    // webform.components.inc.
     'webform_components_page' => array(
       'arguments' => array('node' => NULL, 'mode' => NULL, 'form' => NULL),
+      'file' => 'includes/webform.components.inc',
     ),
     'webform_components_form' => array(
       'arguments' => array('form' => NULL),
+      'file' => 'includes/webform.components.inc',
     ),
-    // webform_report.inc.
+    'webform_component_select' => array(
+      'arguments' => array('element' => NULL),
+      'file' => 'includes/webform.components.inc',
+    ),
+    // webform.report.inc.
     'webform_results_per_page' => array(
       'arguments' => array('total_count' => NULL, 'pager_count' => NULL),
     ),
@@ -526,7 +533,7 @@ function webform_theme() {
     'webform_results_table' => array(
       'arguments' => array('node' => NULL, 'components' => NULL, 'submissions' => NULL, 'node' => NULL, 'total_count' => NULL, 'pager_count' => NULL),
     ),
-    // webform_submissions.inc
+    // webform.submissions.inc
     'webform_submission_page' => array(
       'arguments' => array('submission' => NULL, 'submission_navigation' => NULL, 'submission_information' => NULL),
       'template' => 'templates/webform-submission-page',
@@ -812,6 +819,7 @@ function webform_node_load($node) {
     $result = db_query('SELECT * FROM {webform_emails} WHERE nid = %d', $node->nid);
     while ($email = db_fetch_array($result)) {
       $additions['webform']['emails'][$email['eid']] = $email;
+      $additions['webform']['emails'][$email['eid']]['excluded_components'] = array_filter(explode(',', $email['excluded_components']));
     }
   }
   else {
@@ -832,7 +840,6 @@ function webform_node_load($node) {
   }
 
   $additions['webform']['components'] = array();
-  $additions['webform']['additional_emails'] = array();
   $result = db_query('SELECT * FROM {webform_component} WHERE nid = %d ORDER BY weight, name', $node->nid);
   while ($c = db_fetch_array($result)) {
     $component =& $additions['webform']['components'][$c['cid']];
@@ -844,12 +851,8 @@ function webform_node_load($node) {
     $component['value'] = $c['value'];
     $component['extra'] = unserialize($c['extra']);
     $component['mandatory'] = $c['mandatory'];
-    $component['email'] = $c['email'];
     $component['pid'] = $c['pid'];
     $component['weight'] = $c['weight'];
-    if (isset($component['extra']['email']) && $component['extra']['email']) {
-      $additions['webform']['additional_emails'][$c['cid']] = $c['cid'];
-    }
 
     webform_component_defaults($component);
   }
@@ -1630,7 +1633,7 @@ function webform_client_form_submit($form, &$form_state) {
       }
 
       // Replace tokens in the message.
-      $email['message'] = _webform_filter_values($email['message'], $node, $submission, FALSE, TRUE);
+      $email['message'] = _webform_filter_values($email['message'], $node, $submission, $email, FALSE, TRUE);
 
       // Build the e-mail headers.
       $email['headers'] = theme(array('webform_mail_headers_'. $node->nid, 'webform_mail_headers'), $node, $submission, $cid);
@@ -1990,6 +1993,9 @@ function _webform_fetch_draft_sid($nid, $uid) {
  * @param $submission
  *   If replacing submission-level tokens, the submission for which tokens will
  *   be created.
+ * @param $email
+ *   If replacing tokens within the context of an e-mail, the Webform e-mail
+ *   settings array.
  * @param $strict
  *   Boolean value indicating if the results should be run through check_plain.
  *   This is used any time the values will be output as HTML, but not in
@@ -2001,7 +2007,7 @@ function _webform_fetch_draft_sid($nid, $uid) {
  *   preserved in the anonymous page cache and should only be used in
  *   non-cached situations, such as e-mails.
  */
-function _webform_filter_values($string, $node = NULL, $submission = NULL, $strict = TRUE, $allow_anonymous = FALSE) {
+function _webform_filter_values($string, $node = NULL, $submission = NULL, $email = NULL, $strict = TRUE, $allow_anonymous = FALSE) {
   global $user;
   static $replacements;
 
@@ -2023,7 +2029,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $stri
   }
 
   // Submission replacements.
-  if (isset($submission) && !array_key_exists('%email_values', $replacements)) {
+  if (isset($submission) && isset($email) && !array_key_exists('%email_values', $replacements)) {
     foreach ($submission->data as $cid => $value) {
       $component = $node->webform['components'][$cid];
 
@@ -2037,7 +2043,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $stri
     }
 
     // The entire form tree:
-    $replacements['unsafe']['%email_values'] = webform_submission_render($node, $submission, 'text');
+    $replacements['unsafe']['%email_values'] = webform_submission_render($node, $submission, $email, 'text');
 
     // Submission edit URL.
     $replacements['unsafe']['%submission_url'] = url('node/'. $node->nid .'/submission/'. $submission->sid, array('absolute' => TRUE));
@@ -2121,7 +2127,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $stri
  * Filters all special tokens provided by webform, and allows basic layout in descriptions.
  */
 function _webform_filter_descriptions($string, $node = NULL, $submission = NULL, $strict = TRUE) {
-  return strlen($string) == 0 ? '' : check_markup(_webform_filter_values($string, $node, $submission, $strict));
+  return strlen($string) == 0 ? '' : check_markup(_webform_filter_values($string, $node, $submission, NULL, $strict));
 }
 
 /**
@@ -2185,20 +2191,11 @@ function theme_webform_token_help($node = NULL) {
   }
 
   if (isset($node)) {
-    $submission_keys = array();
-    foreach ($node->webform['components'] as $cid => $component) {
-      if (webform_component_feature($component['type'], 'email')) {
-        $submission_keys[] = $component['form_key'];
-      }
-    }
-    if (!empty($submission_keys)) {
-      $submission_tokens = array(
-        '%submission_url',
-        '%email_values',
-        '%email[key]',
-        t('Where the key may be any of the following components (do not include quotes):') . theme('item_list', $submission_keys),
-      );
-    }
+    $submission_tokens = array(
+      t('@submission_url - The URL for viewing the completed submission.', array('@submission_url' => '%submission_url')),
+      t('@email_values - All included components in a hierarchical structure.', array('@email_values' => '%email_values')),
+      t('@email_key - Where <em>key</em> can be any form element key. Nested elements may be accessed such as <em>%email[fieldset_a][key_b]</em>. Do not include quotes.', array('@email_key' => '%email[key]')),
+    );
   }
 
   $output = '';
@@ -2304,15 +2301,15 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
   // Address may be an array if a component value was used on checkboxes.
   if (is_array($address)) {
     foreach ($address as $key => $individual_address) {
-      $address[$key] = _webform_filter_values($individual_address, $node, $submission, FALSE, TRUE);
+      $address[$key] = _webform_filter_values($individual_address, $node, $submission, NULL, FALSE, TRUE);
     }
   }
   else {
-    $address = _webform_filter_values($address, $node, $submission, FALSE, TRUE);
+    $address = _webform_filter_values($address, $node, $submission, NULL, FALSE, TRUE);
   }
 
   if ($format == 'long' && isset($name)) {
-    $name = _webform_filter_values($name, $node, $submission, FALSE, TRUE);
+    $name = _webform_filter_values($name, $node, $submission, NULL, FALSE, TRUE);
     if ($encode) {
       $name = mime_header_encode($name);
     }
@@ -2344,7 +2341,7 @@ function webform_format_email_subject($subject, $node = NULL, $submission = NULL
     $subject = reset($subject);
   }
 
-  return _webform_filter_values($subject, $node, $submission, FALSE, TRUE);
+  return _webform_filter_values($subject, $node, $submission, NULL, FALSE, TRUE);
 }
 
 /**

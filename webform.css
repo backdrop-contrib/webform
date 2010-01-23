@@ -13,6 +13,19 @@
 .webform-submission-next {
   margin-left: 20px;
 }
+.webform-component-select-table table {
+  margin: 0;
+}
+.webform-component-select-table input {
+  width: 12px;
+  height: 12px;
+  margin: 0 2px 2px;
+}
+.webform-component-select-table tr.selected td,
+.webform-component-select-table tr.selected td.active {
+  background: inherit;
+  color: inherit;
+}
 .webform-checkbox {
   text-align: center;
   width: 40px;

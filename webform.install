@@ -143,13 +143,6 @@ function webform_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'email' => array(
-        'description' => 'Boolean flag for if submitted values for this component will be included in sent e-mails.',
-        'type' => 'int',
-        'size' => 'tiny',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
       'weight' => array(
         'description' => 'Determines the position of this component in the form.',
         'type' => 'int',
@@ -206,7 +199,12 @@ function webform_schema() {
         'description' => 'A template that will be used for the sent e-mail. This may be a string or the special key "default", which will use the template provided by the theming layer.',
         'type' => 'text',
         'not null' => FALSE,
-      )
+      ),
+      'excluded_components' => array(
+        'description' => 'A list of components that will not be included in the %email_values token. A list of CIDs separated by commas.',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
     ),
     'primary key' => array('nid', 'eid'),
   );
@@ -1287,6 +1285,40 @@ function webform_update_6307() {
   }
 
   $ret[] = array('success' => TRUE, 'query' => t('Updated file components to use numeric file IDs in the submitted values.'));
+
+  return $ret;
+}
+
+/**
+ * Convert "Include in e-mail" from the component-level to a per e-mail setting.
+ */
+function webform_update_6308() {
+  $ret = array();
+
+  // Add the new column to the e-mail table.
+  db_add_field($ret, 'webform_emails', 'excluded_components', array('type' => 'text', 'not null' => TRUE, 'default' => ''));
+
+  // Build up our EXCLUSION lists, finding all components not in e-mails.
+  $result = db_query("SELECT nid, cid FROM {webform_component} WHERE email = 0 ORDER BY nid");
+  $nid = 0;
+  $excluded_components = array();
+  while ($row = db_fetch_object($result)) {
+    if ($nid != $row->nid) {
+      if (!empty($excluded_components)) {
+        db_query("UPDATE {webform_emails} SET excluded_components = '%s' WHERE nid = %d", implode(',', $excluded_components), $nid);
+      }
+      $nid = $row->nid;
+      $excluded_components = array();
+    }
+    $excluded_components[] = $row->cid;
+  }
+
+  // One last query for the last form in the list.
+  if (!empty($excluded_components)) {
+    db_query("UPDATE {webform_emails} SET excluded_components = '%s' WHERE nid = %d", implode(',', $excluded_components), $nid);
+  }
+
+  db_drop_field($ret, 'webform_component', 'email');
 
   return $ret;
 }

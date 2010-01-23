@@ -164,9 +164,9 @@ function webform_email_edit_form($form_state, &$node, $email = array()) {
   $form = array(
     '#tree' => TRUE,
   );
-  $form['nid'] = array(
+  $form['node'] = array(
     '#type' => 'value',
-    '#value' => $node->nid,
+    '#value' => $node,
   );
   $form['eid'] = array(
     '#type' => 'value',
@@ -254,6 +254,17 @@ function webform_email_edit_form($form_state, &$node, $email = array()) {
     '#default_value' => $template,
   );
 
+  $form['template']['components'] = array(
+    '#type' => 'select',
+    '#title' => t('Included e-mail values'),
+    '#options' => webform_component_list($node, 'email', TRUE),
+    '#default_value' => array_diff(array_keys($node->webform['components']), $email['excluded_components']),
+    '#multiple' => TRUE,
+    '#size' => 10,
+    '#description' => t('The selected components will be included in the %email_values token. Individual values may still be printed if explicitly specified as a %email[key] in the template.'),
+    '#process' => array('webform_component_select'),
+  );
+
   $form['template']['template_option'] = array(
     '#type' => 'select',
     '#options' => array(
@@ -288,7 +299,8 @@ function webform_email_edit_form($form_state, &$node, $email = array()) {
  * Theme the Webform mail settings section of the node form.
  */
 function theme_webform_email_edit_form($form) {
-  drupal_add_js(drupal_get_path('module', 'webform') . '/webform.js');
+  drupal_add_css(drupal_get_path('module', 'webform') .'/webform.css', 'theme', 'all', FALSE);
+  drupal_add_js(drupal_get_path('module', 'webform') .'/webform.js', 'module', 'header', FALSE, TRUE, FALSE);
 
   // Loop through fields, rendering them into radio button options.
   foreach (array('email', 'subject', 'from_address', 'from_name') as $field) {
@@ -318,6 +330,8 @@ function theme_webform_email_edit_form($form) {
     '#children' => $details,
     '#collapsible' => FALSE,
   );
+
+  $form['template']['template']['#description'] .= drupal_render($form['template']['components']);
 
   return drupal_render($form);
 }
@@ -358,7 +372,7 @@ function webform_email_edit_form_submit($form, &$form_state) {
   // Merge the e-mail, name, address, and subject options into single values.
   $email = array(
     'eid' => $form_state['values']['eid'],
-    'nid' => $form_state['values']['nid'],
+    'nid' => $form_state['values']['node']->nid,
   );
 
   foreach (array('email', 'from_name', 'from_address', 'subject') as $field) {
@@ -384,6 +398,13 @@ function webform_email_edit_form_submit($form, &$form_state) {
     $email['template'] = $form_state['values']['template'];
   }
 
+  // Save the list of included components.
+  // We actually maintain an *exclusion* list, so any new components will
+  // default to being included in the %email_values token until unchecked.
+  $included = array_keys(array_filter($form_state['values']['components']));
+  $excluded = array_diff(array_keys($form_state['values']['node']->webform['components']), $included);
+  $email['excluded_components'] = $excluded;
+
   if (empty($form_state['values']['eid'])) {
     drupal_set_message(t('Email settings added.'));
     $cid = webform_email_insert($email);
@@ -393,7 +414,7 @@ function webform_email_edit_form_submit($form, &$form_state) {
     webform_email_update($email);
   }
 
-  $form_state['redirect'] = array('node/'. $form_state['values']['nid'] .'/webform/emails');
+  $form_state['redirect'] = array('node/'. $form_state['values']['node']->nid .'/webform/emails');
 }
 
 /**
@@ -441,7 +462,7 @@ function webform_email_delete_form_submit($form, &$form_state) {
 function webform_email_insert($email) {
   db_lock_table('webform_emails');
   $email['eid'] = isset($email['eid']) ? $email['eid'] : db_result(db_query('SELECT MAX(eid) FROM {webform_emails} WHERE nid = %d', $email['nid'])) + 1;
-  db_query("INSERT INTO {webform_emails} (nid, eid, email, subject, from_name, from_address, template) VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s')", $email['nid'], $email['eid'], $email['email'], $email['subject'], $email['from_name'], $email['from_address'], $email['template']);
+  db_query("INSERT INTO {webform_emails} (nid, eid, email, subject, from_name, from_address, template, excluded_components) VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s')", $email['nid'], $email['eid'], $email['email'], $email['subject'], $email['from_name'], $email['from_address'], $email['template'], implode(',', $email['excluded_components']));
   db_unlock_tables();
   return $email['eid'];
 }
@@ -454,7 +475,7 @@ function webform_email_insert($email) {
  *   other fields from the e-mail form.
  */
 function webform_email_update($email) {
-  return db_query("UPDATE {webform_emails} SET email = '%s', subject = '%s', from_name = '%s', from_address = '%s', template = '%s' WHERE nid = %d AND eid = %d", $email['email'], $email['subject'], $email['from_name'], $email['from_address'], $email['template'], $email['nid'], $email['eid']);
+  return db_query("UPDATE {webform_emails} SET email = '%s', subject = '%s', from_name = '%s', from_address = '%s', template = '%s', excluded_components = '%s' WHERE nid = %d AND eid = %d", $email['email'], $email['subject'], $email['from_name'], $email['from_address'], $email['template'], implode(',', $email['excluded_components']), $email['nid'], $email['eid']);
 }
 
 /**

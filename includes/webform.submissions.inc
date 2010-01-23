@@ -141,7 +141,7 @@ function webform_submission_page($node, $submission, $format) {
     $output = drupal_get_form('webform_client_form_'. $node->nid, $node, $submission);
   }
   else {
-    $output = webform_submission_render($node, $submission, $format);
+    $output = webform_submission_render($node, $submission, NULL, $format);
   }
 
   // Determine the mode in which we're displaying this submission.
@@ -174,16 +174,17 @@ function webform_submission_page($node, $submission, $format) {
 /**
  * Print a Webform submission for display on a page or in an e-mail.
  */
-function webform_submission_render($node, $submission, $format) {
+function webform_submission_render($node, $submission, $email, $format) {
   $component_tree = array();
   $renderable = array();
   $page_count = 1;
+  $excluded_components = isset($email) ? $email['excluded_components'] : array();
 
   _webform_components_tree_build($node->webform['components'], $component_tree, 0, $page_count);
 
   // Recursively add components to the form.
   foreach ($component_tree['children'] as $cid => $component) {
-    if (_webform_client_form_rule_check($node, $component, $component['page_num'], NULL, $submission)) {
+    if (!in_array($cid, $excluded_components) && _webform_client_form_rule_check($node, $component, $component['page_num'], NULL, $submission)) {
       _webform_client_form_add_component($component, NULL, $renderable, $renderable, $submission, $format);
     }
   }

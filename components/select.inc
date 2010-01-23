@@ -140,7 +140,7 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
   );
 
   // Convert the user-entered options list into an array.
-  $default_value = $filter ? _webform_filter_values($component['value'], NULL, NULL, FALSE) : $component['value'];
+  $default_value = $filter ? _webform_filter_values($component['value'], NULL, NULL, NULL, FALSE) : $component['value'];
   $options = _webform_select_options($component['extra']['items'], $component['extra']['aslist'] !== 'Y', $filter);
 
   if ($component['extra']['aslist'] === 'Y' && $component['extra']['multiple'] !== 'Y') {
@@ -493,7 +493,7 @@ function _webform_csv_headers_select($component) {
  * Implementation of _webform_csv_data_component().
  */
 function _webform_csv_data_select($component, $value) {
-  $component_values = _webform_filter_values($component['value'], NULL, NULL, FALSE);
+  $component_values = _webform_filter_values($component['value'], NULL, NULL, NULL, FALSE);
   $options = _webform_select_options($component['extra']['items'], TRUE);
   $return = array();
 
@@ -545,16 +545,16 @@ function _webform_select_options($text, $flat = FALSE, $filter = TRUE) {
         unset($group);
       }
       elseif (!$flat) {
-        $group = $filter ? _webform_filter_values($matches[1], NULL, NULL, FALSE) : $matches[1];
+        $group = $filter ? _webform_filter_values($matches[1], NULL, NULL, NULL, FALSE) : $matches[1];
       }
     }
     elseif (preg_match('/^([^|]+)\|(.*)$/', $option, $matches)) {
-      $key = $filter ? _webform_filter_values($matches[1], NULL, NULL, FALSE) : $matches[1];
-      $value = $filter ? _webform_filter_values($matches[2], NULL, NULL, FALSE) : $matches[2];
+      $key = $filter ? _webform_filter_values($matches[1], NULL, NULL, NULL, FALSE) : $matches[1];
+      $value = $filter ? _webform_filter_values($matches[2], NULL, NULL, NULL, FALSE) : $matches[2];
       isset($group) ? $options[$group][$key] = $value : $options[$key] = $value;
     }
     else {
-      $filtered_option = $filter ? _webform_filter_values($option, NULL, NULL, FALSE) : $option;
+      $filtered_option = $filter ? _webform_filter_values($option, NULL, NULL, NULL, FALSE) : $option;
       isset($group) ? $options[$group][$filtered_option] = $filtered_option : $options[$filtered_option] = $filtered_option;
     }
   }

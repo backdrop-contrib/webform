@@ -224,7 +224,7 @@ function webform_form_builder_preview_alter(&$element, $form_type, $form_id) {
     }
 
     if (isset($element['#default_value']) && is_string($element['#default_value'])) {
-      $element['#value'] = _webform_filter_values($element['#default_value'], NULL, NULL, FALSE);
+      $element['#value'] = _webform_filter_values($element['#default_value'], NULL, NULL, NULL, FALSE);
     }
 
     // Let components do any extra filtering if needed.

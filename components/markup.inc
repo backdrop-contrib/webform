@@ -52,7 +52,7 @@ function _webform_render_markup($component, $value = NULL, $filter = TRUE) {
     '#type'   => 'markup',
     '#title'  => $component['name'],
     '#weight' => $component['weight'],
-    '#markup' => $filter ? _webform_filter_values(check_markup($component['value'], $component['extra']['format'], FALSE), NULL, NULL, FALSE) : $component['value'],
+    '#markup' => $filter ? _webform_filter_values(check_markup($component['value'], $component['extra']['format'], FALSE), NULL, NULL, NULL, FALSE) : $component['value'],
     '#input_format' => $component['extra']['format'],
     '#prefix' => '<div class="webform-component-'. $component['type'] .'" id="webform-component-'. $component['form_key'] .'">',
     '#suffix' => '</div>',
@@ -85,7 +85,7 @@ function _webform_form_builder_save_markup($component, $form_element) {
  */
 function _webform_form_builder_preview_alter_markup($form_element) {
   $form_element['#markup'] = isset($form_element['#markup']) ? $form_element['#markup'] : '';
-  $form_element['#value'] = check_markup(_webform_filter_values($form_element['#markup'], NULL, NULL, FALSE), $form_element['#input_format'], FALSE);
+  $form_element['#value'] = check_markup(_webform_filter_values($form_element['#markup'], NULL, NULL, NULL, FALSE), $form_element['#input_format'], FALSE);
 
   if (strlen(trim($form_element['#value'])) == 0) {
     $form_element['#value'] = t('This markup element currently does not contain any text.');
