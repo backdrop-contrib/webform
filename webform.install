@@ -1333,7 +1333,7 @@ function webform_update_6308() {
  *   A filepath relative to file_directory_path
  */
 function _webform_recursive_delete($path) {
-  if ($path) {
+  if ($path && is_dir($path)) {
     $listing = $path .'/*';
     foreach (glob($listing) as $file) {
       if (is_file($file) === TRUE) {
