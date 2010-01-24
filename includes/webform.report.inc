@@ -168,7 +168,7 @@ function theme_webform_results_submissions($node, $submissions, $total_count = 0
   }
 
   if (count($rows) == 0) {
-    $rows[] = array(array('data' => t('There are no submissions for this form. <a href="!url">View this form</a>.', array('!url' => url('node/'. $node->nid))), 'colspan' => 7));
+    $rows[] = array(array('data' => t('There are no submissions for this form. <a href="!url">View this form</a>.', array('!url' => url('node/'. $node->nid))), 'colspan' => 4 + $operation_total));
   }
 
   $output = '';
