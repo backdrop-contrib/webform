@@ -22,6 +22,8 @@ function _webform_defaults_select() {
       'items' => '',
       'multiple' => NULL,
       'aslist' => NULL,
+      'other_option' => NULL,
+      'other_text' => t('Other...'),
       'description' => '',
     ),
   );
@@ -76,6 +78,21 @@ function _webform_edit_select($component) {
     '#return_value' => 'Y',
     '#default_value' => $component['extra']['aslist'],
     '#description' => t('Check this option if you want the select component to be of listbox type instead of radiobuttons or checkboxes.'),
+  );
+  $form['extra']['other_option'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Allow "Other..." option'),
+    '#return_value' => 'Y',
+    '#default_value' => $component['extra']['other_option'],
+    '#description' => t('Check this option if you want to allow users to enter an option not on the list.'),
+    '#access' => module_exists('select_or_other'),
+  );
+  $form['extra']['other_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Text for "Other..." option'),
+    '#default_value' => $component['extra']['other_text'],
+    '#description' => t('If allowing other options, enter text to be used for other-enabling option.'),
+    '#access' => module_exists('select_or_other'),
   );
 
   return $form;
@@ -179,8 +196,29 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
       $element['#default_value'] = $default_value;
     }
   }
+  elseif ($component['extra']['multiple'] === 'Y') {
+    $element['#default_value'] = array();
+  }
 
-  if ($component['extra']['aslist'] === 'Y') {
+  if ($component['extra']['other_option'] === 'Y' && module_exists('select_or_other')) {
+    // Set display as a select list:
+    $element['#type'] = 'select_or_other';
+    $element['#other'] = empty($component['extra']['other_text']) ? $component['extra']['other_text'] : t('Other...');
+    $element['#other_unknown_defaults'] = 'other';
+    $element['#other_delimiter'] = ', ';
+    if ($component['extra']['multiple'] === 'Y') {
+      $element['#multiple'] = TRUE;
+      $element['#select_type'] = 'checkboxes';
+    }
+    else {
+      $element['#multiple'] = FALSE;
+      $element['#select_type'] = 'radios';
+    }
+    if ($component['extra']['aslist'] === 'Y') {
+      $element['#select_type'] = 'select';
+    }
+  }
+  elseif ($component['extra']['aslist'] === 'Y') {
     // Set display as a select list:
     $element['#type'] = 'select';
     if ($component['extra']['multiple'] === 'Y') {
@@ -228,6 +266,7 @@ function webform_expand_checkboxes($element) {
  * Implementation of _webform_display_component().
  */
 function _webform_display_select($component, $value, $format = 'html') {
+  ksort($value);
   return array(
     '#title' => $component['name'],
     '#weight' => $component['weight'],
@@ -250,17 +289,31 @@ function _webform_submit_select($component, $value) {
 
   if (is_array($value)) {
     foreach ($value as $key => $option_value) {
-      if ($option_value != '') {
-        $value[$key] = $options[$key];
+      // Handle options that are specified options.
+      if ($option_value !== '' && isset($options[$key])) {
+        // Checkboxes submit an *integer* value of 0 when not checked.
+        if ($option_value === 0 && $options[$key] != '0' && $component['extra']['aslist'] !== 'Y' && $component['extra']['multiple'] === 'Y') {
+          unset($value[$key]);
+        }
+        else {
+          $value[$key] = $options[$key];
+        }
       }
-      // Checkboxes submit a value of 0 when not checked.
-      elseif ($option_value == 0 && $component['extra']['aslist'] !== 'Y' && $component['extra']['multiple'] === 'Y') {
-        unset($value[$key]);
+      // Handle options that are added through the "other" field.
+      elseif ($component['extra']['other_option'] === 'Y' && module_exists('select_or_other')) {
+        $value[$key] = $option_value;
       }
       else {
         unset($value[$key]);
       }
     }
+
+    // Always save at least something, even if it's an empty single value.
+    if (empty($value)) {
+      $value[0] = '';
+    }
+
+    $value = array_values($value);
   }
 
   return $value;
@@ -378,15 +431,27 @@ function theme_webform_display_select($element) {
   if ($component['extra']['multiple']) {
     foreach ((array) $element['#value'] as $option_value) {
       if ($option_value !== '') {
+        // Administer provided values.
         if (isset($options[$option_value])) {
           $items[] = $options[$option_value];
+        }
+        // User-specified in the "other" field.
+        else {
+          $items[] = $option_value;
         }
       }
     }
   }
   else {
-    if (isset($element['#value'][0]) && $element['#value'][0] !== '' && $options[$element['#value'][0]]) {
-      $items[] = $options[$element['#value'][0]];
+    if (isset($element['#value'][0]) && $element['#value'][0] !== '') {
+      // Administer provided values.
+      if (isset($options[$element['#value'][0]])) {
+        $items[] = $options[$element['#value'][0]];
+      }
+      // User-specified in the "other" field.
+      else {
+        $items[] = $element['#value'][0];
+      }
     }
   }
 
@@ -412,28 +477,57 @@ function theme_webform_display_select($element) {
 /**
  * Implementation of _webform_analysis_component().
  */
-function _webform_analysis_select($component, $sids = array()) {
+function _webform_analysis_select($component, $sids = array(), $single = FALSE) {
   $options = _webform_select_options($component['extra']['items'], TRUE);
-  $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
+  $show_other_results = $single;
 
-  $query = 'SELECT data, count(data) as datacount '.
-    ' FROM {webform_submitted_data} '.
-    ' WHERE nid = %d '.
-    ' AND cid = %d '.
-    " AND data != '0' AND data != '' $sidfilter ".
+  $sid_placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
+  $sid_filter = count($sids) ? " AND sid IN (".implode(",", $sid_placeholders).")" : "";
+
+  $not = $show_other_results ? 'NOT ' : '';
+  $placeholders = count($options) ? array_fill(0, count($options), "'%s'") : array();
+  $query = 'SELECT data, count(data) as datacount ' .
+    ' FROM {webform_submitted_data} ' .
+    ' WHERE nid = %d ' .
+    ' AND cid = %d ' .
+    " AND data != ''" . $sid_filter .
+    ($placeholders ? ' AND data ' . $not . 'IN (' . implode(',', $placeholders) . ')' : '') .
     ' GROUP BY data ';
-  $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids));
+
+  $count_query = 'SELECT count(*) as datacount ' .
+    ' FROM {webform_submitted_data} ' .
+    ' WHERE nid = %d ' .
+    ' AND cid = %d ' .
+    " AND data != ''" . $sid_filter;
+
+  $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids, array_keys($options)));
   $rows = array();
+  $normal_count = 0;
   while ($data = db_fetch_array($result)) {
-    if (isset($options[$data['data']])) {
-      $display_option = $options[$data['data']];
-    }
-    else {
-      $display_option = $data['data'];
-    }
-    $rows[] = array($display_option, $data['datacount']);
+    $display_option = $single ? $data['data'] : $options[$data['data']];
+    $rows[$data['data']] = array(check_plain($display_option), $data['datacount']);
+    $normal_count += $data['datacount'];
   }
+
+  if (!$show_other_results) {
+    // Order the results according to the normal options array.
+    $ordered_rows = array();
+    foreach (array_intersect_key($options, $rows) as $key => $label) {
+      $ordered_rows[] = $rows[$key];
+    }
+  
+    // Add a row for any unknown or user-entered values.
+    if ($component['extra']['other_option'] === 'Y') {
+      $full_count = db_result(db_query($count_query, array_merge(array($component['nid'], $component['cid']), $sids)));
+      $other_count = $full_count - $normal_count;
+      $display_option = empty($component['extra']['other_text']) ? $component['extra']['other_text'] : t('Other...');
+      $other_text = $other_count ? $other_count . ' (' . l(t('view'), 'node/' . $component['nid'] . '/webform-results/analysis/' . $component['cid']) . ')' : $other_count;
+      $ordered_rows[] = array(check_plain($display_option), $other_text);
+    }
+
+    $rows = $ordered_rows;
+  }
+
   return $rows;
 }
 
@@ -445,7 +539,7 @@ function _webform_table_select($component, $value) {
   // Set the value as a single string.
   if (is_array($value)) {
     foreach ($value as $option_value) {
-      if ($option_value !== '0') {
+      if ($option_value !== '') {
         $output .= check_plain($option_value) .'<br />';
       }
     }
@@ -470,6 +564,10 @@ function _webform_csv_headers_select($component, $export_options) {
     $headers[0][] = '';
     $headers[1][] = $component['name'];
     $items = _webform_select_options($component['extra']['items'], TRUE);
+    if ($component['extra']['other_option'] === 'Y') {
+      $other_label = !empty($component['extra']['other_text']) ? $component['extra']['other_text'] : t('Other...');
+      $items[$other_label] = $other_label;
+    }
     $count = 0;
     foreach ($items as $key => $item) {
       // Empty column per sub-field in main header.
@@ -498,12 +596,19 @@ function _webform_csv_data_select($component, $export_options, $value) {
 
   if ($component['extra']['multiple']) {
     foreach ($options as $key => $item) {
-      if (in_array($key, (array) $value) === TRUE) {
+      $index = array_search($key, (array) $value);
+      if ($index !== FALSE) {
         $return[] = ($export_options['select_format'] == 'separate') ? 'X' : $key;
+        unset($value[$index]);
       }
       elseif ($export_options['select_format'] == 'separate') {
         $return[] = '';
       }
+    }
+
+    // Any remaining items in the $value array will be user-added options.
+    if ($component['extra']['other_option'] === 'Y') {
+      $return[] = count($value) ? implode(',', $value) : '';
     }
   }
   else {

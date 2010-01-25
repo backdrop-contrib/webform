@@ -385,11 +385,15 @@ function _webform_theme_component() {
  * @param $sids
  *   An optional array of submission IDs (sid). If supplied, the analysis will
  *   be limited to these sids.
+ * @param $single
+ *   Boolean flag determining if the details about a single component are being
+ *   shown. May be used to provided detailed information about a single
+ *   component's analysis, such as showing "Other" options within a select list.
  * @return
  *   An array of data rows, each containing a statistic for this component's
  *   submissions.
  */
-function _webform_analysis_component($component, $sids = array()) {
+function _webform_analysis_component($component, $sids = array(), $single = FALSE) {
   // Generate the list of options and questions.
   $options = _webform_component_options($component['extra']['options']);
   $questions = array_values(_webform_component_options($component['extra']['questions']));

@@ -614,26 +614,66 @@ function webform_results_download($node, $format = 'delimiter', $options = array
 
 /**
  * Provides a simple analysis of all submissions to a webform.
+ *
+ * @param $node
+ *   The webform node on which to generate the analysis.
+ * @param $sids
+ *   An array of submission IDs to which this analysis may be filtered. May be
+ *   used to generate results that are per-user or other groups of submissions.
+ * @param $analysis_component
+ *   A webform component. If passed in, additional information may be returned
+ *   relating specifically to that component's analysis, such as a list of
+ *   "Other" values within a select list.
  */
-function webform_results_analysis($node, $sids = array()) {
+function webform_results_analysis($node, $sids = array(), $analysis_component = NULL) {
+  if (!is_array($sids)) {
+    $sids = array();
+  }
+
+  // If showing a component's details, we don't want to loose the menu tabs.
+  if ($analysis_component) {
+    $item = menu_get_item('node/' . $node->nid . '/webform-results/analysis');
+    menu_set_item(NULL, $item);
+  }
+
+  $components = isset($analysis_component) ? array($analysis_component['cid'] => $analysis_component) : $node->webform['components'];
+  $data = array();
+  foreach ($components as $cid => $component) {
+    // Do component specific call.
+    if ($row_data = webform_component_invoke($component['type'], 'analysis', $component, $sids, isset($analysis_component))) {
+      $data[$cid] = $row_data;
+    }
+  }
+
+  return theme('webform_results_analysis', $node, $data, $sids, $analysis_component);
+}
+
+/**
+ * Output the content of the Analysis page.
+ *
+ * @see webform_results_analysis()
+ */
+function theme_webform_results_analysis($node, $data, $sids = array(), $analysis_component = NULL) {
+
   $rows = array();
   $question_number = 0;
+  $single = isset($analysis_component);
 
   $headers = array(
-    t('Q'),
-    array('data' => t('responses'), 'colspan' => '10')
+    $single ? $analysis_component['name'] : t('Q'),
+    array('data' => $single ? '&nbsp' : t('responses'), 'colspan' => '10')
   );
 
-  foreach ($node->webform['components'] as $component) {
+  foreach ($data as $cid => $row_data) {
     $question_number++;
 
-    // Do component specific call.
-    if ($crows = webform_component_invoke($component['type'], 'analysis', $component, $sids)) {
-      if (is_array($crows)) {
-        $row[0] = array('data' => '<strong>'. $question_number .'</strong>', 'rowspan' => count($crows) + 1, 'valign' => 'top');
-        $row[1] = array('data' => '<strong>'. $component['name'] .'</strong>', 'colspan' => '10');
-        $rows = array_merge($rows, array_merge(array($row), $crows));
+    if (is_array($row_data)) {
+      $row = array();
+      if (!$single) {
+        $row[] = array('data' => '<strong>'. $question_number .'</strong>', 'rowspan' => count($row_data) + 1, 'valign' => 'top');
+        $row[] = array('data' => '<strong>'. check_plain($node->webform['components'][$cid]['name']) .'</strong>', 'colspan' => '10');
       }
+      $rows = array_merge($rows, array_merge(array($row), $row_data));
     }
   }
 
