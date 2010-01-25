@@ -956,8 +956,8 @@ function webform_form_submit($form, &$form_state) {
  */
 function webform_node_view(&$node, $teaser, $page) {
   global $user;
-  // If a teaser, do not display the form.
-  if ($teaser && !$node->webform['teaser']) {
+  // If a teaser or a new node (during preview), do not display the form.
+  if (($teaser && !$node->webform['teaser']) || empty($node->nid)) {
     return;
   }
 
@@ -966,11 +966,6 @@ function webform_node_view(&$node, $teaser, $page) {
   $enabled = TRUE;
   $logging_in = FALSE;
   $limit_exceeded = FALSE;
-
-  if ($node->build_mode == NODE_BUILD_PREVIEW) {
-    $additions = webform_load($node);
-    $node->webform['components'] = $additions->webform['components'];
-  }
 
   // When logging in using a form on the same page as a webform node, surpress
   // output messages so that they don't show up after the user has logged in.
@@ -1031,14 +1026,14 @@ function webform_node_view(&$node, $teaser, $page) {
   }
 
   // Print out messages for the webform.
-  if (!$node->build_mode == NODE_BUILD_PREVIEW && !$logging_in) {
+  if ($node->build_mode != NODE_BUILD_PREVIEW && !$logging_in) {
     theme('webform_view_messages', $node, $teaser, $page, $submission_count, $limit_exceeded, $allowed_roles);
   }
 
   // Add the output to the node.
   $node = node_prepare($node, $teaser);
   if (isset($output)) {
-    $node->content['webform'] = array('#value' => $output, '#weight' => 1);
+    $node->content['webform'] = array('#value' => $output, '#weight' => 10);
   }
 }
 
@@ -1201,74 +1196,72 @@ function webform_client_form(&$form_state, $node, $submission, $is_draft = FALSE
     $page_count = $form_state['storage']['page_count'];
     $page_num = $form_state['storage']['page_num'];
 
-    if ((!isset($node->build_mode) || $node->build_mode != NODE_BUILD_PREVIEW)) {
-      // Recursively add components to the form.
-      foreach ($component_tree['children'] as $cid => $component) {
-        $component_value = isset($form_state['values']['submitted'][$component['form_key']]) ? $form_state['values']['submitted'][$component['form_key']] : NULL;
-        if (_webform_client_form_rule_check($node, $component, $page_num, $form_state)) {
-          _webform_client_form_add_component($component, $component_value, $form['submitted'], $form, $submission, 'form', $page_num, $filter);
-        }
+    // Recursively add components to the form.
+    foreach ($component_tree['children'] as $cid => $component) {
+      $component_value = isset($form_state['values']['submitted'][$component['form_key']]) ? $form_state['values']['submitted'][$component['form_key']] : NULL;
+      if (_webform_client_form_rule_check($node, $component, $page_num, $form_state)) {
+        _webform_client_form_add_component($component, $component_value, $form['submitted'], $form, $submission, 'form', $page_num, $filter);
       }
+    }
 
-      // These form details help managing data upon submission.
-      $form['details']['nid'] = array(
-        '#type' => 'value',
-        '#value' => $node->nid,
-      );
-      $form['details']['sid'] = array(
-        '#type' => 'hidden',
-        '#value' => isset($submission->sid) ? $submission->sid : '',
-      );
-      $form['details']['finished'] = array(
-        '#type' => 'hidden',
-        '#value' => isset($submission->draft) ? !$submission->draft : 0,
-      );
+    // These form details help managing data upon submission.
+    $form['details']['nid'] = array(
+      '#type' => 'value',
+      '#value' => $node->nid,
+    );
+    $form['details']['sid'] = array(
+      '#type' => 'hidden',
+      '#value' => isset($submission->sid) ? $submission->sid : '',
+    );
+    $form['details']['finished'] = array(
+      '#type' => 'hidden',
+      '#value' => isset($submission->draft) ? !$submission->draft : 0,
+    );
 
-      // Add buttons for pages, drafts, and submissions.
-      if ($page_count > 1) {
-        $next_page = t('Next Page >');
-        $prev_page = t('< Previous Page');
+    // Add buttons for pages, drafts, and submissions.
+    if ($page_count > 1) {
+      $next_page = t('Next Page >');
+      $prev_page = t('< Previous Page');
 
-        // Add the submit button(s).
-       if ($node->webform['allow_draft'] && (empty($submission) || $submission->is_draft) && $user->uid != 0) {
-          $form['draft'] = array(
-            '#type' => 'submit',
-            '#value' => t('Save Draft'),
-            '#weight' => 950,
-            '#validate' => array(),
-          );
-        }
-        if ($page_num > 1) {
-          $form['previous'] = array(
-            '#type' => 'submit',
-            '#value' => $prev_page,
-            '#weight' => 1000,
-            '#validate' => array(),
-          );
-        }
-        if ($page_num == $page_count) {
-          $form['submit'] = array(
-            '#type' => 'submit',
-            '#value' => empty($node->webform['submit_text']) ? t('Submit') : $node->webform['submit_text'],
-            '#weight' => 1050,
-          );
-        }
-        elseif ($page_num < $page_count) {
-          $form['next'] = array(
-            '#type' => 'submit',
-            '#value' => $next_page,
-            '#weight' => 1001,
-          );
-        }
+      // Add the submit button(s).
+     if ($node->webform['allow_draft'] && (empty($submission) || $submission->is_draft) && $user->uid != 0) {
+        $form['draft'] = array(
+          '#type' => 'submit',
+          '#value' => t('Save Draft'),
+          '#weight' => 950,
+          '#validate' => array(),
+        );
       }
-      else {
-        // Add the submit button.
+      if ($page_num > 1) {
+        $form['previous'] = array(
+          '#type' => 'submit',
+          '#value' => $prev_page,
+          '#weight' => 1000,
+          '#validate' => array(),
+        );
+      }
+      if ($page_num == $page_count) {
         $form['submit'] = array(
           '#type' => 'submit',
           '#value' => empty($node->webform['submit_text']) ? t('Submit') : $node->webform['submit_text'],
-          '#weight' => 1000,
+          '#weight' => 1050,
         );
       }
+      elseif ($page_num < $page_count) {
+        $form['next'] = array(
+          '#type' => 'submit',
+          '#value' => $next_page,
+          '#weight' => 1001,
+        );
+      }
+    }
+    else {
+      // Add the submit button.
+      $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => empty($node->webform['submit_text']) ? t('Submit') : $node->webform['submit_text'],
+        '#weight' => 1000,
+      );
     }
   }
 
