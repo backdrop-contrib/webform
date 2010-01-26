@@ -82,7 +82,7 @@ function _webform_edit_file($component) {
       '#default_value' => array_intersect($current_types, $types),
     );
 
-    $types = array('txt', 'rtf', 'html', 'odf', 'pdf', 'doc', 'ppt', 'xls', 'xml');
+    $types = array('txt', 'rtf', 'html', 'odf', 'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'xml');
     $form['extra']['filtering']['types']['documents'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Documents'),
@@ -207,7 +207,7 @@ function theme_webform_edit_file($form) {
   drupal_set_html_head($javascript);
 
   // Format the components into a table.
-  $per_row = 5;
+  $per_row = 6;
   $rows = array();
   foreach (element_children($form['extra']['filtering']['types']) as $key => $filtergroup) {
     $row = array();
