@@ -40,7 +40,7 @@ function webform_schema() {
         'default' => 0,
       ),
       'allow_draft' => array(
-         'description' => t('Boolean value for whether submissions to this form be saved as a draft.'),
+         'description' => 'Boolean value for whether submissions to this form be saved as a draft.',
          'type' => 'int',
          'size' => 'tiny',
          'not null' => TRUE,
@@ -254,7 +254,7 @@ function webform_schema() {
         'default' => 0,
       ),
       'is_draft' => array(
-         'description' => t('Is this a draft of the submission?'),
+         'description' => 'Is this a draft of the submission?',
          'type' => 'int',
          'size' => 'tiny',
          'not null' => TRUE,
