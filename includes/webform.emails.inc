@@ -220,7 +220,7 @@ function webform_email_edit_form($form_state, &$node, $email = array()) {
     $form[$field . '_component'] = array(
       '#type' => 'select',
       '#default_value' =>  is_numeric($email[$field]) ? $email[$field] : NULL,
-      '#options' => empty($options) ? array('' => 'No available components') : $options,
+      '#options' => empty($options) ? array('' => t('No available components')) : $options,
       '#disabled' => empty($options) ? TRUE : FALSE,
       '#weight' => 6,
     );
