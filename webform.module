@@ -635,6 +635,9 @@ function webform_webform_component_info() {
       'label' => t('Hidden'),
       'description' => t('A field which is not visible to the user, but is recorded with the submission.'),
       'file' => 'components/hidden.inc',
+      'features' => array(
+        'required' => FALSE,
+      ),
     ),
     'markup' => array(
       'label' => t('Markup'),
