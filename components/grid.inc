@@ -101,16 +101,7 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
   $options = _webform_grid_options($component['extra']['options']);
 
   if ($component['extra']['optrand']) {
-    // This maneuver shuffles the array keys, then uses them as
-    // the basis for ordering the options.
-    $aux = array();
-    $keys = array_keys($options);
-    shuffle($keys);
-    foreach ($keys as $key) {
-      $aux[$key] = $options[$key];
-      unset($options[$key]);
-    }
-    $options = $aux;
+    _webform_shuffle_options($options);
   }
 
   $delta = 0;

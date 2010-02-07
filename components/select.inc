@@ -22,6 +22,7 @@ function _webform_defaults_select() {
       'items' => '',
       'multiple' => NULL,
       'aslist' => NULL,
+      'optrand' => 0,
       'other_option' => NULL,
       'other_text' => t('Other...'),
       'description' => '',
@@ -78,6 +79,12 @@ function _webform_edit_select($component) {
     '#return_value' => 'Y',
     '#default_value' => $component['extra']['aslist'],
     '#description' => t('Check this option if you want the select component to be of listbox type instead of radiobuttons or checkboxes.'),
+  );
+  $form['extra']['optrand'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Randomize options'),
+    '#default_value' => $component['extra']['optrand'],
+    '#description' => t('Randomizes the order of the options when they are displayed in the form.'),
   );
   $form['extra']['other_option'] = array(
     '#type' => 'checkbox',
@@ -159,6 +166,10 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
   // Convert the user-entered options list into an array.
   $default_value = $filter ? _webform_filter_values($component['value'], NULL, NULL, NULL, FALSE) : $component['value'];
   $options = _webform_select_options($component['extra']['items'], $component['extra']['aslist'] !== 'Y', $filter);
+
+  if ($component['extra']['optrand']) {
+    _webform_shuffle_options($options);
+  }
 
   if ($component['extra']['aslist'] === 'Y' && $component['extra']['multiple'] !== 'Y') {
     $options = array('' => t('select...')) + $options;
@@ -691,4 +702,19 @@ function _webform_select_options($text, $flat = FALSE, $filter = TRUE) {
     }
   }
   return $options;
+}
+
+/**
+ * Utility function to shuffle an array while preserving key-value pairs.
+ */
+function _webform_shuffle_options(&$array) {
+  // First shuffle the array keys, then use them as the basis for ordering
+  // the options.
+  $aux = array();
+  $keys = array_keys($array);
+  shuffle($keys);
+  foreach ($keys as $key) {
+    $aux[$key] = $array[$key];
+  }
+  $array = $aux;
 }
