@@ -120,9 +120,11 @@ function _webform_render_date($component, $value = NULL) {
   );
 
   if (isset($value)) {
-    $element['month']['#default_value'] = $value[0];
-    $element['day']['#default_value'] = $value[1];
-    $element['year']['#default_value'] = $value[2];
+    $element['#default_value'] = array(
+      'month' => $value[0],
+      'day' => $value[1],
+      'year' => $value[2],
+    );
   }
 
   return $element;
@@ -135,16 +137,12 @@ function webform_expand_date($element) {
   $component = $element['#webform_component'];
 
   // Set defaults according to existing #default_value (set by Form API)
-  if (isset($element['month']['#default_value']) || isset($element['day']['#default_value']) || isset($element['year']['#default_value'])) {
+  if (isset($element['#default_value']['month']) || isset($element['#default_value']['day']) || isset($element['#default_value']['year'])) {
     $default_values = array(
-      'month' => $element['month']['#default_value'],
-      'day' => $element['day']['#default_value'],
-      'year' => $element['year']['#default_value'],
+      'month' => $element['#default_value']['month'],
+      'day' => $element['#default_value']['day'],
+      'year' => $element['#default_value']['year'],
     );
-    // Remove the default values, or the elements will be forced into month/day/year order.
-    unset($element['month']);
-    unset($element['day']);
-    unset($element['year']);
   }
   // Or, if none, use set the defaults of the component.
   elseif (drupal_strlen($component['value']) > 0) {
