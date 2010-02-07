@@ -2089,66 +2089,75 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
   }
 
   // Submission replacements.
-  if (isset($submission) && isset($email) && !array_key_exists('%email_values', $replacements)) {
+  if (isset($submission) && !isset($replacements['submission_set'])) {
+    $replacements['submission_set'] = TRUE;
+
     foreach ($submission->data as $cid => $value) {
       $component = $node->webform['components'][$cid];
-
-      // Find by CID.
-      $replacements['unsafe']['%cid[' . $cid . ']'] = drupal_render(webform_component_invoke($component['type'], 'display', $component, $value['value'], 'text'));
 
       // Find by form key.
       $parents = webform_component_parent_keys($node, $component);
       $form_key = implode('][', $parents);
-      $replacements['unsafe']['%email[' . $form_key . ']'] = $replacements['unsafe']['%cid[' . $cid . ']'];
+      $display_element = webform_component_invoke($component['type'], 'display', $component, $value['value'], 'text');
+      $replacements['unsafe']['%email[' . $form_key . ']'] = drupal_render($display_element);
+      $replacements['safe']['%value[' . $form_key . ']'] = isset($display_element['#children']) ? $display_element['#children'] : '';
     }
-
-    // The entire form tree:
-    $replacements['unsafe']['%email_values'] = webform_submission_render($node, $submission, $email, 'text');
 
     // Submission edit URL.
     $replacements['unsafe']['%submission_url'] = url('node/'. $node->nid .'/submission/'. $submission->sid, array('absolute' => TRUE));
   }
 
+  // Token for the entire form tree for e-mails.
+  if (isset($submission) && isset($email) && !isset($replacements['unsafe']['%email_values'])) {
+    $replacements['unsafe']['%email_values'] = webform_submission_render($node, $submission, $email, 'text');
+  }
+
   // Provide a list of candidates for token replacement.
-  // Note these tokens are not cached as they may change frequently.
   $special_tokens = array(
     'safe' => array(
       '%get' => $_GET,
+      '%post' => $_POST,
     ),
     'unsafe' => array(
       '%cookie' => $_COOKIE,
       '%session' => $_SESSION,
-      '%post' => $_POST,
       '%request' => $_REQUEST,
+      '%server' => $_SERVER,
+      '%profile' => (array) $user,
     ),
   );
 
-  // User replacements.
-  if (!array_key_exists('%username', $replacements['unsafe'])) {
-    $replacements['unsafe']['%username'] = isset($user->name) ? $user->name : '';
-    $replacements['unsafe']['%useremail'] = isset($user->mail) ? $user->mail : '';
-    $replacements['unsafe']['%ip_address'] = ip_address();
+  // Replacements of global variable tokens.
+  if (!isset($replacements['specials_set'])) {
+    $replacements['specials_set'] = TRUE;
+
+    // Load profile information if available.
     if ($user->uid && module_exists('profile')) {
       profile_load_profile($user);
+      $special_tokens['unsafe']['%profile'] = (array) $user;
     }
-    $special_tokens['unsafe']['%profile'] = $user;
 
-    // Doesn't really belong here with user things, but works.
-    $special_tokens['unsafe']['%server'] = $_SERVER;
-  }
+    // User replacements.
+    if (!array_key_exists('%username', $replacements['unsafe'])) {
+      $replacements['unsafe']['%username'] = isset($user->name) ? $user->name : '';
+      $replacements['unsafe']['%useremail'] = isset($user->mail) ? $user->mail : '';
+      $replacements['unsafe']['%ip_address'] = ip_address();
+    }
 
-  foreach ($special_tokens as $safe_state => $tokens) {
-    foreach ($tokens as $token => $variable) {
-      if (strpos($string, $token) !== FALSE) {
-        foreach ($variable as $key => $value) {
-          // This special case for profile module dates.
-          if ($token == '%profile' && is_array($value) && isset($value['year'])) {
-            $replacement = format_date(strtotime($value['month'] .'/'. $value['day'] .'/'. $value['year']), 'custom', 'F j, Y', '0');
+    // Populate the replacements array with special variables.
+    foreach ($special_tokens as $safe_state => $tokens) {
+      foreach ($tokens as $token => $variable) {
+        if (strpos($string, $token) !== FALSE) {
+          foreach ($variable as $key => $value) {
+            // This special case for profile module dates.
+            if ($token == '%profile' && is_array($value) && isset($value['year'])) {
+              $replacement = format_date(strtotime($value['month'] .'/'. $value['day'] .'/'. $value['year']), 'custom', 'F j, Y', '0');
+            }
+            else {
+              $replacement = (string) $value;
+            }
+            $replacements[$safe_state][$token .'['. $key .']'] = $replacement;
           }
-          else {
-            $replacement = (string) $value;
-          }
-          $replacements[$safe_state][$token .'['. $key .']'] = $replacement;
         }
       }
     }
@@ -2261,7 +2270,8 @@ function theme_webform_token_help($node = NULL) {
     $submission_tokens = array(
       t('@submission_url - The URL for viewing the completed submission.', array('@submission_url' => '%submission_url')),
       t('@email_values - All included components in a hierarchical structure.', array('@email_values' => '%email_values')),
-      t('@email_key - Where <em>key</em> can be any form element key. Nested elements may be accessed such as <em>%email[fieldset_a][key_b]</em>. Do not include quotes.', array('@email_key' => '%email[key]')),
+      t('@email_key - A formatted value and field label. Elements may be accessed such as <em>%email[fieldset_a][key_b]</em>. Do not include quotes.', array('@email_key' => '%email[key]')),
+      t('@value_key - A value without additional formatting. Elements may be accessed such as <em>%value[fieldset_a][key_b]</em>. Do not include quotes.', array('@value_key' => '%value[key]')),
     );
   }
 
