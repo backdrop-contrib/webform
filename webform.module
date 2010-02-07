@@ -921,24 +921,27 @@ function webform_link($type, $node = NULL, $teaser = FALSE) {
 function webform_form_alter(&$form, $form_state, $form_id) {
   $matches = array();
   if (isset($form['#node']->type) && $form_id == $form['#node']->type . '_node_form' && in_array($form['#node']->type, webform_variable_get('webform_node_types'))) {
-    if (empty($form['nid']['#value'])) {
-      $form['buttons']['submit']['#submit'][] = 'webform_form_submit';
-      if (!isset($form['#node']->webform)) {
-        $node = $form['#node'];
-        $node->nid = 0;
-        $additions = module_invoke('webform', 'nodeapi', $node, 'load');
-        $form['webform'] = array(
-          '#type' => 'value',
-          '#value' => $additions['webform'],
-        );
-      }
+    $node = $form['#node'];
+    // Add Webform properties if they are not present.
+    if (!isset($node->webform)) {
+      $node->nid = 0;
+      $additions = module_invoke('webform', 'nodeapi', $node, 'load');
+      $form['webform'] = array(
+        '#type' => 'value',
+        '#value' => $additions['webform'],
+      );
     }
+    // Preserve all Webform options currently set on the node.
     else {
-      $node = $form['#node'];
       $form['webform'] = array(
         '#type' => 'value',
         '#value' => $node->webform,
       );
+    }
+
+    // If a new node, redirect the user to the components form after save.
+    if (empty($node->nid)) {
+      $form['buttons']['submit']['#submit'][] = 'webform_form_submit';
     }
   }
 }
