@@ -1631,10 +1631,20 @@ function webform_client_form_submit($form, &$form_state) {
   // Check if user is submitting as a draft.
   $is_draft = $form_state['values']['op'] == $draft_op;
 
+  // Create a submission object.
+  $submission = (object) array(
+    'nid' => $node->nid,
+    'uid' => $user->uid,
+    'submitted' => time(),
+    'remote_addr' => ip_address(),
+    'is_draft' => $is_draft,
+    'data' => webform_submission_data($node, $form_state['values']['submitted']),
+  );
+
   // Save the submission to the database.
   if (empty($form_state['values']['details']['sid'])) {
     // No sid was found thus insert it in the dataabase.
-    $form_state['values']['details']['sid'] = webform_submission_insert($node, $form_state['values']['submitted'], $is_draft);
+    $form_state['values']['details']['sid'] = webform_submission_insert($node, $submission);
     $form_state['values']['details']['is_new'] = TRUE;
 
     // Set a cookie including the server's submission time.
@@ -1653,7 +1663,8 @@ function webform_client_form_submit($form, &$form_state) {
   }
   else {
     // Sid was found thus update the existing sid in the database.
-    webform_submission_update($node, $form_state['values']['details']['sid'], $form_state['values']['submitted'], $is_draft);
+    $submission->sid = $form_state['values']['details']['sid'];
+    webform_submission_update($node, $submission);
     $form_state['values']['details']['is_new'] = FALSE;
   }
 
@@ -2174,6 +2185,13 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
  */
 function _webform_filter_descriptions($string, $node = NULL, $submission = NULL, $strict = TRUE) {
   return strlen($string) == 0 ? '' : check_markup(_webform_filter_values($string, $node, $submission, NULL, $strict));
+}
+
+/**
+ * Filter labels for display by running through XSS checks.
+ */
+function _webform_filter_xss($string) {
+  return filter_xss($string, array('a', 'em', 'strong', 'code'));
 }
 
 /**

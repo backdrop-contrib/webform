@@ -7,12 +7,86 @@
  */
 
 /**
- * @defgroup webform_component Sample Webform Component
+ * @defgroup webform_hooks Webform Module Hooks
  * @{
  * Webform's hooks enable other modules to intercept events within Webform, such
  * as the completion of a submission or adding validation. Webform's hooks also
  * allow other modules to provide additional components for use within forms.
  */
+
+/**
+ * Respond to the loading of Webform submissions.
+ *
+ * @param $submissions
+ *   An array of Webform submissions that are being loaded, keyed by the
+ *   submission ID. Modifications to the submissions are done by reference.
+ */
+function hook_webform_submission_load(&$submissions) {
+  foreach ($submissions as $sid => $submission) {
+    $submissions[$sid]->new_property = 'foo';
+  }
+}
+
+/**
+ * Modify a Webform submission, prior to saving it in the database.
+ *
+ * @param $node
+ *   The Webform node on which this submission was made.
+ * @param $submission
+ *   The Webform submission that is about to be saved to the database.
+ */
+function hook_webform_submission_presave($node, &$submission) {
+  // Update some component's value before it is saved.
+  $component_id = 4;
+  $submission->data[$component_id]['value'][0] = 'foo';
+}
+
+/**
+ * Respond to a Webform submission being inserted.
+ *
+ * Note that this hook is called after a submission has already been saved to
+ * the database. If needing to modify the submission prior to insertion, use
+ * hook_webform_submission_presave().
+ *
+ * @param $node
+ *   The Webform node on which this submission was made.
+ * @param $submission
+ *   The Webform submission that was just inserted into the database.
+ */
+function hook_webform_submission_insert($node, $submission) {
+  // Insert a record into a 3rd-party module table when a submission is added.
+  db_query("INSERT INTO {mymodule_table} nid = %d, sid = %d, foo = '%s'", $node->nid, $submission->sid, 'foo_data');
+}
+
+/**
+ * Respond to a Webform submission being updated.
+ *
+ * Note that this hook is called after a submission has already been saved to
+ * the database. If needing to modify the submission prior to updating, use
+ * hook_webform_submission_presave().
+ *
+ * @param $node
+ *   The Webform node on which this submission was made.
+ * @param $submission
+ *   The Webform submission that was just updated in the database.
+ */
+function hook_webform_submission_update($node, $submission) {
+  // Update a record in a 3rd-party module table when a submission is updated.
+  db_query("UPDATE {mymodule_table} SET (foo) VALUES ('%s') WHERE nid = %d, sid = %d", 'foo_data', $node->nid, $submission->sid);
+}
+
+/**
+ * Respond to a Webform submission being deleted.
+ *
+ * @param $node
+ *   The Webform node on which this submission was made.
+ * @param $submission
+ *   The Webform submission that was just deleted from the database.
+ */
+function hook_webform_submission_delete($node, $submission) {
+  // Delete a record from a 3rd-party module table when a submission is deleted.
+  db_query("DELETE FROM {mymodule_table} WHERE nid = %d, sid = %d", $node->nid, $submission->sid);
+}
 
 /**
  * Define components to Webform.

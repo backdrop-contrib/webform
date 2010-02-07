@@ -9,65 +9,88 @@
  * @author Nathan Haug <nate@lullabot.com>
  */
 
-function webform_submission_update($node, $sid, $submitted, $is_draft = 0) {
-  // If is draft, only delete data for components submitted, to
-  // preserve any data from form pages not visited in this submission.
-  if ($is_draft) {
-    $submitted_cids = array_keys($submitted);
-    db_query("DELETE FROM {webform_submitted_data} WHERE sid = %d AND cid IN (" . implode(', ', $submitted_cids) . ")", $sid);
-  }
-  else {
-    db_query("UPDATE {webform_submissions} SET is_draft = 0");
-    db_query("DELETE FROM {webform_submitted_data} WHERE sid = %d", $sid);
-  }
+/**
+ * Given an array of submitted values, flatten it into data for a submission.
+ */
+function webform_submission_data($node, $submitted) {
+  $data = array();
 
-  // Then re-add it to the database.
-  foreach ($submitted as $cid => $value) {
+  foreach ($submitted as $cid => $values) {
     // Don't save pagebreaks as submitted data.
     if ($node->webform['components'][$cid]['type'] == 'pagebreak') {
       continue;
     }
 
-    if (is_array($value)) {
+    if (is_array($values)) {
       $delta = 0;
-      foreach ($value as $k => $v) {
-        db_query("INSERT INTO {webform_submitted_data} (nid, sid, cid, no, data) VALUES (%d, %d, %d, %d, '%s')", $node->nid, $sid, $cid, $delta, $v);
+      foreach ($values as $key => $value) {
+        $data[$cid]['value'][$delta] = $value;
         $delta++;
       }
     }
     else {
-      db_query("INSERT INTO {webform_submitted_data} (nid, sid, cid, no, data) VALUES (%d, %d, %d, %d, '%s')", $node->nid, $sid, $cid, 0, $value);
+      $data[$cid]['value'][0] = $values;
     }
   }
 
-  return $sid;
+  return $data;
 }
 
-function webform_submission_insert($node, $submitted, $is_draft = 0) {
-  global $user;
+function webform_submission_update($node, $submission) {
+  // Allow other modules to modify the submission before saving.
+  foreach (module_implements('webform_submission_presave') as $module) {
+    $function = $module . '_webform_submission_presave';
+    $function($node, $submission);
+  }
 
-  $result = db_query("INSERT INTO {webform_submissions} (nid, uid, submitted, remote_addr, is_draft) VALUES (%d, %d, %d, '%s', %d)", $node->nid, $user->uid, time(), ip_address(), $is_draft);
-  $sid = db_last_insert_id('webform_submissions', 'sid');
+  // Update the main submission info.
+   $result = db_query("UPDATE {webform_submissions} SET uid = %d, submitted = %d, remote_addr = %d, is_draft = %d WHERE sid = %d", $submission->uid, $submission->submitted, $submission->remote_addr, $submission->is_draft, $submission->sid);
 
-  foreach ($submitted as $cid => $value) {
-    // Don't save pagebreaks as submitted data.
-    if ($node->webform['components'][$cid]['type'] == 'pagebreak') {
-      continue;
+  // If is draft, only delete data for components submitted, to
+  // preserve any data from form pages not visited in this submission.
+  if ($submission->is_draft) {
+    $submitted_cids = array_keys($submission->data);
+    db_query("DELETE FROM {webform_submitted_data} WHERE sid = %d AND cid IN (" . implode(', ', $submitted_cids) . ")", $submission->sid);
+  }
+  else {
+    db_query("DELETE FROM {webform_submitted_data} WHERE sid = %d", $submission->sid);
+  }
+
+  // Then re-add submission data to the database.
+  $submission->is_new = FALSE;
+  webform_submission_insert($node, $submission);
+
+  module_invoke_all('webform_submission_update', $node, $submission);
+
+  return $submission->sid;
+}
+
+function webform_submission_insert($node, $submission) {
+  // The submission ID may already be set if being called as an update.
+  if (!isset($submission->sid) && (!isset($submission->is_new) || $submission->is_new == FALSE)) {
+    // Allow other modules to modify the submission before saving.
+    foreach (module_implements('webform_submission_presave') as $module) {
+      $function = $module . '_webform_submission_presave';
+      $function($node, $submission);
     }
 
-    if (is_array($value)) {
-      $delta = 0;
-      foreach ($value as $k => $v) {
-        db_query("INSERT INTO {webform_submitted_data} (nid, sid, cid, no, data) VALUES (%d, %d, %d, %d, '%s')", $node->nid, $sid, $cid, $delta, $v);
-        $delta++;
-      }
-    }
-    else {
-      db_query("INSERT INTO {webform_submitted_data} (nid, sid, cid, no, data) VALUES (%d, %d, %d, %d, '%s')", $node->nid, $sid, $cid, 0, $value);
+    $result = db_query("INSERT INTO {webform_submissions} (nid, uid, submitted, remote_addr, is_draft) VALUES (%d, %d, %d, '%s', %d)", $node->nid, $submission->uid, $submission->submitted, $submission->remote_addr, $submission->is_draft);
+    $submission->sid = db_last_insert_id('webform_submissions', 'sid');
+    $is_new = TRUE;
+  }
+
+  foreach ($submission->data as $cid => $values) {
+    foreach ($values['value'] as $delta => $value) {
+      db_query("INSERT INTO {webform_submitted_data} (nid, sid, cid, no, data) VALUES (%d, %d, %d, %d, '%s')", $node->nid, $submission->sid, $cid, $delta, $value);
     }
   }
 
-  return $sid;
+  // Invoke the insert hook after saving all the data.
+  if (isset($is_new)) {
+    module_invoke_all('webform_submission_insert', $node, $submission);
+  }
+
+  return $submission->sid;
 }
 
 /**
@@ -93,6 +116,8 @@ function webform_submission_delete($node, $submission) {
 
   db_query('DELETE FROM {webform_submitted_data} WHERE nid = %d AND sid = %d', $node->nid, $submission->sid);
   db_query('DELETE FROM {webform_submissions} WHERE nid = %d AND sid = %d', $node->nid, $submission->sid);
+
+  module_invoke_all('webform_submission_delete', $node, $submission);
 }
 
 /**
@@ -195,52 +220,66 @@ function webform_submission_render($node, $submission, $email, $format) {
 /**
  * Return all the submissions for a particular node.
  *
- * @param $nid
- *   The node ID for which submissions are being fetched.
+ * @param $filters
+ *   An array of filters to apply to this query. Usually in the format
+ *   array('nid' => $nid, 'uid' => $uid). A single integer may also be passed
+ *   in, which will be equivalent to specifying a $nid filter.
  * @param $header
  *   If the results of this fetch will be used in a sortable
  *   table, pass the array header of the table.
- * @param $uid
- *   Optional; the user ID to filter the submissions by.
- * @return $submissions
- *   An array of submissions matching your filters.
+ * @param $pager_count
+ *   Optional. The number of submissions to include in the results.
  */
-function webform_get_submissions($nid, $header = NULL, $uid = NULL, $pager_count = 0) {
-  $sids = NULL;
-  $arguments = array($nid);
-  if ($pager_count || $uid === 0) {
-    $pager_query = 'SELECT * FROM {webform_submissions} WHERE nid = %d';
-    if ($uid !== NULL) {
-      $pager_query .= ' AND uid = %d';
-      $arguments[] = $uid;
+function webform_get_submissions($filters = array(), $header = NULL, $pager_count = 0) {
+  $submissions = array();
+
+  if (!is_array($filters)) {
+    $filters = array('nid' => $filters);
+  }
+
+  // No need to find SIDs if it was given to us.
+  if (isset($filters['sid'])) {
+    $sids = array($filters['sid']);
+  }
+  // Build the list of SIDs that need to be retrieved.
+  else {
+    $arguments = array_values($filters);
+    $where = array();
+    foreach ($filters as $column => $value) {
+      $where[] = $column . ' = ' . (is_numeric($value) ? '%d' : "'%s'");
     }
-    if ($uid === 0) {
-      $submissions = array_keys($_SESSION['webform_submission']);
-      $placeholders = count($submissions) ? array_fill(0, count($submissions), "%d") : array();
-      $pager_query .= count($submissions) ? ' AND sid IN (' . implode(',', $placeholders) . ')' : ' AND sid = 0';
-      $arguments = array_merge($arguments, $submissions);
+
+    if (isset($filters['uid']) && $filters['uid'] === 0) {
+      $anonymous_sids = array_keys($_SESSION['webform_submission']);
+      if (count($anonymous_sids)) {
+        $placeholders = array_fill(0, count($anonymous_sids), "%d");
+        $where[] = 'sid IN (' . implode(',', $placeholders) . ')';
+        $arguments = array_merge($arguments, $anonymous_sids);
+      }
     }
+
+    $where_clause = implode(' AND ', $where);
+    $pager_query = "SELECT sid FROM {webform_submissions} WHERE $where_clause";
+
     $result = pager_query($pager_query, $pager_count, 0, NULL, $arguments);
     $sids = array();
     while ($row = db_fetch_object($result)) {
       $sids[] = $row->sid;
+      $submissions[$row->sid] = FALSE;
     }
-    $sids = implode($sids, ',');
   }
 
+  // If there are no submissions being retrieved, return an empty array.
+  if (empty($sids)) {
+    return $submissions;
+  }
+
+  // Query the required submission data.
   $query = 'SELECT s.*, sd.cid, sd.no, sd.data, u.name, u.mail, u.status '.
            'FROM {webform_submissions} s '.
            'LEFT JOIN {webform_submitted_data} sd ON sd.sid = s.sid '.
            'LEFT JOIN {users} u ON u.uid = s.uid '.
-           'WHERE sd.nid = %d';
-
-  if ($pager_count && isset($sids)) {
-    $query .= empty($sids) ? ' AND s.sid = 0' : ' AND s.sid IN (%s)';
-  }
-
-  if ($uid) {
-    $query .= ' AND u.uid = %d';
-  }
+           'WHERE s.sid IN (' . implode($sids, ',') . ')';
 
   if (is_array($header)) {
     $query .= tablesort_sql($header);
@@ -252,16 +291,15 @@ function webform_get_submissions($nid, $header = NULL, $uid = NULL, $pager_count
   else {
     $query .= ' ORDER BY sid ASC, cid ASC, no ASC';
   }
+  $result = db_query($query);
 
-  $res = $pager_count ? db_query($query, $nid, $sids, $uid) : db_query($query, $nid, $uid);
-  $submissions = array();
+  // Convert the queried rows into submissions.
   $previous = array();
-
-  // Outer loop: iterate for each submission.
-  while ($row = db_fetch_object($res)) {
+  while ($row = db_fetch_object($result)) {
     if ($row->sid != $previous) {
       $submissions[$row->sid] = new stdClass();
       $submissions[$row->sid]->sid = $row->sid;
+      $submissions[$row->sid]->nid = $row->nid;
       $submissions[$row->sid]->submitted = $row->submitted;
       $submissions[$row->sid]->remote_addr = $row->remote_addr;
       $submissions[$row->sid]->uid = $row->uid;
@@ -271,6 +309,11 @@ function webform_get_submissions($nid, $header = NULL, $uid = NULL, $pager_count
     }
     $submissions[$row->sid]->data[$row->cid]['value'][$row->no] = $row->data;
     $previous = $row->sid;
+  }
+
+  foreach (module_implements('webform_submission_load') as $module) {
+    $function = $module . '_webform_submission_load';
+    $function($submissions);
   }
 
   return $submissions;
@@ -314,31 +357,25 @@ function webform_get_submission_count($nid, $uid = NULL, $reset = FALSE) {
 function webform_get_submission($nid, $sid, $reset = FALSE) {
   static $submissions = array();
 
-  if (!isset($submissions[$nid][$sid]) || $reset) {
-    $query = 'SELECT s.*, sd.cid, sd.no, sd.data '.
-             'FROM {webform_submitted_data} as sd '.
-             'LEFT JOIN {webform_submissions} as s on (sd.sid = s.sid) '.
-             'WHERE sd.sid = %d AND s.nid = %d';
-
-    $result = db_query($query, $sid, $nid);
-    if ($row = db_fetch_object($result)) {
-      $submission = new stdClass;
-      $submission->nid = $row->nid;
-      $submission->sid = $row->sid;
-      $submission->uid = $row->uid;
-      $submission->remote_addr = $row->remote_addr;
-      $submission->submitted = $row->submitted;
-      $submission->is_draft = $row->is_draft;
-
-      while ($row) {
-        $submission->data[$row->cid]['value'][$row->no] = $row->data;
-        $row = db_fetch_object($result);
-      }
+  if ($reset) {
+    $submissions = array();
+    if (!isset($sid)) {
+      return;
     }
-    $submissions[$nid][$sid] = isset($submission) ? $submission : NULL;
   }
 
-  return $submissions[$nid][$sid];
+  // Load the submission if needed.
+  if (!isset($submissions[$sid])) {
+    $new_submissions = webform_get_submissions(array('sid' => $sid));
+    $submissions[$sid] = $new_submissions[$sid];
+  }
+
+  // Ensure that the requested NID matches the submission NID.
+  if ($submissions[$sid]->nid != $nid) {
+    return FALSE;
+  }
+
+  return $submissions[$sid];
 }
 
 function _webform_submission_spam_check($to, $subject, $from, $headers = array()) {

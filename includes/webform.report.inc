@@ -33,11 +33,11 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
       webform_disable_page_cache();
     }
     webform_set_breadcrumb($node);
-    $submissions = webform_get_submissions($node->nid, $header, $user->uid, $pager_count);
+    $submissions = webform_get_submissions(array('nid' => $node->nid, 'uid' => $user->uid), $header, $pager_count);
     $count = webform_get_submission_count($node->nid, $user->uid);
   }
   else {
-    $submissions = webform_get_submissions($node->nid, $header, NULL, $pager_count);
+    $submissions = webform_get_submissions($node->nid, $header, $pager_count);
     $count = webform_get_submission_count($node->nid);
   }
   return theme('webform_results_submissions', $node, $submissions, $count, $pager_count);
@@ -193,7 +193,7 @@ function webform_results_table($node, $pager_count = 0) {
 
   // Get all the submissions for the node.
   $header = theme('webform_results_table_header', $node);
-  $submissions = webform_get_submissions($node->nid, $header, NULL, $pager_count);
+  $submissions = webform_get_submissions($node->nid, $header, $pager_count);
   $total_count = webform_get_submission_count($node->nid);
 
   $output = theme('webform_results_table', $node, $node->webform['components'], $submissions, $total_count, $pager_count);
