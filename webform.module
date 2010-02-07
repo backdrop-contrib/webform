@@ -1545,7 +1545,7 @@ function webform_client_form_submit($form, &$form_state) {
     }
 
     // Update form state values with those from storage.
-    if (is_array($form_state['storage']['submitted'])) {
+    if (isset($form_state['storage']['submitted'])) {
       foreach ($form_state['storage']['submitted'] as $key => $val) {
         $form_state['values']['submitted'][$key] = $val;
       }
