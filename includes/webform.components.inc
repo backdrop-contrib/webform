@@ -225,7 +225,14 @@ function theme_webform_components_form($form) {
         l(t('Clone'), 'node/'. $node->nid .'/webform/components/'. $cid .'/clone', array('query' => drupal_get_destination())),
         l(t('Delete'), 'node/'. $node->nid .'/webform/components/'. $cid .'/delete', array('query' => drupal_get_destination())),
       );
-      $row_class = 'draggable'. ($component['type'] != 'fieldset' ? ' tabledrag-leaf' : '');
+      $row_class = 'draggable';
+      if ($component['type'] != 'fieldset' && $component['type'] != 'pagebreak') {
+        $row_class .= ' tabledrag-leaf';
+      }
+      if ($component['type'] == 'pagebreak') {
+        $row_class .= ' tabledrag-root webform-pagebreak';
+        $row_data[0] = array('class' => 'webform-pagebreak', 'data' => $row_data[0]);
+      }
       $rows[] = array('data' => $row_data, 'class' => $row_class);
       if (isset($component['children']) && is_array($component['children'])) {
         foreach ($component['children'] as $cid => $component) {

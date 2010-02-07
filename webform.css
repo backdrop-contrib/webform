@@ -38,6 +38,12 @@
 .webform-select-list-format th {
   border: 1px solid;
 }
+tr.webform-pagebreak td {
+  border-top: 2px dotted #999;
+}
+td.webform-pagebreak {
+  font-weight: bold;
+}
 .webform-checkbox {
   text-align: center;
   width: 40px;
