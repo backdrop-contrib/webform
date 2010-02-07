@@ -192,7 +192,7 @@ function webform_configure_form_submit($form, &$form_state) {
   $node->webform['confirmation_format'] = $form_state['values']['confirmation_format'];
 
   // Save roles.
-  $node->webform['roles'] = $form_state['values']['roles'];
+  $node->webform['roles'] = array_keys(array_filter($form_state['values']['roles']));
 
   // Set the Show complete form in teaser setting.
   $node->webform['teaser'] = $form_state['values']['teaser'];
