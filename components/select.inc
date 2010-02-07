@@ -230,11 +230,12 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
       // Set display as a checkbox set.
       $element['#type'] = 'checkboxes';
       // Drupal 6 hack to properly render on multipage forms.
-      $element['#process'] = array('webform_expand_checkboxes');
+      $element['#process'] = array('webform_expand_checkboxes', 'webform_expand_select_ids');
     }
     else {
       // Set display as a radio set.
       $element['#type'] = 'radios';
+      $element['#process'] = array('expand_radios', 'webform_expand_select_ids');
     }
   }
   return $element;
@@ -256,8 +257,32 @@ function webform_expand_checkboxes($element) {
   }
 
   $element = expand_checkboxes($element);
-  foreach ($default_value as $key=>$val) {
+
+  // Escape the values of checkboxes.
+  foreach (element_children($element) as $key) {
+    $element[$key]['#return_value'] = check_plain($element[$key]['#return_value']);
+    $element[$key]['#name'] = $element['#name'] . '[' . $element[$key]['#return_value'] . ']';
+  }
+
+  foreach ($default_value as $key => $val) {
     $element[$key]['#default_value'] = $val;
+  }
+  return $element;
+}
+
+/**
+ * FAPI process function to rename IDs attached to checkboxes and radios.
+ */
+function webform_expand_select_ids($element) {
+  $id = $element['#id'] = str_replace('_', '-', _webform_safe_name(strip_tags($element['#id'])));
+  $delta = 0;
+  foreach (element_children($element) as $key) {
+    $delta++;
+    // Convert the #id for each child to a safe name, regardless of key.
+    $element[$key]['#id'] = $id . '-' . $delta;
+
+    // Prevent scripts or CSS in the labels for each checkbox or radio.
+    $element[$key]['#title'] = _webform_filter_xss($element[$key]['#title']);
   }
   return $element;
 }
@@ -266,6 +291,7 @@ function webform_expand_checkboxes($element) {
  * Implementation of _webform_display_component().
  */
 function _webform_display_select($component, $value, $format = 'html') {
+  $value = (array) $value;
   ksort($value);
   return array(
     '#title' => $component['name'],
@@ -312,8 +338,6 @@ function _webform_submit_select($component, $value) {
     if (empty($value)) {
       $value[0] = '';
     }
-
-    $value = array_values($value);
   }
 
   return $value;
@@ -433,7 +457,7 @@ function theme_webform_display_select($element) {
       if ($option_value !== '') {
         // Administer provided values.
         if (isset($options[$option_value])) {
-          $items[] = $options[$option_value];
+          $items[] = _webform_filter_xss($options[$option_value]);
         }
         // User-specified in the "other" field.
         else {
@@ -446,17 +470,16 @@ function theme_webform_display_select($element) {
     if (isset($element['#value'][0]) && $element['#value'][0] !== '') {
       // Administer provided values.
       if (isset($options[$element['#value'][0]])) {
-        $items[] = $options[$element['#value'][0]];
+        $items[] = $element['#format'] == 'html' ? _webform_filter_xss($options[$element['#value'][0]]) : $options[$element['#value'][0]];
       }
       // User-specified in the "other" field.
       else {
-        $items[] = $element['#value'][0];
+        $items[] = $element['#format'] == 'html' ? check_plain($element['#value'][0]) : $element['#value'][0];
       }
     }
   }
 
   if ($element['#format'] == 'html') {
-    array_walk($items, 'check_plain');
     $output = count($items) > 1 ? theme('item_list', $items) : (isset($items[0]) ? $items[0] : ' ');
   }
   else {
@@ -505,7 +528,7 @@ function _webform_analysis_select($component, $sids = array(), $single = FALSE) 
   $normal_count = 0;
   while ($data = db_fetch_array($result)) {
     $display_option = $single ? $data['data'] : $options[$data['data']];
-    $rows[$data['data']] = array(check_plain($display_option), $data['datacount']);
+    $rows[$data['data']] = array(_webform_filter_xss($display_option), $data['datacount']);
     $normal_count += $data['datacount'];
   }
 
@@ -540,12 +563,12 @@ function _webform_table_select($component, $value) {
   if (is_array($value)) {
     foreach ($value as $option_value) {
       if ($option_value !== '') {
-        $output .= check_plain($option_value) .'<br />';
+        $output .= _webform_filter_xss($option_value) .'<br />';
       }
     }
   }
   else {
-    $output .= check_plain(empty($value[0]) ? '' : $value[0]);
+    $output .= empty($value[0]) ? '' : _webform_filter_xss($value[0]);
   }
   return $output;
 }
