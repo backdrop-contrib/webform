@@ -149,7 +149,7 @@ function webform_expand_date($element) {
   // Or, if none, use set the defaults of the component.
   elseif (drupal_strlen($component['value']) > 0) {
     // Calculate the timestamp in GMT.
-    $timestamp = strtotime(_webform_filter_values($component['value']));
+    $timestamp = webform_strtotime(_webform_filter_values($component['value']));
 
     if ($component['extra']['timezone'] == 'user') {
       // Use the users timezone.
@@ -290,7 +290,7 @@ function _webform_display_date($component, $value, $format = 'html') {
 function theme_webform_display_date($element) {
   $output = ' ';
   if ($element['#value']) {
-    $timestamp = strtotime($element['#value']['month'] .'/'. $element['#value']['day'] .'/'. $element['#value']['year']);
+    $timestamp = webform_strtotime($element['#value']['month'] .'/'. $element['#value']['day'] .'/'. $element['#value']['year']);
     $format = webform_date_format('medium');
     $output = format_date($timestamp, 'custom', $format, 0);
   }
@@ -326,7 +326,7 @@ function _webform_analysis_date($component, $sids = array()) {
               $year = $row['data'];
               // Build the full timestamp.
               if (drupal_strlen($month) > 0  && drupal_strlen($day) > 0  && drupal_strlen($year) > 0) {
-                $timestamp = strtotime($month .'/'. $day .'/'. $year);
+                $timestamp = webform_strtotime($month .'/'. $day .'/'. $year);
                 // Add usefull information about this date into an array.
                 $timestamps[$timestamp] = array(
                   date('l', $timestamp), // Day of the week (Monday, Tuesday, etc.).
@@ -377,13 +377,24 @@ function _webform_csv_headers_date($component, $export_options) {
  */
 function _webform_csv_data_date($component, $export_options, $value) {
   if (drupal_strlen($value[0]) > 0 && drupal_strlen($value[1]) > 0 && drupal_strlen($value[2]) > 0) {
-    $timestamp = strtotime($value[0] .'/'. $value[1] .'/'. $value[2]);
+    $timestamp = webform_strtotime($value[0] .'/'. $value[1] .'/'. $value[2]);
     $format = webform_date_format('short');
-    return date($format, $timestamp);
+    return format_date($timestamp, 'custom', $format, 0);
   }
   else {
     return '';
   }
+}
+
+/**
+ * Get a timestamp in GMT time, ensuring timezone accuracy.
+ */
+function webform_strtotime($date) {
+  $current_tz = date_default_timezone_get();
+  date_default_timezone_set('UTC');
+  $timestamp = strtotime($date);
+  date_default_timezone_set($current_tz);
+  return $timestamp;
 }
 
 /**
@@ -398,5 +409,13 @@ function webform_date_format($size = 'medium') {
     $time = 'aABgGhHisueIOPTZ';
     $day_of_week = 'Dlw';
     $special = ',-: ';
-    return trim($format, $time . $day_of_week . $special);
+    $date_format = trim($format, $time . $day_of_week . $special);
+
+    // Ensure that a day, month, and year value are present. Use a default
+    // format if all the values are not found.
+    if (strpos($date_format, array('d', 'j')) === FALSE || strpos($date_format, array('F', 'm', 'M', 'n')) === FALSE || strpos($date_format, array('o', 'Y', 'y')) === FALSE) {
+      $date_format = 'm/d/Y';
+    }
+
+    return $date_format;
 }
