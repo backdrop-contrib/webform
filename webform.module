@@ -758,6 +758,9 @@ function webform_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
     case 'delete':
       webform_node_delete($node);
       break;
+    case 'prepare':
+      webform_node_prepare($node);
+      break;
     case 'load':
       return webform_node_load($node);
     case 'view':
@@ -827,6 +830,16 @@ function webform_node_delete($node) {
   db_query('DELETE FROM {webform_roles} WHERE nid = %d', $node->nid);
   db_query('DELETE FROM {webform_submissions} WHERE nid = %d', $node->nid);
   db_query('DELETE FROM {webform_submitted_data} WHERE nid = %d', $node->nid);
+}
+
+/**
+ * Implementation of hook_node_prepare().
+ */
+function webform_node_prepare(&$node) {
+  if (!isset($node->webform)) {
+    $additions = webform_node_load($node);
+    $node->webform = $additions['webform'];
+  }
 }
 
 /**
@@ -922,22 +935,11 @@ function webform_form_alter(&$form, $form_state, $form_id) {
   $matches = array();
   if (isset($form['#node']->type) && $form_id == $form['#node']->type . '_node_form' && in_array($form['#node']->type, webform_variable_get('webform_node_types'))) {
     $node = $form['#node'];
-    // Add Webform properties if they are not present.
-    if (!isset($node->webform)) {
-      $node->nid = 0;
-      $additions = module_invoke('webform', 'nodeapi', $node, 'load');
-      $form['webform'] = array(
-        '#type' => 'value',
-        '#value' => $additions['webform'],
-      );
-    }
     // Preserve all Webform options currently set on the node.
-    else {
-      $form['webform'] = array(
-        '#type' => 'value',
-        '#value' => $node->webform,
-      );
-    }
+    $form['webform'] = array(
+      '#type' => 'value',
+      '#value' => $node->webform,
+    );
 
     // If a new node, redirect the user to the components form after save.
     if (empty($node->nid)) {
