@@ -1243,7 +1243,7 @@ function webform_update_6305() {
         }
       }
     }
-    $ret[] = update_sql("UPDATE {permission} SET perm = '" . implode(',', $role->perm) . "' WHERE rid = " . $role->rid);
+    $ret[] = update_sql("UPDATE {permission} SET perm = '" . implode(', ', $role->perm) . "' WHERE rid = " . $role->rid);
   }
 
   return $ret;
@@ -1322,6 +1322,24 @@ function webform_update_6308() {
   }
 
   db_drop_field($ret, 'webform_component', 'email');
+
+  return $ret;
+}
+
+/**
+ * Fix permissions for all roles by adding an additional space after comma.
+ */
+function webform_update_6309() {
+  $ret = array();
+
+  $result = db_query("SELECT r.rid, p.perm FROM {role} r INNER JOIN {permission} p ON p.rid = r.rid");
+  while ($role = db_fetch_object($result)) {
+    $perms = explode(',', $role->perm);
+    foreach($perms as $id => $perm) {
+      $perms[$id] = trim($perm);
+    }
+    $ret[] = update_sql("UPDATE {permission} SET perm = '" . implode(', ', $perms) . "' WHERE rid = " . $role->rid);
+  }
 
   return $ret;
 }
