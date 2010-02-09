@@ -154,10 +154,14 @@ function _webform_render_email($component, $value = NULL) {
  * @return
  *   None. Calls a form_set_error if the e-mail is not valid.
  */
-function _webform_validate_email($form_element, $form_state) {
+function _webform_validate_email($form_element, &$form_state) {
   $component = $form_element['#webform_component'];
-  if (!empty($form_element['#value']) && !valid_email_address($form_element['#value'])) {
-    form_error($form_element, t('%value is not a valid email address.', array('%value' => $form_element['#value'])));
+  $value = trim($form_element['#value']);
+  if (!empty($value) && !valid_email_address($value)) {
+    form_error($form_element, t('%value is not a valid email address.', array('%value' => $value)));
+  }
+  else {
+    form_set_value($form_element, $value, $form_state);
   }
 }
 
