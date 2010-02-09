@@ -261,7 +261,13 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     $where_clause = implode(' AND ', $where);
     $pager_query = "SELECT sid FROM {webform_submissions} WHERE $where_clause";
 
-    $result = pager_query($pager_query, $pager_count, 0, NULL, $arguments);
+    if ($pager_count) {
+      $result = pager_query($pager_query, $pager_count, 0, NULL, $arguments);
+    }
+    else {
+      $result = db_query($pager_query, $arguments);
+    }
+
     $sids = array();
     while ($row = db_fetch_object($result)) {
       $sids[] = $row->sid;
