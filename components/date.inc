@@ -73,7 +73,16 @@ function _webform_edit_date($component) {
     '#weight' => 2,
   );
 
-  $form['extra']['year_start'] = array(
+  $form['display']['year_textfield'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use a textfield for year'),
+    '#default_value' => $component['extra']['year_textfield'],
+    '#description' => t('If checked, the generated date field will use a textfield for the year. Otherwise it will use a select list.'),
+    '#weight' => 5,
+    '#parents' => array('extra', 'year_textfield'),
+  );
+
+  $form['validation']['year_start'] = array(
     '#type' => 'textfield',
     '#title' => t('Start year'),
     '#default_value' => empty($component['extra']['year_start']) ? '1900' : $component['extra']['year_start'],
@@ -81,8 +90,9 @@ function _webform_edit_date($component) {
     '#size' => 10,
     '#maxlength' => 4,
     '#weight' => 3,
+    '#parents' => array('extra', 'year_start'),
   );
-  $form['extra']['year_end'] = array(
+  $form['validation']['year_end'] = array(
     '#type' => 'textfield',
     '#title' => t('End year'),
     '#default_value' => empty($component['extra']['year_end']) ? '2050' : $component['extra']['year_end'],
@@ -90,13 +100,7 @@ function _webform_edit_date($component) {
     '#size' => 10,
     '#maxlength' => 4,
     '#weight' => 4,
-  );
-  $form['extra']['year_textfield'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Use a textfield for year'),
-    '#default_value' => $component['extra']['year_textfield'],
-    '#description' => t('If checked, the generated date field will use a textfield for the year. Otherwise it will use a select list.'),
-    '#weight' => 5,
+    '#parents' => array('extra', 'year_end'),
   );
 
   return $form;

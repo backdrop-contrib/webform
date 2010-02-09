@@ -80,12 +80,6 @@ function _webform_edit_select($component) {
     '#default_value' => $component['extra']['aslist'],
     '#description' => t('Check this option if you want the select component to be of listbox type instead of radiobuttons or checkboxes.'),
   );
-  $form['extra']['optrand'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Randomize options'),
-    '#default_value' => $component['extra']['optrand'],
-    '#description' => t('Randomizes the order of the options when they are displayed in the form.'),
-  );
   $form['extra']['other_option'] = array(
     '#type' => 'checkbox',
     '#title' => t('Allow "Other..." option'),
@@ -100,6 +94,13 @@ function _webform_edit_select($component) {
     '#default_value' => $component['extra']['other_text'],
     '#description' => t('If allowing other options, enter text to be used for other-enabling option.'),
     '#access' => module_exists('select_or_other'),
+  );
+  $form['display']['optrand'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Randomize options'),
+    '#default_value' => $component['extra']['optrand'],
+    '#description' => t('Randomizes the order of the options when they are displayed in the form.'),
+    '#parents' => array('extra', 'optrand'),
   );
 
   return $form;

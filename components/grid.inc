@@ -70,17 +70,19 @@ function _webform_edit_grid($component) {
     '#weight' => -2,
     '#required' => TRUE,
   );
-  $form['extra']['optrand'] = array(
+  $form['display']['optrand'] = array(
     '#type' => 'checkbox',
     '#title' => t('Randomize Options'),
     '#default_value' => $component['extra']['optrand'],
     '#description' => t('Randomizes the order of options on the top when they are displayed in the form.'),
+    '#parents' => array('extra', 'optrand')
   );
-  $form['extra']['qrand'] = array(
+  $form['display']['qrand'] = array(
     '#type' => 'checkbox',
     '#title' => t('Randomize Questions'),
     '#default_value' => $component['extra']['qrand'],
     '#description' => t('Randomize the order of the questions on the side when they are displayed in the form.'),
+    '#parents' => array('extra', 'qrand')
   );
   return $form;
 }

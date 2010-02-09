@@ -46,10 +46,6 @@ function _webform_edit_hidden($component) {
     '#rows' => 5,
     '#weight' => 0,
   );
-  $form['advanced']['mandatory'] = array(
-    '#type' => 'hidden',
-    '#value' => 1,
-  );
   $form['extra']['description'] = array(); // Hide the description box.
   return $form;
 }

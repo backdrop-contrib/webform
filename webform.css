@@ -54,7 +54,9 @@ td.webform-pagebreak {
 .webform-results-per-page a.selected {
   font-weight: bold;
 }
-
+html.js fieldset.webform-position {
+  display: none;
+}
 tr.webform-add-form .tabledrag-changed {
   display: none;
 }

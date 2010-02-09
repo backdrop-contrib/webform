@@ -24,6 +24,7 @@ function _webform_defaults_textfield() {
       'field_prefix' => '',
       'field_suffix' => '',
       'disabled' => 0,
+      'unique' => 0,
       'description' => '',
       'attributes' => array(),
     ),
@@ -55,7 +56,7 @@ function _webform_edit_textfield($component) {
     '#maxlength' => 127,
     '#weight' => 0,
   );
-  $form['extra']['width'] = array(
+  $form['display']['width'] = array(
     '#type' => 'textfield',
     '#title' => t('Width'),
     '#default_value' => $component['extra']['width'],
@@ -63,17 +64,9 @@ function _webform_edit_textfield($component) {
     '#size' => 5,
     '#maxlength' => 10,
     '#weight' => 0,
+    '#parents' => array('extra', 'width'),
   );
-  $form['extra']['maxlength'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Maxlength'),
-    '#default_value' => $component['extra']['maxlength'],
-    '#description' => t('Maxlength of the textfield.'),
-    '#size' => 5,
-    '#maxlength' => 10,
-    '#weight' => 0,
-  );
-  $form['extra']['field_prefix'] = array(
+  $form['display']['field_prefix'] = array(
     '#type' => 'textfield',
     '#title' => t('Label placed to the left of the textfield'),
     '#default_value' => $component['extra']['field_prefix'],
@@ -81,8 +74,9 @@ function _webform_edit_textfield($component) {
     '#size' => 20,
     '#maxlength' => 127,
     '#weight' => 1.1,
+    '#parents' => array('extra', 'field_prefix'),
   );
-  $form['extra']['field_suffix'] = array(
+  $form['display']['field_suffix'] = array(
     '#type' => 'textfield',
     '#title' => t('Label placed to the right of the textfield'),
     '#default_value' => $component['extra']['field_suffix'],
@@ -90,14 +84,35 @@ function _webform_edit_textfield($component) {
     '#size' => 20,
     '#maxlength' => 127,
     '#weight' => 1.2,
+    '#parents' => array('extra', 'field_suffix'),
   );
-  $form['extra']['disabled'] = array(
+  $form['display']['disabled'] = array(
     '#type' => 'checkbox',
     '#title' => t('Disabled'),
     '#return_value' => 1,
     '#description' => t('Make this field non-editable. Useful for setting an unchangeable default value.'),
     '#weight' => 3,
     '#default_value' => $component['extra']['disabled'],
+    '#parents' => array('extra', 'disabled'),
+  );
+  $form['validation']['unique'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Unique'),
+    '#return_value' => 1,
+    '#description' => t('Check that all entered values for this field are unique. The same value is not allowed to be used twice.'),
+    '#weight' => 1,
+    '#default_value' => $component['extra']['unique'],
+    '#parents' => array('extra', 'unique'),
+  );
+  $form['validation']['maxlength'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Maxlength'),
+    '#default_value' => $component['extra']['maxlength'],
+    '#description' => t('Maximum length of the textfield value.'),
+    '#size' => 5,
+    '#maxlength' => 10,
+    '#weight' => 2,
+    '#parents' => array('extra', 'maxlength'),
   );
   return $form;
 }
@@ -118,10 +133,17 @@ function _webform_render_textfield($component, $value = NULL, $filter = TRUE) {
     '#attributes'    => $component['extra']['attributes'],
     '#prefix'        => '<div class="webform-component-'. $component['type'] .'" id="webform-component-'. $component['form_key'] .'">',
     '#suffix'        => '</div>',
+    '#webform_component' => $component,
+    '#element_validate' => array(),
   );
 
   if ($component['extra']['disabled']) {
     $element['#attributes']['readonly'] = 'readonly';
+  }
+
+  // Enforce uniqueness.
+  if ($component['extra']['unique']) {
+    $element['#element_validate'][] = 'webform_validate_unique';
   }
 
   // Change the 'width' option to the correct 'size' option.

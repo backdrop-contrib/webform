@@ -303,6 +303,7 @@ function webform_components_form_submit($form, &$form_state) {
 
 function webform_component_edit_form(&$form_state, $node, $component, $clone = FALSE) {
   drupal_set_title(t('Edit component: @name (@type)', array('@name' => $component['name'], '@type' => t($component['type']))));
+  drupal_add_css(drupal_get_path('module', 'webform') .'/webform.css', 'theme', 'all', FALSE);
 
   // Print the correct field type specification.
   // We always need: name and description.
@@ -331,8 +332,16 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
     '#title' => t('Label'),
     '#description' => t('This is used as a descriptive label when displaying this form element.'),
     '#required' => TRUE,
-    '#weight' => -2,
+    '#weight' => -3,
     '#maxlength' => 255,
+  );
+  $form['form_key'] = array(
+    '#type' => 'textfield',
+    '#default_value' => empty($component['form_key']) ? _webform_safe_name($component['name']) : $component['form_key'],
+    '#title' => t('Field Key'),
+    '#description' => t('Enter a machine readable key for this form element. May contain only lowercase alphanumeric characters and underscores. This key will be used as the name attribute of the form element. This value has no effect on the way data is saved, but may be helpful if using Additional Processing or Validation code.'),
+    '#required' => TRUE,
+    '#weight' => -2,
   );
   $form['extra']['description'] = array(
     '#type' => 'textarea',
@@ -342,29 +351,41 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
     '#weight' => -1,
   );
 
-  $form['advanced'] = array(
+  // Display settings.
+  $form['display'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Advanced settings'),
+    '#title' => t('Display'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+
+  // Validation settings.
+  $form['validation'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Validation'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+  );
+  if (webform_component_feature($component['type'], 'required')) {
+    $form['validation']['mandatory'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Mandatory'),
+      '#default_value' => ($component['mandatory'] == '1' ? TRUE : FALSE),
+      '#description' => t('Check this option if the user must enter a value.'),
+      '#weight' => -1,
+      '#parents' => array('mandatory'),
+    );
+  }
+
+  // Position settings, only shown if JavaScript is disabled.
+  $form['position'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Position'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#tree' => FALSE,
-    'weight' => 20,
-  );
-  $form['advanced']['form_key'] = array(
-    '#type' => 'textfield',
-    '#default_value' => empty($component['form_key']) ? _webform_safe_name($component['name']) : $component['form_key'],
-    '#title' => t('Field Key'),
-    '#description' => t('Enter a machine readable key for this form element. May contain only lowercase alphanumeric characters and underscores. This key will be used as the name attribute of the form element. This value has no effect on the way data is saved, but may be helpful if using Additional Processing or Validation code.'),
-    '#required' => TRUE,
-    '#weight' => -1,
-  );
-  $form['advanced']['mandatory'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Mandatory'),
-    '#default_value' => ($component['mandatory'] == '1' ? TRUE : FALSE),
-    '#description' => t('Check this option if the user must enter a value.'),
-    '#weight' => 2,
-    '#access' => webform_component_feature($component['type'], 'required'),
+    '#weight' => 20,
+    '#attributes' => array('class' => 'webform-position'),
   );
 
   if (variable_get('webform_enable_fieldset', TRUE) && is_array($node->webform['components'])) {
@@ -374,7 +395,7 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
         $options[$existing_cid] = $value['name'];
       }
     }
-    $form['advanced']['pid'] = array(
+    $form['position']['pid'] = array(
       '#type' => 'select',
       '#title' => t('Parent Fieldset'),
       '#default_value' => $component['pid'],
@@ -383,8 +404,7 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
       '#weight' => 3,
     );
   }
-
-  $form['advanced']['weight'] = array(
+  $form['position']['weight'] = array(
     '#type' => 'textfield',
     '#size' => 4,
     '#title' => t('Weight'),
@@ -392,7 +412,7 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
     '#description' => t('Optional. In the menu, the heavier items will sink and the lighter items will be positioned nearer the top.'),
     '#weight' => 4,
   );
-  
+
   // Add conditional fields.
   $conditional_components = array();
   $counter = 0;
@@ -453,11 +473,7 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
     '#default_value' => $component['extra']['conditional_values'],
   );
   if (empty($conditional_components)) {
-    $form['conditional']['extra']['conditional_component']['#options'] = array('');
-    $form['conditional']['#description'] = t('You cannot set display options for a component appearing before the first pagebreak.');
-    foreach (element_children($form['conditional']['extra']) as $conditional_key) {
-      $form['conditional']['extra'][$conditional_key]['#disabled'] = TRUE;
-    }
+    $form['conditional']['#access'] = FALSE;
   }
 
   // Add the fields specific to this component type:
@@ -468,14 +484,22 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
 
   // Merge the additional fields with the current fields:
   if (isset($additional_form_elements['extra'])) {
-    $extra_fields_copy = $form['extra'];
-    $form['extra'] = array_merge($extra_fields_copy, $additional_form_elements['extra']);
+    $form['extra'] = array_merge($form['extra'], $additional_form_elements['extra']);
     unset($additional_form_elements['extra']);
   }
-  if (isset($additional_form_elements['advanced'])) {
-    $advanced_fields_copy = $form['advanced'];
-    $form['advanced'] = array_merge($advanced_fields_copy, $additional_form_elements['advanced']);
-    unset($additional_form_elements['advanced']);
+  if (isset($additional_form_elements['display'])) {
+    $form['display'] = array_merge($form['display'], $additional_form_elements['display']);
+    unset($additional_form_elements['display']);
+  }
+  else {
+    unset($form['display']);
+  }
+  if (isset($additional_form_elements['validation'])) {
+    $form['validation'] = array_merge($form['validation'], $additional_form_elements['validation']);
+    unset($additional_form_elements['validation']);
+  }
+  elseif (count(element_children($form['validation'])) == 0) {
+    unset($form['validation']);
   }
   $form = array_merge($form, $additional_form_elements);
 
@@ -805,5 +829,17 @@ function webform_component_defaults(&$component) {
       'conditional_operator' => '=',
       'conditional_values' => '',
     );
+  }
+}
+
+/**
+ * Validate an element value is unique with no duplicates in the database.
+ */
+function webform_validate_unique($element, $form_state) {
+  $nid = $form_state['values']['details']['nid'];
+  $sid = $form_state['values']['details']['sid'];
+  $count = db_result(db_query("SELECT count(*) FROM {webform_submitted_data} WHERE nid = %d AND cid = %d AND sid != %d AND LOWER(data) = '%s'", $nid, $element['#webform_component']['cid'], $sid, $element['#value']));
+  if ($count) {
+    form_error($element, t('The value %value has already been submitted once for the %title field. You may have already submitted this form, or you need to use a different value.', array('%value' => $element['#value'], '%title' => $element['#title'])));
   }
 }

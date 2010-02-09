@@ -37,19 +37,15 @@ function _webform_edit_pagebreak($component) {
   $form = array();
   // No description.
   $form['extra']['description'] = array(
-      '#type' => 'hidden',
-      '#value' => '',
+    '#type' => 'hidden',
+    '#value' => '',
   );
   // Force the parent to always be root.
-  $form['advanced']['pid'] = array(
-      '#type' => 'hidden',
-      '#value' => '0',
+  $form['position']['pid'] = array(
+    '#type' => 'hidden',
+    '#value' => '0',
   );
-  // Never mandatory.
-  $form['advanced']['mandatory'] = array(
-      '#type' => 'hidden',
-      '#value' => '',
-  );
+
   return $form;
 }
 

@@ -55,36 +55,40 @@ function _webform_edit_textarea($component) {
     '#rows' => 5,
     '#weight' => 0,
   );
-  $form['extra']['cols'] = array(
+  $form['display']['cols'] = array(
     '#type' => 'textfield',
     '#title' => t('Width'),
     '#default_value' => $component['extra']['cols'],
-    '#description' => t('Width of the textfield.') .' '. t('Leaving blank will use the default size.'),
+    '#description' => t('Width of the textarea.') .' '. t('Leaving blank will use the default size.'),
     '#size' => 5,
     '#maxlength' => 10,
+    '#parents' => array('extra', 'cols'),
   );
-  $form['extra']['rows'] = array(
+  $form['display']['rows'] = array(
     '#type' => 'textfield',
     '#title' => t('Height'),
     '#default_value' => $component['extra']['rows'],
-    '#description' => t('Height of the textfield.') .' '. t('Leaving blank will use the default size.'),
+    '#description' => t('Height of the textarea.') .' '. t('Leaving blank will use the default size.'),
     '#size' => 5,
     '#maxlength' => 10,
+    '#parents' => array('extra', 'rows'),
   );
-  $form['extra']['resizable'] = array(
+  $form['display']['resizable'] = array(
     '#type' => 'checkbox',
     '#title' => t('Resizable'),
     '#description' => t('Make this field resizable by the user.'),
     '#weight' => 2,
     '#default_value' => $component['extra']['resizable'],
+    '#parents' => array('extra', 'resizable'),
   );
-  $form['extra']['disabled'] = array(
+  $form['display']['disabled'] = array(
     '#type' => 'checkbox',
     '#title' => t('Disabled'),
     '#return_value' => 1,
     '#description' => t('Make this field non-editable. Useful for setting an unchangeable default value.'),
     '#weight' => 3,
     '#default_value' => $component['extra']['disabled'],
+    '#parents' => array('extra', 'disabled'),
   );
   return $form;
 }

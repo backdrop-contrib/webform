@@ -28,21 +28,22 @@ function _webform_defaults_fieldset() {
  */
 function _webform_edit_fieldset($component) {
   $form = array();
-  $form['extra']['collapsible'] = array(
+  $form['display']['collapsible'] = array(
     '#type' => 'checkbox',
     '#title' => t('Collapsible'),
     '#default_value' => $component['extra']['collapsible'],
     '#description' => t('If this fieldset is collapsible, the user may open or close the fieldset.'),
     '#weight' => 0,
+    '#parents' => array('extra', 'collapsible'),
   );
-  $form['extra']['collapsed'] = array(
+  $form['display']['collapsed'] = array(
     '#type' => 'checkbox',
     '#title' => t('Collapsed by Default'),
     '#default_value' => $component['extra']['collapsed'],
     '#description' => t('Collapsible fieldsets are "open" by default. Select this option to default the fieldset to "closed."'),
     '#weight' => 3,
+    '#parents' => array('extra', 'collapsed'),
   );
-  $form['advanced']['mandatory'] = array();
   return $form;
 }
 

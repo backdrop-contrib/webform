@@ -20,6 +20,7 @@ function _webform_defaults_email() {
     'email' => 1,
     'extra' => array(
       'width' => '',
+      'unique' => 0,
       'disabled' => 0,
       'description' => '',
       'attributes' => array(),
@@ -62,21 +63,32 @@ function _webform_edit_email($component) {
     '#weight' => 0,
     '#element_validate' => array('_webform_edit_email_validate'),
   );
-  $form['extra']['width'] = array(
+  $form['display']['width'] = array(
     '#type' => 'textfield',
     '#title' => t('Width'),
     '#default_value' => $component['extra']['width'],
     '#description' => t('Width of the textfield.') .' '. t('Leaving blank will use the default size.'),
     '#size' => 5,
     '#maxlength' => 10,
+    '#parents' => array('extra', 'width'),
   );
-  $form['extra']['disabled'] = array(
+  $form['display']['disabled'] = array(
     '#type' => 'checkbox',
     '#title' => t('Disabled'),
     '#return_value' => 1,
     '#description' => t('Make this field non-editable. Useful for setting an unchangeable default value.'),
     '#weight' => 3,
     '#default_value' => $component['extra']['disabled'],
+    '#parents' => array('extra', 'disabled'),
+  );
+  $form['validation']['unique'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Unique'),
+    '#return_value' => 1,
+    '#description' => t('Check that all entered values for this field are unique. The same value is not allowed to be used twice.'),
+    '#weight' => 1,
+    '#default_value' => $component['extra']['unique'],
+    '#parents' => array('extra', 'unique'),
   );
   return $form;
 }
@@ -109,6 +121,11 @@ function _webform_render_email($component, $value = NULL) {
     '#webform_component' => $component,
     '#form_builder'  => array('element_type' => 'email'),
   );
+
+  // Enforce uniqueness.
+  if ($component['extra']['unique']) {
+    $element['#element_validate'][] = 'webform_validate_unique';
+  }
 
   if (isset($value)) {
     $element['#default_value'] = $value[0];

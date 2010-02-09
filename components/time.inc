@@ -72,13 +72,14 @@ function _webform_edit_time($component) {
     '#description' => t('Automatically adjust the time during daylight savings.'),
     '#weight' => 1,
   );
-  $form['extra']['hourformat'] = array(
+  $form['display']['hourformat'] = array(
     '#type' => 'radios',
     '#title' => t('Time Format'),
     '#default_value' => isset($component['extra']['hourformat']) ? $component['extra']['hourformat'] : '12-hour',
     '#description' => t('Format the display of the time in 12 or 24 hours.'),
     '#options' => array('12-hour' => '12-hour (am/pm)', '24-hour' => '24-hour'),
     '#weight' => 2,
+    '#parents' => array('extra', 'hourformat'),
   );
   return $form;
 }
