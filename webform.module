@@ -1233,48 +1233,53 @@ function webform_client_form(&$form_state, $node, $submission, $is_draft = FALSE
     );
 
     // Add buttons for pages, drafts, and submissions.
+    $form['buttons'] = array(
+      '#tree' => FALSE,
+      '#weight' => 1000,
+    );
+
     if ($page_count > 1) {
       $next_page = t('Next Page >');
       $prev_page = t('< Previous Page');
 
       // Add the submit button(s).
      if ($node->webform['allow_draft'] && (empty($submission) || $submission->is_draft) && $user->uid != 0) {
-        $form['draft'] = array(
+        $form['buttons']['draft'] = array(
           '#type' => 'submit',
           '#value' => t('Save Draft'),
-          '#weight' => 950,
+          '#weight' => -2,
           '#validate' => array(),
         );
       }
       if ($page_num > 1) {
-        $form['previous'] = array(
+        $form['buttons']['previous'] = array(
           '#type' => 'submit',
           '#value' => $prev_page,
-          '#weight' => 1000,
+          '#weight' => 5,
           '#validate' => array(),
         );
       }
       if ($page_num == $page_count) {
-        $form['submit'] = array(
+        $form['buttons']['submit'] = array(
           '#type' => 'submit',
           '#value' => empty($node->webform['submit_text']) ? t('Submit') : $node->webform['submit_text'],
-          '#weight' => 1050,
+          '#weight' => 10,
         );
       }
       elseif ($page_num < $page_count) {
-        $form['next'] = array(
+        $form['buttons']['next'] = array(
           '#type' => 'submit',
           '#value' => $next_page,
-          '#weight' => 1001,
+          '#weight' => 10,
         );
       }
     }
     else {
       // Add the submit button.
-      $form['submit'] = array(
+      $form['buttons']['submit'] = array(
         '#type' => 'submit',
         '#value' => empty($node->webform['submit_text']) ? t('Submit') : $node->webform['submit_text'],
-        '#weight' => 1000,
+        '#weight' => 10,
       );
     }
   }
