@@ -116,6 +116,7 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
         '#options'       => $options,
         '#type'          => 'radios',
         '#process'       => array('expand_radios', 'webform_expand_select_ids'),
+        '#validated'     => TRUE, // Webform handles validation separately.
       );
     }
   }
