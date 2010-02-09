@@ -855,7 +855,7 @@ function webform_node_load($node) {
   module_load_include('inc', 'webform', 'includes/webform.components');
   $additions = array();
 
-  if ($webform = db_fetch_array(db_query('SELECT * FROM {webform} WHERE nid = %d', $node->nid))) {
+  if (isset($node->nid) && ($webform = db_fetch_array(db_query('SELECT * FROM {webform} WHERE nid = %d', $node->nid)))) {
     $additions['webform'] = $webform;
 
     $additions['webform']['roles'] = array();
@@ -889,6 +889,12 @@ function webform_node_load($node) {
   }
 
   $additions['webform']['components'] = array();
+
+  // If we don't have a NID yet, no point in doing additional queries.
+  if (!isset($node->nid)) {
+    return $additions;
+  }
+
   $result = db_query('SELECT * FROM {webform_component} WHERE nid = %d ORDER BY weight, name', $node->nid);
   while ($c = db_fetch_array($result)) {
     $component =& $additions['webform']['components'][$c['cid']];
