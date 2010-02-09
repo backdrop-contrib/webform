@@ -120,7 +120,6 @@ function _webform_render_date($component, $value = NULL) {
     '#required' => $component['mandatory'],
     '#webform_component' => $component,
     '#process' => array('webform_expand_date'),
-    '#element_validate' => array('webform_validate_date'),
   );
 
   if (isset($value)) {
@@ -248,8 +247,11 @@ function webform_validate_date($element, $form_state) {
   }
   // Check the date is between allowed years.
   if ($element['year']['#value'] !== '' && is_numeric($component['extra']['year_start']) && is_numeric($component['extra']['year_end'])) {
-    if ($element['year']['#value'] < $component['extra']['year_start'] || $element['year']['#value'] > $component['extra']['year_end']) {
-      form_set_error($form_key .'][year', t('The entered date needs to be between the years @start and @end.', array('@start' => $component['extra']['year_start'], '@end' => $component['extra']['year_end'])));
+    // Allow years to be in reverse order.
+    $start = $component['extra']['year_start'] < $component['extra']['year_end'] ? $component['extra']['year_start'] : $component['extra']['year_end'];
+    $end   = $component['extra']['year_start'] > $component['extra']['year_end'] ? $component['extra']['year_start'] : $component['extra']['year_end'];
+    if ($element['year']['#value'] < $start || $element['year']['#value'] > $end) {
+      form_set_error($form_key .'][year', t('The entered date needs to be between the years @start and @end.', array('@start' => $start, '@end' => $end)));
       return;
     }
   }
