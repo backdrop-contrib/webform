@@ -1194,16 +1194,21 @@ function webform_client_form(&$form_state, $node, $submission, $is_draft = FALSE
 
     // Put the components into a tree structure.
     if (!isset($form_state['storage']['component_tree'])) {
-      $form_state['storage']['component_tree'] = array();
-      $form_state['storage']['page_count'] = 1;
-      $form_state['storage']['page_num'] = 1;
-      _webform_components_tree_build($node->webform['components'], $form_state['storage']['component_tree'], 0, $form_state['storage']['page_count']);
+      $form_state['webform']['component_tree'] = array();
+      $form_state['webform']['page_count'] = 1;
+      $form_state['webform']['page_num'] = 1;
+      _webform_components_tree_build($node->webform['components'], $form_state['webform']['component_tree'], 0, $form_state['webform']['page_count']);
+    }
+    else {
+      $form_state['webform']['component_tree'] = $form_state['storage']['component_tree'];
+      $form_state['webform']['page_count'] = $form_state['storage']['page_count'];
+      $form_state['webform']['page_num'] = $form_state['storage']['page_num'];
     }
 
     // Shorten up our variable names.
-    $component_tree = $form_state['storage']['component_tree'];
-    $page_count = $form_state['storage']['page_count'];
-    $page_num = $form_state['storage']['page_num'];
+    $component_tree = $form_state['webform']['component_tree'];
+    $page_count = $form_state['webform']['page_count'];
+    $page_num = $form_state['webform']['page_num'];
 
     // Recursively add components to the form.
     foreach ($component_tree['children'] as $cid => $component) {
@@ -1531,6 +1536,13 @@ function webform_client_form_submit($form, &$form_state) {
   module_load_include('inc', 'webform', 'includes/webform.submissions');
 
   $node = node_load($form_state['values']['details']['nid']);
+
+  // Move special settings to storage.
+  if (isset($form_state['webform']['component_tree'])) {
+    $form_state['storage']['component_tree'] = $form_state['webform']['component_tree'];
+    $form_state['storage']['page_count'] = $form_state['webform']['page_count'];
+    $form_state['storage']['page_num'] = $form_state['webform']['page_num'];
+  }
 
   // Check for a multi-page form that is not yet complete.
   $submit_op = empty($node->webform['submit_text']) ? t('Submit') : $node->webform['submit_text'];
