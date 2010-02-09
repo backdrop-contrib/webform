@@ -14,7 +14,7 @@ class WebformTestCase extends DrupalWebTestCase {
   /**
    * Implementation of getInfo().
    */
-  function getInfo() {
+  public static function getInfo() {
     return array(
       'name' => t('Webform'),
       'description' => t('Parent test suite used to setup Webform tests.'),
@@ -27,7 +27,10 @@ class WebformTestCase extends DrupalWebTestCase {
    */
   function setUp() {
     // Enable Webform.
-    parent::setUp('webform');
+    parent::setUp('webform', 'profile');
+
+    // Create a profile field to test %profile tokens.
+    db_query("INSERT INTO {profile_fields} (title, name, explanation, category, type, weight, required, register, visibility, autocomplete, options, page) VALUES ('%s', '%s', '%s', '%s', '%s', %d, %d, %d, %d, %d, '%s', '%s')", 'Gender', 'profile_gender', '', 'Profile', 'textfield', 0, 0, 0, 2, 0, '', '');
 
     // Create a normal user that can view their own submissions.
     $permissions['userAccess'] = array(
@@ -44,8 +47,8 @@ class WebformTestCase extends DrupalWebTestCase {
     // Create a webform editor to test creating and editing own content.
     $permissions['editor'] = array(
       'access content',
-      'create webforms',
-      'edit own webforms',
+      'create webform content',
+      'edit own webform content',
       'access all webform results',
     );
 
@@ -60,8 +63,11 @@ class WebformTestCase extends DrupalWebTestCase {
       'delete all webform submissions',
     );
 
-    foreach ($permissions as $user => $role_permissions) {
-      $this->webform_users[$user] = $this->drupalCreateUser($role_permissions);
+    foreach ($permissions as $user_key => $role_permissions) {
+      $this->webform_users[$user_key] = $this->drupalCreateUser($role_permissions);
+      $profile = array('profile_gender' => 'Female');
+      $this->webform_users[$user_key]->profile_gender = 'Female';
+      profile_save_profile($profile, $this->webform_users[$user_key], 'Profile');
     }
   }
 
@@ -69,17 +75,17 @@ class WebformTestCase extends DrupalWebTestCase {
    * Implemenation of tearDown().
    */
   function tearDown() {
-    parent::tearDown();
-
     // Delete the webform admin and any created nodes.
-    foreach ($this->webform_users as $user) {
-      $uid = $user->uid;
+    foreach ($this->webform_users as $account) {
+      $uid = $account->uid;
       $result = db_query('SELECT nid FROM {node} WHERE uid = %d', $uid);
       while ($node = db_fetch_array($result)) {
         node_delete($node['nid']);
       }
       user_delete(array(), $uid);
     }
+
+    parent::tearDown();
   }
 
   /**
@@ -102,7 +108,7 @@ class WebformTestCase extends DrupalWebTestCase {
    * @return array
    *   An array of each component settings.
    */
-  function webformTestComponents() {
+  function testWebformComponents() {
     if (isset($this->_webform_components)) {
       return $this->_webform_components;
     }
@@ -156,7 +162,7 @@ class WebformTestCase extends DrupalWebTestCase {
           'weight' => '-19',
           'page_num' => 1,
         ),
-        'sample values' => array('Ålphå' => 'øne', 'ıé†å' => 'twö', 'Îé¬†å' => 'ǼBƇ'),
+        'sample values' => array('q1' => 'øne', 'q2' => 'twö', 'q3' => 'ǼBƇ'),
         'database values' => array('øne', 'twö', 'ǼBƇ'),
         'database default values' => array('', '', ''),
       ),
@@ -177,9 +183,9 @@ class WebformTestCase extends DrupalWebTestCase {
           'page_num' => 1,
         ),
         'sample values' => array(
-          'Whats your option?' => 'one', // Quotes removed from values.
-          'Agåin?' => 'two',
-          'One more time!' => 'three',
+          'q1' => 'one',
+          'q2' => 'two',
+          'q3' => 'three',
         ),
         'database values' => array('one', 'two', 'three'),
         'database default values' => array('', '', ''),
@@ -202,7 +208,7 @@ class WebformTestCase extends DrupalWebTestCase {
           'weight' => '-19',
           'page_num' => 1,
         ),
-        'sample values' => array('Ålphå' => 'øne', 'ıé†å' => 'twö', 'Îé¬†å' => 'ǼBƇ'),
+        'sample values' => array('q1' => 'øne', 'q2' => 'twö', 'q3' => 'ǼBƇ'),
         'database values' => array('øne', 'twö', 'ǼBƇ'),
         'database default values' => array('', '', ''),
       ),
@@ -225,9 +231,9 @@ class WebformTestCase extends DrupalWebTestCase {
           'page_num' => 1,
         ),
         'sample values' => array(
-          'Whats your option?' => 'one', // Quotes removed from values.
-          'Agåin?' => 'two',
-          'One more time!' => 'three',
+          'q1' => 'one',
+          'q2' => 'two',
+          'q3' => 'three',
         ),
         'database values' => array('one', 'two', 'three'),
         'database default values' => array('', '', ''),
@@ -576,7 +582,7 @@ class WebformTestCase extends DrupalWebTestCase {
     return $this->_webform_components;
   }
 
-  function webformTestForm() {
+  function testWebformForm() {
     if (isset($this->_webform_node)) {
       return $this->_webform_node;
     }
@@ -598,10 +604,13 @@ class WebformTestCase extends DrupalWebTestCase {
      'format' => '1',
      'webform' => array(
         'confirmation' => 'Thanks!',
+        'confirmation_format' => FILTER_FORMAT_DEFAULT,
         'teaser' => '0',
+        'allow_draft' => '1',
         'submit_text' => '',
         'submit_limit' => '-1',
         'submit_interval' => '-1',
+        'submit_notice' => '1',
         'additional_validate' => '',
         'additional_submit' => '',
         'roles' => array('1', '2'),
@@ -611,7 +620,7 @@ class WebformTestCase extends DrupalWebTestCase {
     );
 
     $cid = 0;
-    foreach ($this->webformTestComponents() as $key => $component_info) {
+    foreach ($this->testWebformComponents() as $key => $component_info) {
       $cid++;
       $settings['webform']['components'][$cid] = $component_info['component'];
       $settings['webform']['components'][$cid]['cid'] = $cid;
@@ -624,9 +633,9 @@ class WebformTestCase extends DrupalWebTestCase {
   }
 
 
-  function webformTestPost() {
+  function testWebformPost() {
     $edit = array();
-    foreach ($this->webformTestComponents() as $key => $component_info) {
+    foreach ($this->testWebformComponents() as $key => $component_info) {
       if (is_array($component_info['sample values'])) {
         foreach ($component_info['sample values'] as $subkey => $value) {
           $edit["submitted[$key][$subkey]"] = $value;
