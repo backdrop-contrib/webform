@@ -16,6 +16,11 @@ class webform_handler_field_submission_link extends views_handler_field {
     $this->additional_fields['sid'] = 'sid';
     $this->additional_fields['nid'] = 'nid';
     $this->additional_fields['uid'] = 'uid';
+
+    $this->additional_fields['node_uid'] = array(
+      'table' => 'node', 
+      'field' => 'uid',
+    );
   }
 
   function allow_advanced_render() {
@@ -40,6 +45,12 @@ class webform_handler_field_submission_link extends views_handler_field {
 
   function query() {
     $this->ensure_my_table();
+
+    // Join to the node table to retrieve the node UID.
+    $join = new views_join();
+    $join->construct('node', $this->table_alias, 'nid', 'nid');
+    $this->query->ensure_table('node', $this->relationship, $join);
+
     $this->add_additional_fields();
   }
 
@@ -48,23 +59,27 @@ class webform_handler_field_submission_link extends views_handler_field {
     $submission->sid = $values->{$this->aliases['sid']};
     $submission->nid = $values->{$this->aliases['nid']};
     $submission->uid = $values->{$this->aliases['uid']};
+    $node = (object) array(
+      'nid' => $submission->nid,
+      'uid' => $values->{$this->aliases['node_uid']},
+    );
 
     switch ($this->link_type) {
       case 'view':
         $text = !empty($this->options['text']) ? $this->options['text'] : t('delete');
         $link = l($text, "node/$submission->nid/submission/$submission->sid");
-        $access = webform_submission_access($submission->nid, $submission, 'view');
+        $access = webform_submission_access($node, $submission, 'view');
         break;
       case 'edit':
         $text = !empty($this->options['text']) ? $this->options['text'] : t('edit');
         $link = l($text, "node/$submission->nid/submission/$submission->sid/edit");
-        $access = webform_submission_access($submission->nid, $submission, 'edit');
+        $access = webform_submission_access($node, $submission, 'edit');
         break;
       case 'delete':
         $text = !empty($this->options['text']) ? $this->options['text'] : t('view');
         $path = drupal_get_path_alias($_GET['q']);
         $link = l($text, "node/$submission->nid/submission/$submission->sid/delete", array('query' => 'destination='. $path));
-        $access = webform_submission_access($submission->nid, $submission, 'delete');
+        $access = webform_submission_access($node, $submission, 'delete');
         break;
       default:
         $text = '';

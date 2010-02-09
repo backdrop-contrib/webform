@@ -58,6 +58,22 @@ function webform_views_data() {
     ),
   );
 
+  // is_draft
+  $data['webform_submissions']['is_draft'] = array(
+    'title' => t('Draft'),
+    'help' => t('Whether or not the submission is a draft.'),
+    'field' => array(
+      'handler' => 'webform_handler_field_is_draft',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'handler' => 'webform_handler_filter_is_draft',
+    ),
+    'sort' => array(
+       'handler' => 'views_handler_sort',
+    ),
+  );
+
   // submitted
   $data['webform_submissions']['submitted'] = array(
     'title' => t('Submitted'),
@@ -179,6 +195,14 @@ function webform_views_handlers() {
       'webform_handler_field_form_body' => array(
         'parent' => 'views_handler_field',
         'file' => 'webform_handler_field_form_body.inc',
+      ),
+      'webform_handler_field_is_draft' => array(
+        'parent' => 'views_handler_field',
+        'file' => 'webform_handler_field_is_draft.inc',
+      ),
+      'webform_handler_filter_is_draft' => array(
+        'parent' => 'views_handler_filter_in_operator',
+        'file' => 'webform_handler_filter_is_draft.inc',
       ),
     ),
   );
