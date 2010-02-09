@@ -108,7 +108,7 @@ class webform_exporter_delimited extends webform_exporter {
 
     // Include at BOM at the beginning of the file for Little Endian.
     // This makes tab-separated imports work correctly in MS Excel.
-    if (function_exists('mb_convert_encoding')) {
+    if (function_exists('mb_convert_encoding') && $this->delimiter == '\t') {
       $output = chr(255) . chr(254);
     }
     @fwrite($file_handle, $output);
