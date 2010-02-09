@@ -706,11 +706,17 @@ function webform_forms($form_id) {
 function webform_file_download($file) {
   global $user;
 
-  $file = file_check_location(file_directory_path() .'/'. $file, file_directory_path() .'/webform/');
+  // If the Webform directory doesn't exist, don't attempt to deliver a file.
+  $webform_directory = file_directory_path() . '/webform/';
+  if (!is_dir($webform_directory)) {
+    return;
+  }
+
+  $file = file_check_location(file_directory_path() . '/' . $file, $webform_directory);
   if ($file && (user_access('access all webform results') || user_access('access own webform results'))) {
     $info = image_get_info(file_create_path($file));
     if (isset($info['mime_type'])) {
-      $headers = array('Content-type: '. $info['mime_type']);
+      $headers = array('Content-type: ' . $info['mime_type']);
     }
     else {
       $headers = array(
