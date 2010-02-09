@@ -1210,6 +1210,9 @@ function webform_update_6303() {
 function webform_update_6304() {
   $ret = array();
   $ret[] = update_sql("UPDATE {node_type} SET module = 'node', custom = 1, modified = 1, locked = 0 WHERE type = 'webform'");
+  if (!db_affected_rows()) {
+    $ret[] = update_sql("INSERT INTO {node_type} (type, name, module, description, help, has_title, title_label, has_body, body_label, min_word_count, custom, modified, locked, orig_type) VALUES ('webform', 'Webform', 'node', 'Create a new form or questionnaire accessible to users. Submission results and statistics are recorded and accessible to privileged users.', '', 1, 'Title', 1, 'Body', 0, 1, 1, 0, 'webform')");
+  }
   return $ret;
 }
 
