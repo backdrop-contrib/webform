@@ -431,6 +431,19 @@ function webform_init() {
   if (module_exists('form_builder') && strpos($_GET['q'], 'admin/build/form-builder') !== FALSE) {
     module_load_include('inc', 'webform', 'includes/webform.form_builder');
   }
+
+  // Use the administrative theme if set to use on content editing pages.
+  // See system_init().
+  if (variable_get('node_admin_theme', '0') && arg(0) == 'node' && (arg(2) == 'webform' || arg(2) == 'webform-results')) {
+    global $custom_theme;
+    $custom_theme = variable_get('admin_theme', '0');
+    drupal_add_css(drupal_get_path('module', 'system') .'/admin.css', 'module');
+
+    // Support for Admin module (1.x).
+    if (function_exists('_admin_init_theme')) {
+      _admin_init_theme();
+    }
+  }
 }
 
 /**
