@@ -405,7 +405,7 @@ function _webform_validate_file($element, &$form_state) {
     }
     $extension_list .= 'or '. $extensions[count($extensions)-1];
   }
-  else {
+  elseif (!empty($extensions)) {
     $extension_list = $extensions[0];
   }
 
@@ -416,7 +416,7 @@ function _webform_validate_file($element, &$form_state) {
   $dot = strrpos($_FILES['files']['name'][$form_key], '.');
   $extension = drupal_strtolower(substr($_FILES['files']['name'][$form_key], $dot+1));
   $file_error = FALSE;
-  if (!in_array($extension, $extensions)) {
+  if (!empty($extensions) && !in_array($extension, $extensions)) {
     form_error($element, t("Files with the '%ext' extension are not allowed, please upload a file with a %exts extension.", array('%ext' => $extension, '%exts' => $extension_list)));
     $file_error = TRUE;
   }
