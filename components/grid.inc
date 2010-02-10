@@ -185,25 +185,26 @@ function theme_webform_display_grid($element) {
 
   if ($format == 'html') {
     $rows = array();
-    $header = array('');
+    $header = array(array('data' => '', 'class' => 'webform-grid-question'));
     foreach ($element['#options'] as $option) {
-      $header[] = array('data' => _webform_filter_xss($option), 'class' => 'checkbox');
+      $header[] = array('data' => _webform_filter_xss($option), 'class' => 'checkbox webform-grid-option');
     }
     foreach (element_children($element) as $key) {
       $row = array();
-      $row[] = _webform_filter_xss($element[$key]['#title']);
+      $row[] = array('data' => _webform_filter_xss($element[$key]['#title']), 'class' => 'webform-grid-question');
       foreach ($element['#options'] as $option_value => $option_label) {
         if ($option_value == $element[$key]['#value']) {
-          $row[] = array('data' => '<strong>X</strong>', 'class' => 'checkbox');
+          $row[] = array('data' => '<strong>X</strong>', 'class' => 'checkbox webform-grid-option');
         }
         else {
-          $row[] = '&nbsp';
+          $row[] = array('data' => '&nbsp', 'class' => 'checkbox webform-grid-option');
         }
       }
       $rows[] = $row;
     }
 
-    $output = theme('table', $header, $rows, array('class' => 'webform-grid'));
+    $option_count = count($header) - 1;
+    $output = theme('table', $header, $rows, array('class' => 'webform-grid webform-grid-' . $option_count));
   }
   else {
     $items = array();
@@ -277,6 +278,7 @@ function _webform_analysis_grid($component, $sids = array()) {
   }
   $output = theme('table', $header, $rows, array('class' => 'webform-grid'));
 
+
   return array(array(array('data' => $output, 'colspan' => 2)));
 }
 
@@ -337,7 +339,7 @@ function _webform_csv_data_grid($component, $export_options, $value) {
 
 function theme_webform_grid($element) {
   $rows = array();
-  $header = array('');
+  $header = array(array('data' => '', 'class' => 'webform-grid-question'));
   $first = TRUE;
   foreach (element_children($element) as $key) {
     $question_element = $element[$key];
@@ -345,24 +347,25 @@ function theme_webform_grid($element) {
     // Set the header for the table.
     if ($first) {
       foreach ($question_element['#options'] as $option) {
-        $header[] = array('data' => _webform_filter_xss($option), 'class' => 'checkbox');
+        $header[] = array('data' => _webform_filter_xss($option), 'class' => 'checkbox webform-grid-option');
       }
       $first = FALSE;
     }
 
     // Create a row with the question title.
-    $row = array(_webform_filter_xss($question_element['#title']));
+    $row = array(array('data' => _webform_filter_xss($question_element['#title']), 'class' => 'webform-grid-question'));
 
     // Render each radio button in the row.
     $radios = expand_radios($question_element);
     foreach (element_children($radios) as $key) {
       unset($radios[$key]['#title']);
-      $row[] = array('data' => drupal_render($radios[$key]), 'class' => 'checkbox');
+      $row[] = array('data' => drupal_render($radios[$key]), 'class' => 'checkbox webform-grid-option');
     }
     $rows[] = $row;
   }
 
-  return theme('form_element', $element, theme('table', $header, $rows, array('class' => 'webform-grid')));
+  $option_count = count($header) - 1;
+  return theme('form_element', $element, theme('table', $header, $rows, array('class' => 'webform-grid webform-grid-' . $option_count)));
 }
 
 /**
