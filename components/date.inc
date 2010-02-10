@@ -358,7 +358,9 @@ function _webform_analysis_date($component, $sids = array()) {
  */
 function _webform_table_date($component, $value) {
   if (drupal_strlen($value[0]) > 0 && drupal_strlen($value[1]) > 0 && drupal_strlen($value[2]) > 0) {
-    return check_plain($value[0] .'/'. $value[1] .'/'. $value[2]);
+    $timestamp = webform_strtotime($value[0] .'/'. $value[1] .'/'. $value[2]);
+    $format = webform_date_format('short');
+    return format_date($timestamp, 'custom', $format, 0);
   }
   else {
     return '';
