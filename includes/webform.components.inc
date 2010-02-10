@@ -512,7 +512,7 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
-    '#weight' => 20,
+    '#weight' => 50,
   );
 
   return $form;
