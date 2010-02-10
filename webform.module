@@ -1783,7 +1783,14 @@ function webform_client_form_submit($form, &$form_state) {
         }
 
         $language = $user->uid ? user_preferred_language($user) : language_default();
-        drupal_mail('webform', 'submission', $address, $language, array('message' => $email['message'], 'subject' => $email['subject'], 'headers' => $email['headers']), $email['from']);
+        $mail_params = array(
+          'message' => $email['message'],
+          'subject' => $email['subject'],
+          'headers' => $email['headers'],
+          'node' => $node,
+          'submission' => $submission,
+        );
+        drupal_mail('webform', 'submission', $address, $language, $mail_params, $email['from']);
   
         // Debugging output for email.
         if (variable_get('webform_debug', 0) >= 2) {
