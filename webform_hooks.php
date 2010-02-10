@@ -89,6 +89,62 @@ function hook_webform_submission_delete($node, $submission) {
 }
 
 /**
+ * Modify a loaded Webform component.
+ *
+ * IMPORTANT: This hook does not actually exist because components are loaded
+ * in bulk as part of webform_node_load(). Use hook_nodeapi() to modify loaded
+ * components when the node is loaded. This example is provided merely to point
+ * to hook_nodeapi().
+ *
+ * @see hook_nodeapi()
+ * @see webform_node_load()
+ */
+function hook_webform_component_load() {
+  // This hook does not exist. Instead use hook_nodeapi().
+}
+
+/**
+ * Modify a Webform component before it is saved to the database.
+ *
+ * Note that most of the time this hook is not necessary, because Webform will
+ * automatically add data to the component based on the component form. Using
+ * hook_form_alter() will be sufficient in most cases.
+ *
+ * @see hook_form_alter()
+ * @see webform_component_edit_form()
+ *
+ * @param $component
+ *   The Webform component being saved.
+ */
+function hook_webform_component_presave(&$component) {
+  $component['extra']['new_option'] = 'foo';
+}
+
+/**
+ * Respond to a Webform component being inserted into the database.
+ */
+function hook_webform_component_insert($component) {
+  // Insert a record into a 3rd-party module table when a component is inserted.
+  db_query("INSERT INTO {mymodule_table} (nid, cid) VALUES (%d, %d)", $component['nid'], $component['sid']);
+}
+
+/**
+ * Respond to a Webform component being updated in the database.
+ */
+function hook_webform_component_update($component) {
+  // Update a record in a 3rd-party module table when a component is updated.
+  db_query('UPDATE {mymodule_table} SET value "%s" WHERE nid = %d AND cid = %d)', 'foo', $component['nid'], $component['sid']);
+}
+
+/**
+ * Respond to a Webform component being deleted.
+ */
+function hook_webform_component_delete($component) {
+  // Update a record in a 3rd-party module table when a component is updated.
+  db_query('DELETE FROM {mymodule_table} WHERE nid = %d AND cid = %d)', $component['nid'], $component['sid']);
+}
+
+/**
  * Define components to Webform.
  *
  * @return

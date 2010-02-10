@@ -615,12 +615,22 @@ function webform_component_delete_form_submit($form, &$form_state) {
  *   A full component containing fields from the component form.
  */
 function webform_component_insert(&$component) {
+  // Allow modules to modify the component before saving.
+  foreach (module_implements('webform_component_presave') as $module) {
+    $function = $module . '_webform_component_presave';
+    $function($component);
+  }
+
   db_lock_table('webform_component');
   $component['cid'] = isset($component['cid']) ? $component['cid'] : db_result(db_query('SELECT MAX(cid) FROM {webform_component} WHERE nid = %d', $component['nid'])) + 1;
   $component['value'] = isset($component['value']) ? $component['value'] : NULL;
   $component['mandatory'] = isset($component['mandatory']) ? $component['mandatory'] : 0;
   db_query("INSERT INTO {webform_component} (nid, cid, pid, form_key, name, type, value, extra, mandatory, weight) VALUES (%d, %d, %d, '%s', '%s', '%s', '%s', '%s', %d, %d)", $component['nid'], $component['cid'], $component['pid'], $component['form_key'], $component['name'], $component['type'], $component['value'], serialize($component['extra']), $component['mandatory'], $component['weight']);
   db_unlock_tables();
+
+  // Post-insert actions.
+  module_invoke_all('webform_component_insert', $component);
+
   return $component['cid'];
 }
 
@@ -632,9 +642,20 @@ function webform_component_insert(&$component) {
  *   component form. Additional properties are stored in the extra array.
  */
 function webform_component_update($component) {
+  // Allow modules to modify the component before saving.
+  foreach (module_implements('webform_component_presave') as $module) {
+    $function = $module . '_webform_component_presave';
+    $function($component);
+  }
+
   $component['value'] = isset($component['value']) ? $component['value'] : NULL;
   $component['mandatory'] = isset($component['mandatory']) ? $component['mandatory'] : 0;
-  return db_query("UPDATE {webform_component} SET pid = %d, form_key = '%s', name = '%s', type = '%s', value = '%s', extra = '%s', mandatory = %d, weight = %d WHERE nid = %d AND cid = %d", $component['pid'], $component['form_key'], $component['name'], $component['type'], $component['value'], serialize($component['extra']), $component['mandatory'], $component['weight'], $component['nid'], $component['cid']);
+  $success = db_query("UPDATE {webform_component} SET pid = %d, form_key = '%s', name = '%s', type = '%s', value = '%s', extra = '%s', mandatory = %d, weight = %d WHERE nid = %d AND cid = %d", $component['pid'], $component['form_key'], $component['name'], $component['type'], $component['value'], serialize($component['extra']), $component['mandatory'], $component['weight'], $component['nid'], $component['cid']);
+
+  // Post-update actions.
+  module_invoke_all('webform_component_update', $component);
+
+  return $success;
 }
 
 function webform_component_delete($node, $component) {
@@ -663,6 +684,9 @@ function webform_component_delete($node, $component) {
     $component = $node->webform['components'][$row->cid];
     webform_component_delete($node, $component);
   }
+
+  // Post-delete actions.
+  module_invoke_all('webform_component_delete', $component);
 }
 
 /**
