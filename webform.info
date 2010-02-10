@@ -2,3 +2,4 @@
 name = Webform
 description = Enables the creation of forms and questionnaires.
 core = 6.x
+package = Webform
