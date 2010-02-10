@@ -87,7 +87,7 @@ function _webform_edit_time($component) {
 /**
  * Implementation of _webform_render_component().
  */
-function _webform_render_time($component) {
+function _webform_render_time($component, $value = NULL) {
   if (drupal_strlen($component['value']) > 0) {
     // Calculate the timestamp in GMT.
     $timestamp = strtotime($component['value']);
