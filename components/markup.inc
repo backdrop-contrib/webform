@@ -28,15 +28,16 @@ function _webform_defaults_markup() {
 function _webform_edit_markup($component) {
   $form = array();
   $form['advanced']['mandatory'] = array(); // Do not render the mandatory checkbox.
-  $form['value'] = array(
+  $form['markup']['value'] = array(
     '#type' => 'textarea',
     '#title' => t('Value'),
     '#default_value' => $component['value'],
     '#description' => t('Markup allows you to enter custom HTML or PHP logic into your form.') . theme('webform_token_help'),
     '#weight' => -1,
+    '#parents' => array('value'),
   );
   // Add the filter form.
-  $form['extra']['format'] = filter_form($component['extra']['format'], 0, array('extra', 'format'));
+  $form['markup']['format'] = filter_form($component['extra']['format'], 0, array('extra', 'format'));
 
   // No description for markup.
   $form['extra']['description'] = array();
