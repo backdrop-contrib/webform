@@ -2652,6 +2652,18 @@ function webform_set_breadcrumb($node, $submission = NULL) {
 }
 
 /**
+ * Wrapper function for tt() if i18nstrings enabled.
+ */
+function webform_tt($name, $string, $langcode = NULL, $update = FALSE) {
+  if (function_exists('tt')) {
+    return tt($name, $string, $langcode, $update);
+  }
+  else {
+    return $string;
+  }
+}
+
+/**
  * Implementation of hook_views_api().
  */
 function webform_views_api() {
