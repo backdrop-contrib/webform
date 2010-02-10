@@ -83,6 +83,12 @@ function webform_configure_form(&$form_state, $node) {
     '#access' => variable_get('webform_submission_access_control', 1),
   );
   $user_roles = user_roles();
+  foreach ($user_roles as $rid => $rname) {
+    if ($rid == DRUPAL_ANONYMOUS_RID || $rid == DRUPAL_AUTHENTICATED_RID) {
+      continue;
+    }
+    $user_roles[$rid] = webform_tt("user:rid:$rid:name", $rname);
+  }
   $form['role_control']['roles'] = array(
     '#default_value' => $node->webform['roles'],
     '#options' => $user_roles,
