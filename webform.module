@@ -25,7 +25,7 @@ function webform_help($section = 'admin/help#webform', $arg = NULL) {
       $output = t("<p>This module lets you create forms or questionnaires and define their content. Submissions from these forms are stored in the database and optionally also sent by e-mail to a predefined address.</p>
       <p>Here is how to create one:</p>
       <ul>
-       <li>Go to Create Content and add a webform<./li>
+       <li>Go to Create Content and add a webform.</li>
        <li>Add a description to be displayed as a teaser and above the actual form.</li>
        <li>Add a confirmation message and/or redirect node that is to be displayed after successful submission.</li>
        <li>Add one or more components to your form.</li>
