@@ -880,7 +880,7 @@ function webform_update_6310() {
   // to the new redirect_url field.
   $result = db_query("SELECT nid, confirmation FROM {webform}");
   while ($row = db_fetch_object($result)) {
-    $confirmation = trim(strip_tags($row->confirmation));
+    $confirmation = trim(strip_tags($row->confirmation, '<front>'));
     if (valid_url($confirmation, TRUE) || preg_match('/^internal:/', $confirmation)) {
       $redirect_url = preg_replace('/^internal:/', '', $confirmation);
       db_query("UPDATE {webform} SET redirect_url = '%s' WHERE nid = %d", $redirect_url, $row->nid);
