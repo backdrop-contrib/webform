@@ -884,7 +884,7 @@ function webform_update_6310() {
     if (valid_url($confirmation, TRUE) || preg_match('/^internal:/', $confirmation)) {
       $redirect_url = preg_replace('/^internal:/', '', $confirmation);
       db_query("UPDATE {webform} SET redirect_url = '%s' WHERE nid = %d", $redirect_url, $row->nid);
-      db_query("UPDATE {webform} SET confirmation = '' WHERE nid = %d", '', $row->nid);
+      db_query("UPDATE {webform} SET confirmation = '' WHERE nid = %d", $row->nid);
     }
     elseif (preg_match('/^message:/', $confirmation)) {
       $message = preg_replace('/^message:/', '', $confirmation);
