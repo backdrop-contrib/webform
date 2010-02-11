@@ -32,6 +32,11 @@ function webform_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'redirect_url' => array(
+        'description' => 'The URL a user is redirected to after submitting a form.',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
       'teaser' => array(
         'description' => 'Boolean value for whether the entire form should be displayed on the teaser.',
         'type' => 'int',
@@ -852,6 +857,40 @@ function webform_update_6309() {
       $perms[$id] = trim($perm);
     }
     $ret[] = update_sql("UPDATE {permission} SET perm = '" . implode(', ', $perms) . "' WHERE rid = " . $role->rid);
+  }
+
+  return $ret;
+}
+
+/**
+ * Add the redirect_url field and update existing webforms to use it.
+ */
+function webform_update_6310() {
+  $ret = array();
+
+  // Safety check to prevent re-adding existing column.
+  if (db_column_exists('webform', 'redirect_url')) {
+    return $ret;
+  }
+
+  // Add the new redirect_url column.
+  db_add_field($ret, 'webform', 'redirect_url', array('type' => 'varchar', 'length' => '255'));
+
+  // If the webform is using the confirmation field as a redirect then move it
+  // to the new redirect_url field.
+  $result = db_query("SELECT nid, confirmation FROM {webform}");
+  while ($row = db_fetch_object($result)) {
+    $confirmation = trim(strip_tags($row->confirmation));
+    if (valid_url($confirmation, TRUE) || preg_match('/^internal:/', $confirmation)) {
+      $redirect_url = preg_replace('/^internal:/', '', $confirmation);
+      db_query("UPDATE {webform} SET redirect_url = '%s' WHERE nid = %d", $redirect_url, $row->nid);
+      db_query("UPDATE {webform} SET confirmation = '' WHERE nid = %d", '', $row->nid);
+    }
+    elseif (preg_match('/^message:/', $confirmation)) {
+      $message = preg_replace('/^message:/', '', $confirmation);
+      db_query("UPDATE {webform} SET redirect_url = '%s' WHERE nid = %d", 'node/' . $row->nid, $row->nid);
+      db_query("UPDATE {webform} SET confirmation = '%s' WHERE nid = %d", $message, $row->nid);
+    }
   }
 
   return $ret;

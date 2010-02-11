@@ -25,9 +25,9 @@ function webform_help($section = 'admin/help#webform', $arg = NULL) {
       $output = t("<p>This module lets you create forms or questionnaires and define their content. Submissions from these forms are stored in the database and optionally also sent by e-mail to a predefined address.</p>
       <p>Here is how to create one:</p>
       <ul>
-       <li>Go to Create Content and add a webform</li>
+       <li>Go to Create Content and add a webform<./li>
        <li>Add a description to be displayed as a teaser and above the actual form.</li>
-       <li>Add a confirmation message or redirect node that is to be displayed after successful submission.</li>
+       <li>Add a confirmation message and/or redirect node that is to be displayed after successful submission.</li>
        <li>Add one or more components to your form.</li>
        <li>Optionally add an e-mail address to which submissions will be sent. If no email address is specified, no e-mail will be sent when submissions are made through the form.</li>
        <li>Optionally select an e-mail (or hidden) component that will be used to populate the return e-mail address on any sent e-mail.</li>
@@ -797,8 +797,8 @@ function webform_node_insert($node) {
 
   module_load_include('inc', 'webform', 'includes/webform.components');
 
-  // Insert the Webform.
-  db_query("INSERT INTO {webform} (nid, confirmation, confirmation_format, teaser, allow_draft, submit_notice, submit_text, submit_limit, submit_interval, additional_validate, additional_submit) VALUES (%d, '%s', %d, %d, %d, %d, '%s', %d, %d, '%s', '%s')", $node->nid, $node->webform['confirmation'], $node->webform['confirmation_format'], $node->webform['teaser'], $node->webform['allow_draft'], $node->webform['submit_notice'], $node->webform['submit_text'], $node->webform['submit_limit'], $node->webform['submit_interval'], $node->webform['additional_validate'], $node->webform['additional_submit']);
+  // Insert the webform.
+  db_query("INSERT INTO {webform} (nid, confirmation, confirmation_format, redirect_url, teaser, allow_draft, submit_notice, submit_text, submit_limit, submit_interval, additional_validate, additional_submit) VALUES (%d, '%s', %d, '%s', %d, %d, %d, '%s', %d, %d, '%s', '%s')", $node->nid, $node->webform['confirmation'], $node->webform['confirmation_format'], $node->webform['redirect_url'], $node->webform['teaser'], $node->webform['allow_draft'], $node->webform['submit_notice'], $node->webform['submit_text'], $node->webform['submit_limit'], $node->webform['submit_interval'], $node->webform['additional_validate'], $node->webform['additional_submit']);
 
   // Insert the components into the database. Used with clone.module.
   if (isset($node->webform['components']) && !empty($node->webform['components'])) {
@@ -888,6 +888,7 @@ function webform_node_load($node) {
     $additions['webform'] = array(
       'confirmation' => '',
       'confirmation_format' => FILTER_FORMAT_DEFAULT,
+      'redirect_url' => '',
       'teaser' => 0,
       'allow_draft' => 0,
       'submit_notice' => 0,
@@ -1826,32 +1827,41 @@ function webform_client_form_submit($form, &$form_state) {
     watchdog('webform', 'Submission posted to %title. <a href="!url">Results</a>. !details', array('%title' => $node->title, '!url' => url('node/'. $node->nid .'/submission/'. $sid), '!results' => "<br />\n<pre>". htmlentities(print_r($form_state['values'], TRUE)) .'</pre>'));
   }
 
-  // Check confirmation field to see if redirect should be to another node or a message.
+  // Strip out empty tags added by WYSIWYG editors if needed.
+  $confirmation = strlen(trim(strip_tags($node->webform['confirmation']))) ? $node->webform['confirmation'] : '';
+  $redirect_url = trim($node->webform['redirect_url']);
+
+  // Check confirmation and redirect_url fields.
+  $message = NULL;
   if ($is_draft) {
-    drupal_set_message(t('Draft saved.'));
     $redirect = NULL;
+    $message = t('Draft saved');
   }
   elseif (isset($form_state['values']['submission'])) {
-    drupal_set_message(t('Submission updated.'));
     $redirect = NULL;
+    $message = t('Submission updated.');
   }
-  elseif (valid_url(trim($node->webform['confirmation']), TRUE)) {
-    $redirect = trim($node->webform['confirmation']);
-  }
-  // Check if the form should redirect to an internal URL, strip tags off
-  // first in case a WYSIWYG editor messed it up.
-  elseif (preg_match('/^internal:/', trim(strip_tags($node->webform['confirmation'])))) {
-    $path = preg_replace('/^internal:/', '', trim(strip_tags($node->webform['confirmation'])));
-    $redirect = array(trim($path), 'sid='. $sid);
-  }
-  elseif (preg_match('/^message:/', $node->webform['confirmation'])) {
-    $message = preg_replace('/^message:/', '', $node->webform['confirmation']);
-    drupal_set_message($message);
-    $redirect = NULL;
+  elseif (valid_url($redirect_url, TRUE)) {
+    $redirect = $redirect_url;
+   }
+  elseif ($redirect_url && strpos($redirect_url, 'http') !== 0) {
+    $parts = parse_url($redirect_url);
+    $query = $parts['query'] ? ($parts['query'] . '&sid=' . $sid) : ('sid=' . $sid);
+    $redirect = array($parts['path'], $query, $parts['fragment']);
   }
   else {
-    $redirect = array('node/'. $node->nid .'/done', 'sid='. $sid);
+    $redirect = array('node/' . $node->nid . '/done', 'sid=' . $sid);
   }
+
+  // Show a message if manually set.
+  if (isset($message)) {
+    drupal_set_message($message);
+  }
+  // If redirecting and we have a confirmation message, show it as a message.
+  elseif (!empty($redirect) && !empty($confirmation)) {
+    drupal_set_message(check_markup($confirmation, $node->webform['confirmation_format'], FALSE));
+  }
+
   $form_state['redirect'] = $redirect;
 }
 
@@ -1939,12 +1949,9 @@ function template_preprocess_webform_form(&$vars) {
  * Prepare for theming of the webform submission confirmation.
  */
 function template_preprocess_webform_confirmation(&$vars) {
-  if (empty($vars['node']->webform['confirmation'])) {
-    drupal_set_message(t('Thank you, your submission has been received.'));
-    drupal_goto('node/'. $vars['node']->nid);
-  }
-
-  $vars['confirmation_message'] = check_markup($vars['node']->webform['confirmation'], $vars['node']->webform['confirmation_format'], FALSE);
+  // Strip out empty tags added by WYSIWYG editors if needed.
+  $confirmation = strlen(trim(strip_tags($vars['node']->webform['confirmation']))) ? $vars['node']->webform['confirmation'] : '';
+  $vars['confirmation_message'] = check_markup($confirmation, $vars['node']->webform['confirmation_format'], FALSE);
 }
 
 /**
