@@ -1413,8 +1413,18 @@ function _webform_client_form_add_component($component, $component_value, &$pare
   if ($format != 'form') {
     // This component is display only.
     $data = empty($submission->data[$cid]['value']) ? NULL : $submission->data[$cid]['value'];
-    if ($output = webform_component_invoke($component['type'], 'display', $component, $data, $format)) {
-      $parent_fieldset[$component['form_key']] = $output;
+    if ($display_element = webform_component_invoke($component['type'], 'display', $component, $data, $format)) {
+      // The form_builder() function usually adds #parents and #id for us, but
+      // because these are not marked for #input, we need to add them manually.
+      if (!isset($display_element['#parents'])) {
+        $parents = isset($parent_fieldset['#parents']) ? $parent_fieldset['#parents'] : array('submitted');
+        $parents[] = $component['form_key'];
+        $display_element['#parents'] = $parents;
+      }
+      if (!isset($display_element['#id'])) {
+        $display_element['#id'] = form_clean_id('edit-'. implode('-', $display_element['#parents']));
+      }
+      $parent_fieldset[$component['form_key']] = $display_element;
     }
   }
   elseif ($component['page_num'] == $page_num) {
