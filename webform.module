@@ -19,26 +19,48 @@ function webform_help($section = 'admin/help#webform', $arg = NULL) {
   $output = '';
   switch ($section) {
     case 'admin/settings/webform':
-      $output = t('Webforms are forms and questionnaires. To add one, select <a href="!url">Create content -&gt; Webform</a>.', array('!url' => url('node/add/webform')));
+      $type_list = webform_admin_type_list();
+      $output = t('Webform enables nodes to have attached forms and questionnaires.');
+      if ($type_list) {
+        $output .= ' ' . t('To add one, create a !types piece of content.', array('!types' => $type_list));
+      }
+      else {
+        $output .= ' <strong>' . t('Webform is currently not enabled on any content types.') . '</strong> ' . t('To use Webform, please enable it on at least one content type on this page.');
+      }
+      $output = '<p>' . $output . '</p>';
+      break;
+    case 'admin/content/webform':
+      $output = '<p>' . t('This page lists all of the content on the site that may have a webform attached to it.') . '</p>';
       break;
     case 'admin/help#webform':
+      module_load_include('inc', 'webform', 'includes/webform.admin');
+      $types = webform_admin_type_list();
+      if (empty($types)) {
+        $types = t('Webform-enabled piece of content');
+        $types_message = t('Webform is currently not enabled on any content types.') . ' ' . t('Visit the <a href="!url">Webform settings</a> page and enable Webform on at least one content type.', array('!url' => url('admin/settings/webform')));
+      }
+      else {
+        $types_message = t('Optional: Enable Webform on multiple types by visiting the <a href="!url">Webform settings</a> page.', array('!url' => array('admin/settings/webform')));
+      }
       $output = t("<p>This module lets you create forms or questionnaires and define their content. Submissions from these forms are stored in the database and optionally also sent by e-mail to a predefined address.</p>
       <p>Here is how to create one:</p>
       <ul>
-       <li>Go to Create Content and add a webform.</li>
-       <li>Add a description to be displayed as a teaser and above the actual form.</li>
-       <li>Add a confirmation message and/or redirect node that is to be displayed after successful submission.</li>
-       <li>Add one or more components to your form.</li>
-       <li>Optionally add an e-mail address to which submissions will be sent. If no email address is specified, no e-mail will be sent when submissions are made through the form.</li>
-       <li>Optionally select an e-mail (or hidden) component that will be used to populate the return e-mail address on any sent e-mail.</li>
-       <li>Optionally select a textfield (or hidden) component that will be used to populate the subject e-mail field on any sent e-mail.</li>
+        <li>!webform-types-message</li>
+        <li>Go to <a href=\"!create-content\">Create content</a> and add a !types piece of content.</li>
+        <li>After saving the new content, you will be redirected to the main field list of the form that will be created. Add the fields you would like on your form.</li>
+        <li>Once finished adding fields, you may want to send e-mails to administrators or back to the user who filled out the form. Click on the <em>Emails</em> sub-tab underneath the <em>Webform</em> tab on the piece of content.</li>
+        <li>Finally, visit the <em>Form settings</em> sub-tab under the <em>Webform</em> tab to configure remaining configurations options for your form.
+          <ul>
+          <li>Add a confirmation message and/or redirect URL that is to be displayed after successful submission.</li>
+          <li>Set a submission limit.</li>
+          <li>Determine which roles may submit the form.</li>
+          <li>Advanced configuration options such as allowing drafts or show users a message indicating how they can edit their submissions.</li>
+          </ul>
+        </li>
+        <li>Your form is now ready for viewing. After receiving submissions, you can check the results users have submitted by visiting the <em>Results</em> tab on the piece of content.</li>
       </ul>
       <p>Help on adding and configuring the components will be shown after you add your first component.</p>
-      <p>The content of submitted forms is stored in the database table <i>webform_submitted_data</i> as key-value pairs.</p>
-      ");
-      break;
-    case 'node/add#webform':
-      $output = t('A webform can be a questionnaires, contact or request forms. It can be used to let visitors make contact, register for a event or to enable a complex survey.');
+      ", array('!webform-types-message' => $types_message, '!create-content' => url('node/add'), '!types' => $types));
       break;
     case 'node/%/webform/components':
       $output .= '<p>'. t('This page displays all the components currently configured for this webform node. You may add any number of components to the form, even multiple of the same type. To add a new component, fill in a name and select a type from the fields at the bottom of the table. Submit the form to create the new component or update any changed form values.') .'</p>';
@@ -68,7 +90,7 @@ function webform_menu() {
 
   // Admin Settings.
   $items['admin/settings/webform'] = array(
-    'title' => 'Webform',
+    'title' => 'Webform settings',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('webform_admin_settings'),
     'access callback' => 'user_access',

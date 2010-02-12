@@ -15,7 +15,7 @@ function webform_admin_settings() {
   $node_types = node_get_types('names');
   $form['node_types'] = array(
     '#type' => 'checkboxes',
-    '#title' => t('Webform Node Types'),
+    '#title' => t('Webform-enabled content types'),
     '#description' => t('Webform allows you to enable the webform components for any content type.  Choose the types on which you would like to associate webform components.'),
     '#options' => $node_types,
     '#default_value' => webform_variable_get('webform_node_types'),
@@ -190,14 +190,37 @@ function theme_webform_admin_settings($form) {
  */
 function webform_admin_content() {
   $webform_types = webform_variable_get('webform_node_types');
-  $placeholders = implode(', ', array_fill(0, sizeof($webform_types), "'%s'"));
-  $result = db_query(db_rewrite_sql("SELECT n.*, r.* FROM {node} n INNER JOIN {node_revisions} r ON n.vid = r.vid WHERE n.type IN ($placeholders)", 'n', 'nid', $webform_types), $webform_types);
+
   $nodes = array();
-  while ($node = db_fetch_object($result)) {
-    $nodes[] = $node;
+  if ($webform_types) {
+    $placeholders = implode(', ', array_fill(0, count($webform_types), "'%s'"));
+    $result = db_query(db_rewrite_sql("SELECT n.*, r.* FROM {node} n INNER JOIN {node_revisions} r ON n.vid = r.vid WHERE n.type IN ($placeholders)", 'n', 'nid', $webform_types), $webform_types);
+    while ($node = db_fetch_object($result)) {
+      $nodes[] = $node;
+    }
   }
 
   return theme('webform_admin_content', $nodes);
+}
+
+/**
+ * Create a comma-separate list of content types that are webform enabled.
+ */
+function webform_admin_type_list() {
+  $webform_types = webform_variable_get('webform_node_types');
+  $webform_type_list = '';
+  $webform_type_count = count($webform_types);
+  foreach ($webform_types as $n => $type) {
+    $webform_type_list .= l(node_get_types('name', $type), 'node/add/' . $type);
+    if ($n + 1 < $webform_type_count) {
+      $webform_type_list .= $webform_type_count == 2 ? ' ' : ', ';
+    }
+    if ($n + 2 == $webform_type_count) {
+      $webform_type_list .= t('or') . ' ';
+    }
+  }
+
+  return $webform_type_list;
 }
 
 /**
@@ -220,6 +243,21 @@ function theme_webform_admin_content($nodes) {
       l(t('Download'), 'node/'. $node->nid .'/webform-results/download'),
       node_access('update', $node) ? l(t('Edit'), 'node/'. $node->nid .'/edit') : '',
       user_access('delete all webform submissions') ? l(t('Clear'), 'node/'. $node->nid .'/webform-results/clear') : '',
+    );
+  }
+
+  if (empty($rows)) {
+    $webform_types = webform_variable_get('webform_node_types');
+    if (empty($webform_types)) {
+      $message = t('Webform is currently not enabled on any content types.') . ' ' . t('Visit the <a href="!url">Webform settings</a> page and enable Webform on at least one content type.', array('!url' => url('admin/settings/webform')));
+    }
+    else {
+      $webform_type_list = webform_admin_type_list();
+      $message = t('There are currently no webforms on your site. Create a !types piece of content.', array('!types' => $webform_type_list));
+    }
+
+    $rows[] = array(
+      array('data' => $message, 'colspan' => 7),
     );
   }
 
