@@ -425,7 +425,7 @@ function _webform_submission_limit_check($node) {
 
     if (isset($_COOKIE[$cookie_name]) && is_array($_COOKIE[$cookie_name])) {
       foreach ($_COOKIE[$cookie_name] as $key => $timestamp) {
-        if ($timestamp <= time() - $node->webform['submit_interval']) {
+        if ($node->webform['submit_interval'] != -1 && $timestamp <= time() - $node->webform['submit_interval']) {
           // Remove the cookie if past the required time interval.
           setcookie($cookie_name .'['. $key .']', '', 0);
         }
