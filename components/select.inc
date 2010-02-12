@@ -160,8 +160,6 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
     '#required'      => $component['mandatory'],
     '#weight'        => $component['weight'],
     '#description'   => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
-    '#prefix'        => '<div class="webform-component-'. $component['type'] .'" id="webform-component-'. $component['form_key'] .'">',
-    '#suffix'        => '</div>',
   );
 
   // Convert the user-entered options list into an array.
@@ -250,6 +248,10 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
       $element['#process'] = array('expand_radios', 'webform_expand_select_ids');
     }
   }
+
+  $form_item['#prefix'] = '<div class="webform-component-' . $form_item['#type'] . '" id="webform-component-' . $component['form_key'] . '">';
+  $form_item['#suffix'] = '</div>';
+
   return $element;
 }
 
