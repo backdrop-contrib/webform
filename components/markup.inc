@@ -27,7 +27,6 @@ function _webform_defaults_markup() {
  */
 function _webform_edit_markup($component) {
   $form = array();
-  $form['advanced']['mandatory'] = array(); // Do not render the mandatory checkbox.
   $form['markup']['value'] = array(
     '#type' => 'textarea',
     '#title' => t('Value'),
