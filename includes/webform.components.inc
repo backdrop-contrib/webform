@@ -492,6 +492,10 @@ function webform_component_edit_form(&$form_state, $node, $component, $clone = F
     $form['extra'] = array_merge($form['extra'], $additional_form_elements['extra']);
     unset($additional_form_elements['extra']);
   }
+  if (isset($additional_form_elements['position'])) {
+    $form['position'] = array_merge($form['position'], $additional_form_elements['position']);
+    unset($additional_form_elements['position']);
+  }
   if (isset($additional_form_elements['display'])) {
     $form['display'] = array_merge($form['display'], $additional_form_elements['display']);
     unset($additional_form_elements['display']);
