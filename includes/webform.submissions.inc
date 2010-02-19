@@ -261,6 +261,13 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     $where_clause = implode(' AND ', $where);
     $pager_query = "SELECT sid FROM {webform_submissions} WHERE $where_clause";
 
+    if (is_array($header)) {
+      $pager_query .= tablesort_sql($header);
+    }
+    else {
+      $pager_query .= ' ORDER BY sid ASC';
+    }
+
     if ($pager_count) {
       $result = pager_query($pager_query, $pager_count, 0, NULL, $arguments);
     }
@@ -285,18 +292,9 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
            'FROM {webform_submissions} s '.
            'LEFT JOIN {webform_submitted_data} sd ON sd.sid = s.sid '.
            'LEFT JOIN {users} u ON u.uid = s.uid '.
-           'WHERE s.sid IN (' . implode($sids, ',') . ')';
+           'WHERE s.sid IN (' . implode($sids, ',') . ') '.
+           'ORDER BY sd.sid ASC, sd.cid ASC, sd.no ASC';
 
-  if (is_array($header)) {
-    $query .= tablesort_sql($header);
-    if (!isset($header[0]['sort'])) {
-      $query .= ', sid ASC';
-    }
-    $query .= ', cid ASC, no ASC';
-  }
-  else {
-    $query .= ' ORDER BY sid ASC, cid ASC, no ASC';
-  }
   $result = db_query($query);
 
   // Convert the queried rows into submissions.
