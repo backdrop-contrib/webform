@@ -723,6 +723,8 @@ function webform_component_feature($type, $feature) {
   $defaults = array(
     'csv' => TRUE,
     'email' => TRUE,
+    'email_address' => FALSE,
+    'email_name' => FALSE,
     'required' => TRUE,
     'conditional' => TRUE,
   );
