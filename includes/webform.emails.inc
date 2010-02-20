@@ -160,7 +160,7 @@ function webform_emails_form_submit($form, &$form_state) {
 /**
  * Form for configuring an e-mail setting and template.
  */
-function webform_email_edit_form($form_state, &$node, $email = array()) {
+function webform_email_edit_form($form_state, $node, $email = array()) {
   $form = array(
     '#tree' => TRUE,
   );
