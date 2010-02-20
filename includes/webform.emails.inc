@@ -61,7 +61,7 @@ function webform_emails_form($form_state, $node) {
 
   $form['add']['email_component'] = array(
     '#type' => 'select',
-    '#options' => _webform_component_options($node->webform['components'], 'email'),
+    '#options' => webform_component_list($node, 'email_address', FALSE),
   );
 
   $form['add_button'] = array(
@@ -216,7 +216,7 @@ function webform_email_edit_form($form_state, &$node, $email = array()) {
       '#size' => 40,
       '#default_value' => (!is_numeric($email[$field]) && $email[$field] != 'default') ? $email[$field] : NULL,
     );
-    $options = _webform_component_options($node->webform['components'], $field == 'from_address' || $field == 'email' ? 'email' : 'string');
+    $options = webform_component_list($node, $field == 'from_address' || $field == 'email' ? 'email_address' : 'email_name', FALSE);
     $form[$field . '_component'] = array(
       '#type' => 'select',
       '#default_value' =>  is_numeric($email[$field]) ? $email[$field] : NULL,

@@ -640,6 +640,9 @@ function webform_webform_component_info() {
       'label' => t('E-mail'),
       'description' => t('A special textfield that accepts e-mail addresses.'),
       'file' => 'components/email.inc',
+      'features' => array(
+        'email_address' => TRUE,
+      ),
     ),
     'fieldset' => array(
       'label' => t('Fieldset'),
@@ -672,6 +675,8 @@ function webform_webform_component_info() {
       'file' => 'components/hidden.inc',
       'features' => array(
         'required' => FALSE,
+        'email_address' => TRUE,
+        'email_name' => TRUE,
       ),
     ),
     'markup' => array(
@@ -698,6 +703,10 @@ function webform_webform_component_info() {
       'label' => t('Select options'),
       'description' => t('Allows creation of checkboxes, radio buttons, or select menus.'),
       'file' => 'components/select.inc',
+      'features' => array(
+        'email_address' => TRUE,
+        'email_name' => TRUE,
+      ),
     ),
     'textarea' => array(
       'label' => t('Textarea'),
@@ -708,6 +717,9 @@ function webform_webform_component_info() {
       'label' => t('Textfield'),
       'description' => t('Basic textfield type.'),
       'file' => 'components/textfield.inc',
+      'features' => array(
+        'email_name' => TRUE,
+      ),
     ),
     'time' => array(
       'label' => t('Time'),
@@ -2504,27 +2516,6 @@ function webform_format_email_subject($subject, $node = NULL, $submission = NULL
   }
 
   return _webform_filter_values($subject, $node, $submission, NULL, FALSE, TRUE);
-}
-
-/**
- * Given a set of components, determine which one are appropriate for a
- * particular use, such as an email address or subject.
- *
- * @param $components
- *   An array of components.
- * @param $type
- *   Either 'email' or 'string' (for use as subject or from value).
- *
- */
-function _webform_component_options($components, $type) {
-  $acceptable_types = $type == 'email' ? array('email', 'select', 'hidden') : array('textfield', 'select', 'hidden');
-  $options = array();
-  foreach ((array)$components as $cid => $component) {
-    if (in_array($component['type'], $acceptable_types)) {
-      $options[$cid] = $component['name'];
-    }
-  }
-  return $options;
 }
 
 /**
