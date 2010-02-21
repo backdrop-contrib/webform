@@ -2063,7 +2063,7 @@ function theme_webform_element_text($element, $value) {
     if ($element['#component']['type'] == 'fieldset') {
       $output .= '--' . $element['#title'] . '--';
     }
-    elseif (!in_array(substr(0, -1, $element['#title']), array('?', ':', '!', '%', ';', '@'))) {
+    elseif (!in_array(substr($element['#title'], -1), array('?', ':', '!', '%', ';', '@'))) {
       $output .= $element['#title'] . ':';
     }
     else {
