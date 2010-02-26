@@ -249,8 +249,8 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
     }
   }
 
-  $form_item['#prefix'] = '<div class="webform-component-' . $form_item['#type'] . '" id="webform-component-' . $component['form_key'] . '">';
-  $form_item['#suffix'] = '</div>';
+  $element['#prefix'] = '<div class="webform-component-' . $element['#type'] . '" id="webform-component-' . $component['form_key'] . '">';
+  $element['#suffix'] = '</div>';
 
   return $element;
 }
