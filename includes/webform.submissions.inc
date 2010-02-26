@@ -193,7 +193,7 @@ function webform_submission_page($node, $submission, $format) {
     webform_disable_page_cache();
   }
 
-  return theme('webform_submission_page', $output, $navigation, $information);
+  return theme('webform_submission_page', $node, $submission, $output, $navigation, $information);
 }
 
 /**
