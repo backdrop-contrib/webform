@@ -44,7 +44,7 @@ function webform_submission_update($node, $submission) {
   }
 
   // Update the main submission info.
-   $result = db_query("UPDATE {webform_submissions} SET uid = %d, submitted = %d, remote_addr = %d, is_draft = %d WHERE sid = %d", $submission->uid, $submission->submitted, $submission->remote_addr, $submission->is_draft, $submission->sid);
+   $result = db_query("UPDATE {webform_submissions} SET uid = %d, submitted = %d, remote_addr = '%s', is_draft = %d WHERE sid = %d", $submission->uid, $submission->submitted, $submission->remote_addr, $submission->is_draft, $submission->sid);
 
   // If is draft, only delete data for components submitted, to
   // preserve any data from form pages not visited in this submission.
