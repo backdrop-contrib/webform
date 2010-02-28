@@ -419,7 +419,7 @@ function webform_date_format($size = 'medium') {
 
     // Ensure that a day, month, and year value are present. Use a default
     // format if all the values are not found.
-    if (strpos($date_format, array('d', 'j')) === FALSE || strpos($date_format, array('F', 'm', 'M', 'n')) === FALSE || strpos($date_format, array('o', 'Y', 'y')) === FALSE) {
+    if (!preg_match('/[dj]/', $date_format) || !preg_match('/[FmMn]/', $date_format) || !preg_match('/[oYy]/', $date_format)) {
       $date_format = 'm/d/Y';
     }
 
