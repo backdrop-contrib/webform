@@ -2595,7 +2595,7 @@ function webform_components($include_disabled = FALSE, $reset = FALSE) {
       $module_components = module_invoke($module, 'webform_component_info');
       foreach ($module_components as $type => $info) {
         $module_components[$type]['module'] = $module;
-        $module_components[$type]['enabled'] = !in_array($type, $disabled);
+        $module_components[$type]['enabled'] = !array_key_exists($type, $disabled);
       }
       $components += $module_components;
     }
