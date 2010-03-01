@@ -354,10 +354,10 @@ function webform_get_submission_count($nid, $uid = NULL, $reset = FALSE) {
       $arguments[] = $uid;
     }
     if ($uid === 0) {
-      $submissions = $_SESSION['webform_submission'];
+      $submissions = isset($_SESSION['webform_submission']) ? $_SESSION['webform_submission'] : array();
       $placeholders = count($submissions) ? array_fill(0, count($submissions), "%d") : array();
       $query .= count($submissions) ? ' AND sid IN (' . implode(',', $placeholders) . ')' : ' AND sid = 0';
-      $arguments = array_merge($arguments, array_keys($_SESSION['webform_submission']));
+      $arguments = array_merge($arguments, array_keys($submissions));
     }
 
     $counts[$nid][$uid] = db_result(db_query($query, $arguments));
