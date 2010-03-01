@@ -1095,7 +1095,7 @@ function webform_node_view(&$node, $teaser, $page) {
   }
 
   // Print out messages for the webform.
-  if ($node->build_mode != NODE_BUILD_PREVIEW && !$logging_in && ($user->uid != 0 || !variable_get('cache', CACHE_DISABLED))) {
+  if ($node->build_mode != NODE_BUILD_PREVIEW && !$logging_in) {
     theme('webform_view_messages', $node, $teaser, $page, $submission_count, $limit_exceeded, $allowed_roles);
   }
 
@@ -1148,8 +1148,9 @@ function theme_webform_view_messages($node, $teaser, $page, $submission_count, $
   global $user;
 
   $type = 'notice';
+  $cached = $user->uid == 0 && variable_get('cache', CACHE_DISABLED);
 
-  // If not allowed to submit the form, give an explaination.
+  // If not allowed to submit the form, give an explanation.
   if (array_search(TRUE, $allowed_roles) === FALSE && $user->uid != 1) {
     if (empty($allowed_roles)) {
       // No roles are allowed to submit the form.
@@ -1157,7 +1158,14 @@ function theme_webform_view_messages($node, $teaser, $page, $submission_count, $
     }
     elseif (isset($allowed_roles[2])) {
       // The "authenticated user" role is allowed to submit and the user is currently logged-out.
-      $message = t('You must <a href="!login">login</a> or <a href="!register">register</a> to view this form.', array('!login' => url(('user/login'), array('query' => drupal_get_destination())), '!register' => url(('user/register'), array('query' => drupal_get_destination()))));
+      $login = url('user/login', array('query' => drupal_get_destination()));
+      $register = url('user/register', array('query' => drupal_get_destination()));
+      if (variable_get('user_register', 1) == 0) {
+        $message = t('You must <a href="!login">login</a> to view this form.', array('!login' => $login));
+      }
+      else {
+        $message = t('You must <a href="!login">login</a> or <a href="!register">register</a> to view this form.', array('!login' => $login, '!register' => $register));
+      }
     }
     else {
       // The user must be some other role to submit.
@@ -1166,7 +1174,7 @@ function theme_webform_view_messages($node, $teaser, $page, $submission_count, $
   }
 
   // If the user has exceeded the limit of submissions, explain the limit.
-  elseif ($limit_exceeded) {
+  elseif ($limit_exceeded && !$cached) {
     if ($node->webform['submit_interval'] == -1 && $node->webform['submit_limit'] > 1) {
       $message = t('You have submitted this form the maximum number of times (@count).', array('@count' => $node->webform['submit_limit']));
     }
@@ -1180,7 +1188,7 @@ function theme_webform_view_messages($node, $teaser, $page, $submission_count, $
   }
 
   // If the user has submitted before, give them a link to their submissions.
-  if ($submission_count > 0 && $node->webform['submit_notice'] == 1) {
+  if ($submission_count > 0 && $node->webform['submit_notice'] == 1 && !$cached) {
     if (empty($message)) {
       $message = t('You have already submitted this form.') .' '. t('<a href="!url">View your previous submissions</a>.', array('!url' => url('node/'. $node->nid .'/submissions')));
     }
