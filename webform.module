@@ -2246,6 +2246,12 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
     // Populate the replacements array with special variables.
     foreach ($special_tokens as $safe_state => $tokens) {
       foreach ($tokens as $token => $variable) {
+        // Safety check in case $_POST or some other global has been removed
+        // by a naughty module, in which case $variable may be NULL.
+        if (!is_array($variable)) {
+          continue;
+        }
+
         foreach ($variable as $key => $value) {
           // This special case for profile module dates.
           if ($token == '%profile' && is_array($value) && isset($value['year'])) {
