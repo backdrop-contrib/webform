@@ -2648,7 +2648,8 @@ function webform_component_include($component_type) {
 
     if (($info = $components[$component_type]) && isset($info['file'])) {
       $pathinfo = pathinfo($info['file']);
-      $path = (!empty($pathinfo['dirname']) ? $pathinfo['dirname'] . '/' : '') . $pathinfo['filename'];
+      $basename = basename($pathinfo['basename'], '.' . $pathinfo['extension']);
+      $path = (!empty($pathinfo['dirname']) ? $pathinfo['dirname'] . '/' : '') . $basename;
       module_load_include($pathinfo['extension'], $info['module'], $path);
     }
   }
