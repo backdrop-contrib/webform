@@ -14,7 +14,6 @@
  * - $submission: The webform submission.
  * - $user: The current user submitting the form.
  * - $ip_address: The IP address of the user submitting the form.
- * - $sid: The unique submission ID of this submission.
  * - $cid: The component for which this e-mail is being sent.
  *
  * The $cid can be used to send different e-mails to different users, such as
