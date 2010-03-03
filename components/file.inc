@@ -127,7 +127,7 @@ function _webform_edit_file($component) {
       '#type' => 'textfield',
       '#title' => t('Upload Directory'),
       '#default_value' => $component['extra']['savelocation'],
-      '#description' => '<div style="display: block">'. t('Webform uploads are always saved in the site files directory. You may optionally specify a subfolder to store your files.') .'</div>',
+      '#description' => '<div style="display: block">' . t('Webform uploads are always saved in the site files directory. You may optionally specify a subfolder to store your files.') . '</div>',
       '#weight' => 3,
       '#element_validate' => array('_webform_edit_file_check_directory', '_webform_edit_file_validate'),
       '#after_build' => array('_webform_edit_file_check_directory'),
@@ -136,7 +136,7 @@ function _webform_edit_file($component) {
       '#type' => 'textfield',
       '#title' => t('Width'),
       '#default_value' => $component['extra']['width'],
-      '#description' => t('Width of the file field.') .' '. t('Leaving blank will use the default size.'),
+      '#description' => t('Width of the file field.') . ' ' . t('Leaving blank will use the default size.'),
       '#size' => 5,
       '#maxlength' => 10,
       '#weight' => 4,
@@ -151,10 +151,10 @@ function _webform_edit_file($component) {
  * Ensure that the destination directory exists and is writable.
  */
 function _webform_edit_file_check_directory($element) {
-  $base_dir = file_directory_path() .'/webform';
+  $base_dir = file_directory_path() . '/webform';
   $base_success = file_check_directory($base_dir, FILE_CREATE_DIRECTORY);
 
-  $destination_dir = $base_dir .'/'. $element['#value'];
+  $destination_dir = $base_dir . '/' . $element['#value'];
   $destination_success = file_check_directory($destination_dir, FILE_CREATE_DIRECTORY);
   if (!$base_success || !$destination_success) {
     form_set_error('savelocation', t('The save directory %directory could not be created. Check that the webform files directory is writtable.', array('%directory' => $destination_dir)));
@@ -224,7 +224,7 @@ function theme_webform_edit_file($form) {
         $checkbox = $checkboxes[$key];
         if ($checkbox['#type'] == 'checkbox') {
           $checkcount++;
-          $jsboxes .= "'". $checkbox['#return_value'] ."',";
+          $jsboxes .= "'" . $checkbox['#return_value'] . "',";
           if ($checkcount <= $per_row) {
             $row[] = array('data' => drupal_render($checkbox));
           }
@@ -247,7 +247,7 @@ function theme_webform_edit_file($form) {
       // Add the javascript links.
       $jsboxes = drupal_substr($jsboxes, 0, drupal_strlen($jsboxes) - 1);
       $rows[] = array('data' => $row);
-      $select_link = ' <a href="javascript:check_category_boxes(\''. $filtergroup .'\','. $jsboxes .')">(select)</a>';
+      $select_link = ' <a href="javascript:check_category_boxes(\'' . $filtergroup . '\',' . $jsboxes . ')">(select)</a>';
       $rows[$first_row]['data'][1] = array('data' => $select_link, 'width' => 40);
       unset($form['validation']['filtering']['types'][$filtergroup]);
     }
@@ -273,7 +273,7 @@ function theme_webform_edit_file($form) {
   $output = drupal_render($form);
 
   // Prefix the upload location field with the default path for webform.
-  $output = str_replace('Upload Directory: </label>', 'Upload Directory: </label>'. file_directory_path() .'/webform/', $output);
+  $output = str_replace('Upload Directory: </label>', 'Upload Directory: </label>' . file_directory_path() . '/webform/', $output);
 
   return $output;
 }
@@ -302,7 +302,7 @@ function _webform_render_file($component, $value = NULL) {
   $element['#webform_form_key'] = $form_key;
   $element['#weight'] = $component['weight'];
   $element['#theme'] = 'webform_render_file';
-  $element['#prefix'] = '<div class="webform-component-'. $component['type'] .'" id="webform-component-'. $component['form_key'] .'">';
+  $element['#prefix'] = '<div class="webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">';
   $element['#suffix'] = '</div>';
 
 
@@ -401,9 +401,9 @@ function _webform_validate_file($element, &$form_state) {
   $extension_list = '';
   if (count($extensions) > 1) {
     for ($n = 0; $n < count($extensions) - 1; $n++) {
-      $extension_list .= $extensions[$n] .', ';
+      $extension_list .= $extensions[$n] . ', ';
     }
-    $extension_list .= 'or '. $extensions[count($extensions)-1];
+    $extension_list .= 'or ' . $extensions[count($extensions) - 1];
   }
   elseif (!empty($extensions)) {
     $extension_list = $extensions[0];
@@ -429,7 +429,7 @@ function _webform_validate_file($element, &$form_state) {
 
   // Save the file to a temporary location.
   if (!$file_error) {
-    $upload_dir = file_directory_path() .'/webform/'. $component['extra']['savelocation'];
+    $upload_dir = file_directory_path() . '/webform/' . $component['extra']['savelocation'];
     if (file_check_directory($upload_dir, FILE_CREATE_DIRECTORY)) {
       $file = file_save_upload($form_key, array(), $upload_dir);
       if ($file) {
@@ -515,11 +515,11 @@ function _webform_delete_file($component, $value) {
  */
 function _webform_analysis_file($component, $sids = array()) {
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
-  $query = 'SELECT data '.
-    ' FROM {webform_submitted_data} '.
-    ' WHERE nid = %d '.
-    ' AND cid = %d'. $sidfilter;
+  $sidfilter = count($sids) ? " AND sid in (" . implode(",", $placeholders) . ")" : "";
+  $query = 'SELECT data ' .
+    ' FROM {webform_submitted_data} ' .
+    ' WHERE nid = %d ' .
+    ' AND cid = %d' . $sidfilter;
   $nonblanks = 0;
   $sizetotal = 0;
   $submissions = 0;
@@ -536,7 +536,7 @@ function _webform_analysis_file($component, $sids = array()) {
 
   $rows[0] = array(t('Left Blank'), ($submissions - $nonblanks));
   $rows[1] = array(t('User uploaded file'), $nonblanks);
-  $rows[2] = array(t('Average uploaded file size'), ($sizetotal !=0 ? (int) (($sizetotal/$nonblanks)/1024) .' KB' : '0'));
+  $rows[2] = array(t('Average uploaded file size'), ($sizetotal != 0 ? (int) (($sizetotal/$nonblanks)/1024) . ' KB' : '0'));
   return $rows;
 }
 
@@ -590,7 +590,7 @@ function webform_file_name($filepath) {
 function webform_file_url($filepath) {
   if (!empty($filepath)) {
     $info = pathinfo($filepath);
-    $file_url = file_create_url($info['dirname'] .'/'. rawurlencode($info['basename']));
+    $file_url = file_create_url($info['dirname'] . '/' . rawurlencode($info['basename']));
   }
   return isset($file_url) ? $file_url : '';
 }

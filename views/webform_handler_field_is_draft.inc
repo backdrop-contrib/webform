@@ -1,5 +1,11 @@
 <?php
-//$Id$
+// $Id$
+
+/**
+* @file
+* Views handler to display the draft status of a submission.
+*/
+
 /**
  * Field handler to show if submission is draft or not.
  *

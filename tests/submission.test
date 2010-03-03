@@ -6,7 +6,7 @@
  * Webform module submission tests.
  */
 
-include_once(dirname(__FILE__) .'/webform.test');
+include_once(dirname(__FILE__) . '/webform.test');
 
 class WebformSubmissionTestCase extends WebformTestCase {
   /**
@@ -66,8 +66,8 @@ class WebformSubmissionTestCase extends WebformTestCase {
     $submission_values = $value_type == 'sample' ? $this->testWebformPost() : array();
 
     // Visit the node page with the "foo=bar" query, to test %get[] default values.
-    $this->drupalGet('node/'. $node->nid, array('query' => 'foo=bar'));
-    $this->assertText($node->body, t('Webform node created and accessible at !url', array('!url' => 'node/'. $node->nid)), t('Webform'));
+    $this->drupalGet('node/' . $node->nid, array('query' => 'foo=bar'));
+    $this->assertText($node->body, t('Webform node created and accessible at !url', array('!url' => 'node/' . $node->nid)), t('Webform'));
 
     // Submit our test data.
     $this->drupalPost(NULL, $submission_values, 'Submit');
@@ -89,7 +89,7 @@ class WebformSubmissionTestCase extends WebformTestCase {
       $actual_value = $actual_submission->data[$cid]['value'];
       $result = $this->assertEqual($stable_value, $actual_value, t('Component @form_key data integrity check', array('@form_key' => $component['form_key'])), t('Webform'));
       if (!$result || $result === 'fail') {
-        $this->fail(t('Expected !expected', array('!expected' => print_r($stable_value, TRUE))) ."\n\n". t('Recieved !recieved', array('!recieved' => print_r($actual_value, TRUE))), t('Webform'));
+        $this->fail(t('Expected !expected', array('!expected' => print_r($stable_value, TRUE))) . "\n\n" . t('Recieved !recieved', array('!recieved' => print_r($actual_value, TRUE))), t('Webform'));
       }
     }
   }

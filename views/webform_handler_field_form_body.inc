@@ -2,6 +2,11 @@
 // $Id$
 
 /**
+* @file
+* Views handler to display the content of a webform form.
+*/
+
+/**
  * Field handler to present the Webform form body to the user.
  */
 class webform_handler_field_form_body extends views_handler_field {

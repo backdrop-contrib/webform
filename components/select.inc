@@ -446,7 +446,7 @@ function _webform_form_builder_save_select($component, $form_element) {
   $options = '';
 
   foreach ($form_element['#options'] as $key => $option_value) {
-    $options .= $key .'|'. $option_value ."\n";
+    $options .= $key . '|' . $option_value . "\n";
   }
 
   $component['extra']['items'] = $options;
@@ -519,7 +519,7 @@ function _webform_analysis_select($component, $sids = array(), $single = FALSE) 
   $show_other_results = $single;
 
   $sid_placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sid_filter = count($sids) ? " AND sid IN (".implode(",", $sid_placeholders).")" : "";
+  $sid_filter = count($sids) ? " AND sid IN (" . implode(",", $sid_placeholders) . ")" : "";
 
   $not = $show_other_results ? 'NOT ' : '';
   $placeholders = count($options) ? array_fill(0, count($options), "'%s'") : array();
@@ -577,7 +577,7 @@ function _webform_table_select($component, $value) {
   if (is_array($value)) {
     foreach ($value as $option_value) {
       if ($option_value !== '') {
-        $output .= _webform_filter_xss($option_value) .'<br />';
+        $output .= _webform_filter_xss($option_value) . '<br />';
       }
     }
   }

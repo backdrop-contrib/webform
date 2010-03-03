@@ -69,7 +69,7 @@ function theme_webform_results_per_page($total_count, $pager_count) {
 
   foreach ($counts as $number => $text) {
     if ($number < $total_count) {
-      $count_links[] = l($text, $_GET['q'], array('query' => 'results='. $number, 'attributes' => array('class' => $pager_count == $number ? 'selected' : '')));
+      $count_links[] = l($text, $_GET['q'], array('query' => 'results=' . $number, 'attributes' => array('class' => $pager_count == $number ? 'selected' : '')));
     }
   }
 
@@ -81,7 +81,7 @@ function theme_webform_results_per_page($total_count, $pager_count) {
     $output .= t('Showing all results.');
   }
   if ($total_count > 1) {
-    $output .= ' '. t('@total results total.', array('@total' => $total_count));
+    $output .= ' ' . t('@total results total.', array('@total' => $total_count));
   }
   $output .= '</div>';
 
@@ -125,7 +125,7 @@ function theme_webform_results_submissions_header($node) {
 function theme_webform_results_submissions($node, $submissions, $total_count = 0, $pager_count = 0) {
   global $user;
 
-  drupal_add_css(drupal_get_path('module', 'webform') .'/webform.css', 'theme', 'all', FALSE);
+  drupal_add_css(drupal_get_path('module', 'webform') . '/webform.css', 'theme', 'all', FALSE);
 
   // This header has to be generated separately so we can add the SQL necessary
   // to sort the results.
@@ -168,14 +168,14 @@ function theme_webform_results_submissions($node, $submissions, $total_count = 0
   }
 
   if (count($rows) == 0) {
-    $rows[] = array(array('data' => t('There are no submissions for this form. <a href="!url">View this form</a>.', array('!url' => url('node/'. $node->nid))), 'colspan' => 4 + $operation_total));
+    $rows[] = array(array('data' => t('There are no submissions for this form. <a href="!url">View this form</a>.', array('!url' => url('node/' . $node->nid))), 'colspan' => 4 + $operation_total));
   }
 
   $output = '';
   $output .= theme('webform_results_per_page', $total_count, $pager_count);
   $output .= theme('table', $header, $rows);
   if (arg(2) == 'submissions') {
-    $output .= theme('links', array('webform' => array('title' => t('Go back to the form'), 'href' => 'node/'. $node->nid)));
+    $output .= theme('links', array('webform' => array('title' => t('Go back to the form'), 'href' => 'node/' . $node->nid)));
   }
   if ($pager_count) {
     $output .= theme('pager', NULL, $pager_count, 0);
@@ -227,7 +227,7 @@ function theme_webform_results_table_header($node) {
  *   The number of results to be shown per page.
  */
 function theme_webform_results_table($node, $components, $submissions, $total_count, $pager_count) {
-  drupal_add_css(drupal_get_path('module', 'webform') .'/webform.css', 'theme', 'all', FALSE);
+  drupal_add_css(drupal_get_path('module', 'webform') . '/webform.css', 'theme', 'all', FALSE);
 
   $header = array();
   $rows = array();
@@ -239,7 +239,7 @@ function theme_webform_results_table($node, $components, $submissions, $total_co
 
   // Generate a row for each submission.
   foreach ($submissions as $sid => $submission) {
-    $cell[] = l($sid, 'node/'. $node->nid .'/submission/'. $sid);
+    $cell[] = l($sid, 'node/' . $node->nid . '/submission/' . $sid);
     $cell[] = format_date($submission->submitted, 'small');
     $cell[] = theme('username', $submission);
     $cell[] = $submission->remote_addr;
@@ -263,7 +263,7 @@ function theme_webform_results_table($node, $components, $submissions, $total_co
   }
 
   if (count($rows) == 0) {
-    $rows[] = array(array('data' => t('There are no submissions for this form. <a href="!url">View this form</a>.', array('!url' => url('node/'. $node->nid))), 'colspan' => 4));
+    $rows[] = array(array('data' => t('There are no submissions for this form. <a href="!url">View this form</a>.', array('!url' => url('node/' . $node->nid))), 'colspan' => 4));
   }
 
 
@@ -300,7 +300,7 @@ function webform_results_clear_form($form_state, $node) {
   $form['nid'] = array('#type' => 'value', '#value' => $node->nid);
   $question = t('Are you sure you want to delete all submissions for this form?');
 
-  return confirm_form($form, $question, 'node/'. $node->nid .'/webform-results', NULL, t('Clear'), t('Cancel'));
+  return confirm_form($form, $question, 'node/' . $node->nid . '/webform-results', NULL, t('Clear'), t('Cancel'));
 }
 
 function webform_results_clear_form_submit($form, &$form_state) {
@@ -311,7 +311,7 @@ function webform_results_clear_form_submit($form, &$form_state) {
   $message = t('Webform %title entries cleared.', array('%title' => $title));
   drupal_set_message($message);
   watchdog('webform', $message);
-  $form_state['redirect'] = 'node/'. $form_state['values']['nid'] .'/webform-results';
+  $form_state['redirect'] = 'node/' . $form_state['values']['nid'] . '/webform-results';
 }
 
 /**
@@ -412,7 +412,7 @@ function webform_results_download_form_submit(&$form, &$form_state) {
  * Theme the output of the export form.
  */
 function theme_webform_results_download_form($form) {
-  drupal_add_css(drupal_get_path('module', 'webform') .'/webform.css', 'theme', 'all', FALSE);
+  drupal_add_css(drupal_get_path('module', 'webform') . '/webform.css', 'theme', 'all', FALSE);
 
   return drupal_render($form);
 }
@@ -421,7 +421,7 @@ function theme_webform_results_download_form($form) {
  * Theme the output of the select list format radio buttons.
  */
 function theme_webform_results_download_select_format($element) {
-  drupal_add_css(drupal_get_path('module', 'webform') .'/webform.css', 'theme', 'all', FALSE);
+  drupal_add_css(drupal_get_path('module', 'webform') . '/webform.css', 'theme', 'all', FALSE);
 
   $output = '';
 
@@ -670,15 +670,15 @@ function theme_webform_results_analysis($node, $data, $sids = array(), $analysis
     if (is_array($row_data)) {
       $row = array();
       if (!$single) {
-        $row[] = array('data' => '<strong>'. $question_number .'</strong>', 'rowspan' => count($row_data) + 1, 'valign' => 'top');
-        $row[] = array('data' => '<strong>'. check_plain($node->webform['components'][$cid]['name']) .'</strong>', 'colspan' => '10');
+        $row[] = array('data' => '<strong>' . $question_number . '</strong>', 'rowspan' => count($row_data) + 1, 'valign' => 'top');
+        $row[] = array('data' => '<strong>' . check_plain($node->webform['components'][$cid]['name']) . '</strong>', 'colspan' => '10');
       }
       $rows = array_merge($rows, array_merge(array($row), $row_data));
     }
   }
 
   if (count($rows) == 0) {
-    $rows[] = array(array('data' => t('There are no submissions for this form. <a href="!url">View this form</a>.', array('!url' => url('node/'. $node->nid))), 'colspan' => 20));
+    $rows[] = array(array('data' => t('There are no submissions for this form. <a href="!url">View this form</a>.', array('!url' => url('node/' . $node->nid))), 'colspan' => 20));
   }
 
   return theme('table', $headers, $rows);

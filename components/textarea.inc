@@ -59,7 +59,7 @@ function _webform_edit_textarea($component) {
     '#type' => 'textfield',
     '#title' => t('Width'),
     '#default_value' => $component['extra']['cols'],
-    '#description' => t('Width of the textarea.') .' '. t('Leaving blank will use the default size.'),
+    '#description' => t('Width of the textarea.') . ' ' . t('Leaving blank will use the default size.'),
     '#size' => 5,
     '#maxlength' => 10,
     '#parents' => array('extra', 'cols'),
@@ -68,7 +68,7 @@ function _webform_edit_textarea($component) {
     '#type' => 'textfield',
     '#title' => t('Height'),
     '#default_value' => $component['extra']['rows'],
-    '#description' => t('Height of the textarea.') .' '. t('Leaving blank will use the default size.'),
+    '#description' => t('Height of the textarea.') . ' ' . t('Leaving blank will use the default size.'),
     '#size' => 5,
     '#maxlength' => 10,
     '#parents' => array('extra', 'rows'),
@@ -108,7 +108,7 @@ function _webform_render_textarea($component, $value = NULL, $filter = TRUE) {
     '#cols'          => !empty($component['extra']['cols']) ? $component['extra']['cols'] : 60,
     '#attributes'    => $component['extra']['attributes'],
     '#resizable'     => (bool) $component['extra']['resizable'], // MUST be FALSE to disable.
-    '#prefix'        => '<div class="webform-component-'. $component['type'] .'" id="webform-component-'. $component['form_key'] .'">',
+    '#prefix'        => '<div class="webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
     '#suffix'        => '</div>',
   );
 
@@ -194,11 +194,11 @@ function _webform_form_builder_save_textarea($component, $form_element) {
  */
 function _webform_analysis_textarea($component, $sids = array()) {
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
-  $query = 'SELECT data '.
-    ' FROM {webform_submitted_data} '.
-    ' WHERE nid = %d '.
-    ' AND cid = %d '. $sidfilter;
+  $sidfilter = count($sids) ? " AND sid in (" . implode(",", $placeholders) . ")" : "";
+  $query = 'SELECT data ' .
+    ' FROM {webform_submitted_data} ' .
+    ' WHERE nid = %d ' .
+    ' AND cid = %d ' . $sidfilter;
   $nonblanks = 0;
   $submissions = 0;
   $wordcount = 0;

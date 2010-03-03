@@ -246,12 +246,12 @@ function _webform_analysis_grid($component, $sids = array()) {
 
   // Generate a lookup table of results.
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
-  $query = 'SELECT no, data, count(data) as datacount '.
-    ' FROM {webform_submitted_data} '.
-    ' WHERE nid = %d '.
-    ' AND cid = %d '.
-    " AND data != '' ". $sidfilter .
+  $sidfilter = count($sids) ? " AND sid in (" . implode(",", $placeholders) . ")" : "";
+  $query = 'SELECT no, data, count(data) as datacount ' .
+    ' FROM {webform_submitted_data} ' .
+    ' WHERE nid = %d ' .
+    ' AND cid = %d ' .
+    " AND data != '' " . $sidfilter .
     ' GROUP BY no, data';
   $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids));
   $counts = array();
@@ -292,7 +292,7 @@ function _webform_table_grid($component, $value) {
   if (is_array($value)) {
     foreach ($value as $item => $value) {
       if ($value !== '') {
-        $output .= _webform_filter_xss($questions[$item]) .': '. _webform_filter_xss($value) .'<br />';
+        $output .= _webform_filter_xss($questions[$item]) . ': ' . _webform_filter_xss($value) . '<br />';
       }
     }
   }

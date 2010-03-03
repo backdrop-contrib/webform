@@ -50,7 +50,7 @@ function _webform_edit_time($component) {
     '#type' => 'textfield',
     '#title' => t('Default value'),
     '#default_value' => $component['value'],
-    '#description' => t('The default value of the field.') .'<br />'. t('Accepts a time in any <a href="http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid.'),
+    '#description' => t('The default value of the field.') . '<br />' . t('Accepts a time in any <a href="http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html">GNU Date Input Format</a>. Strings such as now, +2 hours, and 10:30pm are all valid.'),
     '#size' => 60,
     '#maxlength' => 127,
     '#weight' => 0,
@@ -145,7 +145,7 @@ function _webform_render_time($component, $value = NULL) {
     '#required' => $component['mandatory'],
     '#weight' => $component['weight'],
     '#description' => _webform_filter_descriptions($component['extra']['description']),
-    '#prefix' => '<div class="webform-component-'. $component['type'] .'" id="webform-component-'. $component['form_key'] .'">',
+    '#prefix' => '<div class="webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
     '#suffix' => '</div>',
     '#theme' => 'webform_time',
     '#element_validate' => array('webform_validate_time'),
@@ -177,7 +177,7 @@ function _webform_render_time($component, $value = NULL) {
   
     // Match the hourly data to the hour format.
     if ($value[1]) {
-      $timestamp = strtotime($value[0] .':'. $value[1] . (isset($value[2]) ? $value[2] : ''));
+      $timestamp = strtotime($value[0] . ':' . $value[1] . (isset($value[2]) ? $value[2] : ''));
       if ($component['extra']['hourformat'] == '24-hour') {
         $element['hour']['#default_value'] = date('H', $timestamp);
       }
@@ -242,10 +242,10 @@ function theme_webform_display_time($element) {
   $output = ' ';
   if ($element['#value']['hour'] && $element['#value']['minute']) {
     if ($element['#hourformat'] == '24-hour') {
-      $output = $element['#value']['hour'] .':'. $element['#value']['minute'];
+      $output = $element['#value']['hour'] . ':' . $element['#value']['minute'];
     }
     else {
-      $output = $element['#value']['hour'] .':'. $element['#value']['minute'] .' '. $element['#value']['ampm'];
+      $output = $element['#value']['hour'] . ':' . $element['#value']['minute'] . ' ' . $element['#value']['ampm'];
     }
   }
   return $output;
@@ -256,11 +256,11 @@ function theme_webform_display_time($element) {
  */
 function _webform_analysis_time($component, $sids = array()) {
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
-  $query = 'SELECT no,data '.
-    ' FROM {webform_submitted_data} '.
-    ' WHERE nid = %d '.
-    ' AND  cid = %d '. $sidfilter.
+  $sidfilter = count($sids) ? " AND sid in (" . implode(",", $placeholders) . ")" : "";
+  $query = 'SELECT no,data ' .
+    ' FROM {webform_submitted_data} ' .
+    ' WHERE nid = %d ' .
+    ' AND  cid = %d ' . $sidfilter .
     ' ORDER BY sid,no ASC ';
 
   $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids));
@@ -279,12 +279,12 @@ function _webform_analysis_time($component, $sids = array()) {
               $ampm = $row['data'];
               // Build the full timestamp.
               if (drupal_strlen($hour) > 0 && drupal_strlen($minute) > 0 ) {
-                $timestamps[] = strtotime($hour .':'. $minute .' '. $ampm);
+                $timestamps[] = strtotime($hour . ':' . $minute . ' ' . $ampm);
               }
             }
             else {
               // Build military time.
-              $timestamps[] = strtotime($hour .':'. $minute);
+              $timestamps[] = strtotime($hour . ':' . $minute);
             }
           }
         }
@@ -305,7 +305,7 @@ function _webform_analysis_time($component, $sids = array()) {
  */
 function _webform_table_time($component, $value) {
   if (drupal_strlen($value[0]) > 0 && drupal_strlen($value[1]) > 0) {
-    $timestamp = strtotime($value[0] .':'. $value[1] . $value[2]);
+    $timestamp = strtotime($value[0] . ':' . $value[1] . $value[2]);
     if ($component['extra']['hourformat'] == '24-hour') {
       return check_plain(date('H:i', $timestamp));
     }
@@ -334,7 +334,7 @@ function _webform_csv_headers_time($component, $export_options) {
  */
 function _webform_csv_data_time($component, $export_options, $value) {
   if (drupal_strlen($value[0]) > 0 && drupal_strlen($value[1]) > 0) {
-    $timestamp = strtotime($value[0] .':'. $value[1] . $value[2]);
+    $timestamp = strtotime($value[0] . ':' . $value[1] . $value[2]);
     if ($component['extra']['hourformat'] == '24-hour') {
       return date('H:i', $timestamp);
     }
@@ -352,7 +352,7 @@ function _webform_csv_data_time($component, $export_options, $value) {
  */
 function theme_webform_time($element) {
   $element['#type'] = 'element';
-  $element['#children'] = '<div class="container-inline">'. drupal_render($element['hour']) . drupal_render($element['minute']) . drupal_render($element['ampm']) .'</div>';
+  $element['#children'] = '<div class="container-inline">' . drupal_render($element['hour']) . drupal_render($element['minute']) . drupal_render($element['ampm']) . '</div>';
 
   return theme('form_element', $element, $element['#children']);
 }

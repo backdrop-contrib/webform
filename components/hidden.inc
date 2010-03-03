@@ -130,11 +130,11 @@ function _webform_form_builder_types_hidden() {
  */
 function _webform_analysis_hidden($component, $sids = array()) {
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
-  $query = 'SELECT data '.
-    ' FROM {webform_submitted_data} '.
-    ' WHERE nid = %d '.
-    ' AND cid = %d '. $sidfilter;
+  $sidfilter = count($sids) ? " AND sid in (" . implode(",", $placeholders) . ")" : "";
+  $query = 'SELECT data ' .
+    ' FROM {webform_submitted_data} ' .
+    ' WHERE nid = %d ' .
+    ' AND cid = %d ' . $sidfilter;
   $nonblanks = 0;
   $submissions = 0;
   $wordcount = 0;

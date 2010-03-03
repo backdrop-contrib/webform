@@ -63,8 +63,8 @@ function webform_help($section = 'admin/help#webform', $arg = NULL) {
       ", array('!webform-types-message' => $types_message, '!create-content' => url('node/add'), '!types' => $types));
       break;
     case 'node/%/webform/components':
-      $output .= '<p>'. t('This page displays all the components currently configured for this webform node. You may add any number of components to the form, even multiple of the same type. To add a new component, fill in a name and select a type from the fields at the bottom of the table. Submit the form to create the new component or update any changed form values.') .'</p>';
-      $output .= '<p>'. t('Click on any existing component\'s name to edit its settings.') .'</p>';
+      $output .= '<p>' . t('This page displays all the components currently configured for this webform node. You may add any number of components to the form, even multiple of the same type. To add a new component, fill in a name and select a type from the fields at the bottom of the table. Submit the form to create the new component or update any changed form values.') . '</p>';
+      $output .= '<p>' . t('Click on any existing component\'s name to edit its settings.') . '</p>';
       break;
   }
 
@@ -459,7 +459,7 @@ function webform_init() {
   if (variable_get('node_admin_theme', '0') && arg(0) == 'node' && (arg(2) == 'webform' || arg(2) == 'webform-results')) {
     global $custom_theme;
     $custom_theme = variable_get('admin_theme', '0');
-    drupal_add_css(drupal_get_path('module', 'system') .'/admin.css', 'module');
+    drupal_add_css(drupal_get_path('module', 'system') . '/admin.css', 'module');
 
     // Support for Admin module (1.x).
     if (function_exists('_admin_init_theme')) {
@@ -980,7 +980,7 @@ function webform_link($type, $node = NULL, $teaser = FALSE) {
     if ($teaser && !$node->webform['teaser']) {
       $links['webform_goto'] = array(
         'title' => t('Go to form'),
-        'href' => 'node/'. $node->nid,
+        'href' => 'node/' . $node->nid,
         'attributes' => array('title' => t('View this form.'), 'class' => 'read-more')
       );
     }
@@ -1016,7 +1016,7 @@ function webform_form_alter(&$form, $form_state, $form_id) {
  */
 function webform_form_submit($form, &$form_state) {
   drupal_set_message(t('The new webform %title has been created. Add new fields to your webform with the form below.', array('%title' => $form_state['values']['title'])));
-  $form_state['redirect'] = 'node/'. $form_state['nid'] .'/webform/components';
+  $form_state['redirect'] = 'node/' . $form_state['nid'] . '/webform/components';
 }
 
 /**
@@ -1086,7 +1086,7 @@ function webform_node_view(&$node, $teaser, $page) {
   }
 
   // Render the form and generate the output.
-  $form = drupal_get_form('webform_client_form_'. $node->nid, $node, $submission, $is_draft);
+  $form = drupal_get_form('webform_client_form_' . $node->nid, $node, $submission, $is_draft);
   $output = theme('webform_view', $node, $teaser, $page, $form, $enabled);
 
   // Remove the surrounding <form> tag if this is a preview.
@@ -1190,10 +1190,10 @@ function theme_webform_view_messages($node, $teaser, $page, $submission_count, $
   // If the user has submitted before, give them a link to their submissions.
   if ($submission_count > 0 && $node->webform['submit_notice'] == 1 && !$cached) {
     if (empty($message)) {
-      $message = t('You have already submitted this form.') .' '. t('<a href="!url">View your previous submissions</a>.', array('!url' => url('node/'. $node->nid .'/submissions')));
+      $message = t('You have already submitted this form.') . ' ' . t('<a href="!url">View your previous submissions</a>.', array('!url' => url('node/' . $node->nid . '/submissions')));
     }
     else {
-      $message .= ' '. t('<a href="!url">View your previous submissions</a>.', array('!url' => url('node/'. $node->nid .'/submissions')));
+      $message .= ' ' . t('<a href="!url">View your previous submissions</a>.', array('!url' => url('node/' . $node->nid . '/submissions')));
     }
   }
 
@@ -1234,7 +1234,7 @@ function webform_client_form(&$form_state, $node, $submission, $is_draft = FALSE
   global $user;
 
   // Add a theme function for this form.
-  $form['#theme'] = array('webform_form_'. $node->nid, 'webform_form');
+  $form['#theme'] = array('webform_form_' . $node->nid, 'webform_form');
 
   // Add a css class for all client forms.
   $form['#attributes'] = array('class' => 'webform-client-form');
@@ -1245,7 +1245,7 @@ function webform_client_form(&$form_state, $node, $submission, $is_draft = FALSE
   // Set the form action to the node ID in case this is being displayed on the
   // teaser, subsequent pages should be on the node page directly.
   if (empty($submission)) {
-    $form['#action'] = url('node/'. $node->nid);
+    $form['#action'] = url('node/' . $node->nid);
   }
 
   $form['#submit'][] = 'webform_client_form_submit';
@@ -1464,7 +1464,7 @@ function _webform_client_form_add_component($component, $component_value, &$pare
         $display_element['#parents'] = $parents;
       }
       if (!isset($display_element['#id'])) {
-        $display_element['#id'] = form_clean_id('edit-'. implode('-', $display_element['#parents']));
+        $display_element['#id'] = form_clean_id('edit-' . implode('-', $display_element['#parents']));
       }
       $parent_fieldset[$component['form_key']] = $display_element;
     }
@@ -1537,7 +1537,7 @@ function webform_client_form_validate($form, &$form_state) {
     // Support for Drupal 5 validation code.
     $form_values =& $form_state['values'];
     // We use eval here (rather than drupal_eval) because the user needs access to local variables.
-    eval('?>'. $node->webform['additional_validate']);
+    eval('?>' . $node->webform['additional_validate']);
 
     // Restore the original form state so that the submit handler can reflatten.
     $form_state['values']['submitted'] = $form_state['values']['submitted_tree'];
@@ -1725,7 +1725,7 @@ function webform_client_form_submit($form, &$form_state) {
     // Support for Drupal 5 validation code.
     $form_values =& $form_state['values'];
     // We use eval here (rather than drupal_eval) because the user needs access to local variables.
-    eval('?>'. $node->webform['additional_submit']);
+    eval('?>' . $node->webform['additional_submit']);
   }
 
   // Check if user is submitting as a draft.
@@ -1750,9 +1750,9 @@ function webform_client_form_submit($form, &$form_state) {
     // Set a cookie including the server's submission time.
     // The cookie expires in the length of the interval plus a day to compensate for different timezones.
     if (variable_get('webform_use_cookies', 0)) {
-      $cookie_name = 'webform-'. $node->nid;
+      $cookie_name = 'webform-' . $node->nid;
       $time = time();
-      setcookie($cookie_name .'['. $time .']', $time, $time + $node->webform['submit_interval'] + 86400);
+      setcookie($cookie_name . '[' . $time . ']', $time, $time + $node->webform['submit_interval'] + 86400);
     }
 
     // Save session information about this submission for anonymous users,
@@ -1780,7 +1780,7 @@ function webform_client_form_submit($form, &$form_state) {
 
       // Pass through the theme layer if using the default template.
       if ($email['template'] == 'default') {
-        $email['message'] = theme(array('webform_mail_'. $node->nid, 'webform_mail', 'webform_mail_message'), $node, $submission, $cid);
+        $email['message'] = theme(array('webform_mail_' . $node->nid, 'webform_mail', 'webform_mail_message'), $node, $submission, $cid);
       }
       else {
         $email['message'] = $email['template'];
@@ -1790,7 +1790,7 @@ function webform_client_form_submit($form, &$form_state) {
       $email['message'] = _webform_filter_values($email['message'], $node, $submission, $email, FALSE, TRUE);
 
       // Build the e-mail headers.
-      $email['headers'] = theme(array('webform_mail_headers_'. $node->nid, 'webform_mail_headers'), $node, $submission, $cid);
+      $email['headers'] = theme(array('webform_mail_headers_' . $node->nid, 'webform_mail_headers'), $node, $submission, $cid);
 
       // Assemble the FROM string.
       if (isset($email['headers']['From'])) {
@@ -1843,7 +1843,7 @@ function webform_client_form_submit($form, &$form_state) {
       foreach ($addresses_final as $address) {
         // Verify that this submission is not attempting to send any spam hacks.
         if (_webform_submission_spam_check($address, $email['subject'], $email['from'], $email['headers'])) {
-          watchdog('webform', 'Possible spam attempt from @remote_addr'."<br />\n". nl2br(htmlentities($email['message'])), array('@remote_add' => ip_address()));
+          watchdog('webform', 'Possible spam attempt from @remote_addr' . "<br />\n" . nl2br(htmlentities($email['message'])), array('@remote_add' => ip_address()));
           drupal_set_message(t('Illegal information. Data not submitted.'), 'error');
           return FALSE;
         }
@@ -1860,7 +1860,7 @@ function webform_client_form_submit($form, &$form_state) {
   
         // Debugging output for email.
         if (variable_get('webform_debug', 0) >= 2) {
-          drupal_set_message('E-mail Headers: <pre>'. check_plain(print_r($headers[$cid], TRUE)) .'</pre>To: '. check_plain($address) .'<br />From: '. check_plain($email['from']) .'<br />Subject: '. check_plain($email['subject']) .'<br />E-mail Body: <pre>'. check_plain($email['message']) .'</pre>');
+          drupal_set_message('E-mail Headers: <pre>' . check_plain(print_r($headers[$cid], TRUE)) . '</pre>To: ' . check_plain($address) . '<br />From: ' . check_plain($email['from']) . '<br />Subject: ' . check_plain($email['subject']) . '<br />E-mail Body: <pre>' . check_plain($email['message']) . '</pre>');
         }
       }
 
@@ -1869,14 +1869,14 @@ function webform_client_form_submit($form, &$form_state) {
 
   // More debugging output.
   if (variable_get('webform_debug', 0) >= 2) {
-    drupal_set_message('$form_state is: <pre>'. htmlentities(print_r($form_state, TRUE)) .'</pre>');
-    drupal_set_message('$_SERVER is: <pre>'. htmlentities(print_r($_SERVER, TRUE)) .'</pre>');
-    drupal_set_message('$_POST is: <pre>'. htmlentities(print_r($_POST, TRUE)) .'</pre>');
+    drupal_set_message('$form_state is: <pre>' . htmlentities(print_r($form_state, TRUE)) . '</pre>');
+    drupal_set_message('$_SERVER is: <pre>' . htmlentities(print_r($_SERVER, TRUE)) . '</pre>');
+    drupal_set_message('$_POST is: <pre>' . htmlentities(print_r($_POST, TRUE)) . '</pre>');
   }
 
   // Log to watchdog if normal debug is on.
   if (variable_get('webform_debug', 0) >= 1) {
-    watchdog('webform', 'Submission posted to %title. <a href="!url">Results</a>. !details', array('%title' => $node->title, '!url' => url('node/'. $node->nid .'/submission/'. $sid), '!results' => "<br />\n<pre>". htmlentities(print_r($form_state['values'], TRUE)) .'</pre>'));
+    watchdog('webform', 'Submission posted to %title. <a href="!url">Results</a>. !details', array('%title' => $node->title, '!url' => url('node/' . $node->nid . '/submission/' . $sid), '!results' => "<br />\n<pre>" . htmlentities(print_r($form_state['values'], TRUE)) . '</pre>'));
   }
 
   // Strip out empty tags added by WYSIWYG editors if needed.
@@ -1982,7 +1982,7 @@ function _webform_confirmation($node) {
   drupal_set_title(check_plain($node->title));
   webform_set_breadcrumb($node);
   if (empty($output)) {
-    $output = theme(array('webform_confirmation_'. $node->nid, 'webform_confirmation'), $node, $_GET['sid']);
+    $output = theme(array('webform_confirmation_' . $node->nid, 'webform_confirmation'), $node, $_GET['sid']);
   }
   return $output;
 }
@@ -2042,17 +2042,17 @@ function theme_webform_element($element, $value) {
    $element['#format'] == 'html' ? 'webform-display-item' : 'webform-item',
   );
   $output = '<div class="' . implode(' ', $wrapper_classes) . '" id="' . $element['#id'] . '-wrapper">' . "\n";
-  $required = !empty($element['#required']) ? '<span class="form-required" title="'. t('This field is required.') .'">*</span>' : '';
+  $required = !empty($element['#required']) ? '<span class="form-required" title="' . t('This field is required.') . '">*</span>' : '';
 
   if (!empty($element['#title'])) {
     $title = $element['#title'];
-    $output .= ' <label for="'. $element['#id'] . '">' . t('!title: !required', array('!title' => filter_xss_admin($title), '!required' => $required)) . "</label>\n";
+    $output .= ' <label for="' . $element['#id'] . '">' . t('!title: !required', array('!title' => filter_xss_admin($title), '!required' => $required)) . "</label>\n";
   }
 
-  $output .= '<div id="' . $element['#id'] . '">' . $value . '</div>'. "\n";
+  $output .= '<div id="' . $element['#id'] . '">' . $value . '</div>' . "\n";
 
   if (!empty($element['#description'])) {
-    $output .= ' <div class="description">'. $element['#description'] ."</div>\n";
+    $output .= ' <div class="description">' . $element['#description'] . "</div>\n";
   }
 
   $output .= "</div>\n";
@@ -2133,7 +2133,7 @@ function theme_webform_element_text($element, $value) {
  */
 function theme_webform_mail_headers($node, $submission, $cid) {
   $headers = array(
-    'X-Mailer' => 'Drupal Webform (PHP/'. phpversion() .')',
+    'X-Mailer' => 'Drupal Webform (PHP/' . phpversion() . ')',
   );
   return $headers;
 }
@@ -2211,7 +2211,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
     }
 
     // Submission edit URL.
-    $replacements['unsafe']['%submission_url'] = url('node/'. $node->nid .'/submission/'. $submission->sid, array('absolute' => TRUE));
+    $replacements['unsafe']['%submission_url'] = url('node/' . $node->nid . '/submission/' . $submission->sid, array('absolute' => TRUE));
   }
 
   // Token for the entire form tree for e-mails.
@@ -2263,12 +2263,12 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
         foreach ($variable as $key => $value) {
           // This special case for profile module dates.
           if ($token == '%profile' && is_array($value) && isset($value['year'])) {
-            $replacement = format_date(strtotime($value['month'] .'/'. $value['day'] .'/'. $value['year']), 'custom', 'F j, Y', '0');
+            $replacement = format_date(strtotime($value['month'] . '/' . $value['day'] . '/' . $value['year']), 'custom', 'F j, Y', '0');
           }
           else {
             $replacement = (!is_array($value) && !is_object($value)) ? $value : '';
           }
-          $replacements[$safe_state][$token .'['. $key .']'] = $replacement;
+          $replacements[$safe_state][$token . '[' . $key . ']'] = $replacement;
         }
       }
     }
@@ -2296,7 +2296,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
   // Clean up any unused tokens.
   foreach ($special_tokens as $safe_state => $tokens) {
     foreach (array_keys($tokens) as $token) {
-      $string = preg_replace('/\\'. $token .'\[\w+\]/', '', $string);
+      $string = preg_replace('/\\' . $token . '\[\w+\]/', '', $string);
     }
   }
 
@@ -2366,15 +2366,15 @@ function theme_webform_token_help($node = NULL) {
   );
 
   $special_tokens = array(
-    '%server['. t('key') .']',
-    '%session['. t('key') .']',
-    '%get['. t('key') .']',
-    '%post['. t('key') .']',
-    '%request['. t('key') .']',
+    '%server[' . t('key') . ']',
+    '%session[' . t('key') . ']',
+    '%get[' . t('key') . ']',
+    '%post[' . t('key') . ']',
+    '%request[' . t('key') . ']',
   );
 
   if (module_exists('profile')) {
-    $special_tokens[] = '%profile['. t('key') .']';
+    $special_tokens[] = '%profile[' . t('key') . ']';
   }
 
   if (isset($node)) {
@@ -2397,7 +2397,7 @@ function theme_webform_token_help($node = NULL) {
   $output .= theme('item_list', $special_tokens, t('Special variables'));
   $output .= '<p>' . t('You can use %server[key] to add any of the special PHP <a href="http://www.php.net/reserved.variables#reserved.variables.server">$_SERVER</a> variables, %session[key] to add any of the special PHP <a href="http://www.php.net/reserved.variables#reserved.variables.session">$_SESSION</a> variables and %get[key] to create prefilled forms from the <a href="http://www.php.net/reserved.variables#reserved.variables.get">URL</a>. %cookie, %request and %post also work with their respective PHP variables. For example %server[HTTP_USER_AGENT], %session[id], or %get[q].') . '</p>';
   if (module_exists('profile')) {
-    $output .= '<p>'. t('If you are using the Profile module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the variable %profile[profile_city].') . '</p>';
+    $output .= '<p>' . t('If you are using the Profile module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the variable %profile[profile_city].') . '</p>';
   }
 
   $fieldset = array(
@@ -2405,7 +2405,7 @@ function theme_webform_token_help($node = NULL) {
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#children' => '<div>'. $output .'</div>',
+    '#children' => '<div>' . $output . '</div>',
   );
   return theme('fieldset', $fieldset);
 }
@@ -2702,7 +2702,7 @@ function webform_set_breadcrumb($node, $submission = NULL) {
     $webform_breadcrumb[] = l($node->title, 'node/' . $node->nid);
     if (isset($submission)) {
       $last_link = array_shift($breadcrumb);
-      $webform_breadcrumb[] = l(t('Submissions'), 'node/' . $node->nid .'/submissions');
+      $webform_breadcrumb[] = l(t('Submissions'), 'node/' . $node->nid . '/submissions');
       if (isset($last_link)) {
         $webform_breadcrumb[] = $last_link;
       }

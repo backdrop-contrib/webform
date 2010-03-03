@@ -1,4 +1,10 @@
 <?php
+// $Id$
+
+/**
+ * @file
+ * Form Builder integratations for Webform.
+ */
 
 /**
  * Menu callback; displays the main component editing screen.
@@ -54,8 +60,8 @@ function webform_form_builder_save_form_submit($form, $form_state) {
 
   // Delete components that have been removed.
   foreach ($node->webform['components'] as $component) {
-    $element_id = 'cid_'. $component['cid'];
-    if (!in_array($element_id, $element_ids)){
+    $element_id = 'cid_' . $component['cid'];
+    if (!in_array($element_id, $element_ids)) {
       webform_component_delete($node, $component);
     }
   }
@@ -184,7 +190,7 @@ function webform_form_builder_load_process(&$form, $node, $pid = 0) {
     foreach (element_children($form) as $key) {
       $cid = webform_get_cid($node, $key, $pid);
       $form[$key]['#form_builder'] = array(
-        'element_id' => 'cid_'. $cid,
+        'element_id' => 'cid_' . $cid,
       );
 
       // Add any component-specific loading. Note that all components are

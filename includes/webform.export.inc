@@ -119,12 +119,12 @@ class webform_exporter_delimited extends webform_exporter {
   function add_row(&$file_handle, $data) {
     foreach ($data as $key => $value) {
       // Escape inner quotes and wrap all contents in new quotes.
-      $data[$key] = '"'. str_replace('"', '""', $data[$key]) .'"';
+      $data[$key] = '"' . str_replace('"', '""', $data[$key]) . '"';
 
       // Remove <script> tags, which mysteriously cause Excel not to import.
       $data[$key] = preg_replace('!<(/?script.*?)>!', '[$1]', $data[$key]);
     }
-    $row = implode($this->delimiter, $data) ."\n";
+    $row = implode($this->delimiter, $data) . "\n";
 
     if (function_exists('mb_convert_encoding')) {
       $row = mb_convert_encoding($row, 'UTF-16LE', 'UTF-8');

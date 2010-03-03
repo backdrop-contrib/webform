@@ -51,7 +51,7 @@ function _webform_edit_date($component) {
     '#type' => 'textfield',
     '#title' => t('Default value'),
     '#default_value' => $component['value'],
-    '#description' => t('The default value of the field.') .'<br />'. t('Accepts any date in any <a href="http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid.'),
+    '#description' => t('The default value of the field.') . '<br />' . t('Accepts any date in any <a href="http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html">GNU Date Input Format</a>. Strings such as today, +2 months, and Dec 9 2004 are all valid.'),
     '#size' => 60,
     '#maxlength' => 127,
     '#weight' => 0,
@@ -115,7 +115,7 @@ function _webform_render_date($component, $value = NULL) {
     '#weight' => $component['weight'],
     '#type' => 'date',
     '#description' => _webform_filter_descriptions($component['extra']['description']),
-    '#prefix' => '<div class="webform-component-'. $component['type'] .'" id="webform-component-'. $component['form_key'] .'">',
+    '#prefix' => '<div class="webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
     '#suffix' => '</div>',
     '#required' => $component['mandatory'],
     '#webform_component' => $component,
@@ -249,7 +249,7 @@ function webform_validate_date($element, $form_state) {
     $start = $component['extra']['year_start'] < $component['extra']['year_end'] ? $component['extra']['year_start'] : $component['extra']['year_end'];
     $end   = $component['extra']['year_start'] > $component['extra']['year_end'] ? $component['extra']['year_start'] : $component['extra']['year_end'];
     if ($element['year']['#value'] < $start || $element['year']['#value'] > $end) {
-      form_set_error($form_key .'][year', t('The entered date needs to be between the years @start and @end.', array('@start' => $start, '@end' => $end)));
+      form_set_error($form_key . '][year', t('The entered date needs to be between the years @start and @end.', array('@start' => $start, '@end' => $end)));
       return;
     }
   }
@@ -292,7 +292,7 @@ function _webform_display_date($component, $value, $format = 'html') {
 function theme_webform_display_date($element) {
   $output = ' ';
   if ($element['#value']) {
-    $timestamp = webform_strtotime($element['#value']['month'] .'/'. $element['#value']['day'] .'/'. $element['#value']['year']);
+    $timestamp = webform_strtotime($element['#value']['month'] . '/' . $element['#value']['day'] . '/' . $element['#value']['year']);
     $format = webform_date_format('medium');
     $output = format_date($timestamp, 'custom', $format, 0);
   }
@@ -305,11 +305,11 @@ function theme_webform_display_date($element) {
  */
 function _webform_analysis_date($component, $sids = array()) {
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
-  $query = 'SELECT no,data '.
-    ' FROM {webform_submitted_data} '.
-    ' WHERE nid = %d '.
-    ' AND  cid = %d '. $sidfilter.
+  $sidfilter = count($sids) ? " AND sid in (" . implode(",", $placeholders) . ")" : "";
+  $query = 'SELECT no,data ' .
+    ' FROM {webform_submitted_data} ' .
+    ' WHERE nid = %d ' .
+    ' AND  cid = %d ' . $sidfilter .
     ' ORDER BY sid,no ASC ';
 
   $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids));
@@ -328,7 +328,7 @@ function _webform_analysis_date($component, $sids = array()) {
               $year = $row['data'];
               // Build the full timestamp.
               if (drupal_strlen($month) > 0  && drupal_strlen($day) > 0  && drupal_strlen($year) > 0) {
-                $timestamp = webform_strtotime($month .'/'. $day .'/'. $year);
+                $timestamp = webform_strtotime($month . '/' . $day . '/' . $year);
                 // Add usefull information about this date into an array.
                 $timestamps[$timestamp] = array(
                   date('l', $timestamp), // Day of the week (Monday, Tuesday, etc.).
@@ -356,7 +356,7 @@ function _webform_analysis_date($component, $sids = array()) {
  */
 function _webform_table_date($component, $value) {
   if (drupal_strlen($value[0]) > 0 && drupal_strlen($value[1]) > 0 && drupal_strlen($value[2]) > 0) {
-    $timestamp = webform_strtotime($value[0] .'/'. $value[1] .'/'. $value[2]);
+    $timestamp = webform_strtotime($value[0] . '/' . $value[1] . '/' . $value[2]);
     $format = webform_date_format('short');
     return format_date($timestamp, 'custom', $format, 0);
   }
@@ -381,7 +381,7 @@ function _webform_csv_headers_date($component, $export_options) {
  */
 function _webform_csv_data_date($component, $export_options, $value) {
   if (drupal_strlen($value[0]) > 0 && drupal_strlen($value[1]) > 0 && drupal_strlen($value[2]) > 0) {
-    $timestamp = webform_strtotime($value[0] .'/'. $value[1] .'/'. $value[2]);
+    $timestamp = webform_strtotime($value[0] . '/' . $value[1] . '/' . $value[2]);
     $format = webform_date_format('short');
     return format_date($timestamp, 'custom', $format, 0);
   }
@@ -409,7 +409,7 @@ function webform_strtotime($date) {
  */
 function webform_date_format($size = 'medium') {
     // Format date according to site's given format.
-    $format = variable_get('date_format_'. $size, 'D, m/d/Y - H:i');
+    $format = variable_get('date_format_' . $size, 'D, m/d/Y - H:i');
     $time = 'aABgGhHisueIOPTZ';
     $day_of_week = 'Dlw';
     $special = ',-: ';

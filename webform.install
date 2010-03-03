@@ -344,9 +344,9 @@ function webform_install() {
   // Create the default webform type.
   $webform_type = array(
     'type' => 'webform',
-    'name' => t('Webform'),
+    'name' => st('Webform'),
     'module' => 'node',
-    'description' => t('Create a new form or questionnaire accessible to users. Submission results and statistics are recorded and accessible to privileged users.'),
+    'description' => st('Create a new form or questionnaire accessible to users. Submission results and statistics are recorded and accessible to privileged users.'),
     'custom' => TRUE,
     'modified' => TRUE,
     'locked' => FALSE,
@@ -369,10 +369,10 @@ function webform_uninstall() {
   variable_del('webform_csv_delimiter');
 
   $component_list = array();
-  $path = drupal_get_path('module', 'webform') .'/components';
+  $path = drupal_get_path('module', 'webform') . '/components';
   $files = file_scan_directory($path, '^.*\.inc$');
   foreach ($files as $filename => $file) {
-    variable_del('webform_enable_'. $file->name, 1);
+    variable_del('webform_enable_' . $file->name, 1);
   }
 
   // Delete uploaded files.
@@ -533,7 +533,7 @@ function webform_update_6203() {
  */
 function webform_update_6204() {
   $ret = array();
-  $ret[] = update_sql("UPDATE {files} SET status = 1 WHERE filepath LIKE '". file_directory_path() ."/webform/%'");
+  $ret[] = update_sql("UPDATE {files} SET status = 1 WHERE filepath LIKE '" . file_directory_path() . "/webform/%'");
   return $ret;
 }
 
@@ -853,7 +853,7 @@ function webform_update_6309() {
   $result = db_query("SELECT r.rid, p.perm FROM {role} r INNER JOIN {permission} p ON p.rid = r.rid");
   while ($role = db_fetch_object($result)) {
     $perms = explode(',', $role->perm);
-    foreach($perms as $id => $perm) {
+    foreach ($perms as $id => $perm) {
       $perms[$id] = trim($perm);
     }
     $ret[] = update_sql("UPDATE {permission} SET perm = '" . implode(', ', $perms) . "' WHERE rid = " . $role->rid);
@@ -907,7 +907,7 @@ function webform_update_6310() {
  */
 function _webform_recursive_delete($path) {
   if ($path && is_dir($path)) {
-    $listing = $path .'/*';
+    $listing = $path . '/*';
     foreach (glob($listing) as $file) {
       if (is_file($file) === TRUE) {
         @unlink($file);

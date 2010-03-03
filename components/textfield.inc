@@ -60,7 +60,7 @@ function _webform_edit_textfield($component) {
     '#type' => 'textfield',
     '#title' => t('Width'),
     '#default_value' => $component['extra']['width'],
-    '#description' => t('Width of the textfield.') .' '. t('Leaving blank will use the default size.'),
+    '#description' => t('Width of the textfield.') . ' ' . t('Leaving blank will use the default size.'),
     '#size' => 5,
     '#maxlength' => 10,
     '#weight' => 0,
@@ -131,7 +131,7 @@ function _webform_render_textfield($component, $value = NULL, $filter = TRUE) {
     '#field_suffix'  => empty($component['extra']['field_suffix']) ? NULL : check_plain($component['extra']['field_suffix']),
     '#description'   => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#attributes'    => $component['extra']['attributes'],
-    '#prefix'        => '<div class="webform-component-'. $component['type'] .'" id="webform-component-'. $component['form_key'] .'">',
+    '#prefix'        => '<div class="webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
     '#suffix'        => '</div>',
     '#webform_component' => $component,
     '#element_validate' => array(),
@@ -234,11 +234,11 @@ function theme_webform_display_textfield($element) {
  */
 function _webform_analysis_textfield($component, $sids = array()) {
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
-  $query = 'SELECT data '.
-    ' FROM {webform_submitted_data} '.
-    ' WHERE nid = %d '.
-    ' AND cid = %d '. $sidfilter;
+  $sidfilter = count($sids) ? " AND sid in (" . implode(",", $placeholders) . ")" : "";
+  $query = 'SELECT data ' .
+    ' FROM {webform_submitted_data} ' .
+    ' WHERE nid = %d ' .
+    ' AND cid = %d ' . $sidfilter;
   $nonblanks = 0;
   $submissions = 0;
   $wordcount = 0;

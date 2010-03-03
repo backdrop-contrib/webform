@@ -67,7 +67,7 @@ function _webform_edit_email($component) {
     '#type' => 'textfield',
     '#title' => t('Width'),
     '#default_value' => $component['extra']['width'],
-    '#description' => t('Width of the textfield.') .' '. t('Leaving blank will use the default size.'),
+    '#description' => t('Width of the textfield.') . ' ' . t('Leaving blank will use the default size.'),
     '#size' => 5,
     '#maxlength' => 10,
     '#parents' => array('extra', 'width'),
@@ -115,7 +115,7 @@ function _webform_render_email($component, $value = NULL) {
     '#weight'        => $component['weight'],
     '#description'   => _webform_filter_descriptions($component['extra']['description']),
     '#attributes'    => $component['extra']['attributes'],
-    '#prefix'        => '<div class="webform-component-'. $component['type'] .'" id="webform-component-'. $component['form_key'] .'">',
+    '#prefix'        => '<div class="webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
     '#suffix'        => '</div>',
     '#element_validate'  => array('_webform_validate_email'),
     '#webform_component' => $component,
@@ -230,11 +230,11 @@ function _webform_form_builder_types_email() {
  */
 function _webform_analysis_email($component, $sids = array()) {
   $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
-  $query = 'SELECT data '.
-    ' FROM {webform_submitted_data} '.
-    ' WHERE nid = %d '.
-    ' AND cid = %d '. $sidfilter;
+  $sidfilter = count($sids) ? " AND sid in (" . implode(",", $placeholders) . ")" : "";
+  $query = 'SELECT data ' .
+    ' FROM {webform_submitted_data} ' .
+    ' WHERE nid = %d ' .
+    ' AND cid = %d ' . $sidfilter;
   $nonblanks = 0;
   $submissions = 0;
   $wordcount = 0;

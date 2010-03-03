@@ -2,6 +2,11 @@
 // $Id$
 
 /**
+* @file
+* Views handler to display the number of submissions in a webform.
+*/
+
+/**
  * Field handler to present the submission count of a node to the user.
  */
 class webform_handler_field_submission_count extends views_handler_field {
@@ -12,7 +17,7 @@ class webform_handler_field_submission_count extends views_handler_field {
     if ($this->count_type == 'node') {
       $this->additional_fields['nid'] = 'nid';
     }
-    else if ($this->count_type == 'users') {
+    elseif ($this->count_type == 'users') {
       $this->additional_fields['uid'] = 'uid';
     }
   }
@@ -43,7 +48,7 @@ class webform_handler_field_submission_count extends views_handler_field {
         $output = l($count, "node/$node->nid/submissions");
       }
     }
-    else if ($this->count_type == 'users') {
+    elseif ($this->count_type == 'users') {
       $sql = "SELECT COUNT(sid) FROM {webform_submissions} WHERE uid = %d";
       $output = db_result(db_query($sql, $values->{$this->aliases['uid']}));
     }

@@ -236,13 +236,13 @@ function theme_webform_admin_content($nodes) {
   $rows = array();
   foreach ($nodes as $node) {
     $rows[] = array(
-      l($node->title, 'node/'. $node->nid),
-      l(t('Submissions'), 'node/'. $node->nid .'/webform-results'),
-      l(t('Analysis'), 'node/'. $node->nid .'/webform-results/analysis'),
-      l(t('Table'), 'node/'. $node->nid .'/webform-results/table'),
-      l(t('Download'), 'node/'. $node->nid .'/webform-results/download'),
-      node_access('update', $node) ? l(t('Edit'), 'node/'. $node->nid .'/edit') : '',
-      user_access('delete all webform submissions') ? l(t('Clear'), 'node/'. $node->nid .'/webform-results/clear') : '',
+      l($node->title, 'node/' . $node->nid),
+      l(t('Submissions'), 'node/' . $node->nid . '/webform-results'),
+      l(t('Analysis'), 'node/' . $node->nid . '/webform-results/analysis'),
+      l(t('Table'), 'node/' . $node->nid . '/webform-results/table'),
+      l(t('Download'), 'node/' . $node->nid . '/webform-results/download'),
+      node_access('update', $node) ? l(t('Edit'), 'node/' . $node->nid . '/edit') : '',
+      user_access('delete all webform submissions') ? l(t('Clear'), 'node/' . $node->nid . '/webform-results/clear') : '',
     );
   }
 

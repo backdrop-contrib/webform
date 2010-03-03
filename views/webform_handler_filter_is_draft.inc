@@ -1,5 +1,11 @@
 <?php
-//$Id$
+// $Id$
+
+/**
+* @file
+* Views handler to filter submissions by draft state.
+*/
+
 /**
  * Filter by submission status
  */

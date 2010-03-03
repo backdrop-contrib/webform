@@ -155,7 +155,7 @@ function webform_submission_delete_form_submit($form, &$form_state) {
   webform_submission_delete($form_state['values']['node'], $form_state['values']['submission']);
   drupal_set_message(t('Submission deleted.'));
 
-  $form_state['redirect'] = 'node/'. $form_state['values']['node']->nid .'/webform-results';
+  $form_state['redirect'] = 'node/' . $form_state['values']['node']->nid . '/webform-results';
 }
 
 /**
@@ -173,7 +173,7 @@ function webform_submission_page($node, $submission, $format) {
   webform_set_breadcrumb($node, $submission);
 
   if ($format == 'form') {
-    $output = drupal_get_form('webform_client_form_'. $node->nid, $node, $submission);
+    $output = drupal_get_form('webform_client_form_' . $node->nid, $node, $submission);
   }
   else {
     $output = webform_submission_render($node, $submission, NULL, $format);
@@ -269,7 +269,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     }
 
     $where_clause = implode(' AND ', $where);
-    $pager_query = "SELECT sid FROM {webform_submissions} WHERE $where_clause";
+    $pager_query = 'SELECT sid FROM {webform_submissions} WHERE ' . $where_clause;
 
     if (is_array($header)) {
       $pager_query .= tablesort_sql($header);
@@ -298,11 +298,11 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
   }
 
   // Query the required submission data.
-  $query = 'SELECT s.*, sd.cid, sd.no, sd.data, u.name, u.mail, u.status '.
-           'FROM {webform_submissions} s '.
-           'LEFT JOIN {webform_submitted_data} sd ON sd.sid = s.sid '.
-           'LEFT JOIN {users} u ON u.uid = s.uid '.
-           'WHERE s.sid IN (' . implode($sids, ',') . ') '.
+  $query = 'SELECT s.*, sd.cid, sd.no, sd.data, u.name, u.mail, u.status ' .
+           'FROM {webform_submissions} s ' .
+           'LEFT JOIN {webform_submitted_data} sd ON sd.sid = s.sid ' .
+           'LEFT JOIN {users} u ON u.uid = s.uid ' .
+           'WHERE s.sid IN (' . implode($sids, ',') . ') ' .
            'ORDER BY sd.sid ASC, sd.cid ASC, sd.no ASC';
 
   $result = db_query($query);
@@ -395,7 +395,7 @@ function webform_get_submission($nid, $sid, $reset = FALSE) {
 function _webform_submission_spam_check($to, $subject, $from, $headers = array()) {
   $headers = implode('\n', (array)$headers);
   // Check if they are attempting to spam using a bcc or content type hack.
-  if (preg_match('/(b?cc\s?:)|(content\-type:)/i', $to ."\n". $subject ."\n". $from ."\n". $headers)) {
+  if (preg_match('/(b?cc\s?:)|(content\-type:)/i', $to . "\n" . $subject . "\n" . $from . "\n" . $headers)) {
     return TRUE; // Possible spam attempt.
   }
   return FALSE; // Not spam.
@@ -418,9 +418,9 @@ function _webform_submission_limit_check($node) {
   }
 
   // Retrieve submission data for this IP address or username from the database.
-  $query = 'SELECT count(*) '.
-           'FROM {webform_submissions} '.
-           "WHERE (( 0 = %d AND remote_addr = '%s') OR (uid > 0 AND uid = %d)) ".
+  $query = 'SELECT count(*) ' .
+           'FROM {webform_submissions} ' .
+           "WHERE (( 0 = %d AND remote_addr = '%s') OR (uid > 0 AND uid = %d)) " .
            'AND submitted > %d AND nid = %d AND is_draft = 0';
 
   // Fetch all the entries from the database within the submit interval with this username and IP.
@@ -429,13 +429,13 @@ function _webform_submission_limit_check($node) {
   // Double check the submission history from the users machine using cookies.
   $num_submissions_cookie = 0;
   if ($user->uid == 0 && variable_get('webform_use_cookies', 0)) {
-    $cookie_name = 'webform-'. $node->nid;
+    $cookie_name = 'webform-' . $node->nid;
 
     if (isset($_COOKIE[$cookie_name]) && is_array($_COOKIE[$cookie_name])) {
       foreach ($_COOKIE[$cookie_name] as $key => $timestamp) {
         if ($node->webform['submit_interval'] != -1 && $timestamp <= time() - $node->webform['submit_interval']) {
           // Remove the cookie if past the required time interval.
-          setcookie($cookie_name .'['. $key .']', '', 0);
+          setcookie($cookie_name . '[' . $key . ']', '', 0);
         }
       }
       // Count the number of submissions recorded in cookies.
