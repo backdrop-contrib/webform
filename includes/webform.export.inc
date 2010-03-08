@@ -82,9 +82,9 @@ class webform_exporter {
   }
 
   function set_headers($filename) {
-    drupal_set_header('Content-Type: application/force-download');
-    drupal_set_header('Pragma: public');
-    drupal_set_header('Cache-Control: max-age=0');
+    drupal_add_http_header('Content-Type', 'application/force-download');
+    drupal_add_http_header('Pragma', 'public');
+    drupal_add_http_header('Cache-Control', 'max-age=0');
   }
 
   function bof(&$file_handle) {
@@ -146,8 +146,8 @@ class webform_exporter_delimited extends webform_exporter {
       $content_type = 'text/csv';
     }
 
-    drupal_set_header("Content-Type: $content_type");
-    drupal_set_header("Content-Disposition: attachment; filename=$filename.$extension");
+    drupal_add_http_header('Content-Type', $content_type);
+    drupal_add_http_header('Content-Disposition', "attachment; filename=$filename.$extension");
   }
 }
 
@@ -163,9 +163,9 @@ class webform_exporter_excel extends webform_exporter_delimited {
   }
 
   function set_headers($filename) {
-    drupal_set_header('Content-Type: application/x-msexcel');
-    drupal_set_header("Content-Disposition: attachment; filename=$filename.xls");
-    drupal_set_header('Pragma: public');
-    drupal_set_header('Cache-Control: max-age=0');
+    drupal_add_http_header('Content-Type', 'application/x-msexcel');
+    drupal_add_http_header('Content-Disposition', "attachment; filename=$filename.xls");
+    drupal_add_http_header('Pragma', 'public');
+    drupal_add_http_header('Cache-Control', 'max-age=0');
   }
 }

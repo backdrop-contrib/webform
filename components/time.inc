@@ -33,10 +33,10 @@ function _webform_defaults_time() {
 function _webform_theme_time() {
   return array(
     'webform_time' => array(
-      'arguments' => array('element' => NULL),
+      'render element' => 'element',
     ),
     'webform_display_time' => array(
-      'arguments' => array('element' => NULL),
+      'render element' => 'element',
     ),
   );
 }
@@ -227,7 +227,6 @@ function _webform_display_time($component, $value, $format = 'html') {
     '#weight' => $component['weight'],
     '#theme' => 'webform_display_time',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
-    '#post_render' => array('webform_element_wrapper'),
     '#component' => $component,
     '#format' => $format,
     '#hourformat' => $component['extra']['hourformat'],
@@ -238,7 +237,8 @@ function _webform_display_time($component, $value, $format = 'html') {
 /**
  * Format the output of data for this component.
  */
-function theme_webform_display_time($element) {
+function theme_webform_display_time($variables) {
+  $element = $variables['element'];
   $output = ' ';
   if ($element['#value']['hour'] && $element['#value']['minute']) {
     if ($element['#hourformat'] == '24-hour') {
@@ -255,19 +255,23 @@ function theme_webform_display_time($element) {
  * Implementation of _webform_analysis_component().
  */
 function _webform_analysis_time($component, $sids = array()) {
-  $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sidfilter = count($sids) ? " AND sid in (" . implode(",", $placeholders) . ")" : "";
-  $query = 'SELECT no,data ' .
-    ' FROM {webform_submitted_data} ' .
-    ' WHERE nid = %d ' .
-    ' AND  cid = %d ' . $sidfilter .
-    ' ORDER BY sid,no ASC ';
+  $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
+    ->fields('wsd', array('no', 'data'))
+    ->condition('nid', $component['nid'])
+    ->condition('cid', $component['cid'])
+    ->orderBy('sid')
+    ->orderBy('no');
 
-  $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids));
-  // build an array of timestamps from entered values.
+  if (count($sids)) {
+    $query->condition('sid', $sids, 'IN');
+  }
+
+  $result = $query->execute();
+
+  // Build an array of timestamps from entered values.
   $timestamps = array();
   $submissions = 1;
-  while ($row = db_fetch_array($result)) {
+  foreach ($result as $row) {
     if ($row['no'] == '0') {
       $submissions++;
       $hour = $row['data'];
@@ -354,5 +358,5 @@ function theme_webform_time($element) {
   $element['#type'] = 'element';
   $element['#children'] = '<div class="container-inline">' . drupal_render($element['hour']) . drupal_render($element['minute']) . drupal_render($element['ampm']) . '</div>';
 
-  return theme('form_element', $element, $element['#children']);
+  return $element['#children'];
 }

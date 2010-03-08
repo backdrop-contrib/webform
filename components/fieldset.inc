@@ -72,7 +72,6 @@ function _webform_display_fieldset($component, $value, $format = 'html') {
     $element = array(
       '#title' => $component['name'],
       '#weight' => $component['weight'],
-      '#post_render' => array('webform_element_wrapper'),
       '#theme_wrappers' => array('webform_element_text'),
     );
   }

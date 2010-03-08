@@ -36,7 +36,7 @@ function _webform_defaults_select() {
 function _webform_theme_select() {
   return array(
     'webform_display_select' => array(
-      'arguments' => array('element' => NULL),
+      'render element' => 'element',
     ),
   );
 }
@@ -143,7 +143,7 @@ function _webform_edit_validate_select($element, $form_state) {
     }
 
     if (!empty($duplicate_keys)) {
-      form_error($element, t('Options within the select list must be unique. The following keys have been used multiple times:') . theme('item_list', $duplicate_keys));
+      form_error($element, t('Options within the select list must be unique. The following keys have been used multiple times:') . theme('item_list', array('items' => $duplicate_keys)));
     }
 
   }
@@ -312,7 +312,6 @@ function _webform_display_select($component, $value, $format = 'html') {
     '#weight' => $component['weight'],
     '#theme' => 'webform_display_select',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
-    '#post_render' => array('webform_element_wrapper'),
     '#component' => $component,
     '#format' => $format,
     '#value' => $value,
@@ -459,7 +458,8 @@ function _webform_form_builder_save_select($component, $form_element) {
 /**
  * Format the text output for this component.
  */
-function theme_webform_display_select($element) {
+function theme_webform_display_select($variables) {
+  $element = $variables['element'];
   $component = $element['#component'];
 
   // Convert submitted 'safe' values to un-edited, original form.
@@ -494,7 +494,7 @@ function theme_webform_display_select($element) {
   }
 
   if ($element['#format'] == 'html') {
-    $output = count($items) > 1 ? theme('item_list', $items) : (isset($items[0]) ? $items[0] : ' ');
+    $output = count($items) > 1 ? theme('item_list', array('items' => $items)) : (isset($items[0]) ? $items[0] : ' ');
   }
   else {
     if (count($items) > 1) {
@@ -521,26 +521,33 @@ function _webform_analysis_select($component, $sids = array(), $single = FALSE) 
   $sid_placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
   $sid_filter = count($sids) ? " AND sid IN (" . implode(",", $sid_placeholders) . ")" : "";
 
-  $not = $show_other_results ? 'NOT ' : '';
-  $placeholders = count($options) ? array_fill(0, count($options), "'%s'") : array();
-  $query = 'SELECT data, count(data) as datacount ' .
-    ' FROM {webform_submitted_data} ' .
-    ' WHERE nid = %d ' .
-    ' AND cid = %d ' .
-    " AND data != ''" . $sid_filter .
-    ($placeholders ? ' AND data ' . $not . 'IN (' . implode(',', $placeholders) . ')' : '') .
-    ' GROUP BY data ';
+  $option_operator = $show_other_results ? 'NOT IN' : 'IN';
+  $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
+    ->fields('wsd', array('data'))
+    ->condition('nid', $component['nid'])
+    ->condition('cid', $component['cid'])
+    ->condition('data', '', '<>')
+    ->condition('data', $options, $option_operator)
+    ->groupBy('data');
+  $query->addExpression('COUNT(data)', 'datacount');
 
-  $count_query = 'SELECT count(*) as datacount ' .
-    ' FROM {webform_submitted_data} ' .
-    ' WHERE nid = %d ' .
-    ' AND cid = %d ' .
-    " AND data != ''" . $sid_filter;
+  if (count($sids)) {
+    $query->condition('sid', $sids, 'IN');
+  }
 
-  $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids, array_keys($options)));
+  $count_query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
+    ->condition('nid', $component['nid'])
+    ->condition('cid', $component['cid'])
+    ->condition('data', '', '<>');
+  $count_query->addExpression('COUNT(*)', 'datacount');
+  if (count($sids)) {
+    $count_query->condition('sid', $sids, 'IN');
+  }
+
+  $result = $query->execute();
   $rows = array();
   $normal_count = 0;
-  while ($data = db_fetch_array($result)) {
+  foreach ($result as $data) {
     $display_option = $single ? $data['data'] : $options[$data['data']];
     $rows[$data['data']] = array(_webform_filter_xss($display_option), $data['datacount']);
     $normal_count += $data['datacount'];
@@ -555,7 +562,7 @@ function _webform_analysis_select($component, $sids = array(), $single = FALSE) 
   
     // Add a row for any unknown or user-entered values.
     if ($component['extra']['other_option'] === 'Y') {
-      $full_count = db_result(db_query($count_query, array_merge(array($component['nid'], $component['cid']), $sids)));
+      $full_count = $count_query->execute()->fetchField();
       $other_count = $full_count - $normal_count;
       $display_option = empty($component['extra']['other_text']) ? $component['extra']['other_text'] : t('Other...');
       $other_text = $other_count ? $other_count . ' (' . l(t('view'), 'node/' . $component['nid'] . '/webform-results/analysis/' . $component['cid']) . ')' : $other_count;

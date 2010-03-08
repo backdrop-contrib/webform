@@ -37,10 +37,10 @@ function _webform_defaults_grid() {
 function _webform_theme_grid() {
   return array(
     'webform_grid' => array(
-      'arguments' => array('grid_element' => NULL),
+      'render element' => 'grid_element',
     ),
     'webform_display_grid' => array(
-      'arguments' => array('element' => NULL),
+      'render element' => 'element',
     ),
   );
 }
@@ -158,7 +158,6 @@ function _webform_display_grid($component, $value, $format = 'html') {
     '#options' => $options,
     '#theme' => 'webform_display_grid',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
-    '#post_render' => array('webform_element_wrapper'),
     '#sorted' => TRUE,
   );
 
@@ -179,7 +178,9 @@ function _webform_display_grid($component, $value, $format = 'html') {
 /**
  * Format the text output for this component.
  */
-function theme_webform_display_grid($element) {
+function theme_webform_display_grid($variables) {
+  $element = $variables['element'];
+
   $component = $element['#component'];
   $format = $element['#format'];
 
@@ -204,7 +205,7 @@ function theme_webform_display_grid($element) {
     }
 
     $option_count = count($header) - 1;
-    $output = theme('table', $header, $rows, array('class' => 'webform-grid webform-grid-' . $option_count));
+    $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('webform-grid', 'webform-grid-' . $option_count))));
   }
   else {
     $items = array();
@@ -245,17 +246,21 @@ function _webform_analysis_grid($component, $sids = array()) {
   $questions = array_values(_webform_grid_options($component['extra']['questions']));
 
   // Generate a lookup table of results.
-  $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sidfilter = count($sids) ? " AND sid in (" . implode(",", $placeholders) . ")" : "";
-  $query = 'SELECT no, data, count(data) as datacount ' .
-    ' FROM {webform_submitted_data} ' .
-    ' WHERE nid = %d ' .
-    ' AND cid = %d ' .
-    " AND data != '' " . $sidfilter .
-    ' GROUP BY no, data';
-  $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids));
+  $query = db_select('webform_submitted_data', 'wsd')
+    ->fields('wsd', array('no', 'data'))
+    ->condition('nid', $component['nid'])
+    ->condition('cid', $component['cid'])
+    ->condition('data', '', '<>')
+    ->groupBy('no')
+    ->groupBy('data');
+
+  if (count($sids)) {
+    $query->condition('sid', $sids, 'IN');
+  }
+
+  $result = $query->execute();
   $counts = array();
-  while ($data = db_fetch_object($result)) {
+  foreach ($result as $data) {
     $counts[$data->no][$data->data] = $data->datacount;
   }
 
@@ -276,7 +281,7 @@ function _webform_analysis_grid($component, $sids = array()) {
     }
     $rows[] = $row;
   }
-  $output = theme('table', $header, $rows, array('class' => 'webform-grid'));
+  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('webform-grid'))));
 
 
   return array(array(array('data' => $output, 'colspan' => 2)));
@@ -337,7 +342,9 @@ function _webform_csv_data_grid($component, $export_options, $value) {
   return $return;
 }
 
-function theme_webform_grid($element) {
+function theme_webform_grid($variables) {
+  $element = $variables['element'];
+
   $rows = array();
   $header = array(array('data' => '', 'class' => 'webform-grid-question'));
   $first = TRUE;
@@ -365,7 +372,7 @@ function theme_webform_grid($element) {
   }
 
   $option_count = count($header) - 1;
-  return theme('form_element', $element, theme('table', $header, $rows, array('class' => 'webform-grid webform-grid-' . $option_count)));
+  return theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('webform-grid', 'webform-grid-' . $option_count))));
 }
 
 /**

@@ -17,7 +17,7 @@ function _webform_defaults_markup() {
     'weight' => 0,
     'value' => '',
     'extra' => array(
-      'format' => FILTER_FORMAT_DEFAULT,
+      'format' => filter_default_format(),
     ),
   );
 }
@@ -27,16 +27,14 @@ function _webform_defaults_markup() {
  */
 function _webform_edit_markup($component) {
   $form = array();
-  $form['markup']['value'] = array(
+  $form['value'] = array(
     '#type' => 'textarea',
     '#title' => t('Value'),
     '#default_value' => $component['value'],
     '#description' => t('Markup allows you to enter custom HTML or PHP logic into your form.') . theme('webform_token_help'),
     '#weight' => -1,
-    '#parents' => array('value'),
+    '#text_format' => $component['extra']['format'],
   );
-  // Add the filter form.
-  $form['markup']['format'] = filter_form($component['extra']['format'], 0, array('extra', 'format'));
 
   // No description for markup.
   $form['extra']['description'] = array();
@@ -115,7 +113,7 @@ function _webform_form_builder_types_markup() {
       '#title' => t('Markup'),
       '#type' => 'markup',
       '#markup' => $default,
-      '#input_format' => FILTER_FORMAT_DEFAULT,
+      '#input_format' => filter_default_format(),
     ),
   );
 

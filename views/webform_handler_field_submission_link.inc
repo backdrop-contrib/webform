@@ -83,7 +83,7 @@ class webform_handler_field_submission_link extends views_handler_field {
       case 'delete':
         $text = !empty($this->options['text']) ? $this->options['text'] : t('view');
         $path = drupal_get_path_alias($_GET['q']);
-        $link = l($text, "node/$submission->nid/submission/$submission->sid/delete", array('query' => 'destination=' . $path));
+        $link = l($text, "node/$submission->nid/submission/$submission->sid/delete", array('query' => array('destination' => $path)));
         $access = webform_submission_access($node, $submission, 'delete');
         break;
       default:

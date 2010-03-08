@@ -49,8 +49,9 @@ class webform_handler_field_submission_count extends views_handler_field {
       }
     }
     elseif ($this->count_type == 'users') {
-      $sql = "SELECT COUNT(sid) FROM {webform_submissions} WHERE uid = %d";
-      $output = db_result(db_query($sql, $values->{$this->aliases['uid']}));
+      $output = db_select('webform_submissions')
+        ->condition('uid', $values->{$this->aliases['uid']})
+        ->countQuery->execute()->fetchField();
     }
 
     return $output;

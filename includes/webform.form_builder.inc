@@ -25,9 +25,7 @@ function webform_form_builder_components($node) {
  * The actual Form Builder interface is displayed as part of the
  * webform_form_builder_components() function.
  */
-function webform_form_builder_save_form(&$form_state, $nid) {
-  $form = array();
-
+function webform_form_builder_save_form($form, &$form_state, $nid) {
   $form['nid'] = array(
     '#type' => 'value',
     '#value' => $nid,
@@ -176,8 +174,9 @@ function webform_form_builder_load($form_builder_type, $form_builder_id) {
     $nid = $form_builder_id;
     $node = node_load($nid);
     // Get the unfiltered version of the client form.
+    $form = array();
     $form_state = array();
-    $form = webform_client_form($form_state, $node, array(), TRUE, FALSE, FALSE);
+    $form = webform_client_form($form, $form_state, $node, array(), TRUE, FALSE, FALSE);
     webform_form_builder_load_process($form['submitted'], $node);
     return $form['submitted'];
   }

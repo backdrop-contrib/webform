@@ -25,7 +25,7 @@ function _webform_defaults_pagebreak() {
 function _webform_theme_pagebreak() {
   return array(
     'webform_display_pagebreak' => array(
-      'arguments' => array('element' => NULL),
+      'render element' => 'element',
     ),
   );
 }
@@ -78,6 +78,8 @@ function _webform_display_pagebreak($component, $value = NULL, $format = 'html')
 /**
  * Format the text output data for this component.
  */
-function theme_webform_display_pagebreak($element) {
+function theme_webform_display_pagebreak($variables) {
+  $element = $variables['element'];
+
   return $element['#format'] == 'html' ? '<h2 class="webform-page">' . check_plain($element['#title']) . '</h2>' : "--" . $element['#title'] . "--\n";
 }

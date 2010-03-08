@@ -66,7 +66,7 @@ class WebformSubmissionTestCase extends WebformTestCase {
     $submission_values = $value_type == 'sample' ? $this->testWebformPost() : array();
 
     // Visit the node page with the "foo=bar" query, to test %get[] default values.
-    $this->drupalGet('node/' . $node->nid, array('query' => 'foo=bar'));
+    $this->drupalGet('node/' . $node->nid, array('query' => array('foo' => 'bar')));
     $this->assertText($node->body, t('Webform node created and accessible at !url', array('!url' => 'node/' . $node->nid)), t('Webform'));
 
     // Submit our test data.

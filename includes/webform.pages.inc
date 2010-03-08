@@ -10,7 +10,7 @@
 /**
  * Main configuration form for editing a webform node.
  */
-function webform_configure_form(&$form_state, $node) {
+function webform_configure_form($form, &$form_state, $node) {
   $form = array();
 
   $form['nid'] = array(
@@ -27,16 +27,16 @@ function webform_configure_form(&$form_state, $node) {
     '#weight' => -4,
   );
 
-  $form['submission']['confirmation_wrapper']['confirmation'] = array(
+  $form['submission']['confirmation'] = array(
     '#type' => 'textarea',
     '#title' => t('Confirmation message'),
     '#description' => t('Message to be shown upon successful submission. If <em>Redirect URL</em> is set this displays as a message, otherwise it will be shown on its own page.'),
     '#default_value' => $node->webform['confirmation'],
     '#cols' => 40,
     '#rows' => 10,
+    '#text_format' => $node->webform['confirmation_format'],
+    '#parents' => array('confirmation_format'),
   );
-
-  $form['submission']['confirmation_wrapper']['format'] = filter_form($node->webform['confirmation_format'], NULL, array('confirmation_format'));
 
   // Redirect URL.
   $form['submission']['redirect_url'] = array(
@@ -52,7 +52,7 @@ function webform_configure_form(&$form_state, $node) {
     '#type' => 'item',
     '#title' => t('Submission limit'),
     '#theme' => 'webform_advanced_submit_limit_form',
-    '#description' => t('Limit the number of submissions <em>per user</em>. A user is identified by their user login if logged-in, or by their IP Address and Cookie if anonymous. Use of cookies may be modified in the global <a href="!url">Webform settings</a>.', array('!url' => url('admin/settings/webform'))),
+    '#description' => t('Limit the number of submissions <em>per user</em>. A user is identified by their user login if logged-in, or by their IP Address and Cookie if anonymous. Use of cookies may be modified in the global <a href="!url">Webform settings</a>.', array('!url' => url('admin/config/content/webform'))),
   );
   $form['submission']['submit_limit']['enforce_limit'] = array(
     '#type' => 'radios',
@@ -255,7 +255,8 @@ function webform_configure_form_submit($form, &$form_state) {
 /**
  * Theme the submit limit fieldset on the webform node form.
  */
-function theme_webform_advanced_submit_limit_form($form) {
+function theme_webform_advanced_submit_limit_form($variables) {
+  $form = $variables['form'];
   $form['submit_limit']['#attributes']['class'] = 'webform-set-active';
   $form['submit_interval']['#attributes']['class'] = 'webform-set-active';
   $replacements = array(

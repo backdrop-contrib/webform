@@ -37,13 +37,13 @@ function _webform_defaults_file() {
 function _webform_theme_file() {
   return array(
     'webform_edit_file' => array(
-      'arguments' => array('form' => NULL),
+      'render element' => 'form',
     ),
     'webform_render_file' => array(
-      'arguments' => array('element' => NULL),
+      'render element' => 'element',
     ),
     'webform_display_file' => array(
-      'arguments' => array('element' => NULL),
+      'render element' => 'element',
     ),
   );
 }
@@ -191,7 +191,9 @@ function _webform_edit_file_filtering_validate($element, &$form_state) {
   form_set_value($element['types'], $extensions, $form_state);
 }
 
-function theme_webform_edit_file($form) {
+function theme_webform_edit_file($variables) {
+  $form = $variables['form'];
+
   // Add a little javascript to check all the items in one type.
   $javascript = '
     <script type="text/javascript">
@@ -203,7 +205,7 @@ function theme_webform_edit_file($form) {
       }
   </script>
  ';
-  drupal_set_html_head($javascript);
+  drupal_add_html_head($javascript);
 
   // Format the components into a table.
   $per_row = 6;
@@ -267,7 +269,9 @@ function theme_webform_edit_file($form) {
 
   // Create the table inside the form.
   $form['validation']['filtering']['types']['table'] = array(
-    '#value' => theme('table', $header, $rows)
+    '#theme' => 'table',
+    '#header' => $header,
+    '#rows' => $rows
   );
 
   $output = drupal_render($form);
@@ -329,7 +333,9 @@ function _webform_render_file($component, $value = NULL) {
 /**
  * Render a File component.
  */
-function theme_webform_render_file($element) {
+function theme_webform_render_file($variables) {
+  $element = $variables['element'];
+
   // Add information about the existing file, if any.
   $value = $element['_fid']['#value'] ? $element['_fid']['#value'] : $element['_old']['#value'];
   if ($value && ($file = webform_get_file($value))) {
@@ -456,7 +462,8 @@ function _webform_submit_file($component, $value) {
 
   if ($value['_fid'] && ($file = webform_get_file($value['_fid']))) {
     // Save any new files permanently.
-    file_set_status($file, FILE_STATUS_PERMANENT);
+    $file->status = FILE_STATUS_PERMANENT;
+    file_save($file);
 
     // Delete any previous files.
     if ($value['_old'] && ($existing = webform_get_file($value['_old']))) {
@@ -484,7 +491,6 @@ function _webform_display_file($component, $value, $format = 'html') {
      '#weight' => $component['weight'],
      '#theme' => 'webform_display_file',
      '#theme_wrappers' => $format == 'text' ? array('webform_element_text') : array('webform_element'),
-     '#post_render' => array('webform_element_wrapper'),
      '#component' => $component,
      '#format' => $format,
   );
@@ -493,7 +499,9 @@ function _webform_display_file($component, $value, $format = 'html') {
 /**
  * Format the output of text data for this component
  */
-function theme_webform_display_file($element) {
+function theme_webform_display_file($variables) {
+  $element = $variables['element'];
+
   $file = $element['#value'];
   $url = !empty($file) ? webform_file_url($file->filepath) : t('no upload');
   return !empty($file) ? ($element['#format'] == 'text' ? $url : l($file->filename, $url)) : ' ';
@@ -514,18 +522,21 @@ function _webform_delete_file($component, $value) {
  * Implementation of _webform_analysis_component().
  */
 function _webform_analysis_file($component, $sids = array()) {
-  $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sidfilter = count($sids) ? " AND sid in (" . implode(",", $placeholders) . ")" : "";
-  $query = 'SELECT data ' .
-    ' FROM {webform_submitted_data} ' .
-    ' WHERE nid = %d ' .
-    ' AND cid = %d' . $sidfilter;
+  $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
+    ->fields('wsd', array('no', 'data'))
+    ->condition('nid', $component['nid'])
+    ->condition('cid', $component['cid']);
+
+  if (count($sids)) {
+    $query->condition('sid', $sids, 'IN');
+  }
+
   $nonblanks = 0;
   $sizetotal = 0;
   $submissions = 0;
 
-  $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids));
-  while ($data = db_fetch_array($result)) {
+  $result = $query->execute();
+  foreach ($result as $data) {
     $file = webform_get_file($data['data']);
     if (isset($file->filesize)) {
       $nonblanks++;

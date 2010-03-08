@@ -7,12 +7,12 @@
  */
 
 /**
- * Menu callback for admin/settings/webform.
+ * Menu callback for admin/config/content/webform.
  */
 function webform_admin_settings() {
   module_load_include('inc', 'webform', 'includes/webform.export');
 
-  $node_types = node_get_types('names');
+  $node_types = node_type_get_names();
   $form['node_types'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Webform-enabled content types'),
@@ -163,14 +163,16 @@ function webform_admin_settings_submit($form, &$form_state) {
   variable_set('webform_node_types', $webform_types);
 }
 
-function theme_webform_admin_settings($form) {
+function theme_webform_admin_settings($variables) {
+  $form = $variables['form'];
+
   // Format the components into a table.
   foreach (element_children($form['components']) as $key) {
     $row = array();
     $row[] = $form['components'][$key]['#title'];
     $row[] = $form['components'][$key]['#description'];
-    unset($form['components'][$key]['#title']);
-    unset($form['components'][$key]['#description']);
+    $form['components'][$key]['#title'] = NULL;
+    $form['components'][$key]['#description'] = NULL;
     $row[] = array('data' => drupal_render($form['components'][$key]), 'align' => 'center');
     $rows[] = $row;
   }
@@ -178,11 +180,12 @@ function theme_webform_admin_settings($form) {
 
   // Create the table inside the form.
   $form['components']['table'] = array(
-    '#value' => theme('table', $header, $rows)
+    '#theme' => 'table',
+    '#header' => $header,
+    '#rows' => $rows,
   );
 
-  $output = drupal_render($form);
-  return $output;
+  return drupal_render_children($form);
 }
 
 /**
@@ -194,13 +197,14 @@ function webform_admin_content() {
   $nodes = array();
   if ($webform_types) {
     $placeholders = implode(', ', array_fill(0, count($webform_types), "'%s'"));
-    $result = db_query(db_rewrite_sql("SELECT n.*, r.* FROM {node} n INNER JOIN {node_revisions} r ON n.vid = r.vid WHERE n.type IN ($placeholders)", 'n', 'nid', $webform_types), $webform_types);
-    while ($node = db_fetch_object($result)) {
-      $nodes[] = $node;
-    }
+    $nodes = db_select('node', 'n')
+      ->innerJoin('node_revisions', 'r', '=', array('n.vid', 'r.vid'))
+      ->condition('n.type', $webform_types, 'IN')
+      ->execute()
+      ->fetchAllAssoc('nid');
   }
 
-  return theme('webform_admin_content', $nodes);
+  return theme('webform_admin_content', array('nodes' => $nodes));
 }
 
 /**
@@ -211,7 +215,7 @@ function webform_admin_type_list() {
   $webform_type_list = '';
   $webform_type_count = count($webform_types);
   foreach ($webform_types as $n => $type) {
-    $webform_type_list .= l(node_get_types('name', $type), 'node/add/' . $type);
+    $webform_type_list .= l(node_type_get_name($type), 'node/add/' . $type);
     if ($n + 1 < $webform_type_count) {
       $webform_type_list .= $webform_type_count == 2 ? ' ' : ', ';
     }
@@ -226,7 +230,8 @@ function webform_admin_type_list() {
 /**
  * Generate a list of all webforms avaliable on this site.
  */
-function theme_webform_admin_content($nodes) {
+function theme_webform_admin_content($variables) {
+  $nodes = $variables['nodes'];
   $header = array(
     t('Title'),
     array('data' => t('View'), 'colspan' => '4'),
@@ -249,7 +254,7 @@ function theme_webform_admin_content($nodes) {
   if (empty($rows)) {
     $webform_types = webform_variable_get('webform_node_types');
     if (empty($webform_types)) {
-      $message = t('Webform is currently not enabled on any content types.') . ' ' . t('Visit the <a href="!url">Webform settings</a> page and enable Webform on at least one content type.', array('!url' => url('admin/settings/webform')));
+      $message = t('Webform is currently not enabled on any content types.') . ' ' . t('Visit the <a href="!url">Webform settings</a> page and enable Webform on at least one content type.', array('!url' => url('admin/config/content/webform')));
     }
     else {
       $webform_type_list = webform_admin_type_list();
@@ -261,5 +266,5 @@ function theme_webform_admin_content($nodes) {
     );
   }
 
-  return theme('table', $header, $rows);
+  return theme('table', array('header' => $header, 'rows' => $rows));
 }

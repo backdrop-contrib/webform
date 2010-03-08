@@ -34,10 +34,10 @@ function _webform_defaults_date() {
 function _webform_theme_date() {
   return array(
     'webform_date' => array(
-      'arguments' => array('element' => NULL),
+      'render element' => 'element',
     ),
     'webform_display_date' => array(
-      'arguments' => array('element' => NULL),
+      'render element' => 'element',
     ),
   );
 }
@@ -279,7 +279,6 @@ function _webform_display_date($component, $value, $format = 'html') {
     '#weight' => $component['weight'],
     '#theme' => 'webform_display_date',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
-    '#post_render' => array('webform_element_wrapper'),
     '#component' => $component,
     '#format' => $format,
     '#value' => $value,
@@ -289,7 +288,8 @@ function _webform_display_date($component, $value, $format = 'html') {
 /**
  * Format the text output for this component.
  */
-function theme_webform_display_date($element) {
+function theme_webform_display_date($variables) {
+  $element = $variables['element'];
   $output = ' ';
   if ($element['#value']) {
     $timestamp = webform_strtotime($element['#value']['month'] . '/' . $element['#value']['day'] . '/' . $element['#value']['year']);
@@ -304,19 +304,23 @@ function theme_webform_display_date($element) {
  * Implementation of _webform_analysis_component().
  */
 function _webform_analysis_date($component, $sids = array()) {
-  $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sidfilter = count($sids) ? " AND sid in (" . implode(",", $placeholders) . ")" : "";
-  $query = 'SELECT no,data ' .
-    ' FROM {webform_submitted_data} ' .
-    ' WHERE nid = %d ' .
-    ' AND  cid = %d ' . $sidfilter .
-    ' ORDER BY sid,no ASC ';
+  $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
+    ->fields('wsd', array('no', 'data'))
+    ->condition('nid', $component['nid'])
+    ->condition('cid', $component['cid'])
+    ->orderBy('sid')
+    ->orderBy('no');
 
-  $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids));
-  // build an array of timestamps from entered values.
+  if (count($sids)) {
+    $query->condition('sid', $sids, 'IN');
+  }
+
+  $result = $query->execute();
+
+  // Build an array of timestamps from entered values.
   $timestamps = array();
   $submissions = 1;
-  while ($row = db_fetch_array($result)) {
+  foreach ($result as $row) {
     if ($row['no'] == '0') {
       $submissions++;
       $month = $row['data'];

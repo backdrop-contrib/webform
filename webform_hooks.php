@@ -488,7 +488,7 @@ function _webform_delete_component($component, $value) {
  */
 function _webform_help_component($section) {
   switch ($section) {
-    case 'admin/settings/webform#grid_description':
+    case 'admin/config/content/webform#grid_description':
       return t('Allows creation of grid questions, denoted by radio buttons.');
   }
 }
@@ -566,7 +566,7 @@ function _webform_analysis_component($component, $sids = array(), $single = FALS
     }
     $rows[] = $row;
   }
-  $output = theme('table', $header, $rows, array('class' => 'webform-grid'));
+  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('webform-grid'))));
 
   return array(array(array('data' => $output, 'colspan' => 2)));
 }

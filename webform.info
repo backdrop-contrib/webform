@@ -1,5 +1,36 @@
 ; $Id: $
 name = Webform
 description = Enables the creation of forms and questionnaires.
-core = 6.x
+core = 7.x
 package = Webform
+files[] = webform.module
+files[] = webform.install
+
+files[] = components/date.inc
+files[] = components/email.inc
+files[] = components/fieldset.inc
+files[] = components/file.inc
+files[] = components/grid.inc
+files[] = components/hidden.inc
+files[] = components/markup.inc
+files[] = components/pagebreak.inc
+files[] = components/select.inc
+files[] = components/textarea.inc
+files[] = components/textfield.inc
+files[] = components/time.inc
+
+files[] = includes/webform.admin.inc
+files[] = includes/webform.components.inc
+files[] = includes/webform.emails.inc
+files[] = includes/webform.export.inc
+files[] = includes/webform.form_builder.inc
+files[] = includes/webform.pages.inc
+files[] = includes/webform.report.inc
+files[] = includes/webform.submissions.inc
+
+files[] = views/webform_handler_field_form_body.inc
+files[] = views/webform_handler_field_is_draft.inc
+files[] = views/webform_handler_field_submission_count.inc
+files[] = views/webform_handler_field_submission_link.inc
+files[] = views/webform_handler_filter_is_draft.inc
+files[] = views/webform.views.inc

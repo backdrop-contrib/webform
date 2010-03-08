@@ -30,7 +30,7 @@ class WebformTestCase extends DrupalWebTestCase {
     parent::setUp('webform', 'profile');
 
     // Create a profile field to test %profile tokens.
-    db_query("INSERT INTO {profile_fields} (title, name, explanation, category, type, weight, required, register, visibility, autocomplete, options, page) VALUES ('%s', '%s', '%s', '%s', '%s', %d, %d, %d, %d, %d, '%s', '%s')", 'Gender', 'profile_gender', '', 'Profile', 'textfield', 0, 0, 0, 2, 0, '', '');
+    db_query("INSERT INTO {profile_fields} (title, name, explanation, category, type, weight, required, register, visibility, autocomplete, options, page) VALUES ('Gender', 'profile_gender', '', 'Profile', 'textfield', 0, 0, 0, 2, 0, '', '')");
 
     // Create a normal user that can view their own submissions.
     $permissions['userAccess'] = array(
@@ -78,11 +78,11 @@ class WebformTestCase extends DrupalWebTestCase {
     // Delete the webform admin and any created nodes.
     foreach ($this->webform_users as $account) {
       $uid = $account->uid;
-      $result = db_query('SELECT nid FROM {node} WHERE uid = %d', $uid);
-      while ($node = db_fetch_array($result)) {
-        node_delete($node['nid']);
+      $result = db_query('SELECT nid FROM {node} WHERE uid = :uid', array(':uid' => $uid));
+      foreach ($result->execute() as $node) {
+        node_delete($node->nid);
       }
-      user_delete(array(), $uid);
+      user_cancel(array(), $uid, 'user_cancel_delete');
     }
 
     parent::tearDown();
@@ -604,7 +604,7 @@ class WebformTestCase extends DrupalWebTestCase {
      'format' => '1',
      'webform' => array(
         'confirmation' => 'Thanks!',
-        'confirmation_format' => FILTER_FORMAT_DEFAULT,
+        'confirmation_format' => filter_default_format(),
         'teaser' => '0',
         'allow_draft' => '1',
         'submit_text' => '',

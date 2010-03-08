@@ -1,10 +1,12 @@
 // $Id$
+(function ($) {
 
 /**
  * Webform node form interface enhancments.
  */
 
-Drupal.behaviors.webform = function(context) {
+Drupal.behaviors.webform = {};
+Drupal.behaviors.webform.attach = function(context) {
   // Apply special behaviors to fields with default values.
   Drupal.webform.defaultValues(context);
   // On click or change, make a parent radio button selected.
@@ -90,3 +92,4 @@ Drupal.webform.tableSelectIndentation = function(context) {
   });
 }
 
+})(jQuery);
