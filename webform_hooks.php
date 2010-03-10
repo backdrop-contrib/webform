@@ -55,7 +55,13 @@ function hook_webform_submission_presave($node, &$submission) {
  */
 function hook_webform_submission_insert($node, $submission) {
   // Insert a record into a 3rd-party module table when a submission is added.
-  db_query("INSERT INTO {mymodule_table} nid = %d, sid = %d, foo = '%s'", $node->nid, $submission->sid, 'foo_data');
+  db_insert('mymodule_table')
+    ->fields(array(
+      'nid' => $node->nid,
+      'sid' => $submission->sid,
+      'foo' => 'foo_data',
+    ))
+    ->execute();
 }
 
 /**
@@ -72,7 +78,13 @@ function hook_webform_submission_insert($node, $submission) {
  */
 function hook_webform_submission_update($node, $submission) {
   // Update a record in a 3rd-party module table when a submission is updated.
-  db_query("UPDATE {mymodule_table} SET (foo) VALUES ('%s') WHERE nid = %d, sid = %d", 'foo_data', $node->nid, $submission->sid);
+  db_update('mymodule_table')
+    ->fields(array(
+      'foo' => 'foo_data',
+    ))
+    ->condition('nid', $node->nid)
+    ->condition('sid', $submission->sid)
+    ->execute();
 }
 
 /**
@@ -85,22 +97,25 @@ function hook_webform_submission_update($node, $submission) {
  */
 function hook_webform_submission_delete($node, $submission) {
   // Delete a record from a 3rd-party module table when a submission is deleted.
-  db_query("DELETE FROM {mymodule_table} WHERE nid = %d, sid = %d", $node->nid, $submission->sid);
+  db_delete('mymodule_table')
+    ->condition('nid', $node->nid)
+    ->condition('sid', $submission->sid)
+    ->execute();
 }
 
 /**
  * Modify a loaded Webform component.
  *
  * IMPORTANT: This hook does not actually exist because components are loaded
- * in bulk as part of webform_node_load(). Use hook_nodeapi() to modify loaded
+ * in bulk as part of webform_node_load(). Use hook_node_load() to modify loaded
  * components when the node is loaded. This example is provided merely to point
- * to hook_nodeapi().
+ * to hook_node_load().
  *
  * @see hook_nodeapi()
  * @see webform_node_load()
  */
 function hook_webform_component_load() {
-  // This hook does not exist. Instead use hook_nodeapi().
+  // This hook does not exist. Instead use hook_node_load().
 }
 
 /**
@@ -125,7 +140,13 @@ function hook_webform_component_presave(&$component) {
  */
 function hook_webform_component_insert($component) {
   // Insert a record into a 3rd-party module table when a component is inserted.
-  db_query("INSERT INTO {mymodule_table} (nid, cid) VALUES (%d, %d)", $component['nid'], $component['sid']);
+  db_insert('mymodule_table')
+    ->fields(array(
+      'nid' => $component['nid'],
+      'cid' => $component['cid'],
+      'foo' => 'foo_data',
+    ))
+    ->execute();
 }
 
 /**
@@ -133,15 +154,24 @@ function hook_webform_component_insert($component) {
  */
 function hook_webform_component_update($component) {
   // Update a record in a 3rd-party module table when a component is updated.
-  db_query('UPDATE {mymodule_table} SET value "%s" WHERE nid = %d AND cid = %d)', 'foo', $component['nid'], $component['sid']);
+  db_update('mymodule_table')
+    ->fields(array(
+      'foo' => 'foo_data',
+    ))
+    ->condition('nid', $component['nid'])
+    ->condition('cid', $component['cid'])
+    ->execute();
 }
 
 /**
  * Respond to a Webform component being deleted.
  */
 function hook_webform_component_delete($component) {
-  // Update a record in a 3rd-party module table when a component is updated.
-  db_query('DELETE FROM {mymodule_table} WHERE nid = %d AND cid = %d)', $component['nid'], $component['sid']);
+  // Delete a record in a 3rd-party module table when a component is deleted.
+  db_delete('mymodule_table')
+    ->condition('nid', $component['nid'])
+    ->condition('cid', $component['cid'])
+    ->execute();
 }
 
 /**

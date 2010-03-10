@@ -532,7 +532,7 @@ function webform_results_download($node, $format = 'delimiter', $options = array
   // Open a new Webform exporter object.
   $exporter = webform_export_create_handler($format, $options);
 
-  $file_name = tempnam(variable_get('file_directory_temp', file_directory_temp()), 'webform');
+  $file_name = drupal_tempnam('temporary://', 'webform_');
   $handle = @fopen($file_name, 'w'); // The @ suppresses errors.
   $exporter->bof($handle);
 
