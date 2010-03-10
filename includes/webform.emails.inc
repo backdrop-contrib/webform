@@ -35,13 +35,13 @@ function webform_emails_form($form, $form_state, $node) {
     }
 
     $form['emails'][$eid]['email'] = array(
-      '#value' => implode('<br />', $email_addresses),
+      '#markup' => implode('<br />', $email_addresses),
     );
     $form['emails'][$eid]['subject'] = array(
-      '#value' => check_plain(webform_format_email_subject($email['subject'], $node)),
+      '#markup' => check_plain(webform_format_email_subject($email['subject'], $node)),
     );
     $form['emails'][$eid]['from'] = array(
-      '#value' => check_plain(webform_format_email_address($email['from_address'], $email['from_name'], $node, NULL, FALSE)),
+      '#markup' => check_plain(webform_format_email_address($email['from_address'], $email['from_name'], $node, NULL, FALSE)),
     );
   }
 
@@ -133,17 +133,13 @@ function theme_webform_email_add_form($variables) {
   // Add a default value to the custom e-mail textfield.
   $form['email_custom']['#value'] = t('email@example.com');
   $form['email_custom']['#attributes']['class'] = array('webform-set-active', 'webform-default-value');
-  $form['email_option']['custom']['#title'] = $form['email_option']['custom']['#title'] . ': ' . drupal_render($form['email_custom']);
+  $form['email_option']['custom']['#theme_wrappers'] = array('webform_inline_radio');
+  $form['email_option']['custom']['#inline_element'] = drupal_render($form['email_custom']);
 
   // Render the component value.
   $form['email_component']['#attributes']['class'] = array('webform-set-active');
-  $form['email_option']['component']['#title'] = $form['email_option']['component']['#title'] . ': ' . drupal_render($form['email_component']);
-
-  // For spacing consistency, every option is wrapped in container-inline.
-  foreach (element_children($form['email_option']) as $option) {
-    $form['email_option'][$option]['#prefix'] = '<div class="container-inline">';
-    $form['email_option'][$option]['#suffix'] = '</div>';
-  }
+  $form['email_option']['component']['#theme_wrappers'] = array('webform_inline_radio');
+  $form['email_option']['component']['#inline_element'] = drupal_render($form['email_component']);
 
   return drupal_render_children($form);
 }
@@ -158,7 +154,7 @@ function webform_emails_form_submit($form, &$form_state) {
   else {
     $email = $form_state['values']['email_component'];
   }
-  $form_state['redirect'] = array('node/' . $form['#node']->nid . '/webform/emails/new', array('option' => $form_state['values']['email_option'], 'email' => trim($email)));
+  $form_state['redirect'] = array('node/' . $form['#node']->nid . '/webform/emails/new', array('query' => array('option' => $form_state['values']['email_option'], 'email' => trim($email))));
 }
 
 /**
@@ -171,7 +167,7 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
     '#attached' =>  array(
       'css' => array($path . '/webform.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
       'js' => array($path . '/webform.js' => array('preprocess' => FALSE)),
-    )
+    ),
   );
   $form['node'] = array(
     '#type' => 'value',
@@ -215,10 +211,10 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
       '#description' => $description,
     );
     if (!empty($default_value)) {
-      $form[$field . '_option']['#options']['default'] = $default_value;
+      $form[$field . '_option']['#options']['default'] = t('Default: %value', array('%value' => $default_value));
     }
-    $form[$field . '_option']['#options']['custom'] = 'custom';
-    $form[$field . '_option']['#options']['component'] = 'component';
+    $form[$field . '_option']['#options']['custom'] = t('Custom');
+    $form[$field . '_option']['#options']['component'] = t('Component');
 
     $form[$field . '_custom'] = array(
       '#type' => 'textfield',
@@ -312,18 +308,13 @@ function theme_webform_email_edit_form($variables) {
 
   // Loop through fields, rendering them into radio button options.
   foreach (array('email', 'subject', 'from_address', 'from_name') as $field) {
-    foreach (array('custom' => t('Custom'), 'component' => t('Component')) as $option => $title) {
+    foreach (array('custom', 'component') as $option) {
       $form[$field . '_' . $option]['#attributes']['class'] = array('webform-set-active');
-      $form[$field . '_option'][$option]['#title'] = $title . ': ' . drupal_render($form[$field . '_' . $option]);
+      $form[$field . '_option'][$option]['#theme_wrappers'] = array('webform_inline_radio');
+      $form[$field . '_option'][$option]['#inline_element'] = drupal_render($form[$field . '_' . $option]);
     }
-    // For spacing consistency, every option is wrapped in container-inline.
-    foreach (element_children($form[$field . '_option']) as $option) {
-      $form[$field . '_option'][$option]['#prefix'] = '<div class="container-inline">';
-      $form[$field . '_option'][$option]['#suffix'] = '</div>';
-    }
-    // Wrap the default option in a placeholder tag..
     if (isset($form[$field . '_option']['#options']['default'])) {
-      $form[$field . '_option']['default']['#title'] = t('Default') . ': ' . drupal_placeholder(array('text' => $form[$field . '_option']['default']['#title']));
+      $form[$field . '_option']['default']['#theme_wrappers'] = array('webform_inline_radio');
     }
   }
 
@@ -338,12 +329,16 @@ function theme_webform_email_edit_form($variables) {
     '#children' => $details,
     '#collapsible' => FALSE,
     '#parents' => array('details'),
+    '#groups' => array('details' => array()),
     '#attributes' => array(),
   );
 
   $form['template']['template']['#description'] .= drupal_render($form['template']['components']);
 
-  return drupal_render_children($form);
+  // Re-sort the elements since we added the details fieldset.
+  $form['#sorted'] = FALSE;
+  $children = element_children($form, TRUE);
+  return drupal_render_children($form, $children);
 }
 
 /**
@@ -472,12 +467,12 @@ function webform_email_insert($email) {
   // TODO: This is not race-condition safe. Switch to using transactions?
   if (!isset($email['eid'])) {
     $next_id_query = db_select('webform_emails')->condition('nid', $email['nid']);
-    $email->addExpression('MAX(cid) + 1', 'eid');
-    $component['eid'] = $next_id_query->execute()->fetchField();
+    $next_id_query->addExpression('MAX(eid) + 1', 'eid');
+    $email['eid'] = $next_id_query->execute()->fetchField();
   }
 
   $email['excluded_components'] = implode(',', $email['excluded_components']);
-  $success = drupal_write_record($email);
+  $success = drupal_write_record('webform_emails', $email);
 
   return $success ? $email['eid'] : FALSE;
 }
@@ -491,7 +486,7 @@ function webform_email_insert($email) {
  */
 function webform_email_update($email) {
   $email['excluded_components'] = implode(',', $email['excluded_components']);
-  return drupal_write_record($email);
+  return drupal_write_record('webform_emails', $email, 'eid');
 }
 
 /**

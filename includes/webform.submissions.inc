@@ -132,7 +132,7 @@ function webform_submission_delete($node, $submission) {
   // Iterate through all components and let each do cleanup if necessary.
   foreach ($node->webform['components'] as $cid => $component) {
     if (isset($submission->data[$cid])) {
-      webform_component_invoke($component['type'], 'delete', $component, $submission->data[$cid]);
+      webform_component_invoke($component['type'], 'delete', $component, $submission->data[$cid]['value']);
     }
   }
 

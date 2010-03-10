@@ -11,7 +11,13 @@
  * Main configuration form for editing a webform node.
  */
 function webform_configure_form($form, &$form_state, $node) {
-  $form = array();
+  $path = drupal_get_path('module', 'webform');
+  $form = array(
+    '#attached' =>  array(
+      'css' => array($path . '/webform.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
+      'js' => array($path . '/webform.js' => array('preprocess' => FALSE)),
+    ),
+  );
 
   $form['nid'] = array(
     '#type' => 'value',
@@ -35,7 +41,7 @@ function webform_configure_form($form, &$form_state, $node) {
     '#cols' => 40,
     '#rows' => 10,
     '#text_format' => $node->webform['confirmation_format'],
-    '#parents' => array('confirmation_format'),
+    '#parents' => array('confirmation'),
   );
 
   // Redirect URL.
@@ -257,16 +263,18 @@ function webform_configure_form_submit($form, &$form_state) {
  */
 function theme_webform_advanced_submit_limit_form($variables) {
   $form = $variables['form'];
-  $form['submit_limit']['#attributes']['class'] = 'webform-set-active';
-  $form['submit_interval']['#attributes']['class'] = 'webform-set-active';
+  $form['submit_limit']['#attributes']['class'] = array('webform-set-active');
+  $form['submit_interval']['#attributes']['class'] = array('webform-set-active');
+
   $replacements = array(
     '!count' => drupal_render($form['submit_limit']),
     '!timespan' => drupal_render($form['submit_interval']),
   );
-  $form['enforce_limit']['no']['#prefix'] = '<div class="container-inline">';
-  $form['enforce_limit']['no']['#suffix'] = '</div>';
-  $form['enforce_limit']['yes']['#prefix'] = '<div class="container-inline">';
-  $form['enforce_limit']['yes']['#suffix'] = '</div>';
-  $form['enforce_limit']['yes']['#title'] = t('Limit to !count submission(s) !timespan', $replacements);
-  return drupal_render($form);
+
+  $form['enforce_limit']['no']['#theme_wrappers'] = array('webform_inline_radio');
+  $form['enforce_limit']['yes']['#title'] = NULL;
+  $form['enforce_limit']['yes']['#inline_element'] = t('Limit to !count submission(s) !timespan', $replacements);
+  $form['enforce_limit']['yes']['#theme_wrappers'] = array('webform_inline_radio');
+
+  return drupal_render_children($form);
 }

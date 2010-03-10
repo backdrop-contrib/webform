@@ -653,7 +653,7 @@ function webform_component_insert(&$component) {
       'form_key' => $component['form_key'],
       'name' => $component['name'],
       'type' => $component['type'],
-      'value' => $component['value'],
+      'value' => (string) $component['value'],
       'extra' => serialize($component['extra']),
       'mandatory' => $component['mandatory'],
       'weight' => $component['weight'],
@@ -712,7 +712,7 @@ function webform_component_delete($node, $component) {
     $submissions = webform_get_submissions($node->nid);
     foreach ($submissions as $submission) {
       if (isset($submission->data[$component['cid']])) {
-        webform_component_invoke($component['type'], 'delete', $component, $submission->data[$component['cid']]);
+        webform_component_invoke($component['type'], 'delete', $component, $submission->data[$component['cid']]['value']);
       }
     }
   }
@@ -728,7 +728,7 @@ function webform_component_delete($node, $component) {
     ->execute();
 
   // Delete all elements under this element.
-  $result = db_select('webform_component')
+  $result = db_delete('webform_component')
     ->condition('nid', $node->nid)
     ->condition('cid', $component['cid'])
     ->execute();

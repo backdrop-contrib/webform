@@ -453,19 +453,19 @@ function webform_init() {
   if (module_exists('form_builder') && strpos($_GET['q'], 'admin/build/form-builder') !== FALSE) {
     module_load_include('inc', 'webform', 'includes/webform.form_builder');
   }
+}
 
-  // Use the administrative theme if set to use on content editing pages.
-  // See system_init().
-  if (variable_get('node_admin_theme', '0') && arg(0) == 'node' && (arg(2) == 'webform' || arg(2) == 'webform-results')) {
-    global $custom_theme;
-    $custom_theme = variable_get('admin_theme', '0');
-    drupal_add_css(drupal_get_path('module', 'system') . '/admin.css', 'module');
-
-    // Support for Admin module (1.x).
-    if (function_exists('_admin_init_theme')) {
-      _admin_init_theme();
-    }
-  }
+/**
+ * Implementation of hook_admin_paths().
+ */
+function webform_admin_paths() {
+  return array(
+    'node/*/webform' => TRUE,
+    'node/*/webform/*' => TRUE,
+    'node/*/webform-results' => TRUE,
+    'node/*/webform-results/*' => TRUE,
+    'node/*/submission/*' => TRUE,
+  );
 }
 
 /**
@@ -529,6 +529,9 @@ function webform_theme() {
       'render element' => 'element',
     ),
     'webform_element_text' => array(
+      'render element' => 'element',
+    ),
+    'webform_inline_radio' => array(
       'render element' => 'element',
     ),
     'webform_mail_message' => array(
@@ -2155,6 +2158,48 @@ function theme_webform_element_text($variables) {
   if ($output) {
     $output .= "\n";
   }
+
+  return $output;
+}
+
+/**
+ * Theme a radio button and another element together.
+ *
+ * This is used in the e-mail configuration to show a radio button and a text
+ * field or select list on the same line.
+ */
+function theme_webform_inline_radio($variables) {
+  $element = $variables['element'];
+
+  // Add element's #type and #name as class to aid with JS/CSS selectors.
+  $class = array('form-item');
+  if (!empty($element['#type'])) {
+    $class[] = 'form-type-' . strtr($element['#type'], '_', '-');
+  }
+  if (!empty($element['#name'])) {
+    $class[] = 'form-item-' . strtr($element['#name'], array(' ' => '-', '_' => '-', '[' => '-', ']' => ''));
+  }
+
+  // Add container-inline to all elements.
+  $class[] = 'container-inline';
+  if (isset($element['#inline_element'])) {
+    $variables['element']['#title'] = $variables['element']['#title'] . ': ';
+  }
+
+  $output = '<div class="' . implode(' ', $class) . '">' . "\n";
+  $output .= ' ' . $element['#children'];
+  if (!empty($element['#title'])) {
+    $output .= ' ' . theme('form_element_label', $variables) . "\n";
+  }
+  if (isset($element['#inline_element'])) {
+    $output .= ' ' . $element['#inline_element'] . "\n";
+  }
+
+  if (!empty($element['#description'])) {
+    $output .= ' <div class="description">' . $element['#description'] . "</div>\n";
+  }
+
+  $output .= "</div>\n";
 
   return $output;
 }

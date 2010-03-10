@@ -129,7 +129,7 @@ function _webform_edit_file($component) {
       '#default_value' => $component['extra']['savelocation'],
       '#description' => '<div style="display: block">' . t('Webform uploads are always saved in the site files directory. You may optionally specify a subfolder to store your files.') . '</div>',
       '#weight' => 3,
-      '#element_validate' => array('_webform_edit_file_check_directory', '_webform_edit_file_validate'),
+      '#element_validate' => array('_webform_edit_file_check_directory'),
       '#after_build' => array('_webform_edit_file_check_directory'),
     );
     $form['display']['width'] = array(
@@ -151,12 +151,9 @@ function _webform_edit_file($component) {
  * Ensure that the destination directory exists and is writable.
  */
 function _webform_edit_file_check_directory($element) {
-  $base_dir = file_directory_path() . '/webform';
-  $base_success = file_check_directory($base_dir, FILE_CREATE_DIRECTORY);
-
-  $destination_dir = $base_dir . '/' . $element['#value'];
-  $destination_success = file_check_directory($destination_dir, FILE_CREATE_DIRECTORY);
-  if (!$base_success || !$destination_success) {
+  $destination_dir = file_build_uri('webform/' . $element['#value']);
+  $destination_success = file_prepare_directory($destination_dir, FILE_CREATE_DIRECTORY);
+  if (!$destination_success) {
     form_set_error('savelocation', t('The save directory %directory could not be created. Check that the webform files directory is writtable.', array('%directory' => $destination_dir)));
   }
   return $element;
@@ -194,18 +191,16 @@ function _webform_edit_file_filtering_validate($element, &$form_state) {
 function theme_webform_edit_file($variables) {
   $form = $variables['form'];
 
-  // Add a little javascript to check all the items in one type.
+  // Add a little JavaScript to check all the items in one type.
   $javascript = '
-    <script type="text/javascript">
-      function check_category_boxes() {
-        var checkValue = !document.getElementById("edit-extra-filtering-types-"+arguments[0]+"-"+arguments[1]).checked;
-        for(var i=1; i < arguments.length; i++) {
-          document.getElementById("edit-extra-filtering-types-"+arguments[0]+"-"+arguments[i]).checked = checkValue;
-        }
+    function check_category_boxes() {
+      var checkValue = !document.getElementById("edit-extra-filtering-types-"+arguments[0]+"-"+arguments[1]).checked;
+      for(var i=1; i < arguments.length; i++) {
+        document.getElementById("edit-extra-filtering-types-"+arguments[0]+"-"+arguments[i]).checked = checkValue;
       }
-  </script>
+    }
  ';
-  drupal_add_html_head($javascript);
+  drupal_add_js($javascript, 'inline');
 
   // Format the components into a table.
   $per_row = 6;
@@ -218,7 +213,7 @@ function theme_webform_edit_file($variables) {
       $row[] = $form['validation']['filtering']['types'][$filtergroup]['#title'];
       $row[] = '&nbsp;';
       // Convert the checkboxes into individual form-items.
-      $checkboxes = expand_checkboxes($form['validation']['filtering']['types'][$filtergroup]);
+      $checkboxes = form_process_checkboxes($form['validation']['filtering']['types'][$filtergroup]);
       // Render the checkboxes in two rows.
       $checkcount = 0;
       $jsboxes = '';
@@ -274,7 +269,7 @@ function theme_webform_edit_file($variables) {
     '#rows' => $rows
   );
 
-  $output = drupal_render($form);
+  $output = drupal_render_children($form);
 
   // Prefix the upload location field with the default path for webform.
   $output = str_replace('Upload Directory: </label>', 'Upload Directory: </label>' . file_directory_path() . '/webform/', $output);
@@ -339,7 +334,7 @@ function theme_webform_render_file($variables) {
   // Add information about the existing file, if any.
   $value = $element['_fid']['#value'] ? $element['_fid']['#value'] : $element['_old']['#value'];
   if ($value && ($file = webform_get_file($value))) {
-    $element['#suffix'] = ' ' . l(t('Download !filename', array('!filename' => webform_file_name($file->filepath))), webform_file_url($file->filepath)) . (isset($element['#suffix']) ? $element['#suffix'] : '');
+    $element['#suffix'] = ' ' . l(t('Download !filename', array('!filename' => webform_file_name($file->uri))), webform_file_url($file->uri)) . (isset($element['#suffix']) ? $element['#suffix'] : '');
     $element['#description'] = t('Uploading a new file will replace the current file.');
   }
 
@@ -348,7 +343,7 @@ function theme_webform_render_file($variables) {
     $element[$element['#webform_form_key']]['#required'] = TRUE;
   }
 
-  return drupal_render($element);
+  return drupal_render_children($element);
 }
 
 /**
@@ -435,8 +430,8 @@ function _webform_validate_file($element, &$form_state) {
 
   // Save the file to a temporary location.
   if (!$file_error) {
-    $upload_dir = file_directory_path() . '/webform/' . $component['extra']['savelocation'];
-    if (file_check_directory($upload_dir, FILE_CREATE_DIRECTORY)) {
+    $upload_dir = file_build_uri('webform/' . $component['extra']['savelocation']);
+    if (file_prepare_directory($upload_dir, FILE_CREATE_DIRECTORY)) {
       $file = file_save_upload($form_key, array(), $upload_dir);
       if ($file) {
         // Set the hidden field value.
@@ -503,7 +498,7 @@ function theme_webform_display_file($variables) {
   $element = $variables['element'];
 
   $file = $element['#value'];
-  $url = !empty($file) ? webform_file_url($file->filepath) : t('no upload');
+  $url = !empty($file) ? webform_file_url($file->uri) : t('no upload');
   return !empty($file) ? ($element['#format'] == 'text' ? $url : l($file->filename, $url)) : ' ';
 }
 
@@ -513,8 +508,7 @@ function theme_webform_display_file($variables) {
 function _webform_delete_file($component, $value) {
   // Delete an individual submission file.
   if (isset($value[0]) && ($file = webform_get_file($value[0]))) {
-    unlink($file->filepath);
-    db_query("DELETE FROM {files} WHERE fid = '%d'", $file->fid);
+    file_delete($file);
   }
 }
 
@@ -558,7 +552,7 @@ function _webform_table_file($component, $value) {
   $output = '';
   $file = webform_get_file($value[0]);
   if (!empty($file->fid)) {
-    $output = '<a href="' . webform_file_url($file->filepath) . '">' . webform_file_name($file->filepath) . '</a>';
+    $output = '<a href="' . webform_file_url($file->uri) . '">' . webform_file_name($file->uri) . '</a>';
     $output .= ' (' . (int) ($file->filesize/1024) . ' KB)';
   }
   return $output;
@@ -581,7 +575,7 @@ function _webform_csv_headers_file($component, $export_options) {
  */
 function _webform_csv_data_file($component, $export_options, $value) {
   $file = webform_get_file($value[0]);
-  return empty($file->filename) ? array('', '') : array(webform_file_url($file->filepath), (int) ($file->filesize/1024));
+  return empty($file->filename) ? array('', '') : array(webform_file_url($file->uri), (int) ($file->filesize/1024));
 }
 
 /**
@@ -598,28 +592,18 @@ function webform_file_name($filepath) {
 /**
  * Helper function to create proper URLs for uploaded file.
  */
-function webform_file_url($filepath) {
-  if (!empty($filepath)) {
-    $info = pathinfo($filepath);
-    $file_url = file_create_url($info['dirname'] . '/' . rawurlencode($info['basename']));
+function webform_file_url($uri) {
+  if (!empty($uri)) {
+    $file_url = file_create_url($uri);
   }
   return isset($file_url) ? $file_url : '';
 }
 
 /**
  * Helper function to load a file from the database.
+ *
+ * @todo We can remove this entirely now the Drupal 7 has native file loading.
  */
 function webform_get_file($fid) {
-  static $files;
-
-  if (!isset($files[$fid])) {
-    if (empty($fid)) {
-      $files[$fid] = FALSE;
-    }
-    else {
-      $files[$fid] = db_fetch_object(db_query("SELECT * FROM {files} WHERE fid = %d", $fid));
-    }
-  }
-
-  return $files[$fid];
+  return file_load($fid);
 }
