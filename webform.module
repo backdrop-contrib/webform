@@ -447,15 +447,6 @@ function webform_results_clear_access($node, $account = NULL) {
 }
 
 /**
- * Implementation of hook_init().
- */
-function webform_init() {
-  if (module_exists('form_builder') && strpos($_GET['q'], 'admin/build/form-builder') !== FALSE) {
-    module_load_include('inc', 'webform', 'includes/webform.form_builder');
-  }
-}
-
-/**
  * Implementation of hook_admin_paths().
  */
 function webform_admin_paths() {
@@ -570,7 +561,7 @@ function webform_theme() {
     ),
     // webform.components.inc.
     'webform_components_page' => array(
-      'variables' => array('node' => NULL, 'mode' => NULL, 'form' => NULL),
+      'variables' => array('node' => NULL, 'form' => NULL),
       'file' => 'includes/webform.components.inc',
     ),
     'webform_components_form' => array(

@@ -93,40 +93,6 @@ function theme_webform_display_hidden($variables) {
 }
 
 /**
- * Implementation of _webform_form_builder_preview_alter_component().
- *
- * Make hidden fields visible while editing.
- */
-function _webform_form_builder_preview_alter_hidden($form_element) {
-  $form_element['#field_suffix'] = '(' . t('hidden') . ')';
-  $form_element['#autocomplete_path'] = NULL; // Needed to avoid notices.
-  $form_element['#type'] = 'textfield';
-  return $form_element;
-}
-
-/**
- * Implementation of _webform_form_builder_types_component().
- */
-function _webform_form_builder_types_hidden() {
-  $fields = array();
-
-  $fields['hidden'] = array(
-    'title' => t('Hidden'),
-    'properties' => array(
-      'title',
-      'default_value',
-      'key',
-    ),
-    'default' => array(
-      '#title' => t('Hidden field'),
-      '#type' => 'hidden',
-    ),
-  );
-
-  return $fields;
-}
-
-/**
  * Implementation of _webform_analysis_component().
  */
 function _webform_analysis_hidden($component, $sids = array()) {

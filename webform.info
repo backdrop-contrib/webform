@@ -23,7 +23,6 @@ files[] = includes/webform.admin.inc
 files[] = includes/webform.components.inc
 files[] = includes/webform.emails.inc
 files[] = includes/webform.export.inc
-files[] = includes/webform.form_builder.inc
 files[] = includes/webform.pages.inc
 files[] = includes/webform.report.inc
 files[] = includes/webform.submissions.inc

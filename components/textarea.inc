@@ -151,45 +151,6 @@ function theme_webform_display_textarea($variables) {
 }
 
 /**
- * Implementation of _webform_form_builder_types_component().
- */
-function _webform_form_builder_types_textarea() {
-  $fields = array();
-
-  $fields['textarea'] = array(
-    'title' => t('Textarea'),
-    'properties' => array(
-      'title',
-      'description',
-      'default_value',
-      'required',
-      'rows',
-      'cols',
-      'input_format',
-      'key',
-    ),
-    'default' => array(
-      '#title' => t('New textarea'),
-      '#type' => 'textarea',
-    ),
-  );
-
-  return $fields;
-}
-
-/**
- * Implementation of _webform_form_builder_save_component().
- */
-function _webform_form_builder_save_textarea($component, $form_element) {
-  $component['extra']['description'] = $form_element['#description'];
-  $component['extra']['cols'] = $form_element['#cols'];
-  $component['extra']['rows'] = $form_element['#rows'];
-  $component['extra']['disabled'] = empty($form_element['#disabled']) ? NULL : TRUE;
-  $component['extra']['format'] = isset($form_element['#input_format']) ? $form_element['#input_format'] : NULL;
-  return $component;
-}
-
-/**
  * Implementation of _webform_analysis_component().
  */
 function _webform_analysis_textarea($component, $sids = array()) {

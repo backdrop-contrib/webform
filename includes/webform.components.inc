@@ -15,20 +15,12 @@
 /**
  * Overview page of all components for this webform.
  */
-function webform_components_page($node, $mode = 'auto', $page_number = 1) {
-  if (module_exists('form_builder') && $mode != 'overview') {
-    module_load_include('inc', 'webform', 'includes/webform.form_builder');
-    $mode = 'form_builder';
-    $output = webform_form_builder_components($node);
-  }
-  else {
-    $output = drupal_get_form('webform_components_form', $node);
-  }
+function webform_components_page($node, $page_number = 1) {
+  $output = drupal_get_form('webform_components_form', $node);
 
   return array(
     '#theme' => 'webform_components_page',
     '#node' => $node,
-    '#mode' => $mode,
     '#form' => $output,
   );
 }
@@ -41,29 +33,9 @@ function webform_components_page($node, $mode = 'auto', $page_number = 1) {
  */
 function theme_webform_components_page($variables) {
   $node = $variables['node'];
-  $mode = $variables['node'];
   $form = $variables['form'];
-  $output = '';
 
-  if (module_exists('form_builder')) {
-    $output .= '<div class="webform-components-mode">';
-    $output .= '<span class="webform-components-mode-label">' . t('Display mode') . ':</span> ';
-    if ($mode == 'overview') {
-      $output .= '<a href="' . url('node/' . $node->nid . '/webform') . '">' . t('Form builder') . '</a>';
-      $output .= ' | ';
-      $output .= '<strong>' . t('Overview') . '</strong>';
-    }
-    else {
-      $output .= '<strong>' . t('Form builder') . '</strong>';
-      $output .= ' | ';
-      $output .= '<a href="' . url('node/' . $node->nid . '/webform/overview') . '">' . t('Overview') . '</a>';
-    }
-    $output .= '</div>';
-  }
-
-  $output .= drupal_render($form);
-
-  return $output;
+  return drupal_render($form);
 }
 
 /**

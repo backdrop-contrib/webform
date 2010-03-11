@@ -179,46 +179,6 @@ function _webform_display_textfield($component, $value, $format = 'html') {
 }
 
 /**
- * Implementation of _webform_form_builder_save_component().
- */
-function _webform_form_builder_save_textfield($component, $form_element) {
-  $component['extra']['width'] = isset($form_element['#size']) ? $form_element['#size'] : NULL;
-  $component['extra']['maxlength'] = isset($form_element['#maxlength']) ? $form_element['#maxlength'] : NULL;
-  $component['extra']['field_prefix'] = isset($form_element['#field_prefix']) ? $form_element['#field_prefix'] : NULL;
-  $component['extra']['field_suffix'] = isset($form_element['#field_suffix']) ? $form_element['#field_suffix'] : NULL;
-  $component['extra']['description'] = isset($form_element['#description']) ? $form_element['#description'] : NULL;
-  $component['extra']['disabled'] = isset($form_element['#disabled']) ? $form_element['#disabled'] : FALSE;
-  return $component;
-}
-
-/**
- * Implementation of _webform_form_builder_types_component().
- */
-function _webform_form_builder_types_textfield() {
-  $fields = array();
-
-  $fields['textfield'] = array(
-    'title' => t('Textfield'),
-    'properties' => array(
-      'title',
-      'description',
-      'field_prefix',
-      'field_suffix',
-      'default_value',
-      'required',
-      'size',
-      'key',
-    ),
-    'default' => array(
-      '#title' => t('New textfield'),
-      '#type' => 'textfield',
-    ),
-  );
-
-  return $fields;
-}
-
-/**
  * Format the output of data for this component.
  */
 function theme_webform_display_textfield($variables) {

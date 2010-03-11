@@ -119,7 +119,6 @@ function _webform_render_email($component, $value = NULL) {
     '#suffix'        => '</div>',
     '#element_validate'  => array('_webform_validate_email'),
     '#webform_component' => $component,
-    '#form_builder'  => array('element_type' => 'email'),
   );
 
   // Enforce uniqueness.
@@ -187,42 +186,6 @@ function theme_webform_display_email($variables) {
   $element = $variables['element'];
   $element['#value'] = empty($element['#value']) ? ' ' : $element['#value'];
   return $element['#format'] == 'html' ? check_plain($element['#value']) : $element['#value'];
-}
-
-/**
- * Implementation of _webform_form_builder_save_component().
- */
-function _webform_form_builder_save_email($component, $form_element) {
-  $component['extra']['width'] = isset($form_element['#size']) ? $form_element['#size'] : NULL;
-  $component['extra']['description'] = isset($form_element['#description']) ? $form_element['#description'] : NULL;
-  $component['extra']['disabled'] = isset($form_element['#disabled']) ? $form_element['#disabled'] : FALSE;
-  return $component;
-}
-
-/**
- * Implementation of _webform_form_builder_types_component().
- */
-function _webform_form_builder_types_email() {
-  $fields = array();
-
-  $fields['email'] = array(
-    'title' => t('E-mail'),
-    'properties' => array(
-      'title',
-      'description',
-      'default_value',
-      'required',
-      'size',
-      'key',
-    ),
-    'default' => array(
-      '#title' => t('New e-mail'),
-      '#type' => 'textfield',
-      '#form_builder' => array('element_type' => 'email'),
-    ),
-  );
-
-  return $fields;
 }
 
 /**

@@ -207,9 +207,6 @@ function hook_webform_component_delete($component) {
  *     - defaults
  *     - theme
  *     - edit
- *     - form_builder_types
- *     - form_builder_save
- *     - form_builder_preview_alter
  *     - delete
  *     - render
  *     - display
@@ -339,56 +336,6 @@ function _webform_edit_component($component) {
     '#required' => TRUE,
   );
   return $form;
-}
-
-/**
- * Define the component to structure to hook_form_builder_types().
- */
-function _webform_form_builder_types_email() {
-  $fields = array();
-
-  $fields['email'] = array(
-    'title' => t('E-mail'),
-    'properties' => array(
-      'title',
-      'description',
-      'default_value',
-      'required',
-      'size',
-      'key',
-    ),
-    'default' => array(
-      '#title' => t('New e-mail'),
-      '#type' => 'textfield',
-      '#form_builder' => array('element_type' => 'email'),
-    ),
-  );
-
-  return $fields;
-}
-
-/**
- * Convert a FAPI form element into settings savable in a component.
- *
- * @param $component
- *   The Webform component to be saved.
- * @param $form_element
- *   The form element as edited by the user through Form Builder.
- */
-function _webform_form_builder_save_component(&$component, $form_element) {
-  $component['extra']['width'] = isset($form_element['#size']) ? $form_element['#size'] : NULL;
-  $component['extra']['description'] = isset($form_element['#description']) ? $form_element['#description'] : NULL;
-  $component['extra']['disabled'] = isset($form_element['#disabled']) ? $form_element['#disabled'] : FALSE;
-}
-
-/**
- * Module specific instance of hook_form_builder_preview_alter().
- */
-function _webform_form_builder_preview_alter_hidden(&$form_element) {
-  // Make hidden fields visible while editing.
-  $form_element['#field_suffix'] = '(' . t('hidden') . ')';
-  $form_element['#autocomplete_path'] = NULL; // Needed to avoid notices.
-  $form_element['#type'] = 'textfield';
 }
 
 /**

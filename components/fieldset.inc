@@ -84,39 +84,3 @@ function _webform_display_fieldset($component, $value, $format = 'html') {
 
   return $element;
 }
-
-/**
- * Implementation of _webform_form_builder_types_component().
- */
-function _webform_form_builder_types_fieldset() {
-  $fields = array();
-
-  $fields['fieldset'] = array(
-    'title' => t('Fieldset'),
-    'properties' => array(
-      'title',
-      'description',
-      'collapsible',
-      'collapsed',
-      'key',
-    ),
-    'default' => array(
-      '#title' => t('New fieldset'),
-      '#type' => 'fieldset',
-      '#collapsible' => FALSE,
-      '#collapsed' => FALSE,
-    ),
-  );
-
-  return $fields;
-}
-
-/**
- * Implementation of _webform_form_builder_save_component().
- */
-function _webform_form_builder_save_fieldset($component, $form_element) {
-  $component['extra']['collapsible'] = isset($form_element['#collapsible']) ? $form_element['#collapsible'] : NULL;
-  $component['extra']['collapsed'] = isset($form_element['#collapsed']) ? $form_element['#collapsed'] : NULL;
-  $component['extra']['description'] = isset($form_element['#description']) ? $form_element['#description'] : '';
-  return $component;
-}
