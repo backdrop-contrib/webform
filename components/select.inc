@@ -213,7 +213,7 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
   if ($component['extra']['other_option'] === 'Y' && module_exists('select_or_other')) {
     // Set display as a select list:
     $element['#type'] = 'select_or_other';
-    $element['#other'] = empty($component['extra']['other_text']) ? $component['extra']['other_text'] : t('Other...');
+    $element['#other'] = !empty($component['extra']['other_text']) ? check_plain($component['extra']['other_text']) : t('Other...');
     $element['#other_unknown_defaults'] = 'other';
     $element['#other_delimiter'] = ', ';
     if ($component['extra']['multiple'] === 'Y') {
@@ -559,14 +559,14 @@ function _webform_analysis_select($component, $sids = array(), $single = FALSE) 
     foreach (array_intersect_key($options, $rows) as $key => $label) {
       $ordered_rows[] = $rows[$key];
     }
-  
+
     // Add a row for any unknown or user-entered values.
     if ($component['extra']['other_option'] === 'Y') {
       $full_count = $count_query->execute()->fetchField();
       $other_count = $full_count - $normal_count;
-      $display_option = empty($component['extra']['other_text']) ? $component['extra']['other_text'] : t('Other...');
+      $display_option = !empty($component['extra']['other_text']) ? check_plain($component['extra']['other_text']) : t('Other...');
       $other_text = $other_count ? $other_count . ' (' . l(t('view'), 'node/' . $component['nid'] . '/webform-results/analysis/' . $component['cid']) . ')' : $other_count;
-      $ordered_rows[] = array(check_plain($display_option), $other_text);
+      $ordered_rows[] = array($display_option, $other_text);
     }
 
     $rows = $ordered_rows;
@@ -609,7 +609,7 @@ function _webform_csv_headers_select($component, $export_options) {
     $headers[1][] = $component['name'];
     $items = _webform_select_options($component['extra']['items'], TRUE);
     if ($component['extra']['other_option'] === 'Y') {
-      $other_label = !empty($component['extra']['other_text']) ? $component['extra']['other_text'] : t('Other...');
+      $other_label = !empty($component['extra']['other_text']) ? check_plain($component['extra']['other_text']) : t('Other...');
       $items[$other_label] = $other_label;
     }
     $count = 0;
