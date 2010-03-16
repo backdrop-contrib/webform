@@ -124,11 +124,7 @@ function _webform_render_date($component, $value = NULL) {
   );
 
   if (isset($value)) {
-    $element['#default_value'] = array(
-      'month' => $value[0],
-      'day' => $value[1],
-      'year' => $value[2],
-    );
+    $element['#default_value'] = $value;
   }
 
   return $element;
@@ -261,7 +257,7 @@ function webform_validate_date($element, $form_state) {
 function _webform_submit_date($component, $value) {
   // Webform stores dates in month/day/year rows.
   // Ensure consistency when using international date formats.
-  return array($value['month'], $value['day'], $value['year']);
+  return array('month' => $value['month'], 'day' => $value['day'], 'year' => $value['year']);
 }
 
 /**
@@ -269,9 +265,9 @@ function _webform_submit_date($component, $value) {
  */
 function _webform_display_date($component, $value, $format = 'html') {
   $value = array(
-    'month' => isset($value[0]) ? $value[0] : NULL,
-    'day' => isset($value[1]) ? $value[1] : NULL,
-    'year' => isset($value[2]) ? $value[2] : NULL,
+    'month' => isset($value['month']) ? $value['month'] : NULL,
+    'day' => isset($value['day']) ? $value['day'] : NULL,
+    'year' => isset($value['year']) ? $value['year'] : NULL,
   );
 
   return array(
@@ -308,8 +304,7 @@ function _webform_analysis_date($component, $sids = array()) {
     ->fields('wsd', array('no', 'data'))
     ->condition('nid', $component['nid'])
     ->condition('cid', $component['cid'])
-    ->orderBy('sid')
-    ->orderBy('no');
+    ->orderBy('sid');
 
   if (count($sids)) {
     $query->condition('sid', $sids, 'IN');
@@ -359,8 +354,8 @@ function _webform_analysis_date($component, $sids = array()) {
  * Implementation of _webform_table_component().
  */
 function _webform_table_date($component, $value) {
-  if (drupal_strlen($value[0]) > 0 && drupal_strlen($value[1]) > 0 && drupal_strlen($value[2]) > 0) {
-    $timestamp = webform_strtotime($value[0] . '/' . $value[1] . '/' . $value[2]);
+  if (drupal_strlen($value['month']) > 0 && drupal_strlen($value['day']) > 0 && drupal_strlen($value['year']) > 0) {
+    $timestamp = webform_strtotime($value['month'] . '/' . $value['day'] . '/' . $value['year']);
     $format = webform_date_format('short');
     return format_date($timestamp, 'custom', $format, 0);
   }
@@ -384,8 +379,8 @@ function _webform_csv_headers_date($component, $export_options) {
  * Implementation of _webform_csv_data_component().
  */
 function _webform_csv_data_date($component, $export_options, $value) {
-  if (drupal_strlen($value[0]) > 0 && drupal_strlen($value[1]) > 0 && drupal_strlen($value[2]) > 0) {
-    $timestamp = webform_strtotime($value[0] . '/' . $value[1] . '/' . $value[2]);
+  if (drupal_strlen($value['month']) > 0 && drupal_strlen($value['day']) > 0 && drupal_strlen($value['year']) > 0) {
+    $timestamp = webform_strtotime($value['month'] . '/' . $value['day'] . '/' . $value['year']);
     $format = webform_date_format('short');
     return format_date($timestamp, 'custom', $format, 0);
   }

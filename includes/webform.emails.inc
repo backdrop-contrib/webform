@@ -469,6 +469,9 @@ function webform_email_insert($email) {
     $next_id_query = db_select('webform_emails')->condition('nid', $email['nid']);
     $next_id_query->addExpression('MAX(eid) + 1', 'eid');
     $email['eid'] = $next_id_query->execute()->fetchField();
+    if ($email['eid'] == NULL) {
+      $email['eid'] = 1;
+    }
   }
 
   $email['excluded_components'] = implode(',', $email['excluded_components']);

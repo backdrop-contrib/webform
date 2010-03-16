@@ -615,6 +615,9 @@ function webform_component_insert(&$component) {
     $next_id_query = db_select('webform_component')->condition('nid', $component['nid']);
     $next_id_query->addExpression('MAX(cid) + 1', 'cid');
     $component['cid'] = $next_id_query->execute()->fetchField();
+    if ($component['cid'] == NULL) {
+      $component['cid'] = 1;
+    }
   }
 
   $query = db_insert('webform_component')

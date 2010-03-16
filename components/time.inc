@@ -173,17 +173,17 @@ function _webform_render_time($component, $value = NULL) {
   }
 
   if (isset($value)) {
-    $element['minute']['#default_value'] = $value[1];
+    $element['minute']['#default_value'] = $value['minute'];
   
     // Match the hourly data to the hour format.
-    if ($value[1]) {
-      $timestamp = strtotime($value[0] . ':' . $value[1] . (isset($value[2]) ? $value[2] : ''));
+    if ($value['hour']) {
+      $timestamp = strtotime($value['hour'] . ':' . $value['minute'] . (isset($value['ampm']) ? $value['ampm'] : ''));
       if ($component['extra']['hourformat'] == '24-hour') {
         $element['hour']['#default_value'] = date('H', $timestamp);
       }
       else {
         $element['hour']['#default_value'] = date('g', $timestamp);
-        $element['ampm']['#default_value'] = $value[2];
+        $element['ampm']['#default_value'] = $value['ampm'];
       }
     }
   }
@@ -217,9 +217,9 @@ function webform_validate_time($element, $form_state) {
  */
 function _webform_display_time($component, $value, $format = 'html') {
   $value = array(
-    'hour' => isset($value[0]) ? $value[0] : NULL,
-    'minute' => isset($value[1]) ? $value[1] : NULL,
-    'ampm' => isset($value[2]) ? $value[2] : NULL,
+    'hour' => isset($value['hour']) ? $value['hour'] : NULL,
+    'minute' => isset($value['minute']) ? $value['minute'] : NULL,
+    'ampm' => isset($value['ampm']) ? $value['ampm'] : NULL,
   );
 
   return array(
@@ -259,8 +259,7 @@ function _webform_analysis_time($component, $sids = array()) {
     ->fields('wsd', array('no', 'data'))
     ->condition('nid', $component['nid'])
     ->condition('cid', $component['cid'])
-    ->orderBy('sid')
-    ->orderBy('no');
+    ->orderBy('sid');
 
   if (count($sids)) {
     $query->condition('sid', $sids, 'IN');
@@ -272,14 +271,14 @@ function _webform_analysis_time($component, $sids = array()) {
   $timestamps = array();
   $submissions = 1;
   foreach ($result as $row) {
-    if ($row['no'] == '0') {
+    if ($row['no'] == 'hour') {
       $submissions++;
       $hour = $row['data'];
       if ($row = db_fetch_array($result)) {
-        if ($row['no'] == '1') {
+        if ($row['no'] == 'minute') {
           $minute = $row['data'];
           if ($row = db_fetch_array($result)) {
-            if ($row['no'] == '2') {
+            if ($row['no'] == 'ampm') {
               $ampm = $row['data'];
               // Build the full timestamp.
               if (drupal_strlen($hour) > 0 && drupal_strlen($minute) > 0 ) {
@@ -308,8 +307,8 @@ function _webform_analysis_time($component, $sids = array()) {
  * Implementation of _webform_table_component().
  */
 function _webform_table_time($component, $value) {
-  if (drupal_strlen($value[0]) > 0 && drupal_strlen($value[1]) > 0) {
-    $timestamp = strtotime($value[0] . ':' . $value[1] . $value[2]);
+  if (drupal_strlen($value['hour']) > 0 && drupal_strlen($value['minute']) > 0) {
+    $timestamp = strtotime($value['hour'] . ':' . $value['minute'] . (isset($value['ampm']) ? $value['ampm'] : ''));
     if ($component['extra']['hourformat'] == '24-hour') {
       return check_plain(date('H:i', $timestamp));
     }
@@ -337,8 +336,8 @@ function _webform_csv_headers_time($component, $export_options) {
  * Implementation of _webform_csv_data_component().
  */
 function _webform_csv_data_time($component, $export_options, $value) {
-  if (drupal_strlen($value[0]) > 0 && drupal_strlen($value[1]) > 0) {
-    $timestamp = strtotime($value[0] . ':' . $value[1] . $value[2]);
+  if (drupal_strlen($value['hour']) > 0 && drupal_strlen($value['minute']) > 0) {
+    $timestamp = strtotime($value['hour'] . ':' . $value['minute'] . (isset($value['ampm']) ? $value['ampm'] : ''));
     if ($component['extra']['hourformat'] == '24-hour') {
       return date('H:i', $timestamp);
     }

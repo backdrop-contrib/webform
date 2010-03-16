@@ -22,11 +22,7 @@ function webform_submission_data($node, $submitted) {
     }
 
     if (is_array($values)) {
-      $delta = 0;
-      foreach ($values as $key => $value) {
-        $data[$cid]['value'][$delta] = $value;
-        $delta++;
-      }
+      $data[$cid]['value'] = $values;
     }
     else {
       $data[$cid]['value'][0] = $values;
