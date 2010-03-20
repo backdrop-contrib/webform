@@ -123,7 +123,8 @@ function _webform_render_date($component, $value = NULL) {
     '#element_validate' => array('webform_validate_date'),
   );
 
-  if (isset($value)) {
+  if (isset($value[0]) && $value[0] !== '') {
+    $value = webform_date_array($value[0], 'date');
     $element['#default_value'] = $value;
   }
 
@@ -255,20 +256,15 @@ function webform_validate_date($element, $form_state) {
  * Implementation of _webform_submit_component().
  */
 function _webform_submit_date($component, $value) {
-  // Webform stores dates in month/day/year rows.
-  // Ensure consistency when using international date formats.
-  return array('month' => $value['month'], 'day' => $value['day'], 'year' => $value['year']);
+  // Convert the date to an ISO 8601 format.
+  return ($value['year'] && $value['month'] && $value['day']) ? webform_date_string($value, 'date') : '';
 }
 
 /**
  * Implementation of _webform_display_component().
  */
 function _webform_display_date($component, $value, $format = 'html') {
-  $value = array(
-    'month' => isset($value['month']) ? $value['month'] : NULL,
-    'day' => isset($value['day']) ? $value['day'] : NULL,
-    'year' => isset($value['year']) ? $value['year'] : NULL,
-  );
+  $value = webform_date_array(isset($value[0]) ? $value[0] : '', 'date');
 
   return array(
     '#title' => $component['name'],
@@ -287,10 +283,10 @@ function _webform_display_date($component, $value, $format = 'html') {
 function theme_webform_display_date($variables) {
   $element = $variables['element'];
   $output = ' ';
-  if ($element['#value']) {
+  if ($element['#value']['year'] && $element['#value']['month'] && $element['#value']['day']) {
     $timestamp = webform_strtotime($element['#value']['month'] . '/' . $element['#value']['day'] . '/' . $element['#value']['year']);
     $format = webform_date_format('medium');
-    $output = format_date($timestamp, 'custom', $format, 0);
+    $output = format_date($timestamp, 'custom', $format, 'UTC');
   }
 
   return $output;
@@ -312,39 +308,17 @@ function _webform_analysis_date($component, $sids = array()) {
 
   $result = $query->execute();
 
-  // Build an array of timestamps from entered values.
-  $timestamps = array();
-  $submissions = 1;
+  $dates = array();
+  $submissions = 0;
   foreach ($result as $row) {
-    if ($row['no'] == '0') {
-      $submissions++;
-      $month = $row['data'];
-      if ($row = db_fetch_array($result)) {
-        if ($row['no'] == '1') {
-          $day = $row['data'];
-          if ($row = db_fetch_array($result)) {
-            if ($row['no'] == '2') {
-              $year = $row['data'];
-              // Build the full timestamp.
-              if (drupal_strlen($month) > 0  && drupal_strlen($day) > 0  && drupal_strlen($year) > 0) {
-                $timestamp = webform_strtotime($month . '/' . $day . '/' . $year);
-                // Add usefull information about this date into an array.
-                $timestamps[$timestamp] = array(
-                  date('l', $timestamp), // Day of the week (Monday, Tuesday, etc.).
-                  date('F', $timestamp), // Full Month name (January, February, etc.).
-                  $year, // Year.
-                  $day,  // Day of the month (1,2,...,31).
-                );
-              }
-            }
-          }
-        }
-      }
+    $submissions++;
+    if ($row['data']) {
+      $dates[] = webform_date_array($row['data']);
     }
   }
 
   // Display stats.
-  $nonblanks = count($timestamps);
+  $nonblanks = count($dates);
   $rows[0] = array(t('Left Blank'), ($submissions - $nonblanks));
   $rows[1] = array(t('User entered value'), $nonblanks);
   return $rows;
@@ -354,10 +328,10 @@ function _webform_analysis_date($component, $sids = array()) {
  * Implementation of _webform_table_component().
  */
 function _webform_table_date($component, $value) {
-  if (drupal_strlen($value['month']) > 0 && drupal_strlen($value['day']) > 0 && drupal_strlen($value['year']) > 0) {
-    $timestamp = webform_strtotime($value['month'] . '/' . $value['day'] . '/' . $value['year']);
+  if ($value[0]) {
+    $timestamp = webform_strtotime($value[0]);
     $format = webform_date_format('short');
-    return format_date($timestamp, 'custom', $format, 0);
+    return format_date($timestamp, 'custom', $format, 'UTC');
   }
   else {
     return '';
@@ -379,10 +353,10 @@ function _webform_csv_headers_date($component, $export_options) {
  * Implementation of _webform_csv_data_component().
  */
 function _webform_csv_data_date($component, $export_options, $value) {
-  if (drupal_strlen($value['month']) > 0 && drupal_strlen($value['day']) > 0 && drupal_strlen($value['year']) > 0) {
-    $timestamp = webform_strtotime($value['month'] . '/' . $value['day'] . '/' . $value['year']);
+  if ($value[0]) {
+    $timestamp = webform_strtotime($value[0]);
     $format = webform_date_format('short');
-    return format_date($timestamp, 'custom', $format, 0);
+    return format_date($timestamp, 'custom', $format, 'UTC');
   }
   else {
     return '';
@@ -390,14 +364,88 @@ function _webform_csv_data_date($component, $export_options, $value) {
 }
 
 /**
- * Get a timestamp in GMT time, ensuring timezone accuracy.
+ * Convert an ISO 8601 date or time into an array.
+ *
+ * This converst full format dates or times. Either a date or time may be
+ * provided, in which case only those portions will be returned. Dashes and
+ * colons must be used, never implied.
+ *
+ * Formats:
+ * Dates: YYYY-MM-DD
+ * Times: HH:MM:SS
+ * Datetimes: YYYY-MM-DDTHH:MM:SS
+ *
+ * @param $string
+ *   An ISO 8601 date, time, or datetime.
+ * @param $type
+ *   If wanting only specific fields back, specify either "date" or "time".
+ *   Leaving empty will return an array with both date and time keys, even if
+ *   some are empty. Returns an array with the following keys:
+ *   - year
+ *   - month
+ *   - day
+ *   - hour (in 24hr notation)
+ *   - minute
+ *   - second
  */
-function webform_strtotime($date) {
-  $current_tz = date_default_timezone_get();
-  date_default_timezone_set('UTC');
-  $timestamp = strtotime($date);
-  date_default_timezone_set($current_tz);
-  return $timestamp;
+function webform_date_array($string, $type = NULL) {
+  $pattern = '/((\d{4}?)-(\d{2}?)-(\d{2}?))?(T?(\d{2}?):(\d{2}?):(\d{2}?))?/';
+  $matches = array();
+  preg_match($pattern, $string, $matches);
+  $matches += array_fill(0, 9, '');
+
+  $return = array();
+
+  // Check for a date string.
+  if ($type == 'date' || !isset($type)) {
+    $return['year'] = $matches[2] !== '' ? (int) $matches[2] : '';
+    $return['month'] = $matches[3] !== '' ? (int) $matches[3] : '';
+    $return['day'] = $matches[4] !== '' ? (int) $matches[4] : '';
+  }
+
+  // Check for a time string.
+  if ($type == 'time' || !isset($type)) {
+    $return['hour'] = $matches[6] !== '' ? (int) $matches[6] : '';
+    $return['minute'] = $matches[7] !== '' ? (int) $matches[7] : '';
+    $return['second'] = $matches[8] !== '' ? (int) $matches[8] : '';
+  }
+
+  return $return;
+}
+
+/**
+ * Convert an array of a date or time into an ISO 8601 compatible string.
+ *
+ * @param $array
+ *   The array to convert to a date or time string.
+ * @param $type
+ *   If wanting a specific string format back specify either "date" or "time".
+ *   Otherwise a full ISO 8601 date and time string will be returned.
+ */
+function webform_date_string($array, $type = NULL) {
+  $string = '';
+
+  if ($type == 'date' || !isset($type)) {
+    $string .= empty($array['year']) ? '0000' : sprintf('%04d', $array['year']);
+    $string .= '-';
+    $string .= empty($array['month']) ? '00' : sprintf('%02d', $array['month']);
+    $string .= '-';
+    $string .= empty($array['day']) ? '00' : sprintf('%02d', $array['day']);
+  }
+
+  if (!isset($type)) {
+    $string .= 'T';
+  }
+
+  if ($type == 'time' || !isset($type)) {
+    $string .= empty($array['hour']) ? '00' :  sprintf('%02d', $array['hour']);
+    $string .= ':';
+    $string .= empty($array['minute']) ? '00' :  sprintf('%02d', $array['minute']);
+    $string .= ':';
+    $string .= empty($array['second']) ? '00' :  sprintf('%02d', $array['second']);
+  }
+
+  return $string;
 }
 
 /**
@@ -421,4 +469,15 @@ function webform_date_format($size = 'medium') {
     }
 
     return $date_format;
+}
+
+/**
+ * Get a timestamp in GMT time, ensuring timezone accuracy.
+ */
+function webform_strtotime($date) {
+  $current_tz = date_default_timezone_get();
+  date_default_timezone_set('UTC');
+  $timestamp = strtotime($date);
+  date_default_timezone_set($current_tz);
+  return $timestamp;
 }
