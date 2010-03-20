@@ -183,7 +183,7 @@ function webform_expand_date($element) {
   }
 
   // Let Drupal do it's normal expansion.
-  $element = expand_date($element);
+  $element = form_process_date($element);
 
   // Set default values.
   foreach ($default_values as $type => $value) {

@@ -37,7 +37,7 @@ function _webform_defaults_grid() {
 function _webform_theme_grid() {
   return array(
     'webform_grid' => array(
-      'render element' => 'grid_element',
+      'render element' => 'element',
     ),
     'webform_display_grid' => array(
       'render element' => 'element',
@@ -119,7 +119,7 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
         '#required'      => $component['mandatory'],
         '#options'       => $options,
         '#type'          => 'radios',
-        '#process'       => array('expand_radios', 'webform_expand_select_ids'),
+        '#process'       => array('form_process_radios', 'webform_expand_select_ids'),
         '#validated'     => TRUE, // Webform handles validation separately.
       );
     }
@@ -336,7 +336,7 @@ function theme_webform_grid($variables) {
     $row = array(array('data' => _webform_filter_xss($question_element['#title']), 'class' => 'webform-grid-question'));
 
     // Render each radio button in the row.
-    $radios = expand_radios($question_element);
+    $radios = form_process_radios($question_element);
     foreach (element_children($radios) as $key) {
       unset($radios[$key]['#title']);
       $row[] = array('data' => drupal_render($radios[$key]), 'class' => 'checkbox webform-grid-option');

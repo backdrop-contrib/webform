@@ -255,7 +255,7 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
     else {
       // Set display as a radio set.
       $element['#type'] = 'radios';
-      $element['#process'] = array('expand_radios', 'webform_expand_select_ids');
+      $element['#process'] = array('form_process_radios', 'webform_expand_select_ids');
     }
   }
 
@@ -280,7 +280,7 @@ function webform_expand_checkboxes($element) {
     }
   }
 
-  $element = expand_checkboxes($element);
+  $element = form_process_checkboxes($element);
 
   // Escape the values of checkboxes.
   foreach (element_children($element) as $key) {
