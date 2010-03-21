@@ -242,6 +242,7 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
     // Set display as a select list:
     $element['#type'] = 'select';
     if ($component['extra']['multiple']) {
+      $element['#size'] = 4;
       $element['#multiple'] = TRUE;
     }
   }
