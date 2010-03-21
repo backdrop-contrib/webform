@@ -131,7 +131,7 @@ function theme_webform_email_add_form($variables) {
   $form = $variables['form'];
 
   // Add a default value to the custom e-mail textfield.
-  $form['email_custom']['#value'] = t('email@example.com');
+  $form['email_custom']['#attributes']['rel'] = t('email@example.com');
   $form['email_custom']['#attributes']['class'] = array('webform-set-active', 'webform-default-value');
   $form['email_option']['custom']['#theme_wrappers'] = array('webform_inline_radio');
   $form['email_option']['custom']['#inline_element'] = drupal_render($form['email_custom']);

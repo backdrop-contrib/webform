@@ -20,10 +20,13 @@ Drupal.behaviors.webform.attach = function(context) {
 Drupal.webform = new Object();
 
 Drupal.webform.defaultValues = function(context) {
-  var $fields = $('.webform-default-value', context);
-  var $forms = $('.webform-default-value', context).parents('form:first');
+  var $fields = $('.webform-default-value:not(.error)', context);
+  var $forms = $fields.parents('form:first');
   $fields.each(function() {
-    this.defaultValue = this.value;
+    this.defaultValue = $(this).attr('rel');
+    if (this.value != this.defaultValue) {
+      $(this).removeClass('webform-default-value');
+    }
     $(this).focus(function() {
       if (this.value == this.defaultValue) {
         this.value = '';

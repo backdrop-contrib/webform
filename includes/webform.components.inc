@@ -149,7 +149,7 @@ function theme_webform_components_form($variables) {
 
   // Add a row containing form elements for a new item.
   unset($form['add']['name']['#title'], $form['add_type']['#description']);
-  $form['add']['name']['#value'] = t('New component name');
+  $form['add']['name']['#attributes']['rel'] = t('New component name');
   $form['add']['name']['#attributes']['class'] = array('webform-default-value');
   $form['add']['cid']['#attributes']['class'] = array('webform-cid');
   $form['add']['pid']['#attributes']['class'] = array('webform-pid');
