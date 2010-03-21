@@ -22,8 +22,7 @@ function _webform_defaults_time() {
     'mandatory' => 0,
     'email' => 1,
     'extra' => array(
-      'timezone' => 'site',
-      'check_daylight_savings' => 0,
+      'timezone' => 'user',
       'hourformat' => '12-hour',
       'description' => '',
     ),
@@ -60,26 +59,19 @@ function _webform_edit_time($component) {
   );
   $form['extra']['timezone'] = array(
     '#type' => 'radios',
-    '#title' => t('Timezone'),
-    '#default_value' => empty($component['extra']['timezone']) ? 'site' : $component['extra']['timezone'],
-    '#description' => t('Adjust the time according to a specific timezone. Website timezone is defined in the <a href="!settings">Site Settings</a> and is the default.', array('!settings' => url('admin/settings/date-time'))),
-    '#options' => array('site' => 'Website Timezone', 'user' => 'User Timezone', 'gmt' => 'GMT'),
-    '#weight' => 0,
-  );
-  $form['extra']['check_daylight_savings'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Observe Daylight Savings'),
-    '#default_value' => $component['extra']['check_daylight_savings'],
-    '#checked_value' => 1,
-    '#description' => t('Automatically adjust the time during daylight savings.'),
-    '#weight' => 1,
+    '#title' => t('Default value timezone'),
+    '#default_value' => empty($component['extra']['timezone']) ? 'user' : $component['extra']['timezone'],
+    '#description' => t('Adjust the default time value according to a specific timezone.'),
+    '#options' => array('user' => t('User timezone'), 'site' => t('Website timezone')),
+    '#weight' => -1,
+    '#access' => variable_get('configurable_timezones', 1),
   );
   $form['display']['hourformat'] = array(
     '#type' => 'radios',
     '#title' => t('Time Format'),
     '#default_value' => isset($component['extra']['hourformat']) ? $component['extra']['hourformat'] : '12-hour',
     '#description' => t('Format the display of the time in 12 or 24 hours.'),
-    '#options' => array('12-hour' => '12-hour (am/pm)', '24-hour' => '24-hour'),
+    '#options' => array('12-hour' => t('12-hour (am/pm)'), '24-hour' => t('24-hour')),
     '#weight' => 2,
     '#parents' => array('extra', 'hourformat'),
   );
@@ -91,48 +83,33 @@ function _webform_edit_time($component) {
  */
 function _webform_render_time($component, $value = NULL) {
   if (drupal_strlen($component['value']) > 0) {
-    // Calculate the timestamp in GMT.
-    $timestamp = strtotime($component['value']);
-    if ($component['extra']['timezone'] == 'user') {
-      // Use the users timezone.
-      global $user;
-      $timestamp += (int)$user->timezone;
-    }
-    elseif ($component['extra']['timezone'] == 'gmt') {
-      // Use GMT.
-      $timestamp += 0;
+    // Adjust the time based on the user or site timezone.
+    if (variable_get('configurable_timezones', 1) && $component['extra']['timezone'] == 'user') {
+      $timezone_name = isset($GLOBALS['user']->timezone) ? $GLOBALS['user']->timezone : 'UTC';
     }
     else {
-      // Use the Drupal site time.
-      $timestamp += (int)variable_get('date_default_timezone', 0);
+      $timezone_name = variable_get('date_default_timezone', 'UTC');
     }
 
-    // Check for daylight savings time.
-    if ($component['extra']['check_daylight_savings'] && date('I')) {
-      $timestamp += 3600;
-    }
+    $timezone = new DateTimeZone($timezone_name);
+    $datetime = new DateTime($component['value'], $timezone);
+    $default_values = webform_date_array($datetime->format('c'), 'time');
+  }
+  else {
+    $default_values = array(
+      'hour' => '',
+      'minute' => '',
+      'second' => '',
+    );
   }
 
+  $first_hour = 0;
+  $last_hour = 23;
   if ($component['extra']['hourformat'] == '12-hour') {
     $first_hour = 1;
     $last_hour = 12;
-    $hour_format = 'g';
-  }
-  else {
-    $first_hour = 0;
-    $last_hour = 23;
-    $hour_format = 'G';
-  }
-
-  if (drupal_strlen($component['value']) > 0) {
-    $hour = gmdate($hour_format, $timestamp);
-    $minute = gmdate('i', $timestamp);
-    $am_pm = gmdate('a', $timestamp);
-  }
-  else {
-    $hour = '';
-    $minute = '';
-    $am_pm = 'am';
+    $default_values = webform_time_convert($default_values, '12-hour');
+    $default_values['ampm'] = $default_values['ampm'] ? $default_values['ampm'] : 'am';
   }
 
   // Generate the choices for drop-down selects.
@@ -140,7 +117,7 @@ function _webform_render_time($component, $value = NULL) {
   $minutes[''] = t('minute');
   for ($i = $first_hour; $i <= $last_hour; $i++) $hours[$i] = $i;
   for ($i = 0; $i <= 59; $i++) $minutes[$i] = $i < 10 ? "0$i" : $i;
-  $am_pms = array('am' => t('am'), 'pm' => t('pm'));
+  $ampms = array('am' => t('am'), 'pm' => t('pm'));
 
   $element = array(
     '#title' => $component['name'],
@@ -159,20 +136,20 @@ function _webform_render_time($component, $value = NULL) {
   $element['hour'] = array(
     '#prefix' => '',
     '#type' => 'select',
-    '#default_value' => $hour,
+    '#default_value' => $default_values['hour'],
     '#options' => $hours,
   );
   $element['minute'] = array(
     '#prefix' => ':',
     '#type' => 'select',
-    '#default_value' => $minute,
+    '#default_value' => $default_values['minute'],
     '#options' => $minutes,
   );
   if ($component['extra']['hourformat'] == '12-hour') {
     $element['ampm'] = array(
       '#type' => 'radios',
-      '#default_value' => $am_pm,
-      '#options' => $am_pms,
+      '#default_value' => $default_values['ampm'],
+      '#options' => $ampms,
     );
   }
 

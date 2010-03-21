@@ -19,7 +19,7 @@ function _webform_defaults_date() {
     'mandatory' => 0,
     'email' => 1,
     'extra' => array(
-      'check_daylight_savings' => 0,
+      'timezone' => 'user',
       'year_start' => '1900',
       'year_end' => '2050',
       'year_textfield' => 0,
@@ -58,19 +58,12 @@ function _webform_edit_date($component) {
   );
   $form['extra']['timezone'] = array(
     '#type' => 'radios',
-    '#title' => t('Timezone'),
-    '#default_value' => empty($component['extra']['timezone']) ? 'site' : $component['extra']['timezone'],
-    '#description' => t('Adjust the date according to a specific timezone. Website timezone is defined in the <a href="!settings">Site Settings</a> and is the default.', array('!settings' => url('admin/settings/date-time'))),
-    '#options' => array('site' => t('Website timezone'), 'user' => t('User timezone'), 'gmt' => t('GMT')),
-    '#weight' => 1,
-  );
-  $form['extra']['check_daylight_savings'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Observe Daylight Savings'),
-    '#default_value' => $component['extra']['check_daylight_savings'],
-    '#checked_value' => 1,
-    '#description' => t('Automatically adjust the time during daylight savings.'),
-    '#weight' => 2,
+    '#title' => t('Default value timezone'),
+    '#default_value' => empty($component['extra']['timezone']) ? 'user' : $component['extra']['timezone'],
+    '#description' => t('Adjust the default time value according to a specific timezone.'),
+    '#options' => array('user' => t('User timezone'), 'site' => t('Website timezone')),
+    '#weight' => -1,
+    '#access' => variable_get('configurable_timezones', 1),
   );
 
   $form['display']['year_textfield'] = array(
@@ -147,33 +140,17 @@ function webform_expand_date($element) {
   }
   // Or, if none, use set the defaults of the component.
   elseif (drupal_strlen($component['value']) > 0) {
-    // Calculate the timestamp in GMT.
-    $timestamp = webform_strtotime(_webform_filter_values($component['value']));
-
-    if ($component['extra']['timezone'] == 'user') {
-      // Use the users timezone.
-      global $user;
-      $timestamp += (int)$user->timezone;
-    }
-    elseif ($component['extra']['timezone'] == 'gmt') {
-      // Use GMT.
-      $timestamp += 0;
+    // Adjust the time based on the user or site timezone.
+    if (variable_get('configurable_timezones', 1) && $component['extra']['timezone'] == 'user') {
+      $timezone_name = isset($GLOBALS['user']->timezone) ? $GLOBALS['user']->timezone : 'UTC';
     }
     else {
-      // Use the Drupal site time.
-      $timestamp += variable_get('date_default_timezone', 0);
+      $timezone_name = variable_get('date_default_timezone', 'UTC');
     }
 
-    // Check for daylight savings time.
-    if ($component['extra']['check_daylight_savings'] && date('I')) {
-      $timestamp += 3600;
-    }
-
-    $default_values = array(
-      'day' => gmdate('j', $timestamp),
-      'month' => gmdate('n', $timestamp),
-      'year' => gmdate('Y', $timestamp),
-    );
+    $timezone = new DateTimeZone($timezone_name);
+    $datetime = new DateTime($component['value'], $timezone);
+    $default_values = webform_date_array($datetime->format('c'), 'date');
   }
   else {
     $default_values = array(
