@@ -1453,9 +1453,14 @@ function _webform_client_form_rule_check($node, $component, $page_num, $form_sta
     }
 
     $test_values = array_map('trim', explode("\n", $conditional_values));
-    foreach ($input_values as $input_value) {
-      if ($show_component = in_array($input_value, $test_values)) {
-        break;
+    if (empty($input_values) && !empty($test_values)) {
+      $show_component = FALSE;
+    }
+    else {
+      foreach ($input_values as $input_value) {
+        if ($show_component = in_array($input_value, $test_values)) {
+          break;
+        }
       }
     }
 
