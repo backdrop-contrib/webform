@@ -586,40 +586,52 @@ function _webform_csv_data_select($component, $export_options, $value) {
  *   Optional. Whether or not to filter returned values.
  */
 function _webform_select_options($text, $flat = FALSE, $filter = TRUE) {
-  $options = array();
-  $rows = array_filter(explode("\n", trim($text)));
-  $group = NULL;
-  foreach ($rows as $option) {
-    $option = trim($option);
-    /**
-     * If the Key of the option is within < >, treat as an optgroup
-     *
-     * <Group 1>
-     *   creates an optgroup with the label "Group 1"
-     *
-     * <>
-     *   Unsets the current group, allowing items to be inserted at the root element.
-     */
+  static $option_cache = array();
 
-    if (preg_match('/^\<([^>]*)\>$/', $option, $matches)) {
-      if (empty($matches[1])) {
-        unset($group);
+  // Keep each processed option block in an array indexed by the MD5 hash of
+  // the option text and the value of the $flat variable.
+  $md5 = md5($text);
+
+  // Check if this option block has been previously processed.
+  if (!isset($option_cache[$flat][$md5])) {
+    $options = array();
+    $rows = array_filter(explode("\n", trim($text)));
+    $group = NULL;
+    foreach ($rows as $option) {
+      $option = trim($option);
+      /**
+       * If the Key of the option is within < >, treat as an optgroup
+       *
+       * <Group 1>
+       *   creates an optgroup with the label "Group 1"
+       *
+       * <>
+       *   Unsets the current group, allowing items to be inserted at the root element.
+       */
+      if (preg_match('/^\<([^>]*)\>$/', $option, $matches)) {
+        if (empty($matches[1])) {
+          unset($group);
+        }
+        elseif (!$flat) {
+          $group = $filter ? _webform_filter_values($matches[1], NULL, NULL, NULL, FALSE) : $matches[1];
+        }
       }
-      elseif (!$flat) {
-        $group = $filter ? _webform_filter_values($matches[1], NULL, NULL, NULL, FALSE) : $matches[1];
+      elseif (preg_match('/^([^|]+)\|(.*)$/', $option, $matches)) {
+        $key = $filter ? _webform_filter_values($matches[1], NULL, NULL, NULL, FALSE) : $matches[1];
+        $value = $filter ? _webform_filter_values($matches[2], NULL, NULL, NULL, FALSE) : $matches[2];
+        isset($group) ? $options[$group][$key] = $value : $options[$key] = $value;
+      }
+      else {
+        $filtered_option = $filter ? _webform_filter_values($option, NULL, NULL, NULL, FALSE) : $option;
+        isset($group) ? $options[$group][$filtered_option] = $filtered_option : $options[$filtered_option] = $filtered_option;
       }
     }
-    elseif (preg_match('/^([^|]+)\|(.*)$/', $option, $matches)) {
-      $key = $filter ? _webform_filter_values($matches[1], NULL, NULL, NULL, FALSE) : $matches[1];
-      $value = $filter ? _webform_filter_values($matches[2], NULL, NULL, NULL, FALSE) : $matches[2];
-      isset($group) ? $options[$group][$key] = $value : $options[$key] = $value;
-    }
-    else {
-      $filtered_option = $filter ? _webform_filter_values($option, NULL, NULL, NULL, FALSE) : $option;
-      isset($group) ? $options[$group][$filtered_option] = $filtered_option : $options[$filtered_option] = $filtered_option;
-    }
+
+    $option_cache[$flat][$md5] = $options;
   }
-  return $options;
+
+  // Return our options from the option_cache array.
+  return $option_cache[$flat][$md5];
 }
 
 /**
