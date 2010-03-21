@@ -53,7 +53,7 @@ function _webform_edit_fieldset($component) {
 function _webform_render_fieldset($component, $value = NULL, $filter = TRUE) {
   $element = array(
     '#type'          => $component['type'],
-    '#title'         => htmlspecialchars($component['name'], ENT_QUOTES),
+    '#title'         => filter_xss_admin($component['name']),
     '#weight'        => $component['weight'],
     '#description'   => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#collapsible'   => $component['extra']['collapsible'],
