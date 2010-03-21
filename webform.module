@@ -1030,7 +1030,7 @@ function webform_form_alter(&$form, $form_state, $form_id) {
 
     // If a new node, redirect the user to the components form after save.
     if (empty($node->nid)) {
-      $form['buttons']['submit']['#submit'][] = 'webform_form_submit';
+      $form['actions']['submit']['#submit'][] = 'webform_form_submit';
     }
   }
 }
@@ -1350,9 +1350,11 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
     );
 
     // Add buttons for pages, drafts, and submissions.
-    $form['buttons'] = array(
+    $form['actions'] = array(
       '#tree' => FALSE,
       '#weight' => 1000,
+      '#type' => 'container',
+      '#attributes' => array('class' => array('form-actions')),
     );
 
     if ($page_count > 1) {
@@ -1361,7 +1363,7 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
 
       // Add the submit button(s).
      if ($node->webform['allow_draft'] && (empty($submission) || $submission->is_draft) && $user->uid != 0) {
-        $form['buttons']['draft'] = array(
+        $form['actions']['draft'] = array(
           '#type' => 'submit',
           '#value' => t('Save Draft'),
           '#weight' => -2,
@@ -1369,7 +1371,7 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
         );
       }
       if ($page_num > 1) {
-        $form['buttons']['previous'] = array(
+        $form['actions']['previous'] = array(
           '#type' => 'submit',
           '#value' => $prev_page,
           '#weight' => 5,
@@ -1377,14 +1379,14 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
         );
       }
       if ($page_num == $page_count) {
-        $form['buttons']['submit'] = array(
+        $form['actions']['submit'] = array(
           '#type' => 'submit',
           '#value' => empty($node->webform['submit_text']) ? t('Submit') : $node->webform['submit_text'],
           '#weight' => 10,
         );
       }
       elseif ($page_num < $page_count) {
-        $form['buttons']['next'] = array(
+        $form['actions']['next'] = array(
           '#type' => 'submit',
           '#value' => $next_page,
           '#weight' => 10,
@@ -1393,7 +1395,7 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
     }
     else {
       // Add the submit button.
-      $form['buttons']['submit'] = array(
+      $form['actions']['submit'] = array(
         '#type' => 'submit',
         '#value' => empty($node->webform['submit_text']) ? t('Submit') : $node->webform['submit_text'],
         '#weight' => 10,

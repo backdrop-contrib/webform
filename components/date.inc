@@ -108,7 +108,7 @@ function _webform_render_date($component, $value = NULL) {
     '#weight' => $component['weight'],
     '#type' => 'date',
     '#description' => _webform_filter_descriptions($component['extra']['description']),
-    '#prefix' => '<div class="webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
+    '#prefix' => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
     '#suffix' => '</div>',
     '#required' => $component['mandatory'],
     '#webform_component' => $component,

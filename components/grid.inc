@@ -99,6 +99,8 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
     '#weight' => $component['weight'],
     '#theme' => 'webform_grid',
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#prefix' => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
+    '#suffix' => '</div>',
   );
 
   $questions = _webform_select_options($component['extra']['questions'], TRUE);

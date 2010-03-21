@@ -124,7 +124,7 @@ function _webform_render_time($component, $value = NULL) {
     '#required' => $component['mandatory'],
     '#weight' => $component['weight'],
     '#description' => _webform_filter_descriptions($component['extra']['description']),
-    '#prefix' => '<div class="webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
+    '#prefix' => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
     '#suffix' => '</div>',
     '#theme' => 'webform_time',
     '#element_validate' => array('webform_validate_time'),

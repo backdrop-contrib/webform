@@ -301,7 +301,7 @@ function _webform_render_file($component, $value = NULL) {
   $element['#webform_form_key'] = $form_key;
   $element['#weight'] = $component['weight'];
   $element['#theme'] = 'webform_render_file';
-  $element['#prefix'] = '<div class="webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">';
+  $element['#prefix'] = '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">';
   $element['#suffix'] = '</div>';
 
 

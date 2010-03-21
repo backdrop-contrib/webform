@@ -108,7 +108,7 @@ function _webform_render_textarea($component, $value = NULL, $filter = TRUE) {
     '#cols'          => !empty($component['extra']['cols']) ? $component['extra']['cols'] : 60,
     '#attributes'    => $component['extra']['attributes'],
     '#resizable'     => (bool) $component['extra']['resizable'], // MUST be FALSE to disable.
-    '#prefix'        => '<div class="webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
+    '#prefix'        => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
     '#suffix'        => '</div>',
   );
 

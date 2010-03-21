@@ -131,7 +131,7 @@ function _webform_render_textfield($component, $value = NULL, $filter = TRUE) {
     '#field_suffix'  => empty($component['extra']['field_suffix']) ? NULL : check_plain($component['extra']['field_suffix']),
     '#description'   => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#attributes'    => $component['extra']['attributes'],
-    '#prefix'        => '<div class="webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
+    '#prefix'        => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
     '#suffix'        => '</div>',
     '#webform_component' => $component,
     '#element_validate' => array(),
