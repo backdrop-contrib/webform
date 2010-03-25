@@ -257,15 +257,17 @@ function webform_components_form_validate($form, &$form_state) {
   // Check that no two components end up with the same form key.
   $duplicates = array();
   $parents = array();
-  foreach ($form_state['values']['components'] as $cid => $component) {
-    $form_key = $form['#node']->webform['components'][$cid]['form_key'];
-    if (isset($parents[$component['pid']]) && ($existing = array_search($form_key, $parents[$component['pid']])) && $existing !== FALSE) {
-      if (!isset($duplicates[$component['form_key']])) {
-        $duplicates[$component['form_key']] = array($existing);
+  if (isset($form_state['values']['components'])) {
+    foreach ($form_state['values']['components'] as $cid => $component) {
+      $form_key = $form['#node']->webform['components'][$cid]['form_key'];
+      if (isset($parents[$component['pid']]) && ($existing = array_search($form_key, $parents[$component['pid']])) && $existing !== FALSE) {
+        if (!isset($duplicates[$component['form_key']])) {
+          $duplicates[$component['form_key']] = array($existing);
+        }
+        $duplicates[$component['form_key']][] = $cid;
       }
-      $duplicates[$component['form_key']][] = $cid;
+      $parents[$component['pid']][$cid] = $form_key;
     }
-    $parents[$component['pid']][$cid] = $form_key;
   }
 
   if (!empty($duplicates)) {
