@@ -176,7 +176,7 @@ function webform_validate_time($element, $form_state) {
   // Check if the user filled the required fields.
   foreach ($element['#hourformat'] == '12-hour' ? array('hour', 'minute', 'ampm') : array('hour', 'minute') as $field_type) {
     if (!is_numeric($element[$field_type]['#value']) && $element['#required']) {
-      form_set_error($element[$field_type], t('%field field is required.', array('%field' => $name)));
+      form_error($element[$field_type], t('%field field is required.', array('%field' => $name)));
       return;
     }
   }
