@@ -289,7 +289,7 @@ function webform_components_form_submit($form, &$form_state) {
 }
 
 function webform_component_edit_form($form, $form_state, $node, $component, $clone = FALSE) {
-  drupal_set_title(t('Edit component: @name (@type)', array('@name' => $component['name'], '@type' => t($component['type']))), PASS_THROUGH);
+  drupal_set_title(t('Edit component: @name', array('@name' => $component['name'])), PASS_THROUGH);
   drupal_add_css(drupal_get_path('module', 'webform') . '/webform.css', 'theme', 'all', FALSE);
 
   // Print the correct field type specification.
