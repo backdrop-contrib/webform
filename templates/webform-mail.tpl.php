@@ -12,14 +12,12 @@
  * Available variables:
  * - $node: The node object for this webform.
  * - $submission: The webform submission.
+ * - $email: The entire e-mail configuration settings.
  * - $user: The current user submitting the form.
  * - $ip_address: The IP address of the user submitting the form.
- * - $cid: The component for which this e-mail is being sent.
  *
- * The $cid can be used to send different e-mails to different users, such as
- * generating a reciept-type e-mail to send to the user that filled out the
- * form. Each form element in a webform is assigned a CID, by doing special
- * logic on CIDs you can customize various e-mails.
+ * The $email['email'] variable can be used to send different e-mails to different users
+ * when using the "default" e-mail template.
  */
 ?>
 <?php print t('Submitted on %date'); ?>
