@@ -26,6 +26,7 @@ function _webform_defaults_select() {
       'other_option' => NULL,
       'other_text' => t('Other...'),
       'description' => '',
+      'custom_keys' => FALSE,
     ),
   );
 }
@@ -47,51 +48,87 @@ function _webform_theme_select() {
 function _webform_edit_select($component) {
   $form = array();
 
-  $form['extra']['items'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Options'),
-    '#default_value' => $component['extra']['items'],
-    '#description' => t('<strong>Key-value pairs MUST be specified as "safe_key|Some readable option"</strong>. Only alphanumeric characters and underscores are allowed as a key. One option per line. Option groups may be specified with &lt;Group Name&gt;. &lt;&gt; can be used to insert items at the root of the menu after specifying a group.') . theme('webform_token_help'),
-    '#cols' => 60,
-    '#rows' => 5,
-    '#weight' => -2,
-    '#required' => TRUE,
-    '#element_validate' => array('_webform_edit_validate_select'),
-  );
-  $form['value'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Default value'),
-    '#default_value' => $component['value'],
-    '#description' => t('The default value of the field. For multiple selects use commas to separate multiple defaults.') . theme('webform_token_help'),
-    '#size' => 60,
-    '#maxlength' => 256,
-    '#weight' => 0,
-  );
-  $form['extra']['multiple'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Multiple'),
-    '#default_value' => $component['extra']['multiple'],
-    '#description' => t('Check this option if the user should be allowed to choose multiple values.'),
-  );
-  $form['extra']['aslist'] = array(
+  $other = array();
+  if (module_exists('select_or_other')) {
+    $other['other_option'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Allow "Other..." option'),
+      '#default_value' => $component['extra']['other_option'],
+      '#description' => t('Check this option if you want to allow users to enter an option not on the list.'),
+      '#parents' => array('extra', 'other_option'),
+    );
+    $other['other_text'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Text for "Other..." option'),
+      '#default_value' => $component['extra']['other_text'],
+      '#description' => t('If allowing other options, enter text to be used for other-enabling option.'),
+      '#parents' => array('extra', 'other_text'),
+    );
+  }
+
+  if (module_exists('options_element')) {
+    $options = _webform_select_options($component['extra']['items']);
+
+    $form['items'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Options'),
+      '#collapsible' => TRUE,
+      '#attributes' => array('class' => array('webform-options-element')),
+      '#element_validate' => array('_webform_edit_validate_options'),
+    );
+
+    $form['items']['options'] = array(
+      '#type' => 'options',
+      '#limit' => 500,
+      '#optgroups' => $component['extra']['aslist'],
+      '#multiple' => $component['extra']['multiple'],
+      '#multiple_toggle' => t('Multiple'),
+      '#default_value' => $component['value'],
+      '#options' => $options,
+      '#key_type' => 'mixed',
+      '#key_type_toggle' => t('Customize keys (Advanced)'),
+      '#key_type_toggled' => $component['extra']['custom_keys'],
+      '#weight' => 1,
+    );
+
+    $form['items']['options']['option_settings'] = $other;
+  }
+  else {
+    $form['extra']['items'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Options'),
+      '#default_value' => $component['extra']['items'],
+      '#description' => t('<strong>Key-value pairs MUST be specified as "safe_key|Some readable option"</strong>. Only alphanumeric characters and underscores are allowed as a key. One option per line. Option groups may be specified with &lt;Group Name&gt;. &lt;&gt; can be used to insert items at the root of the menu after specifying a group.') . theme('webform_token_help'),
+      '#cols' => 60,
+      '#rows' => 5,
+      '#weight' => -2,
+      '#required' => TRUE,
+      '#element_validate' => array('_webform_edit_validate_select'),
+    );
+    $form['extra'] = array_merge($form['extra'], $other);
+    $form['value'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Default value'),
+      '#default_value' => $component['value'],
+      '#description' => t('The default value of the field. For multiple selects use commas to separate multiple defaults.') . theme('webform_token_help'),
+      '#size' => 60,
+      '#maxlength' => 256,
+      '#weight' => 0,
+    );
+    $form['extra']['multiple'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Multiple'),
+      '#default_value' => $component['extra']['multiple'],
+      '#description' => t('Check this option if the user should be allowed to choose multiple values.'),
+    );
+  }
+
+  $form['display']['aslist'] = array(
     '#type' => 'checkbox',
     '#title' => t('Listbox'),
     '#default_value' => $component['extra']['aslist'],
-    '#description' => t('Check this option if you want the select component to be of listbox type instead of radiobuttons or checkboxes.'),
-  );
-  $form['extra']['other_option'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Allow "Other..." option'),
-    '#default_value' => $component['extra']['other_option'],
-    '#description' => t('Check this option if you want to allow users to enter an option not on the list.'),
-    '#access' => module_exists('select_or_other'),
-  );
-  $form['extra']['other_text'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Text for "Other..." option'),
-    '#default_value' => $component['extra']['other_text'],
-    '#description' => t('If allowing other options, enter text to be used for other-enabling option.'),
-    '#access' => module_exists('select_or_other'),
+    '#description' => t('Check this option if you want the select component to be of listbox type instead of radio buttons or checkboxes.'),
+    '#parents' => array('extra', 'aslist'),
   );
   $form['display']['optrand'] = array(
     '#type' => 'checkbox',
@@ -162,6 +199,28 @@ function _webform_edit_validate_select($element, &$form_state) {
 }
 
 /**
+ * Set the appropriate webform values when using the options element module.
+ */
+function _webform_edit_validate_options($element, &$form_state) {
+  $key = end($element['#parents']);
+  $element_options = $form_state['values'][$key]['options'];
+  unset($form_state['values'][$key]);
+
+  $form_state['values']['extra'][$key] = form_options_to_text($element_options['options'], 'custom');
+
+  // Options saved for select components.
+  if ($key == 'items') {
+    $form_state['values']['extra']['multiple'] = $element_options['multiple'];
+    $form_state['values']['extra']['custom_keys'] = $element_options['custom_keys'];
+    $form_state['values']['value'] = is_array($element_options['default_value']) ? implode(', ', $element_options['default_value']) : $element_options['default_value'];
+  }
+  // Options saved for grid components.
+  else {
+    $form_state['values']['extra']['custom_' . rtrim($key, 's') . '_keys'] = $element_options['custom_keys'];
+  }
+}
+
+/**
  * Implementation of _webform_render_component().
  */
 function _webform_render_select($component, $value = NULL, $filter = TRUE) {
@@ -209,7 +268,7 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
     if ($component['extra']['multiple']) {
       $varray = array_filter(explode(',', $default_value));
       foreach ($varray as $key => $v) {
-        $element['#default_value'][] = $v;
+        $element['#default_value'][] = trim($v);
       }
     }
     else {

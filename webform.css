@@ -44,6 +44,18 @@ tr.webform-pagebreak td {
 td.webform-pagebreak {
   font-weight: bold;
 }
+.webform-options-element thead {
+  display: none;
+}
+.webform-options-element fieldset {
+  border: none;
+  background: none;
+  margin: 0;
+  padding: 0;
+}
+.webform-options-element fieldset legend {
+  display: none;
+}
 .webform-checkbox {
   text-align: center;
   width: 40px;

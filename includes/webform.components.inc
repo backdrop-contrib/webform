@@ -319,7 +319,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     '#title' => t('Label'),
     '#description' => t('This is used as a descriptive label when displaying this form element.'),
     '#required' => TRUE,
-    '#weight' => -3,
+    '#weight' => -10,
     '#maxlength' => 255,
   );
   $form['form_key'] = array(
@@ -328,7 +328,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     '#title' => t('Field Key'),
     '#description' => t('Enter a machine readable key for this form element. May contain only lowercase alphanumeric characters and underscores. This key will be used as the name attribute of the form element. This value has no effect on the way data is saved, but may be helpful if using Additional Processing or Validation code.'),
     '#required' => TRUE,
-    '#weight' => -2,
+    '#weight' => -9,
   );
   $form['extra']['description'] = array(
     '#type' => 'textarea',
@@ -344,6 +344,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     '#title' => t('Display'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
+    '#weight' => 8,
   );
 
   // Validation settings.
@@ -352,6 +353,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     '#title' => t('Validation'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
+    '#weight' => 5,
   );
   if (webform_component_feature($component['type'], 'required')) {
     $form['validation']['mandatory'] = array(
@@ -425,7 +427,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
   }
   $conditional_components = array_slice($conditional_components, 0, $last_pagebreak_slice, TRUE);
   $form['conditional'] = array(
-    '#weight' => 5,
+    '#weight' => 10,
     '#type' => 'fieldset',
     '#title' => t('Conditional rules'),
     '#collapsible' => TRUE,

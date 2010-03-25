@@ -26,6 +26,8 @@ function _webform_defaults_grid() {
       'optrand' => 0,
       'qrand' => 0,
       'description' => '',
+      'custom_option_keys' => 0,
+      'custom_question_keys' => 0,
     ),
   );
 }
@@ -50,28 +52,71 @@ function _webform_theme_grid() {
  */
 function _webform_edit_grid($component) {
   $form = array();
-  $form['extra']['options'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Options'),
-    '#default_value' => $component['extra']['options'],
-    '#description' => t('Options to select across the top. One option per line. Key-value pairs must be entered separated by pipes. i.e. safe_key|Some readable option') . theme('webform_token_help'),
-    '#cols' => 60,
-    '#rows' => 5,
-    '#weight' => -3,
-    '#required' => TRUE,
-    '#element_validate' => array('_webform_edit_validate_select'),
-  );
-  $form['extra']['questions'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Questions'),
-    '#default_value' => $component['extra']['questions'],
-    '#description' => t('Questions list down the left side. One question per line. Key-value pairs must be entered separated by pipes. i.e safe_key|Some readable option') . theme('webform_token_help'),
-    '#cols' => 60,
-    '#rows' => 5,
-    '#weight' => -2,
-    '#required' => TRUE,
-    '#element_validate' => array('_webform_edit_validate_select'),
-  );
+
+  if (module_exists('options_element')) {
+    $form['options'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Options'),
+      '#collapsible' => TRUE,
+      '#description' => t('Options to select across the top. Usually these are ratings such as "poor" through "excellent" or "strongly disagree" through "strongly agree".'),
+      '#attributes' => array('class' => 'webform-options-element'),
+      '#element_validate' => array('_webform_edit_validate_options'),
+    );
+    $form['options']['options'] = array(
+      '#type' => 'options',
+      '#options' => _webform_select_options($component['extra']['options'], TRUE),
+      '#optgroups' => FALSE,
+      '#default_value' => FALSE,
+      '#optgroups' => FALSE,
+      '#key_type' => 'mixed',
+      '#key_type_toggle' => t('Customize option keys (Advanced)'),
+      '#key_type_toggled' => $component['extra']['custom_option_keys'],
+    );
+
+    $form['questions'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Questions'),
+      '#collapsible' => TRUE,
+      '#description' => t('Questions list down the side of the grid.'),
+      '#attributes' => array('class' => 'webform-options-element'),
+      '#element_validate' => array('_webform_edit_validate_options'),
+    );
+    $form['questions']['options'] = array(
+      '#type' => 'options',
+      '#options' => _webform_select_options($component['extra']['questions'], TRUE),
+      '#optgroups' => FALSE,
+      '#default_value' => FALSE,
+      '#optgroups' => FALSE,
+      '#key_type' => 'mixed',
+      '#key_type_toggle' => t('Customize question keys (Advanced)'),
+      '#key_type_toggled' => $component['extra']['custom_question_keys'],
+    );
+  }
+  else {
+    $form['extra']['options'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Options'),
+      '#default_value' => $component['extra']['options'],
+      '#description' => t('Options to select across the top. One option per line. Key-value pairs must be entered separated by pipes. i.e. safe_key|Some readable option') . theme('webform_token_help'),
+      '#cols' => 60,
+      '#rows' => 5,
+      '#weight' => -3,
+      '#required' => TRUE,
+      '#element_validate' => array('_webform_edit_validate_select'),
+    );
+    $form['extra']['questions'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Questions'),
+      '#default_value' => $component['extra']['questions'],
+      '#description' => t('Questions list down the side of the grid. One question per line. Key-value pairs must be entered separated by pipes. i.e safe_key|Some readable option') . theme('webform_token_help'),
+      '#cols' => 60,
+      '#rows' => 5,
+      '#weight' => -2,
+      '#required' => TRUE,
+      '#element_validate' => array('_webform_edit_validate_select'),
+    );
+  }
+
   $form['display']['optrand'] = array(
     '#type' => 'checkbox',
     '#title' => t('Randomize Options'),
