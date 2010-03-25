@@ -249,8 +249,35 @@ function theme_webform_components_form($variables) {
 }
 
 function webform_components_form_validate($form, &$form_state) {
-  if (isset($_POST['op']) && $_POST['op'] == t('Add') && drupal_strlen(trim($form_state['values']['add']['name'])) <= 0) {
-    form_set_error('add][name', t('When adding a new component, the name field is required.'));
+  // Check that the entered component name is valid.
+  if ($form_state['values']['op'] == t('Add') && drupal_strlen(trim($form_state['values']['add']['name'])) <= 0) {
+    form_error($form['add']['name'], t('When adding a new component, the name field is required.'));
+  }
+
+  // Check that no two components end up with the same form key.
+  $duplicates = array();
+  $parents = array();
+  foreach ($form_state['values']['components'] as $cid => $component) {
+    $form_key = $form['#node']->webform['components'][$cid]['form_key'];
+    if (isset($parents[$component['pid']]) && ($existing = array_search($form_key, $parents[$component['pid']])) && $existing !== FALSE) {
+      if (!isset($duplicates[$component['form_key']])) {
+        $duplicates[$component['form_key']] = array($existing);
+      }
+      $duplicates[$component['form_key']][] = $cid;
+    }
+    $parents[$component['pid']][$cid] = $form_key;
+  }
+
+  if (!empty($duplicates)) {
+    $error = t('The form order failed to save because the following elements have same form keys and are under the same parent. Edit each component and give them a unique form key, then try moving them again.');
+    $items = array();
+    foreach ($duplicates as $form_key => $cids) {
+      foreach ($cids as $cid) {
+        $items[] = $form['#node']->webform['components'][$cid]['name'];
+      }
+    }
+
+    form_error($form['components'], $error . theme('item_list', $items));
   }
 }
 
