@@ -113,6 +113,7 @@ function _webform_render_date($component, $value = NULL) {
     '#required' => $component['mandatory'],
     '#webform_component' => $component,
     '#process' => array('webform_expand_date'),
+    '#theme' => 'webform_date',
     '#element_validate' => array('webform_validate_date'),
   );
 
@@ -196,6 +197,26 @@ function webform_expand_date($element) {
 }
 
 /**
+ * Theme a webform date element.
+ */
+function theme_webform_date($variables) {
+  $element = $variables['element'];
+
+  // Add error classes to all items within the element.
+  if (form_get_error($element)) {
+    $element['year']['#attributes']['class'] = array('error');
+    $element['month']['#attributes']['class'] = array('error');
+    $element['day']['#attributes']['class'] = array('error');
+  }
+
+  $output = '';
+  $output .= '<div class="container-inline">';
+  $output .= drupal_render_children($element);
+  $output .= '</div>';
+  return $output;
+}
+
+/**
  * Element validation for Webform date fields.
  */
 function webform_validate_date($element, $form_state) {
@@ -206,14 +227,14 @@ function webform_validate_date($element, $form_state) {
   // Check if the user filled the required fields.
   foreach (array('day', 'month', 'year') as $field_type) {
     if (!is_numeric($element[$field_type]['#value']) && $element['#required']) {
-      form_set_error($form_key, t('!name field is required.', array('!name' => $name)));
+      form_error($element, t('!name field is required.', array('!name' => $name)));
       return;
     }
   }
   // Check for a valid date.
   if ($element['month']['#value'] !== '' || $element['day']['#value'] !== '' || $element['year']['#value'] !== '') {
     if (!checkdate((int)$element['month']['#value'], (int)$element['day']['#value'], (int)$element['year']['#value'])) {
-      form_set_error($form_key, t('Entered !name is not a valid date.', array('!name' => $name)));
+      form_error($element, t('Entered !name is not a valid date.', array('!name' => $name)));
       return;
     }
   }
@@ -223,7 +244,7 @@ function webform_validate_date($element, $form_state) {
     $start = $component['extra']['year_start'] < $component['extra']['year_end'] ? $component['extra']['year_start'] : $component['extra']['year_end'];
     $end   = $component['extra']['year_start'] > $component['extra']['year_end'] ? $component['extra']['year_start'] : $component['extra']['year_end'];
     if ($element['year']['#value'] < $start || $element['year']['#value'] > $end) {
-      form_set_error($form_key . '][year', t('The entered date needs to be between the years @start and @end.', array('@start' => $start, '@end' => $end)));
+      form_error($element['year'], t('The entered date needs to be between the years @start and @end.', array('@start' => $start, '@end' => $end)));
       return;
     }
   }
