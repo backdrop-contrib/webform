@@ -164,9 +164,18 @@ function webform_submission_delete($node, $submission) {
 function webform_submission_delete_form($form, $form_state, $node, $submission) {
   webform_set_breadcrumb($node, $submission);
 
-  $form = array();
-  $form['node'] = array('#type' => 'value', '#value' => $node);
-  $form['submission'] = array('#type' => 'value', '#value' => $submission);
+  // Keep the NID and SID in the same location as the webform_client_form().
+  // This helps mollom identify the same fields when deleting a submission.
+  $form['#tree'] = TRUE;
+  $form['details']['nid'] = array(
+    '#type' => 'value',
+    '#value' => $node->nid,
+  );
+  $form['details']['sid'] = array(
+    '#type' => 'value',
+    '#value' => $submission->sid,
+  );
+
   $question = t('Are you sure you want to delete this submission?');
 
   if (isset($_GET['destination'])) {
@@ -183,10 +192,12 @@ function webform_submission_delete_form($form, $form_state, $node, $submission) 
 }
 
 function webform_submission_delete_form_submit($form, &$form_state) {
-  webform_submission_delete($form_state['values']['node'], $form_state['values']['submission']);
+  $node = node_load($form_state['values']['details']['nid']);
+  $submission = webform_get_submission($form_state['values']['details']['nid'], $form_state['values']['details']['sid']);
+  webform_submission_delete($node, $submission);
   drupal_set_message(t('Submission deleted.'));
 
-  $form_state['redirect'] = 'node/' . $form_state['values']['node']->nid . '/webform-results';
+  $form_state['redirect'] = 'node/' . $node->nid . '/webform-results';
 }
 
 /**
