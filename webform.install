@@ -76,16 +76,6 @@ function webform_schema() {
         'not null' => TRUE,
         'default' => -1,
       ),
-      'additional_validate' => array(
-        'description' => 'PHP code for additional functionality when validating a form.',
-        'type' => 'text',
-        'not null' => TRUE,
-      ),
-      'additional_submit' => array(
-        'description' => 'PHP code for additional functionality when submitting a form.',
-        'type' => 'text',
-        'not null' => TRUE,
-      ),
     ),
     'primary key' => array('nid'),
   );

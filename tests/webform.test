@@ -611,8 +611,6 @@ class WebformTestCase extends DrupalWebTestCase {
         'submit_limit' => '-1',
         'submit_interval' => '-1',
         'submit_notice' => '1',
-        'additional_validate' => '',
-        'additional_submit' => '',
         'roles' => array('1', '2'),
         'components' => array(),
         'emails' => array(),

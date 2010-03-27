@@ -145,36 +145,6 @@ function webform_configure_form($form, &$form_state, $node) {
     '#default_value' => $node->webform['submit_text'],
     '#description' => t('By default the submit button on this form will have the label <em>Submit</em>. Enter a new title here to override the default.'),
   );
-  if (user_access('use PHP for additional processing')) {
-    $form['advanced']['additional_validate'] = array(
-      '#type' => 'textarea',
-      '#title' => t('Additional Validation'),
-      '#description' => t('Enter PHP code to perform additional validation for this form. Include the &lt;?php ?&gt; tags. $form and $form_state are available variables. If validation fails, use the form_set_error function to prevent the form from being submitted. Use the same syntax as a _validate function used in the <a href="http://api.drupal.org/api/file/developer/topics/forms_api.html">Forms API</a>.'),
-      '#default_value' => $node->webform['additional_validate'],
-      '#cols' => 40,
-      '#rows' => 10,
-    );
-
-    $form['advanced']['additional_submit'] = array(
-      '#type' => 'textarea',
-      '#title' => t('Additional Processing'),
-      '#description' => t('Enter PHP code to perform additional processing for this form (after the validation). Include the &lt;?php ?&gt; tags. $form and $form_state are available variables, use the same syntax as a _submit function used in the <a href="http://api.drupal.org/api/file/developer/topics/forms_api.html">Forms API</a>.'),
-      '#default_value' => $node->webform['additional_submit'],
-      '#cols' => 40,
-      '#rows' => 10,
-    );
-  }
-  else {
-    $form['advanced']['additional_validate'] = array(
-      '#type' => 'value',
-      '#value' => $node->webform['additional_validate'],
-    );
-
-    $form['advanced']['additional_submit'] = array(
-      '#type' => 'value',
-      '#value' => $node->webform['additional_submit'],
-    );
-  }
   /* End Advanced Settings Form */
 
   $form['submit'] = array(
@@ -248,10 +218,6 @@ function webform_configure_form_submit($form, &$form_state) {
 
   // Set submit button text.
   $node->webform['submit_text'] = $form_state['values']['submit_text'];
-
-  // Set additional validation and submission code.
-  $node->webform['additional_validate'] = $form_state['values']['additional_validate'];
-  $node->webform['additional_submit'] = $form_state['values']['additional_submit'];
 
   node_save($node);
 
