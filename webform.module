@@ -195,6 +195,17 @@ function webform_menu() {
     'type' => MENU_LOCAL_TASK,
   );
 
+  // AJAX callback for loading select list options.
+  $items['webform/ajax/options/%webform_menu'] = array(
+    'load arguments' => array(3),
+    'page callback' => 'webform_select_options_ajax',
+    'access callback' => 'node_access',
+    'access arguments' => array('update', 3),
+    'file' => 'components/select.inc',
+    'type' => MENU_CALLBACK,
+    'delivery callback' => 'ajax_deliver',
+  );
+
   // Node webform results.
   $items['node/%webform_menu/webform-results'] = array(
     'title' => 'Results',
@@ -356,7 +367,7 @@ function webform_menu_component_load($cid, $nid, $type) {
   module_load_include('inc', 'webform', 'includes/webform.components');
   if ($cid == 'new') {
     $components = webform_components();
-    $component = in_array($type, array_keys($components)) ? array('type' => $type, 'name' => $_GET['name'], 'mandatory' => $_GET['mandatory'], 'pid' => $_GET['pid'], 'weight' => $_GET['weight']) : FALSE;
+    $component = in_array($type, array_keys($components)) ? array('type' => $type, 'nid' => $nid, 'name' => $_GET['name'], 'mandatory' => $_GET['mandatory'], 'pid' => $_GET['pid'], 'weight' => $_GET['weight']) : FALSE;
   }
   else {
     $node = node_load($nid);
@@ -758,6 +769,14 @@ function webform_forms($form_id) {
     $forms[$form_id]['callback'] = 'webform_client_form';
   }
   return $forms;
+}
+
+/**
+ * Implementation of hook_webform_select_options_info().
+ */
+function webform_webform_select_options_info() {
+  module_load_include('inc', 'webform', 'includes/webform.options');
+  return _webform_options_info();
 }
 
 /**

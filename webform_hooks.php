@@ -15,6 +15,30 @@
  */
 
 /**
+ * Define callbacks that can be used as select list options.
+ *
+ * @return
+ *   An array of callbacks that can be used for select list options. This array
+ *   should be keyed by the "name" of the pre-defined list. The values should
+ *   be an array with the following additional keys:
+ *     - title: The translated title for this list.
+ *     - options callback: The name of the function that will return the list.
+ *     - file: Optional. The file containing the options callback, relative to
+ *       the module root.
+ */
+function hook_webform_select_options_info() {
+  $items = array();
+
+  $items['days'] = array(
+    'title' => t('Days of the week'),
+    'options callback' => 'webform_options_days',
+    'file' => 'includes/webform.options.inc',
+  );
+
+  return $items;
+}
+
+/**
  * Respond to the loading of Webform submissions.
  *
  * @param $submissions
