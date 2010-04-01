@@ -1366,11 +1366,11 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
     );
     $form['details']['uid'] = array(
       '#type' => 'value',
-      '#value' => $user->uid,
+      '#value' => isset($submission->uid) ? $submission->uid : $user->uid,
     );
     $form['details']['finished'] = array(
       '#type' => 'hidden',
-      '#value' => isset($submission->draft) ? !$submission->draft : 0,
+      '#value' => isset($submission->is_draft) ? (!$submission->is_draft) : 0,
     );
 
     // Add buttons for pages, drafts, and submissions.
@@ -1589,6 +1589,7 @@ function _webform_client_form_add_component($component, $component_value, &$pare
 
 function webform_client_form_validate($form, &$form_state) {
   $node = node_load($form_state['values']['details']['nid']);
+  $finished = $form_state['values']['details']['finished'];
 
   // Check that the user has not exceeded the submission limit.
   // This usually will only apply to anonymous users when the page cache is
@@ -1596,7 +1597,7 @@ function webform_client_form_validate($form, &$form_state) {
   if ($node->webform['submit_limit'] != -1) { // -1: Submissions are never throttled.
     module_load_include('inc', 'webform', 'includes/webform.submissions');
 
-    if ($limit_exceeded = _webform_submission_limit_check($node)) {
+    if (!$finished && $limit_exceeded = _webform_submission_limit_check($node)) {
       $error = theme('webform_view_messages', array('node' => $node, 'teaser' => 0, 'pager' => 1, 'submission_count' => 0, 'limit_exceeded' => $limit_exceeded, 'allowed_roles' => array_keys(user_roles())));
       form_set_error('', $error);
       return;
