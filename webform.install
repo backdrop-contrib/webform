@@ -334,13 +334,13 @@ function webform_install() {
   $webform_type = array(
     'type' => 'webform',
     'name' => st('Webform'),
-    'module' => 'node',
+    'base' => 'node_content',
     'description' => st('Create a new form or questionnaire accessible to users. Submission results and statistics are recorded and accessible to privileged users.'),
     'custom' => TRUE,
     'modified' => TRUE,
     'locked' => FALSE,
   );
-  $webform_type = (object) node_type_set_defaults($webform_type);
+  $webform_type = node_type_set_defaults($webform_type);
   node_type_save($webform_type);
 }
 
@@ -365,7 +365,7 @@ function webform_uninstall() {
   }
 
   // Delete uploaded files.
-  $filepath = file_create_path('webform');
+  $filepath = file_build_uri('webform');
   _webform_recursive_delete($filepath);
 
   // Drop tables.

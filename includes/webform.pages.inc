@@ -34,13 +34,13 @@ function webform_configure_form($form, &$form_state, $node) {
   );
 
   $form['submission']['confirmation'] = array(
-    '#type' => 'textarea',
+    '#type' => 'text_format',
     '#title' => t('Confirmation message'),
     '#description' => t('Message to be shown upon successful submission. If <em>Redirect URL</em> is set this displays as a message, otherwise it will be shown on its own page.'),
     '#default_value' => $node->webform['confirmation'],
     '#cols' => 40,
     '#rows' => 10,
-    '#text_format' => $node->webform['confirmation_format'],
+    '#format' => $node->webform['confirmation_format'],
     '#parents' => array('confirmation'),
   );
 
@@ -189,7 +189,7 @@ function webform_configure_form_submit($form, &$form_state) {
 
   // Save the confirmation.
   $node->webform['confirmation'] = $form_state['values']['confirmation'];
-  $node->webform['confirmation_format'] = $form_state['values']['confirmation_format'];
+  $node->webform['confirmation_format'] = $form_state['values']['format'];
 
   // Save the redirect URL
   $node->webform['redirect_url'] = $form_state['values']['redirect_url'];

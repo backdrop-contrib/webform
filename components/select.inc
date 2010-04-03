@@ -131,11 +131,15 @@ function _webform_edit_select($component) {
       '#description' => t('<strong>Key-value pairs MUST be specified as "safe_key|Some readable option"</strong>. Only alphanumeric characters and underscores are allowed as a key. One option per line. Option groups may be specified with &lt;Group Name&gt;. &lt;&gt; can be used to insert items at the root of the menu after specifying a group.') . theme('webform_token_help'),
       '#cols' => 60,
       '#rows' => 5,
-      '#weight' => -2,
+      '#weight' => 0,
       '#required' => TRUE,
-      '#attributes' => array('readonly' => !empty($component['extra']['options_source'])),
       '#element_validate' => array('_webform_edit_validate_select'),
     );
+
+    if (!empty($component['extra']['options_source'])) {
+      $form['extra']['items']['#attributes'] = array('readonly' => 'readonly');
+    }
+
     $form['extra'] = array_merge($form['extra'], $other);
     $form['value'] = array(
       '#type' => 'textfield',
@@ -426,16 +430,28 @@ function _webform_display_select($component, $value, $format = 'html') {
  * Convert FAPI 0/1 values into something saveable.
  */
 function _webform_submit_select($component, $value) {
-  $options = drupal_map_assoc(array_flip(_webform_select_options($component)));
+  // Build a list of all valid keys expected to be submitted.
+  $options = _webform_select_options($component);
+  $keys = array();
+  foreach ($options as $option_key => $option_value) {
+    if (is_array($option_key)) {
+      foreach ($option_key as $option_subkey => $option_subvalue) {
+        $keys[$option_subkey] = $option_subkey;
+      }
+    }
+    else {
+      $keys[$option_key] = $option_key;
+    }
+  }
 
   $return = NULL;
   if (is_array($value)) {
     $return = array();
     foreach ($value as $key => $option_value) {
       // Handle options that are specified options.
-      if ($option_value !== '' && isset($options[$key])) {
+      if ($option_value !== '' && isset($keys[$key])) {
         // Checkboxes submit an *integer* value of 0 when not checked.
-        if ($option_value === 0 && $options[$key] !== '0' && !$component['extra']['aslist'] && $component['extra']['multiple']) {
+        if ($option_value === 0 && $keys[$key] !== '0' && !$component['extra']['aslist'] && $component['extra']['multiple']) {
           unset($value[$key]);
         }
         else {

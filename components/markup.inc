@@ -28,18 +28,26 @@ function _webform_defaults_markup() {
 function _webform_edit_markup($component) {
   $form = array();
   $form['value'] = array(
-    '#type' => 'textarea',
+    '#type' => 'text_format',
     '#title' => t('Value'),
     '#default_value' => $component['value'],
     '#description' => t('Markup allows you to enter custom HTML or PHP logic into your form.') . theme('webform_token_help'),
     '#weight' => -1,
-    '#text_format' => $component['extra']['format'],
+    '#format' => $component['extra']['format'],
+    '#element_validate' => array('_webform_edit_markup_validate'),
   );
 
   // No description for markup.
   $form['extra']['description'] = array();
 
   return $form;
+}
+
+/**
+ * Element validate handler; Set the text format value.
+ */
+function _webform_edit_markup_validate($form, &$form_state) {
+  $form_state['values']['extra']['format'] = $form_state['values']['format'];
 }
 
 /**
