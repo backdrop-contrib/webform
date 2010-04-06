@@ -328,7 +328,6 @@ function webform_schema() {
 function webform_install() {
   module_load_include('inc', 'node', 'content_types');
   db_query("UPDATE {system} SET weight = -1 WHERE name='webform' AND type='module'");
-  drupal_install_schema('webform');
 
   // Create the default webform type.
   $webform_type = array(
@@ -367,9 +366,6 @@ function webform_uninstall() {
   // Delete uploaded files.
   $filepath = file_build_uri('webform');
   _webform_recursive_delete($filepath);
-
-  // Drop tables.
-  drupal_uninstall_schema('webform');
 }
 
 /**
