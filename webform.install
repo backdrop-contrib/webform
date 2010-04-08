@@ -327,7 +327,11 @@ function webform_schema() {
  */
 function webform_install() {
   module_load_include('inc', 'node', 'content_types');
-  db_query("UPDATE {system} SET weight = -1 WHERE name='webform' AND type='module'");
+  db_update('system')
+    ->condition('name', 'webform')
+    ->condition('type', 'module')
+    ->fields(array('weight' => -1))
+    ->execute();
 
   // Create the default webform type.
   $webform_type = array(
