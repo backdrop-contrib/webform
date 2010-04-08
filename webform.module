@@ -2348,7 +2348,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
     $replacements['specials_set'] = TRUE;
 
     // Load profile information if available.
-    if ($user->uid && module_exists('profile')) {
+    if ($user->uid) {
       $account = user_load($user->uid);
       $special_tokens['unsafe']['%profile'] = (array) $account;
     }
