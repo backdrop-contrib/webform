@@ -2078,9 +2078,9 @@ function template_preprocess_webform_form(&$vars) {
  * Prepare for theming of the webform submission confirmation.
  */
 function template_preprocess_webform_confirmation(&$vars) {
+  $confirmation = check_markup($vars['node']->webform['confirmation'], $vars['node']->webform['confirmation_format'], FALSE);
   // Strip out empty tags added by WYSIWYG editors if needed.
-  $confirmation = strlen(trim(strip_tags($vars['node']->webform['confirmation']))) ? $vars['node']->webform['confirmation'] : '';
-  $vars['confirmation_message'] = check_markup($confirmation, $vars['node']->webform['confirmation_format'], FALSE);
+  $vars['confirmation_message'] = strlen(trim(strip_tags($confirmation))) ? $confirmation : '';
 }
 
 /**
