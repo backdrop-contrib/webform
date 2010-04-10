@@ -672,6 +672,7 @@ function webform_webform_component_info() {
       'features' => array(
         'required' => FALSE,
         'conditional' => FALSE,
+        'group' => TRUE,
       ),
       'file' => 'components/fieldset.inc',
     ),
@@ -2009,7 +2010,7 @@ function _webform_client_form_submit_process($node, &$form_values, $types = NULL
   if (is_array($form_values)) {
     foreach ($form_values as $form_key => $value) {
       $cid = webform_get_cid($node, $form_key, $parent);
-      if (is_array($value) && isset($node->webform['components'][$cid]['type']) && $node->webform['components'][$cid]['type'] == 'fieldset') {
+      if (is_array($value) && isset($node->webform['components'][$cid]['type']) && webform_component_feature($node->webform['components'][$cid]['type'], 'group')) {
         _webform_client_form_submit_process($node, $form_values[$form_key], $types, $cid);
       }
 
@@ -2037,7 +2038,7 @@ function _webform_client_form_submit_flatten($node, $fieldset, $parent = 0) {
     foreach ($fieldset as $form_key => $value) {
       $cid = webform_get_cid($node, $form_key, $parent);
 
-      if (is_array($value) && $node->webform['components'][$cid]['type'] == 'fieldset') {
+      if (is_array($value) && webform_component_feature($node->webform['components'][$cid]['type'], 'group')) {
         $values += _webform_client_form_submit_flatten($node, $value, $cid);
       }
       else {
@@ -2130,10 +2131,11 @@ function theme_webform_element_text($variables) {
   $value = $variables['element']['#children'];
 
   $output = '';
+  $is_group = webform_component_feature($element['#component']['type'], 'group');
 
   // Output the element title.
   if (isset($element['#title'])) {
-    if ($element['#component']['type'] == 'fieldset') {
+    if ($is_group) {
       $output .= '--' . $element['#title'] . '--';
     }
     elseif (!in_array(substr($element['#title'], -1), array('?', ':', '!', '%', ';', '@'))) {
@@ -2146,7 +2148,7 @@ function theme_webform_element_text($variables) {
 
   // Wrap long values at 65 characters, allowing for a few fieldset indents.
   // It's common courtesy to wrap at 75 characters in e-mails.
-  if ($element['#component']['type'] != 'fieldset' && strlen($value) > 65) {
+  if ($is_group && strlen($value) > 65) {
     $value = wordwrap($value, 65, "\n");
     $lines = explode("\n", $value);
     foreach ($lines as $key => $line) {
@@ -2161,7 +2163,7 @@ function theme_webform_element_text($variables) {
   }
 
   // Indent fieldsets.
-  if ($element['#component']['type'] == 'fieldset') {
+  if ($is_group) {
     $lines = explode("\n", $output);
     foreach ($lines as $number => $line) {
       if (strlen($line)) {

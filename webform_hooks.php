@@ -210,8 +210,12 @@ function hook_webform_component_delete($component) {
  *
  *     - csv
  *     - email
+ *     - email_address
+ *     - email_name
  *     - required
  *     - conditional
+ *     - spam_analysis
+ *     - group
  *
  *   Note that these features do not indicate the default state, but determine
  *   if the component can have this property at all. Setting "required" to TRUE

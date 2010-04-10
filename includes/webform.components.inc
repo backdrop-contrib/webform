@@ -207,7 +207,7 @@ function theme_webform_components_form($variables) {
         l(t('Delete'), 'node/' . $node->nid . '/webform/components/' . $cid . '/delete', array('query' => drupal_get_destination())),
       );
       $row_class = array('draggable');
-      if ($component['type'] != 'fieldset' && $component['type'] != 'pagebreak') {
+      if (!webform_component_feature($component['type'], 'group') && $component['type'] != 'pagebreak') {
         $row_class[] = 'tabledrag-leaf';
       }
       if ($component['type'] == 'pagebreak') {
@@ -409,7 +409,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
   if (variable_get('webform_enable_fieldset', TRUE) && is_array($node->webform['components'])) {
     $options = array('0' => t('Root'));
     foreach ($node->webform['components'] as $existing_cid => $value) {
-      if ($value['type'] == 'fieldset' && (!isset($component['cid']) || $existing_cid != $component['cid'])) {
+      if (webform_component_feature($value['type'], 'group') && (!isset($component['cid']) || $existing_cid != $component['cid'])) {
         $options[$existing_cid] = $value['name'];
       }
     }
@@ -607,7 +607,7 @@ function webform_component_delete_form($form, $form_state, $node, $component) {
     '#value' => $component,
   );
 
-  if ($node->webform['components'][$cid]['type'] == 'fieldset') {
+  if (webform_component_feature($node->webform['components'][$cid]['type'], 'group')) {
     $question = t('Delete the %name fieldset?', array('%name' => $node->webform['components'][$cid]['name']));
     $description = t('This will immediately delete the %name fieldset and all children elements within %name from the %webform webform. This cannot be undone.', array('%name' => $node->webform['components'][$cid]['name'], '%webform' => $node->title));
   }
@@ -758,7 +758,7 @@ function webform_component_clone(&$node, &$component) {
   $original_cid = $component['cid'];
   unset($component['cid']);
   $new_cid = webform_component_insert($component);
-  if ($component['type'] == 'fieldset') {
+  if (webform_component_feature($component['type'], 'group')) {
     foreach ($node->webform['components'] as $cid => $child_component) {
       if ($child_component['pid'] == $original_cid) {
         $child_component['pid'] = $new_cid;
@@ -782,6 +782,7 @@ function webform_component_feature($type, $feature) {
     'required' => TRUE,
     'conditional' => TRUE,
     'spam_analysis' => FALSE,
+    'group' => FALSE,
   );
   return isset($components[$type]['features'][$feature]) ? $components[$type]['features'][$feature] : $defaults[$feature];
 }
