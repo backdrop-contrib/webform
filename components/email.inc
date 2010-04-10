@@ -121,6 +121,9 @@ function _webform_render_email($component, $value = NULL) {
     '#webform_component' => $component,
   );
 
+  // Add an e-mail class for identifying the difference from normal textfields.
+  $element['#attributes']['class'][] = 'email';
+
   // Enforce uniqueness.
   if ($component['extra']['unique']) {
     $element['#element_validate'][] = 'webform_validate_unique';
