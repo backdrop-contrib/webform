@@ -873,19 +873,13 @@ function webform_node_insert($node) {
   // Insert the components into the database. Used with clone.module.
   if (isset($node->webform['components']) && !empty($node->webform['components'])) {
     foreach ($node->webform['components'] as $cid => $component) {
-      $component['nid'] = $node->nid;
       webform_component_insert($component);
     }
   }
 
   // Set the per-role submission access control.
   foreach (array_filter($node->webform['roles']) as $rid) {
-    db_insert('webform_roles')
-      ->fields(array(
-        'nid' => $node->nid,
-        'rid' => $rid
-      ))
-      ->execute();
+    db_insert('webform_roles')->fields(array('nid' => $node->nid, 'rid' => $rid))->execute();
   }
 }
 
@@ -897,11 +891,68 @@ function webform_node_update($node) {
     return;
   }
 
-  // Update the webform by deleting existing data and replacing with the new.
-  db_delete('webform')->condition('nid', $node->nid)->execute();
-  db_delete('webform_component')->condition('nid', $node->nid)->execute();
-  db_delete('webform_roles')->condition('nid', $node->nid)->execute();
-  webform_node_insert($node);
+  // Check if there is an existing entry at all for this node.
+  $exists = db_select('webform')
+    ->fields('webform', array('nid'))
+    ->condition('nid', $node->nid)
+    ->execute()
+    ->fetchField();
+
+  // If a webform row doesn't even exist, we can assume it needs to be inserted.
+  if (!$exists) {
+    webform_node_insert($node);
+    return;
+  }
+
+  // Update the webform entry.
+  db_update('webform')
+    ->fields(array(
+      'confirmation' => $node->webform['confirmation'],
+      'confirmation_format' => $node->webform['confirmation_format'],
+      'redirect_url' => $node->webform['redirect_url'],
+      'teaser' => $node->webform['teaser'],
+      'allow_draft' => $node->webform['allow_draft'],
+      'submit_notice' => $node->webform['submit_notice'],
+      'submit_text' => $node->webform['submit_text'],
+      'submit_limit' => $node->webform['submit_limit'],
+      'submit_interval' => $node->webform['submit_interval'],
+    ))
+    ->condition('nid', $node->nid)
+    ->execute();
+
+  // Compare the webform components and don't do anything if it's not needed.
+  $original = node_load($node->nid);
+
+  if ($original->webform['components'] != $node->webform['components']) {
+    module_load_include('inc', 'webform', 'includes/webform.components');
+
+    $original_cids = array_keys($original->webform['components']);
+    $current_cids = array_keys($node->webform['components']);
+
+    $all_cids = $original_cids + $current_cids;
+    $deleted_cids = array_diff($original_cids, $current_cids);
+    $inserted_cids = array_diff($current_cids, $original_cids);
+
+    foreach ($all_cids as $cid) {
+      if (in_array($cid, $inserted_cids)) {
+        webform_component_insert($node->webform['components'][$cid]);
+      }
+      elseif (in_array($cid, $deleted_cids)) {
+        webform_component_delete($node, $original->webform['components'][$cid]);
+      }
+      elseif ($node->webform['components'][$cid] != $original->webform['components'][$cid]) {
+        webform_component_update($node->webform['components'][$cid]);
+      }
+    }
+  }
+
+  // Just delete and re-insert roles if they've changed.
+  if ($original->webform['roles'] != $node->webform['roles']) {
+    db_delete('webform_roles')->condition('nid', $node->nid)->execute();
+    foreach (array_filter($node->webform['roles']) as $rid) {
+      db_insert('webform_roles')->fields(array('nid' => $node->nid, 'rid' => $rid))->execute();
+    }
+  }
 }
 
 /**
