@@ -130,14 +130,6 @@ function webform_admin_settings() {
     '#description' => t('By default, the configuration form for each webform allows the administrator to choose which roles may submit the form. You may want to allow users to always submit the form if you are using a separate node access module to control access to webform nodes themselves.'),
   );
 
-  $form['advanced']['webform_debug']  = array(
-    '#type' => 'select',
-    '#title' => t('Webforms debug'),
-    '#default_value' => variable_get('webform_debug', 0),
-    '#options' => array(0 => t('Off'), 1 => t('Log submissions'), 2 => t('Full debug')),
-    '#description' => t('Set to "Log submissions" to log all submissions in the watchdog. Set to "Full debug" to print debug info on submission.')
-  );
-
   $form = system_settings_form($form);
   $form['#theme'] = 'webform_admin_settings';
   $form['#submit'][] = 'webform_admin_settings_submit';

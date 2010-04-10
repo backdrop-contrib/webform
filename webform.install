@@ -353,7 +353,6 @@ function webform_install() {
 function webform_uninstall() {
   // Unset webform variables.
   variable_del('webform_use_cookies');
-  variable_del('webform_debug');
   variable_del('webform_enable_fieldset');
   variable_del('webform_default_from_address');
   variable_del('webform_default_from_name');

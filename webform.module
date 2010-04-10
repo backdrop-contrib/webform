@@ -1932,26 +1932,9 @@ function webform_client_form_submit($form, &$form_state) {
           'submission' => $submission,
         );
         drupal_mail('webform', 'submission', $address, $language, $mail_params, $email['from']);
-  
-        // Debugging output for email.
-        if (variable_get('webform_debug', 0) >= 2) {
-          drupal_set_message('E-mail Headers: <pre>' . check_plain(print_r($headers, TRUE)) . '</pre>To: ' . check_plain($address) . '<br />From: ' . check_plain($email['from']) . '<br />Subject: ' . check_plain($email['subject']) . '<br />E-mail Body: <pre>' . check_plain($email['message']) . '</pre>');
-        }
       }
 
     }
-  }
-
-  // More debugging output.
-  if (variable_get('webform_debug', 0) >= 2) {
-    drupal_set_message('$form_state is: <pre>' . htmlentities(print_r($form_state, TRUE)) . '</pre>');
-    drupal_set_message('$_SERVER is: <pre>' . htmlentities(print_r($_SERVER, TRUE)) . '</pre>');
-    drupal_set_message('$_POST is: <pre>' . htmlentities(print_r($_POST, TRUE)) . '</pre>');
-  }
-
-  // Log to watchdog if normal debug is on.
-  if (variable_get('webform_debug', 0) >= 1) {
-    watchdog('webform', 'Submission posted to %title. <a href="!url">Results</a>. !details', array('%title' => $node->title, '!url' => url('node/' . $node->nid . '/submission/' . $sid), '!results' => "<br />\n<pre>" . htmlentities(print_r($form_state['values'], TRUE)) . '</pre>'));
   }
 
   // Strip out empty tags added by WYSIWYG editors if needed.
