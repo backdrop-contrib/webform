@@ -14,8 +14,8 @@ function webform_configure_form($form, &$form_state, $node) {
   $path = drupal_get_path('module', 'webform');
   $form = array(
     '#attached' =>  array(
-      'css' => array($path . '/webform.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
-      'js' => array($path . '/webform.js' => array('preprocess' => FALSE)),
+      'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
+      'js' => array($path . '/js/webform-admin.js' => array('preprocess' => FALSE)),
     ),
   );
 

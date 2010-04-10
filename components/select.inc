@@ -50,7 +50,7 @@ function _webform_edit_select($component) {
   $form = array(
     '#attached' => array(
       'js' => array(
-        drupal_get_path('module', 'webform') . '/components/select.js' => array('preprocess' => FALSE),
+        drupal_get_path('module', 'webform') . '/js/select-admin.js' => array('preprocess' => FALSE),
         array('data' => array('webform' => array('selectOptionsUrl' => url('webform/ajax/options/' . $component['nid']))), 'type' => 'setting'),
       ),
     ),

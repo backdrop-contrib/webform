@@ -13,7 +13,7 @@
  * - $submission_information: The next submission ID.
  */
 
-drupal_add_css(drupal_get_path('module', 'webform') .'/webform.css', 'theme', 'all', FALSE);
+drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', array('weight' => CSS_THEME, 'preprocess' => FALSE));
 ?>
 
 <?php print $submission_navigation; ?>

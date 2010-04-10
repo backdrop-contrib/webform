@@ -134,8 +134,8 @@ function theme_webform_components_form($variables) {
 
   $path = drupal_get_path('module', 'webform');
   $form['components']['#attached'] =  array(
-    'css' => array($path . '/webform.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
-    'js' => array($path . '/webform.js' => array('preprocess' => FALSE)),
+    'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
+    'js' => array($path . '/js/webform-admin.js' => array('preprocess' => FALSE)),
   );
 
   // TODO: Attach these. See http://drupal.org/node/732022.
@@ -319,7 +319,7 @@ function webform_components_form_submit($form, &$form_state) {
 
 function webform_component_edit_form($form, $form_state, $node, $component, $clone = FALSE) {
   drupal_set_title(t('Edit component: @name', array('@name' => $component['name'])), PASS_THROUGH);
-  drupal_add_css(drupal_get_path('module', 'webform') . '/webform.css', 'theme', 'all', FALSE);
+  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', array('weight' => CSS_THEME, 'preprocess' => FALSE));
 
   // Print the correct field type specification.
   // We always need: name and description.
@@ -866,6 +866,12 @@ function webform_component_select($element) {
   $element['#type'] = 'markup';
   $element['#theme_wrappers'] = array();
   $element['#theme'] = 'webform_component_select';
+  $element['#attached'] = array(
+    'js' => array(
+      'misc/tableselect.js' => array('preprocess' => FALSE),
+      drupal_get_path('module', 'webform') . '/js/webform-admin.js' => array('preprocess' => FALSE),
+    ),
+  );
 
   return $element;
 }
@@ -875,8 +881,6 @@ function webform_component_select($element) {
  */
 function theme_webform_component_select($variables) {
   $element = $variables['element'];
-  drupal_add_js('misc/tableselect.js');
-  drupal_add_js(drupal_get_path('module', 'webform') . '/webform.js', 'module', 'header', FALSE, TRUE, FALSE);
 
   $rows = array();
   $header = array();

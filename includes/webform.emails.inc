@@ -17,8 +17,8 @@ function webform_emails_form($form, $form_state, $node) {
     '#tree' => TRUE,
     '#node' => $node,
     '#attached' =>  array(
-      'css' => array($path . '/webform.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
-      'js' => array($path . '/webform.js' => array('preprocess' => FALSE)),
+      'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
+      'js' => array($path . '/js/webform-admin.js' => array('preprocess' => FALSE)),
     ),
     'components' => array(),
   );
@@ -170,8 +170,8 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
   $form = array(
     '#tree' => TRUE,
     '#attached' =>  array(
-      'css' => array($path . '/webform.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
-      'js' => array($path . '/webform.js' => array('preprocess' => FALSE)),
+      'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
+      'js' => array($path . '/js/webform-admin.js' => array('preprocess' => FALSE)),
     ),
   );
   $form['node'] = array(
