@@ -1354,6 +1354,12 @@ function webform_mail($key, &$message, $params) {
 function webform_client_form($form, $form_state, $node, $submission, $is_draft = FALSE, $filter = TRUE) {
   global $user;
 
+  // Attach necessary JavaScript and CSS.
+  $form['#attached'] = array(
+    'css' => array(drupal_get_path('module', 'webform') . '/css/webform.css'),
+    'js' => array(drupal_get_path('module', 'webform') . '/js/webform.js'),
+  );
+
   // Add a theme function for this form.
   $form['#theme'] = array('webform_form_' . $node->nid, 'webform_form');
 

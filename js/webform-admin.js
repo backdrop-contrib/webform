@@ -17,7 +17,7 @@ Drupal.behaviors.webform.attach = function(context) {
   Drupal.webform.tableSelectIndentation(context);
 }
 
-Drupal.webform = new Object();
+Drupal.webform = Drupal.webform || {};
 
 Drupal.webform.defaultValues = function(context) {
   var $fields = $('.webform-default-value:not(.error)', context);
