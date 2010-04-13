@@ -20,8 +20,8 @@ function _webform_defaults_date() {
     'email' => 1,
     'extra' => array(
       'timezone' => 'user',
-      'year_start' => '1900',
-      'year_end' => '2050',
+      'year_start' => '-2',
+      'year_end' => '+2',
       'year_textfield' => 0,
       'datepicker' => 1,
       'description' => '',
@@ -92,8 +92,8 @@ function _webform_edit_date($component) {
   $form['validation']['year_start'] = array(
     '#type' => 'textfield',
     '#title' => t('Start year'),
-    '#default_value' => empty($component['extra']['year_start']) ? '1900' : $component['extra']['year_start'],
-    '#description' => t('The first year that is allowed to be entered.'),
+    '#default_value' => $component['extra']['year_start'],
+    '#description' => t('The first year that is allowed to be entered. May be relative (i.e. -2 or +2) or simply the year (i.e. 1950).'),
     '#size' => 10,
     '#maxlength' => 4,
     '#weight' => 3,
@@ -102,8 +102,8 @@ function _webform_edit_date($component) {
   $form['validation']['year_end'] = array(
     '#type' => 'textfield',
     '#title' => t('End year'),
-    '#default_value' => empty($component['extra']['year_end']) ? '2050' : $component['extra']['year_end'],
-    '#description' => t('The last year that is allowed to be entered.'),
+    '#default_value' => $component['extra']['year_end'],
+    '#description' => t('The last year that is allowed to be entered.  May be relative (i.e. -2 or +2) or simply the year (i.e. 1950).'),
     '#size' => 10,
     '#maxlength' => 4,
     '#weight' => 4,
@@ -166,17 +166,8 @@ function webform_expand_date($element) {
   }
   // Or, if none, use set the defaults of the component.
   elseif (drupal_strlen($component['value']) > 0) {
-    // Adjust the time based on the user or site timezone.
-    if (variable_get('configurable_timezones', 1) && $component['extra']['timezone'] == 'user') {
-      $timezone_name = isset($GLOBALS['user']->timezone) ? $GLOBALS['user']->timezone : 'UTC';
-    }
-    else {
-      $timezone_name = variable_get('date_default_timezone', 'UTC');
-    }
-
-    $timezone = new DateTimeZone($timezone_name);
-    $datetime = new DateTime($component['value'], $timezone);
-    $default_values = webform_date_array($datetime->format('c'), 'date');
+    $timezone = $component['extra']['timezone'] != 'user' ? NULL : 'user';
+    $default_values = webform_date_array(webform_strtodate('c', $component['value'], $timezone), 'date');
   }
   else {
     $default_values = array(
@@ -205,6 +196,15 @@ function webform_expand_date($element) {
     unset($element[$type]['#value']);
     $element[$type]['#default_value'] = isset($default_values[$type]) ? $default_values[$type] : NULL;
     $element[$type]['#options'] = array('' => $none) + $element[$type]['#options'];
+  }
+
+  // Convert relative dates to absolute ones.
+  foreach (array('year_start', 'year_end') as $start_end) {
+    $year = $element['#' . $start_end];
+    if (strpos($year, '-') === 0 || strpos($year, '+') === 0) {
+      $timezone = $component['extra']['timezone'] != 'user' ? NULL : 'user';
+      $element['#' . $start_end] = webform_strtodate('Y', $year . ' years', $timezone);
+    }
   }
 
   // Tweak the year field.
@@ -514,6 +514,28 @@ function webform_date_format($size = 'medium') {
     }
 
     return $date_format;
+}
+
+/**
+ * Return a date in the format specied taking into consideration user timezones.
+ */
+function webform_strtodate($format, $string, $timezone_name = NULL) {
+  // Adjust the time based on the user or site timezone.
+  if (variable_get('configurable_timezones', 1) && $timezone_name == 'user') {
+    $timezone_name = isset($GLOBALS['user']->timezone) ? $GLOBALS['user']->timezone : 'UTC';
+  }
+  else {
+    $timezone_name = variable_get('date_default_timezone', 'UTC');
+  }
+
+  if (!empty($timezone_name) && class_exists('DateTimeZone')) {
+    $timezone = new DateTimeZone($timezone_name);
+    $datetime = new DateTime($string, $timezone);
+    return $datetime->format($format);
+  }
+  else {
+    return date($format, strtotime($string));
+  }
 }
 
 /**
