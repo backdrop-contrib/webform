@@ -873,6 +873,7 @@ function webform_node_insert($node) {
   // Insert the components into the database. Used with clone.module.
   if (isset($node->webform['components']) && !empty($node->webform['components'])) {
     foreach ($node->webform['components'] as $cid => $component) {
+      $component['nid'] = $node->nid; // Required for clone.module.
       webform_component_insert($component);
     }
   }
