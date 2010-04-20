@@ -467,7 +467,7 @@ function _webform_submission_limit_check($node) {
     $query->condition('uid', $user->uid);
   }
   else {
-    $query->condition('remote_addr', ip_address);
+    $query->condition('remote_addr', ip_address());
   }
 
   // Fetch all the entries from the database within the submit interval with this username and IP.
