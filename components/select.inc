@@ -701,9 +701,8 @@ function webform_select_options_ajax($source_name = '') {
     'options' => $options,
   );
 
-  return drupal_json_output($return);
+  drupal_json_output($return);
 }
-
 
 /**
  * Generate a list of options for a select list.

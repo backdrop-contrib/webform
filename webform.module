@@ -203,7 +203,6 @@ function webform_menu() {
     'access arguments' => array('update', 3),
     'file' => 'components/select.inc',
     'type' => MENU_CALLBACK,
-    'delivery callback' => 'ajax_deliver',
   );
 
   // Node webform results.
