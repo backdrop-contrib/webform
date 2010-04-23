@@ -2519,16 +2519,13 @@ function theme_webform_token_help($variables) {
   );
 
   $special_tokens = array(
+    '%profile[' . t('key') . ']',
     '%server[' . t('key') . ']',
     '%session[' . t('key') . ']',
     '%get[' . t('key') . ']',
     '%post[' . t('key') . ']',
     '%request[' . t('key') . ']',
   );
-
-  if (module_exists('profile')) {
-    $special_tokens[] = '%profile[' . t('key') . ']';
-  }
 
   if (isset($node)) {
     $submission_tokens = array(
