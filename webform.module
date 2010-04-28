@@ -1999,6 +1999,9 @@ function webform_client_form_submit($form, &$form_state) {
   $confirmation = strlen(trim(strip_tags($node->webform['confirmation']))) ? $node->webform['confirmation'] : '';
   $redirect_url = trim($node->webform['redirect_url']);
 
+  // Remove the domain name from the redirect.
+  $redirect_url = preg_replace('/^' . preg_quote($GLOBALS['base_url'], '/') . '\//', '', $redirect_url);
+
   // Check confirmation and redirect_url fields.
   $message = NULL;
   $external_url = FALSE;
