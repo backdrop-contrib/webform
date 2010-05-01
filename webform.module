@@ -2461,8 +2461,8 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
 /**
  * Filters all special tokens provided by webform, and allows basic layout in descriptions.
  */
-function _webform_filter_descriptions($string, $node = NULL, $submission = NULL, $strict = TRUE) {
-  return strlen($string) == 0 ? '' : check_markup(_webform_filter_values($string, $node, $submission, NULL, $strict));
+function _webform_filter_descriptions($string, $node = NULL, $submission = NULL) {
+  return strlen($string) == 0 ? '' : check_markup(_webform_filter_values($string, $node, $submission, NULL, FALSE));
 }
 
 /**
