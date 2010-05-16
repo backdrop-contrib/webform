@@ -162,12 +162,15 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
   foreach ($questions as $key => $question) {
     if ($question != '') {
       $element[$key] = array(
-        '#title'         => $question,
-        '#required'      => $component['mandatory'],
-        '#options'       => $options,
-        '#type'          => 'radios',
-        '#process'       => array('form_process_radios', 'webform_expand_select_ids'),
-        '#validated'     => TRUE, // Webform handles validation separately.
+        '#title' => $question,
+        '#required' => $component['mandatory'],
+        '#options' => $options,
+        '#type' => 'radios',
+        '#process' => array('form_process_radios', 'webform_expand_select_ids'),
+
+        // Webform handles validation manually.
+        '#validated' => TRUE,
+        '#webform_validated' => FALSE,
       );
     }
   }
