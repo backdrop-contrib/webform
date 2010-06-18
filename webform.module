@@ -1050,7 +1050,7 @@ function webform_node_prepare_translation(&$node) {
 /**
  * Implementation of hook_node_load().
  */
-function webform_node_load(&$nodes, $types) {
+function webform_node_load($nodes, $types) {
   module_load_include('inc', 'webform', 'includes/webform.components');
 
   // Quick check to see if we need to do anything at all for these nodes.
@@ -1168,7 +1168,7 @@ function webform_form_submit($form, &$form_state) {
 /**
  * Implementation of hook_node_view().
  */
-function webform_node_view(&$node, $view_mode) {
+function webform_node_view($node, $view_mode) {
   global $user;
 
   if (!in_array($node->type, webform_variable_get('webform_node_types'))) {
