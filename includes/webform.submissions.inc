@@ -300,7 +300,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
       $pager_query->condition($column, $value);
     }
 
-    if (isset($filters['uid']) && $filters['uid'] === 0) {
+    if (isset($filters['uid']) && $filters['uid'] === 0&& isset($_SESSION['webform_submission'])) {
       $anonymous_sids = array_keys($_SESSION['webform_submission']);
       if (count($anonymous_sids)) {
         $pager_query->condition('sid', $anonymous_sids, 'IN');
