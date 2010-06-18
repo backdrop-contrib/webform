@@ -694,7 +694,7 @@ function webform_component_update($component) {
       'form_key' => $component['form_key'],
       'name' => $component['name'],
       'type' => $component['type'],
-      'value' => $component['value'],
+      'value' => isset($component['value']) ? $component['value'] : '',
       'extra' => serialize($component['extra']),
       'mandatory' => $component['mandatory'],
       'weight' => $component['weight']
