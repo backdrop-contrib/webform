@@ -1037,6 +1037,17 @@ function webform_node_prepare($node) {
 }
 
 /**
+ * Implementation of hook_node_prepare_translation().
+ */
+function webform_node_prepare_translation(&$node) {
+  // Copy all Webform settings over to translated versions of this node.
+  if (isset($node->translation_source)) {
+    $source_node = node_load($node->translation_source->nid);
+    $node->webform = $source_node->webform;
+  }
+}
+
+/**
  * Implementation of hook_node_load().
  */
 function webform_node_load(&$nodes, $types) {
