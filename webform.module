@@ -2069,7 +2069,7 @@ function webform_client_form_submit($form, &$form_state) {
     $redirect = NULL;
     $message = t('Draft saved');
   }
-  elseif (isset($form_state['values']['submission'])) {
+  elseif (!empty($form_state['values']['details']['finished'])) {
     $redirect = NULL;
     $message = t('Submission updated.');
   }
