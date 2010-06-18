@@ -257,6 +257,13 @@ function webform_submission_render($node, $submission, $email, $format) {
   $page_count = 1;
   $excluded_components = isset($email) ? $email['excluded_components'] : array();
 
+  // Meta data that may be useful for modules implementing
+  // hook_webform_submission_render_alter().
+  $renderable['#node'] = $node;
+  $renderable['#submission'] = $submission;
+  $renderable['#email'] = $email;
+  $renderable['#format'] = $format;
+
   _webform_components_tree_build($node->webform['components'], $component_tree, 0, $page_count);
 
   // Recursively add components to the form.
@@ -266,6 +273,7 @@ function webform_submission_render($node, $submission, $email, $format) {
     }
   }
 
+  drupal_alter('webform_submission_render', $renderable);
   return drupal_render($renderable);
 }
 
