@@ -1462,6 +1462,14 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
       '#type' => 'value',
       '#value' => isset($submission->uid) ? $submission->uid : $user->uid,
     );
+    $form['details']['page_num'] = array(
+      '#type'  => 'hidden',
+      '#value' => $page_num,
+    );
+    $form['details']['page_count'] = array(
+      '#type'  => 'hidden',
+      '#value' => $page_count,
+    );
     $form['details']['finished'] = array(
       '#type' => 'hidden',
       '#value' => isset($submission->is_draft) ? (!$submission->is_draft) : 0,
