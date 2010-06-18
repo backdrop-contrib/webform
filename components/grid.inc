@@ -276,6 +276,7 @@ function _webform_analysis_grid($component, $sids = array()) {
     ->condition('data', '', '<>')
     ->groupBy('no')
     ->groupBy('data');
+  $query->addExpression('COUNT(sid)', 'datacount');
 
   if (count($sids)) {
     $query->condition('sid', $sids, 'IN');
