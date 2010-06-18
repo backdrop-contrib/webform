@@ -1407,6 +1407,12 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
     'js' => array(drupal_get_path('module', 'webform') . '/js/webform.js'),
   );
 
+  // Bind arguments to $form to make them available in theming and form_alter.
+  $form['#node'] = $node;
+  $form['#submission'] = $submission;
+  $form['#is_draft'] = $is_draft;
+  $form['#filter'] = $filter;
+
   // Add a theme function for this form.
   $form['#theme'] = array('webform_form_' . $node->nid, 'webform_form');
 
