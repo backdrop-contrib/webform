@@ -2731,11 +2731,23 @@ function webform_format_email_subject($subject, $node = NULL, $submission = NULL
     $subject = webform_variable_get('webform_default_subject');
   }
   elseif (is_numeric($subject) && isset($node->webform['components'][$subject])) {
+    $component = $node->webform['components'][$subject];
     if (isset($submission->data[$subject]['value'])) {
-      $subject = $submission->data[$subject]['value'];
+      $display_function = '_webform_display_' . $component['name'];
+      $value = $submission->data[$subject]['value'];
+
+      // Convert the value to a clean text representation if possible.
+      if (function_exists($display_function)) {
+        $display = $display_function($component, $value, 'text');
+        $display['#theme_wrappers'] = array();
+        $subject = str_replace("\n", ' ', drupal_render($display));
+      }
+      else {
+        $subject = $value;
+      }
     }
     else {
-      $subject = t('Value of "!component"', array('!component' => $node->webform['components'][$subject]['name']));
+      $subject = t('Value of "!component"', array('!component' => $component['name']));
     }
   }
 
