@@ -34,7 +34,7 @@ function _webform_defaults_grid() {
 
 
 /**
- * Implementation of _webform_help_grid().
+ * Implementation of _webform_theme_component().
  */
 function _webform_theme_grid() {
   return array(
