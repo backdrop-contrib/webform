@@ -552,7 +552,8 @@ function webform_results_download($node, $format = 'delimiter', $options = array
       $component = $node->webform['components'][$cid];
 
       // Let each component determine its headers.
-      if ($component_header = webform_component_invoke($component['type'], 'csv_headers', $component, $options)) {
+      if (webform_component_feature($component['type'], 'csv')) {
+        $component_header = (array) webform_component_invoke($component['type'], 'csv_headers', $component, $options);
         $header[0] = array_merge($header[0], (array) $component_header[0]);
         $header[1] = array_merge($header[1], (array) $component_header[1]);
         $header[2] = array_merge($header[2], (array) $component_header[2]);
@@ -598,13 +599,13 @@ function webform_results_download($node, $format = 'delimiter', $options = array
         $component = $node->webform['components'][$cid];
         // Let each component add its data.
         $raw_data = isset($submission->data[$cid]['value']) ? $submission->data[$cid]['value'] : NULL;
-        $data = webform_component_invoke($component['type'], 'csv_data', $component, $options, $raw_data);
-        if ($data !== NULL) {
+        if (webform_component_feature($component['type'], 'csv')) {
+          $data = webform_component_invoke($component['type'], 'csv_data', $component, $options, $raw_data);
           if (is_array($data)) {
             $row = array_merge($row, array_values($data));
           }
           else {
-            $row[] = $data;
+            $row[] = empty($data) ? '' : $data;
           }
         }
       }
