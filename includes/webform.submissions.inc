@@ -269,7 +269,7 @@ function webform_submission_render($node, $submission, $email, $format) {
   // Recursively add components to the form.
   foreach ($component_tree['children'] as $cid => $component) {
     if (!in_array($cid, $excluded_components) && _webform_client_form_rule_check($node, $component, $component['page_num'], NULL, $submission)) {
-      _webform_client_form_add_component($component, NULL, $renderable, $renderable, $submission, $format);
+      _webform_client_form_add_component($node, $component, NULL, $renderable, $renderable, NULL, $submission, $format);
     }
   }
 

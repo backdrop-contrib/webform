@@ -1464,7 +1464,7 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
     foreach ($component_tree['children'] as $cid => $component) {
       $component_value = isset($form_state['values']['submitted'][$component['form_key']]) ? $form_state['values']['submitted'][$component['form_key']] : NULL;
       if (_webform_client_form_rule_check($node, $component, $page_num, $form_state)) {
-        _webform_client_form_add_component($component, $component_value, $form['submitted'], $form, $submission, 'form', $page_num, $filter);
+        _webform_client_form_add_component($node, $component, $component_value, $form['submitted'], $form, $form_state, $submission, 'form', $page_num, $filter);
       }
     }
 
@@ -1579,7 +1579,7 @@ function _webform_client_form_rule_check($node, $component, $page_num, $form_sta
 
   // Check the individual component rules.
   $show_component = $show_parent;
-  if ($show_component && $component['page_num'] == $page_num && $conditional_component && strlen(trim($conditional_values))) {
+  if ($show_component && ($page_num == 0 || $component['page_num'] == $page_num) && $conditional_component && strlen(trim($conditional_values))) {
     $input_values = array();
     if (isset($form_state)) {
       $parents = webform_component_parent_keys($node, $conditional_component);
@@ -1649,7 +1649,7 @@ function _webform_client_form_rule_check($node, $component, $page_num, $form_sta
  * @see webform_client_form
  * @see webform_submission_render
  */
-function _webform_client_form_add_component($component, $component_value, &$parent_fieldset, &$form, $submission, $format = 'form', $page_num = 0, $filter = TRUE) {
+function _webform_client_form_add_component($node, $component, $component_value, &$parent_fieldset, &$form, $form_state, $submission, $format = 'form', $page_num = 0, $filter = TRUE) {
   $cid = $component['cid'];
 
   // Load with submission information if necessary.
@@ -1703,7 +1703,9 @@ function _webform_client_form_add_component($component, $component_value, &$pare
   if (isset($component['children']) && is_array($component['children'])) {
     foreach ($component['children'] as $scid => $subcomponent) {
       $subcomponent_value = isset($component_value[$subcomponent['form_key']]) ? $component_value[$subcomponent['form_key']] : NULL;
-      _webform_client_form_add_component($subcomponent, $subcomponent_value, $parent_fieldset[$component['form_key']], $form, $submission, $format, $page_num, $filter);
+      if (_webform_client_form_rule_check($node, $subcomponent, $page_num, $form_state, $submission)) {
+        _webform_client_form_add_component($node, $subcomponent, $subcomponent_value, $parent_fieldset[$component['form_key']], $form, $form_state, $submission, $format, $page_num, $filter);
+      }
     }
   }
 }
