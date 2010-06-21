@@ -2735,7 +2735,7 @@ function webform_format_email_subject($subject, $node = NULL, $submission = NULL
   elseif (is_numeric($subject) && isset($node->webform['components'][$subject])) {
     $component = $node->webform['components'][$subject];
     if (isset($submission->data[$subject]['value'])) {
-      $display_function = '_webform_display_' . $component['name'];
+      $display_function = '_webform_display_' . $component['type'];
       $value = $submission->data[$subject]['value'];
 
       // Convert the value to a clean text representation if possible.
