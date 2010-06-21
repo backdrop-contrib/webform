@@ -188,9 +188,8 @@ function webform_admin_content() {
 
   $nodes = array();
   if ($webform_types) {
-    $placeholders = implode(', ', array_fill(0, count($webform_types), "'%s'"));
     $nodes = db_select('node', 'n')
-      ->innerJoin('node_revisions', 'r', '=', array('n.vid', 'r.vid'))
+      ->fields('n')
       ->condition('n.type', $webform_types, 'IN')
       ->execute()
       ->fetchAllAssoc('nid');
