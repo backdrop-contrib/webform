@@ -524,7 +524,7 @@ function webform_strtodate($format, $string, $timezone_name = NULL) {
   if (variable_get('configurable_timezones', 1) && $timezone_name == 'user') {
     $timezone_name = isset($GLOBALS['user']->timezone) ? $GLOBALS['user']->timezone : 'UTC';
   }
-  else {
+  elseif (empty($timezone_name) || $timezone_name == 'user') {
     $timezone_name = variable_get('date_default_timezone', 'UTC');
   }
 
