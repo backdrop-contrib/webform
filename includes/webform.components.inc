@@ -734,13 +734,14 @@ function webform_component_delete($node, $component) {
     ->execute();
 
   // Delete all elements under this element.
-  $result = db_delete('webform_component')
+  $result = db_select('webform_component', 'c')
+    ->fields('c')
     ->condition('nid', $node->nid)
-    ->condition('cid', $component['cid'])
+    ->condition('pid', $component['cid'])
     ->execute();
   foreach ($result as $row) {
-    $component = $node->webform['components'][$row->cid];
-    webform_component_delete($node, $component);
+    $child_component = $node->webform['components'][$row->cid];
+    webform_component_delete($node, $child_component);
   }
 
   // Post-delete actions.
