@@ -901,21 +901,8 @@ function webform_node_update($node) {
     return;
   }
 
-  // Check if there is an existing entry at all for this node.
-  $exists = db_select('webform')
-    ->fields('webform', array('nid'))
-    ->condition('nid', $node->nid)
-    ->execute()
-    ->fetchField();
-
-  // If a webform row doesn't even exist, we can assume it needs to be inserted.
-  if (!$exists) {
-    webform_node_insert($node);
-    return;
-  }
-
   // Update the webform entry.
-  db_update('webform')
+  db_merge('webform')
     ->fields(array(
       'confirmation' => $node->webform['confirmation'],
       'confirmation_format' => $node->webform['confirmation_format'],
@@ -927,7 +914,7 @@ function webform_node_update($node) {
       'submit_limit' => $node->webform['submit_limit'],
       'submit_interval' => $node->webform['submit_interval'],
     ))
-    ->condition('nid', $node->nid)
+    ->key(array('nid' => $node->nid))
     ->execute();
 
   // Compare the webform components and don't do anything if it's not needed.
@@ -1015,25 +1002,32 @@ function webform_node_delete($node) {
 }
 
 /**
+ * Default settings for a newly created webform node.
+ */
+function webform_node_defaults() {
+  return array(
+    'confirmation' => '',
+    'confirmation_format' => filter_default_format(),
+    'redirect_url' => '',
+    'teaser' => 0,
+    'allow_draft' => 0,
+    'submit_notice' => 0,
+    'submit_text' => '',
+    'submit_limit' => -1,
+    'submit_interval' => -1,
+    'roles' => array(1, 2),
+    'emails' => array(),
+    'components' => array(),
+  );
+}
+
+/**
  * Implementation of hook_node_prepare().
  */
 function webform_node_prepare($node) {
   $webform_types = webform_variable_get('webform_node_types');
   if (in_array($node->type, $webform_types) && !isset($node->webform)) {
-    $node->webform = array(
-      'confirmation' => '',
-      'confirmation_format' => filter_default_format(),
-      'redirect_url' => '',
-      'teaser' => 0,
-      'allow_draft' => 0,
-      'submit_notice' => 0,
-      'submit_text' => '',
-      'submit_limit' => -1,
-      'submit_interval' => -1,
-      'roles' => array(1, 2),
-      'emails' => array(),
-      'components' => array(),
-    );
+    $node->webform = webform_node_defaults();
   }
 }
 
@@ -1060,13 +1054,6 @@ function webform_node_load($nodes, $types) {
     return;
   }
 
-  // Load defaults for all nodes that are webforms.
-  foreach ($nodes as $nid => $node) {
-    if (in_array($node->type, $webform_types)) {
-      webform_node_prepare($nodes[$nid]);
-    }
-  }
-
   // Select all webforms that match these node IDs.
   $result = db_select('webform')
     ->fields('webform')
@@ -1077,6 +1064,19 @@ function webform_node_load($nodes, $types) {
   foreach ($result as $nid => $webform) {
     // Load the basic information for each node.
     $nodes[$nid]->webform = $webform;
+  }
+
+  // Load the components, emails, and defaults for all webform-enabled nodes.
+  // TODO: Increase efficiency here by pulling in all information all at once
+  // instead of individual queries.
+  foreach ($nodes as $nid => $node) {
+    if (!in_array($node->type, $webform_types)) {
+      continue;
+    }
+
+    // Load defaults if a record was not in the database.
+    $nodes[$nid]->webform = isset($nodes[$nid]->webform) ? $nodes[$nid]->webform : webform_node_defaults();
+
     $nodes[$nid]->webform['roles'] = db_select('webform_roles')
       ->fields('webform_roles', array('rid'))
       ->condition('nid', $nid)
