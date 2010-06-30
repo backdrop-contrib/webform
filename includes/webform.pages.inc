@@ -188,8 +188,8 @@ function webform_configure_form_submit($form, &$form_state) {
   $node = node_load($form_state['values']['nid']);
 
   // Save the confirmation.
-  $node->webform['confirmation'] = $form_state['values']['confirmation'];
-  $node->webform['confirmation_format'] = $form_state['values']['format'];
+  $node->webform['confirmation'] = $form_state['values']['confirmation']['value'];
+  $node->webform['confirmation_format'] = $form_state['values']['confirmation']['format'];
 
   // Save the redirect URL
   $node->webform['redirect_url'] = $form_state['values']['redirect_url'];
