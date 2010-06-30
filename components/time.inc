@@ -247,7 +247,7 @@ function _webform_display_time($component, $value, $format = 'html') {
 function theme_webform_display_time($variables) {
   $element = $variables['element'];
   $output = ' ';
-  if ($element['#value']['hour'] && $element['#value']['minute']) {
+  if (isset($element['#value']['hour']) && isset($element['#value']['minute'])) {
     if ($element['#hourformat'] == '24-hour') {
       $output = sprintf('%02d', $element['#value']['hour']) . ':' . sprintf('%02d', $element['#value']['minute']);
     }
