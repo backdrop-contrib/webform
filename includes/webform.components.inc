@@ -810,7 +810,7 @@ function webform_component_list($node, $component_filter = NULL, $indent = TRUE,
   $feature = is_string($component_filter) ? $component_filter : NULL;
 
   foreach ($components as $cid => $component) {
-    if (!isset($feature) || webform_component_feature($component['type'], $feature)) {
+    if (!isset($feature) || webform_component_feature($component['type'], $feature) || ($indent && webform_component_feature($component['type'], 'group'))) {
       $prefix = '';
       $page_num = $component['page_num'];
       if ($indent && ($parent_count = count(webform_component_parent_keys($node, $component)) - 1)) {

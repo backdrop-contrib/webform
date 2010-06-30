@@ -669,6 +669,7 @@ function webform_webform_component_info() {
       'label' => t('Fieldset'),
       'description' => t('Fieldsets allow you to organize multiple fields into groups.'),
       'features' => array(
+        'csv' => FALSE,
         'required' => FALSE,
         'conditional' => FALSE,
         'group' => TRUE,
