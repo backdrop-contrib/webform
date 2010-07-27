@@ -387,6 +387,7 @@ function webform_results_download_form($form, &$form_state, $node) {
     'serial' => '-' . t('Submission Number'),
     'sid' => '-' . t('Submission ID'),
     'time' => '-' . t('Time'),
+    'draft' => '-' . t('Draft'),
     'ip_address' => '-' . t('IP Address'),
     'uid' => '-' . t('User ID'),
     'username' => '-' . t('Username'),
@@ -509,6 +510,7 @@ function webform_results_download($node, $format = 'delimiter', $options = array
     'serial' => t('Serial'),
     'sid' => t('SID'),
     'time' => t('Time'),
+    'draft' => t('Draft'),
     'ip_address' => t('IP Address'),
     'uid' => t('UID'),
     'username' => t('Username'),
@@ -583,6 +585,9 @@ function webform_results_download($node, $format = 'delimiter', $options = array
     }
     if (isset($submission_information['time'])) {
       $row[] = format_date($submission->submitted, 'small');
+    }
+    if (isset($submission_information['draft'])) {
+      $row[] = $submission->is_draft;
     }
     if (isset($submission_information['ip_address'])) {
       $row[] =  $submission->remote_addr;
