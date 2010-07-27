@@ -49,7 +49,7 @@ function webform_schema() {
          'type' => 'int',
          'size' => 'tiny',
          'not null' => TRUE,
-         'default' => '0',
+         'default' => 0,
       ),
       'submit_notice' => array(
         'description' => 'Boolean value for whether to show or hide the previous submissions notification.',
@@ -253,7 +253,7 @@ function webform_schema() {
          'type' => 'int',
          'size' => 'tiny',
          'not null' => TRUE,
-         'default' => '0',
+         'default' => 0,
       ),
       'submitted' => array(
         'description' => 'Timestamp of when the form was submitted.',
