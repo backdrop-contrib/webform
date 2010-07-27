@@ -1497,10 +1497,8 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
 
     // Add buttons for pages, drafts, and submissions.
     $form['actions'] = array(
-      '#tree' => FALSE,
+      '#type' => 'actions',
       '#weight' => 1000,
-      '#type' => 'container',
-      '#attributes' => array('class' => array('form-actions')),
     );
 
     if ($page_count > 1) {
