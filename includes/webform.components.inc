@@ -814,14 +814,15 @@ function webform_component_list($node, $component_filter = NULL, $indent = TRUE,
     if (!isset($feature) || webform_component_feature($component['type'], $feature) || ($indent && webform_component_feature($component['type'], 'group'))) {
       $prefix = '';
       $page_num = $component['page_num'];
+      $page_index = 'p' . $page_num;
       if ($indent && ($parent_count = count(webform_component_parent_keys($node, $component)) - 1)) {
         $prefix = str_repeat('-', $parent_count);
       }
       if ($optgroups && $component['type'] == 'pagebreak') {
-        $page_names[$page_num] = $component['name'];
+        $page_names[$page_index] = $component['name'];
       }
       elseif ($optgroups && $page_num > 1) {
-        $options[$page_num][$cid] = $prefix . $component['name'];
+        $options[$page_index][$cid] = $prefix . $component['name'];
       }
       else {
         $options[$cid] = $prefix . $component['name'];
