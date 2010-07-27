@@ -2081,8 +2081,9 @@ function webform_client_form_submit($form, &$form_state) {
     $external_url = TRUE;
    }
   elseif ($redirect_url && strpos($redirect_url, 'http') !== 0) {
-    $parts = parse_url($redirect_url);
-    $query = $parts['query'] ? ($parts['query'] . '&sid=' . $sid) : ('sid=' . $sid);
+    $parts = drupal_parse_url($redirect_url);
+    $parts['query'] ? ($parts['query']['sid'] = $sid) : ($parts['query'] = array('sid' => $sid));
+    $query = $parts['query'];
     $redirect = array($parts['path'], array('query' => $query, 'fragment' => $parts['fragment']));
   }
   else {
