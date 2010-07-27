@@ -497,7 +497,7 @@ function _webform_submit_component($component, $value) {
  *
  * @param $component
  *   A Webform component array.
- * @param $data
+ * @param $value
  *   An array of information containing the submission result, directly
  *   correlating to the webform_submitted_data database schema.
  */
