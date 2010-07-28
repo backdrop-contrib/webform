@@ -12,6 +12,8 @@
  * Overview form of all components for this webform.
  */
 function webform_emails_form($form, $form_state, $node) {
+  module_load_include('inc', 'webform', 'includes/webform.components');
+
   $path = drupal_get_path('module', 'webform');
   $form = array(
     '#tree' => TRUE,
@@ -166,6 +168,8 @@ function webform_emails_form_submit($form, &$form_state) {
  * Form for configuring an e-mail setting and template.
  */
 function webform_email_edit_form($form, $form_state, $node, $email = array()) {
+  module_load_include('inc', 'webform', 'includes/webform.components');
+
   $path = drupal_get_path('module', 'webform');
   $form = array(
     '#tree' => TRUE,

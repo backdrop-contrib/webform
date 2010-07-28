@@ -332,6 +332,7 @@ function webform_results_clear_form_submit($form, &$form_state) {
  */
 function webform_results_download_form($form, &$form_state, $node) {
   module_load_include('inc', 'webform', 'includes/webform.export');
+  module_load_include('inc', 'webform', 'includes/webform.components');
 
   $form = array();
 
@@ -505,6 +506,7 @@ function theme_webform_results_download_select_format($variables) {
  */
 function webform_results_download($node, $format = 'delimiter', $options = array()) {
   module_load_include('inc', 'webform', 'includes/webform.export');
+  module_load_include('inc', 'webform', 'includes/webform.components');
 
   $submission_information = array(
     'serial' => t('Serial'),
