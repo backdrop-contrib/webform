@@ -207,7 +207,7 @@ function theme_webform_components_form($variables) {
         l(t('Delete'), 'node/' . $node->nid . '/webform/components/' . $cid . '/delete', array('query' => drupal_get_destination())),
       );
       $row_class = array('draggable');
-      if (!webform_component_feature($component['type'], 'group') && $component['type'] != 'pagebreak') {
+      if (!webform_component_feature($component['type'], 'group')) {
         $row_class[] = 'tabledrag-leaf';
       }
       if ($component['type'] == 'pagebreak') {
