@@ -8,10 +8,11 @@ Webform 2.x Changelog
 - E-mail templates are now editable by administrators.
 - Conditional fields.
 - Webform may now be attached to any content type.
-- Form builder integration for live previews and editing of forms.
 - Public API for allowing other modules to provide components.
 - Public API for interacting with submission save, insert, update, and delete.
 - New rendering capabilities for HTML presentation of submissions and e-mails.
+- Print module support.
+- Basic Views module support.
 
 1.x to 2.0
 ----------
