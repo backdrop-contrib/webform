@@ -2026,6 +2026,7 @@ function webform_client_form_submit($form, &$form_state) {
 
         if (is_array($address)) {
           foreach ($address as $new_address) {
+            $new_address = trim($new_address);
             if (valid_email_address($new_address)) {
               $addresses_final[] = $new_address;
             }
@@ -2692,7 +2693,11 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
   }
   elseif (is_numeric($address) && isset($node->webform['components'][$address])) {
     if (isset($submission->data[$address]['value'])) {
-      $address = $submission->data[$address]['value'];
+      $values = $submission->data[$address]['value'];;
+      $address = array();
+      foreach ($values as $value) {
+        $address = array_merge($address, explode(',', $value));
+      }
     }
     else {
       $address = t('Value of "!component"', array('!component' => $node->webform['components'][$address]['name']));
