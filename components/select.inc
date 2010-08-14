@@ -275,7 +275,7 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
     _webform_shuffle_options($options);
   }
 
-  if ($component['extra']['aslist'] && !$component['extra']['multiple'] && !($component['mandatory'] && !empty($default_value))) {
+  if ($component['extra']['aslist'] && !$component['extra']['multiple'] && !($component['mandatory'] && $default_value !== '')) {
     $options = array('' => t('select...')) + $options;
   }
 
