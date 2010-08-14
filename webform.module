@@ -1409,6 +1409,7 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
     'css' => array(drupal_get_path('module', 'webform') . '/css/webform.css'),
     'js' => array(drupal_get_path('module', 'webform') . '/js/webform.js'),
   );
+  module_load_include('inc', 'webform', 'includes/webform.components');
 
   // Bind arguments to $form to make them available in theming and form_alter.
   $form['#node'] = $node;
@@ -2416,6 +2417,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
 
   // Submission replacements.
   if (isset($submission) && !isset($replacements['submission_set'])) {
+    module_load_include('inc', 'webform', 'includes/webform.components.inc');
     $replacements['submission_set'] = TRUE;
 
     foreach ($submission->data as $cid => $value) {
