@@ -6,8 +6,6 @@
  * This file includes helper functions for creating reports for webform.module
  *
  * @author Nathan Haug <nate@lullabot.com>
- * @author Pontus Ullgren <ullgren@user.sourceforge.net>
- * @copyright Pontus Ullgren 2004
  */
 
 // All functions within this file need the webform.submissions.inc.
