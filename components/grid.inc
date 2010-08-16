@@ -59,7 +59,7 @@ function _webform_edit_grid($component) {
       '#title' => t('Options'),
       '#collapsible' => TRUE,
       '#description' => t('Options to select across the top. Usually these are ratings such as "poor" through "excellent" or "strongly disagree" through "strongly agree".'),
-      '#attributes' => array('class' => 'webform-options-element'),
+      '#attributes' => array('class' => array('webform-options-element')),
       '#element_validate' => array('_webform_edit_validate_options'),
     );
     $form['options']['options'] = array(
@@ -78,7 +78,7 @@ function _webform_edit_grid($component) {
       '#title' => t('Questions'),
       '#collapsible' => TRUE,
       '#description' => t('Questions list down the side of the grid.'),
-      '#attributes' => array('class' => 'webform-options-element'),
+      '#attributes' => array('class' => array('webform-options-element')),
       '#element_validate' => array('_webform_edit_validate_options'),
     );
     $form['questions']['options'] = array(

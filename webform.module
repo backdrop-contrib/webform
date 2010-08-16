@@ -1420,7 +1420,7 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
   $form['#theme'] = array('webform_form_' . $node->nid, 'webform_form');
 
   // Add a css class for all client forms.
-  $form['#attributes'] = array('class' => 'webform-client-form');
+  $form['#attributes'] = array('class' => array('webform-client-form'));
 
   // Set the encoding type (necessary for file uploads).
   $form['#attributes']['enctype'] = 'multipart/form-data';
