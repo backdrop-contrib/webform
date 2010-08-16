@@ -299,12 +299,15 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
       }
     }
   }
-  elseif ($default_value != '') {
+  elseif ($default_value !== '') {
     // Convert default value to a list if necessary.
     if ($component['extra']['multiple']) {
-      $varray = array_filter(explode(',', $default_value));
+      $varray = explode(',', $default_value);
       foreach ($varray as $key => $v) {
-        $element['#default_value'][] = trim($v);
+        $v = trim($v);
+        if ($v !== '') {
+          $element['#default_value'][] = $v;
+        }
       }
     }
     else {
@@ -450,8 +453,9 @@ function _webform_submit_select($component, $value) {
     foreach ($value as $key => $option_value) {
       // Handle options that are specified options.
       if ($option_value !== '' && isset($keys[$key])) {
-        // Checkboxes submit an *integer* value of 0 when not checked.
-        if ($option_value === 0 && $keys[$key] !== '0' && !$component['extra']['aslist'] && $component['extra']['multiple']) {
+        // Checkboxes submit an integer value of 0 when unchecked. A checkbox
+        // with a value of '0' is valid, so we can't use empty() here.
+        if ($option_value === 0 && !$component['extra']['aslist'] && $component['extra']['multiple']) {
           unset($value[$key]);
         }
         else {
