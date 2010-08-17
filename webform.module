@@ -2400,7 +2400,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
 
   // Don't do any filtering if the string is empty.
   if (strlen(trim($string)) == 0) {
-    return;
+    return $string;
   }
 
   // Setup default token replacements.
