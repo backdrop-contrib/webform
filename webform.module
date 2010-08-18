@@ -2719,7 +2719,7 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
     $address = _webform_filter_values($address, $node, $submission, NULL, FALSE, TRUE);
   }
 
-  if ($format == 'long' && isset($name)) {
+  if ($format == 'long' && !empty($name)) {
     $name = _webform_filter_values($name, $node, $submission, NULL, FALSE, TRUE);
     if ($encode) {
       $name = mime_header_encode($name);
