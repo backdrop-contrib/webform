@@ -250,6 +250,7 @@ function theme_webform_date($variables) {
     if ($element['#year_start'] && is_numeric($element['#year_end'])) {
       $calendar_class[] = 'webform-calendar-end-' . $element['#year_end'];
     }
+    $calendar_class[] ='webform-calendar-day-' . variable_get('date_first_day', 0);
 
     $calendar = theme('webform_calendar', array('component' => $element['#webform_component'], 'calendar_classes' => $calendar_class));
   }

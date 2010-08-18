@@ -21,11 +21,13 @@ Drupal.webform.datepicker = function(context) {
     var $calendar = $webformDatepicker.find('input.webform-calendar');
     var startYear = $calendar[0].className.replace(/.*webform-calendar-start-(\d+).*/, '$1');
     var endYear = $calendar[0].className.replace(/.*webform-calendar-end-(\d+).*/, '$1');
+    var firstDay = $calendar[0].className.replace(/.*webform-calendar-day-(\d).*/, '$1');
 
     // Set up the jQuery datepicker element.
     $calendar.datepicker({
       dateFormat: 'yy-mm-dd',
       yearRange: startYear + ':' + endYear,
+      firstDay: firstDay,
       onSelect: function(dateText, inst) {
         var date = dateText.split('-');
         $webformDatepicker.find('select.year, input.year').val(+date[0]);
