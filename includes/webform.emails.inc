@@ -295,8 +295,8 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
   $form['templates']['default'] = array(
     '#type' => 'textarea',
     '#value' => $default_template,
-    '#attributes' => array('style' => 'display: none;'),
     '#resizable' => FALSE,
+    '#weight' => 19,
   );
 
   // Add the submit button.
@@ -343,6 +343,10 @@ function theme_webform_email_edit_form($variables) {
     '#groups' => array('details' => array()),
     '#attributes' => array(),
   );
+
+  // Ensure templates are completely hidden.
+  $form['templates']['#prefix'] = '<div id="webform-email-templates" style="display: none">';
+  $form['templates']['#suffix'] = '</div>';
 
   $form['template']['template']['#description'] .= drupal_render($form['template']['components']);
 

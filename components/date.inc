@@ -238,7 +238,7 @@ function theme_webform_date($variables) {
     $element['day']['#attributes']['class'][] = 'error';
   }
 
-  $class = array('container-inline');
+  $class = array('webform-container-inline');
 
   // Add the JavaScript calendar if available (provided by Date module package).
   if (!empty($element['#datepicker'])) {

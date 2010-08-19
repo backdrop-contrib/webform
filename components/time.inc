@@ -181,7 +181,7 @@ function theme_webform_time($variables) {
     $element['minute']['#attributes']['class'] = array('error');
   }
 
-  $output = '<div class="container-inline">' . drupal_render($element['hour']) . drupal_render($element['minute']) . drupal_render($element['ampm']) . '</div>';
+  $output = '<div class="webform-container-inline">' . drupal_render($element['hour']) . drupal_render($element['minute']) . drupal_render($element['ampm']) . '</div>';
 
   return $output;
 }

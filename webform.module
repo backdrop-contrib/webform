@@ -2309,7 +2309,7 @@ function theme_webform_inline_radio($variables) {
   }
 
   // Add container-inline to all elements.
-  $class[] = 'container-inline';
+  $class[] = 'webform-container-inline';
   if (isset($element['#inline_element'])) {
     $variables['element']['#title'] = $variables['element']['#title'] . ': ';
   }

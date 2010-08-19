@@ -60,6 +60,9 @@ td.webform-pagebreak {
   text-align: center;
   width: 40px;
 }
+.webform-container-inline div {
+  display: inline;
+}
 .webform-default-value {
   color: #999;
 }
