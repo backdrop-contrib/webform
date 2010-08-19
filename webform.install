@@ -199,6 +199,7 @@ function webform_schema() {
         'description' => 'A list of components that will not be included in the %email_values token. A list of CIDs separated by commas.',
         'type' => 'text',
         'not null' => TRUE,
+        'default' => '',
       ),
     ),
     'primary key' => array('nid', 'eid'),
