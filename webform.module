@@ -1376,7 +1376,7 @@ function theme_webform_view_messages($variables) {
 function webform_mail($key, &$message, $params) {
   $message['headers'] = array_merge($message['headers'], $params['headers']);
   $message['subject'] = $params['subject'];
-  $message['body'][] = drupal_wrap_mail($params['message']);
+  $message['body'][] = $params['message'];
 }
 
 /**
