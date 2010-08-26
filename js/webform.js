@@ -23,6 +23,13 @@ Drupal.webform.datepicker = function(context) {
     var endYear = $calendar[0].className.replace(/.*webform-calendar-end-(\d+).*/, '$1');
     var firstDay = $calendar[0].className.replace(/.*webform-calendar-day-(\d).*/, '$1');
 
+    // Ensure that start comes before end for datepicker.
+    if (startYear > endYear) {
+      var greaterYear = startYear;
+      startYear = endYear;
+      endYear = greaterYear;
+    }
+
     // Set up the jQuery datepicker element.
     $calendar.datepicker({
       dateFormat: 'yy-mm-dd',
