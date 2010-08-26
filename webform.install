@@ -29,6 +29,7 @@ function webform_schema() {
       'confirmation_format' => array(
         'description' => 'The input format used by the confirmation message.',
         'type' => 'int',
+        'size' => 'tiny',
         'not null' => TRUE,
         'default' => 0,
       ),
@@ -381,6 +382,13 @@ function webform_uninstall() {
  */
 function webform_update_last_removed() {
   return 6313;
+}
+
+/**
+ * Ensure that the confirmation format column is correctly using size = 'tiny'.
+ */
+function webform_update_7301() {
+  db_change_field('webform', 'confirmation_format', 'confirmation_format', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
 }
 
 /**
