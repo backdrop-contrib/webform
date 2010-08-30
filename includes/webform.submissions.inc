@@ -264,6 +264,9 @@ function webform_submission_render($node, $submission, $email, $format) {
   $renderable['#email'] = $email;
   $renderable['#format'] = $format;
 
+  // Set the theme function for submissions.
+  $renderable['#theme'] = array('webform_submission_' . $node->nid, 'webform_submission');
+
   _webform_components_tree_build($node->webform['components'], $component_tree, 0, $page_count);
 
   // Recursively add components to the form.
@@ -511,7 +514,17 @@ function _webform_submission_limit_check($node) {
 }
 
 /**
- * Preprocess function for webform-submission-navigation.tpl.php
+ * Preprocess function for webform-submission.tpl.php.
+ */
+function template_preprocess_webform_submission(&$vars) {
+  $vars['node'] = $vars['renderable']['#node'];
+  $vars['submission'] = $vars['renderable']['#submission'];
+  $vars['email'] = $vars['renderable']['#email'];
+  $vars['format'] = $vars['renderable']['#format'];
+}
+
+/**
+ * Preprocess function for webform-submission-navigation.tpl.php.
  */
 function template_preprocess_webform_submission_navigation(&$vars) {
   $start_path = ($vars['mode'] == 'print') ? 'print/' : 'node/';
@@ -533,7 +546,7 @@ function template_preprocess_webform_submission_navigation(&$vars) {
 }
 
 /**
- * Preprocess function for webform-submission-navigation.tpl.php
+ * Preprocess function for webform-submission-navigation.tpl.php.
  */
 function template_preprocess_webform_submission_information(&$vars) {
   $vars['account'] = user_load($vars['submission']->uid);
