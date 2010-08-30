@@ -70,6 +70,28 @@ function webform_admin_settings() {
     '#description' => t('The default subject line of any e-mailed results.'),
   );
 
+  $form['email']['webform_default_format']  = array(
+    '#type' => 'radios',
+    '#title' => t('Format'),
+    '#options' => array(
+      0 => t('Plain text'),
+      1 => t('HTML'),
+    ),
+    '#default_value' => variable_get('webform_default_format', 0),
+    '#description' => t('The default format for new e-mail settings. Webform e-mail options take precedence over the settings for system-wide e-mails configured in MIME mail.'),
+  );
+
+  $form['email']['webform_format_override']  = array(
+    '#type' => 'radios',
+    '#title' => t('Format override'),
+    '#options' => array(
+      0 => t('Per-webform configuration of e-mail format'),
+      1 => t('Send all e-mails in the default format'),
+    ),
+    '#default_value' => variable_get('webform_format_override', 0),
+    '#description' => t('Force all webform e-mails to be sent in the default format.'),
+  );
+
   $form['advanced'] = array(
     '#type' => 'fieldset',
     '#title' => t('Advanced options'),

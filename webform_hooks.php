@@ -295,6 +295,12 @@ function hook_webform_component_info() {
       // always be displayed conditionally, regardless of this setting.
       // Defaults to TRUE.
       'conditonal' => TRUE,
+      // If this field allows other fields to be grouped within it (like a 
+      // fieldset or tabs). Defaults to FALSE.
+      'group' => FALSE,
+      // If this field saves a file that can be used as an e-mail attachment.
+      // Defaults to FALSE.
+      'attachment' => FALSE,
     ),
     'file' => 'components/textfield.inc',
   );

@@ -384,15 +384,8 @@ function webform_menu_component_load($cid, $nid, $type) {
 function webform_menu_email_load($eid, $nid) {
   module_load_include('inc', 'webform', 'includes/webform.emails');
   $node = node_load($nid);
+  $email = webform_email_load($eid, $nid);
   if ($eid == 'new') {
-    $email = array(
-      'email' => '',
-      'subject' => 'default',
-      'from_name' => 'default',
-      'from_address' => 'default',
-      'template' => 'default',
-      'excluded_components' => array(),
-    );
     if (isset($_GET['option']) && isset($_GET['email'])) {
       $type = $_GET['option'];
       if ($type == 'custom') {
@@ -402,9 +395,6 @@ function webform_menu_email_load($eid, $nid) {
         $email['email'] = $_GET['email'];
       }
     }
-  }
-  else {
-    $email = isset($node->webform['emails'][$eid]) ? $node->webform['emails'][$eid] : FALSE;
   }
 
   return $email;
@@ -686,6 +676,7 @@ function webform_webform_component_info() {
       'description' => t('Allow users to upload files of configurable types.'),
       'features' => array(
         'conditional' => FALSE,
+        'attachment' => TRUE,
       ),
       'file' => 'components/file.inc',
     ),
@@ -1096,6 +1087,9 @@ function webform_node_load($nodes, $types) {
     // Unserialize the exclude component list for e-mails.
     foreach ($nodes[$nid]->webform['emails'] as $eid => $email) {
       $nodes[$nid]->webform['emails'][$eid]['excluded_components'] = array_filter(explode(',', $email['excluded_components']));
+      if (variable_get('webform_format_override', 0)) {
+        $nodes[$nid]->webform['emails'][$eid]['html'] = variable_get('webform_default_format', 0);
+      }
     }
 
     // Load components for each node.
@@ -1922,6 +1916,7 @@ function webform_client_form_pages($form, &$form_state) {
  */
 function webform_client_form_submit($form, &$form_state) {
   module_load_include('inc', 'webform', 'includes/webform.submissions');
+  module_load_include('inc', 'webform', 'includes/webform.components');
   global $user;
 
   if (empty($form_state['webform_completed'])) {
@@ -1989,6 +1984,7 @@ function webform_client_form_submit($form, &$form_state) {
       }
 
       // Replace tokens in the message.
+      $email['html'] = ($email['html'] && module_exists('mimemail'));
       $email['message'] = _webform_filter_values($email['message'], $node, $submission, $email, FALSE, TRUE);
 
       // Build the e-mail headers.
@@ -2059,7 +2055,30 @@ function webform_client_form_submit($form, &$form_state) {
           'node' => $node,
           'submission' => $submission,
         );
-        drupal_mail('webform', 'submission', $address, $language, $mail_params, $email['from']);
+
+        if (module_exists('mimemail')) {
+          // Load attachments for the e-mail.
+          $attachments = array();
+          if ($email['attachments']) {
+            webform_component_include('file');
+            foreach ($node->webform['components'] as $component) {
+              if (webform_component_feature($component['type'], 'attachment') && !empty($submission->data[$component['cid']]['value'][0])) {
+                $file = webform_get_file($submission->data[$component['cid']]['value'][0]);
+                if ($file) {
+                  $file->list = 1; // Needed to include in attachments.
+                  $attachments[] = $file;
+                }
+              }
+            }
+          }
+
+          // Send the e-mail via MIME mail.
+          mimemail($email['from'], $address, $email['subject'], $email['message'], !$email['html'], $email['headers'], $email['html'] ? NULL : $email['message'], $attachments, 'webform');
+        }
+        else {
+          // Normal Drupal mailer.
+          drupal_mail('webform', 'submission', $address, $language, $mail_params, $email['from']);
+        }
       }
 
     }
@@ -2421,10 +2440,15 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
     $replacements['safe']['%title'] = $node->title;
   }
 
+  // Determine the display format.
+  $format = isset($email['html']) && $email['html'] ? 'html' : 'text';
+
   // Submission replacements.
-  if (isset($submission) && !isset($replacements['submission_set'])) {
+  if (isset($submission) && !isset($replacements['email'][$format])) {
     module_load_include('inc', 'webform', 'includes/webform.components.inc');
-    $replacements['submission_set'] = TRUE;
+
+    // E-mails may be sent in two formats, keep tokens separate for each one.
+    $replacements['email'][$format] = array();
 
     foreach ($submission->data as $cid => $value) {
       $component = $node->webform['components'][$cid];
@@ -2432,9 +2456,9 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
       // Find by form key.
       $parents = webform_component_parent_keys($node, $component);
       $form_key = implode('][', $parents);
-      $display_element = webform_component_invoke($component['type'], 'display', $component, $value['value'], 'text');
-      $replacements['unsafe']['%email[' . $form_key . ']'] = drupal_render($display_element);
-      $replacements['safe']['%value[' . $form_key . ']'] = isset($display_element['#children']) ? $display_element['#children'] : '';
+      $display_element = webform_component_invoke($component['type'], 'display', $component, $value['value'], $format);
+      $replacements['email'][$format]['%email[' . $form_key . ']'] = drupal_render($display_element);
+      $replacements['email'][$format]['%value[' . $form_key . ']'] = isset($display_element['#children']) ? $display_element['#children'] : '';
     }
 
     // Submission edit URL.
@@ -2442,8 +2466,8 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
   }
 
   // Token for the entire form tree for e-mails.
-  if (isset($submission) && isset($email) && !isset($replacements['unsafe']['%email_values'])) {
-    $replacements['unsafe']['%email_values'] = webform_submission_render($node, $submission, $email, 'text');
+  if (isset($submission) && isset($email) && !isset($replacements['email'][$format]['%email_values'])) {
+    $replacements['email'][$format]['%email_values'] = webform_submission_render($node, $submission, $email, $format);
   }
 
   // Provide a list of candidates for token replacement.
@@ -2509,6 +2533,9 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
   // anonymous page caching is enabled.
   if ($user->uid || $allow_anonymous) {
     $safe_replacements += $replacements['unsafe'];
+    if (isset($replacements['email'][$format])) {
+      $safe_replacements += $replacements['email'][$format];
+    }
   }
   else {
     foreach ($replacements['unsafe'] as $key => $value) {

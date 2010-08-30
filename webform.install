@@ -201,6 +201,22 @@ function webform_schema() {
         'type' => 'text',
         'not null' => TRUE,
       ),
+      'html' => array(
+        'description' => 'Determines if the e-mail will be sent in an HTML format. Requires Mime Mail module.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'attachments' => array(
+        'description' => 'Determines if the e-mail will include file attachments. Requires Mime Mail module.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
     ),
     'primary key' => array('nid', 'eid'),
   );
@@ -358,6 +374,8 @@ function webform_uninstall() {
   variable_del('webform_default_from_address');
   variable_del('webform_default_from_name');
   variable_del('webform_default_subject');
+  variable_del('webform_default_format');
+  variable_del('webform_format_override');
   variable_del('webform_csv_delimiter');
 
   $component_list = array();
@@ -388,6 +406,16 @@ function webform_update_last_removed() {
  */
 function webform_update_7301() {
   db_change_field('webform', 'confirmation_format', 'confirmation_format', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
+}
+
+/**
+ * Add columns for e-mail HTML and attachment settings.
+ */
+function webform_update_7302() {
+  if (!db_column_exists('webform_emails', 'html')) {
+    db_add_field('webform_emails', 'html', array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0, 'not null' => TRUE));
+    db_add_field('webform_emails', 'attachments', array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0, 'not null' => TRUE));
+  }
 }
 
 /**

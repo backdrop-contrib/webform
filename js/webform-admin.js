@@ -69,8 +69,13 @@ Drupal.webform.updateTemplate = function(context) {
   }
 
   var updateTemplateText = function() {
-    if ($(this).val() == 'default') {
-      $templateTextarea.val(defaultTemplate);
+    if ($(this).val() == 'default' && $templateTextarea.val() != defaultTemplate) {
+      if (confirm(Drupal.settings.webform.revertConfirm)) {
+        $templateTextarea.val(defaultTemplate);
+      }
+      else {
+        $(this).val('custom');
+      }
     }
   }
 

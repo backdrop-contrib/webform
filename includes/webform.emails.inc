@@ -20,7 +20,10 @@ function webform_emails_form($form, $form_state, $node) {
     '#node' => $node,
     '#attached' =>  array(
       'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
-      'js' => array($path . '/js/webform-admin.js' => array('preprocess' => FALSE)),
+      'js' => array(
+        $path . '/js/webform-admin.js' => array('preprocess' => FALSE),
+        array(array('webform' => array('revertConfirm' => t('Are you sure you want to revert any changes to your template back to the default?'))), 'type' => 'setting'),
+        ),
     ),
     'components' => array(),
   );
@@ -261,13 +264,38 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
     '#attributes' => array('id' => 'webform-template-fieldset'),
   );
 
-  $default_template = theme(array('webform_mail_' . $node->nid, 'webform_mail', 'webform_mail_message'), array('node' => $node, 'cid' => 'default'));
+  $form['template']['template_option'] = array(
+    '#type' => 'select',
+    '#options' => array(
+      'default' => t('Default template'),
+      'custom' => t('Custom template'),
+    ),
+  );
+
+  $default_template = theme(array('webform_mail_' . $node->nid, 'webform_mail', 'webform_mail_message'), array('node' => $node, 'email' => $email));
   $template = $email['template'] == 'default' ? $default_template : $email['template'];
   $form['template']['template'] = array(
     '#type' => 'textarea',
     '#rows' => max(10, min(20, count(explode("\n", $template)))),
-    '#description' => theme('webform_token_help'),
     '#default_value' => $template,
+  );
+
+  $form['template']['html'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Send e-mail as HTML'),
+    '#default_value' => $email['html'],
+    '#access' => module_exists('mimemail') && !variable_get('webform_format_override', 0),
+  );
+
+  $form['template']['attachments'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include files as attachments'),
+    '#default_value' => $email['attachments'],
+    '#access' => module_exists('mimemail'),
+  );
+
+  $form['template']['tokens'] = array(
+    '#value' => theme('webform_token_help'),
   );
 
   $form['template']['components'] = array(
@@ -279,15 +307,6 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
     '#size' => 10,
     '#description' => t('The selected components will be included in the %email_values token. Individual values may still be printed if explicitly specified as a %email[key] in the template.'),
     '#process' => array('webform_component_select'),
-  );
-
-  $form['template']['template_option'] = array(
-    '#type' => 'select',
-    '#options' => array(
-      'default' => t('Default template'),
-      'custom' => t('Custom template'),
-    ),
-    '#description' => t('Warning: Changing will immediately update the textarea above.'),
   );
 
   // TODO: Allow easy re-use of existing templates.
@@ -347,8 +366,6 @@ function theme_webform_email_edit_form($variables) {
   // Ensure templates are completely hidden.
   $form['templates']['#prefix'] = '<div id="webform-email-templates" style="display: none">';
   $form['templates']['#suffix'] = '</div>';
-
-  $form['template']['template']['#description'] .= drupal_render($form['template']['components']);
 
   // Re-sort the elements since we added the details fieldset.
   $form['#sorted'] = FALSE;
@@ -418,6 +435,10 @@ function webform_email_edit_form_submit($form, &$form_state) {
     $email['template'] = $form_state['values']['template'];
   }
 
+  // Save the attachment and HTML options provided by MIME mail.
+  $email['html'] = empty($form_state['values']['html']) ? 0 : 1;
+  $email['attachments'] = empty($form_state['values']['attachments']) ? 0 : 1;
+
   // Save the list of included components.
   // We actually maintain an *exclusion* list, so any new components will
   // default to being included in the %email_values token until unchecked.
@@ -470,6 +491,33 @@ function webform_email_delete_form_submit($form, &$form_state) {
   drupal_set_message(t('E-mail settings deleted.'));
   webform_email_delete($form_state['values']['node'], $form_state['values']['email']);
   $form_state['redirect'] = 'node/' . $form_state['values']['node']->nid . '/webform/emails';
+}
+
+/**
+ * Load an e-mail setting from the database or initialize a new e-mail.
+ */
+function webform_email_load($eid, $nid) {
+  $node = node_load($nid);
+  if ($eid == 'new') {
+    $email = array(
+      'email' => '',
+      'subject' => 'default',
+      'from_name' => 'default',
+      'from_address' => 'default',
+      'template' => 'default',
+      'excluded_components' => array(),
+      'html' => variable_get('webform_default_format', 0),
+      'attachments' => 0,
+    );
+  }
+  else {
+    $email = isset($node->webform['emails'][$eid]) ? $node->webform['emails'][$eid] : FALSE;
+    if (variable_get('webform_format_override', 0)) {
+      $email['html'] = variable_get('webform_default_format', 0);
+    }
+  }
+
+  return $email;
 }
 
 /**
