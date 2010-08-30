@@ -34,7 +34,7 @@ Drupal.webform.datepicker = function(context) {
     $calendar.datepicker({
       dateFormat: 'yy-mm-dd',
       yearRange: startYear + ':' + endYear,
-      firstDay: firstDay,
+      firstDay: parseInt(firstDay),
       onSelect: function(dateText, inst) {
         var date = dateText.split('-');
         $webformDatepicker.find('select.year, input.year').val(+date[0]);
