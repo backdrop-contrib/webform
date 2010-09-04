@@ -102,6 +102,7 @@ function _webform_edit_grid($component) {
       '#rows' => 5,
       '#weight' => -3,
       '#required' => TRUE,
+      '#wysiwyg' => FALSE,
       '#element_validate' => array('_webform_edit_validate_select'),
     );
     $form['extra']['questions'] = array(
@@ -113,6 +114,7 @@ function _webform_edit_grid($component) {
       '#rows' => 5,
       '#weight' => -2,
       '#required' => TRUE,
+      '#wysiwyg' => FALSE,
       '#element_validate' => array('_webform_edit_validate_select'),
     );
   }

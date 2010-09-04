@@ -133,6 +133,7 @@ function _webform_edit_select($component) {
       '#rows' => 5,
       '#weight' => 0,
       '#required' => TRUE,
+      '#wysiwyg' => FALSE,
       '#element_validate' => array('_webform_edit_validate_select'),
     );
 
