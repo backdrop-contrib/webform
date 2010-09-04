@@ -38,7 +38,60 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
     $submissions = webform_get_submissions($node->nid, $header, $pager_count);
     $count = webform_get_submission_count($node->nid);
   }
-  return theme('webform_results_submissions', array('node' => $node, 'submissions' => $submissions, 'count' => $count, 'pager_count' => $pager_count));
+
+  $operation_column = end($header);
+  $operation_total = $operation_column['colspan'];
+
+  $rows = array();
+  foreach ($submissions as $sid => $submission) {
+    $row = array(
+      $submission->is_draft ? t('@sid (draft)', array('@sid' => $sid)) : $sid,
+      format_date($submission->submitted, 'small'),
+    );
+    if (user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid)) {
+      $row[] = theme('username', array('account' => $submission));
+      $row[] = $submission->remote_addr;
+    }
+    $row[] = l(t('View'), "node/$node->nid/submission/$sid");
+    $operation_count = 1;
+    if (module_exists('print_pdf') && user_access('access PDF version')) {
+      $row[] = l(t('PDF'), "printpdf/$node->nid/submission/$sid", array('query' => drupal_get_destination()));
+      $operation_count++;
+    }
+    if (module_exists('print') && user_access('access print')) {
+      $row[] = l(t('Print'), "print/$node->nid/submission/$sid");
+      $operation_count++;
+    }
+    if ((user_access('edit own webform submissions') && $user->uid == $submission->uid) || user_access('edit all webform submissions')) {
+      $row[] = l(t('Edit'), "node/$node->nid/submission/$sid/edit", array('query' => drupal_get_destination()));
+      $operation_count++;
+    }
+    if ((user_access('delete own webform submissions') && $user->uid == $submission->uid) || user_access('delete all webform submissions')) {
+      $row[] = l(t('Delete'), "node/$node->nid/submission/$sid/delete", array('query' => drupal_get_destination()));
+      $operation_count++;
+    }
+    if ($operation_count < $operation_total) {
+      $row[count($row) - 1] = array('data' => $row[count($row) - 1], 'colspan' => $operation_total - $operation_count + 1);
+    }
+    $rows[] = $row;
+  }
+
+  $element['#theme'] = 'webform_results_submissions';
+  $element['#node'] = $node;
+  $element['#submissions'] = $submissions;
+  $element['#total_count'] = $count;
+  $element['#pager_count'] = $pager_count;
+  $element['#attached']['css'] = array(
+    drupal_get_path('module', 'webform') . '/css/webform-admin.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1),
+  );
+
+  $element['table']['#theme'] = 'table';
+  $element['table']['#header'] = $header;
+  $element['table']['#rows'] = $rows;
+  $element['table']['#operation_total'] = $operation_total;
+
+  return drupal_render($element);
+
 }
 
 /**
@@ -112,80 +165,17 @@ function theme_webform_results_submissions_header($variables) {
 }
 
 /**
- * Theme the submissions tab of the webform results page.
- *
- * @param $node
- *   The node whose results are being displayed.
- * @param $submissions
- *   An array of all submissions for this webform.
- * @param $total_count
- *   The total number of submissions to this webform.
- * @param $pager_count
- *   The number of results to be shown per page.
+ * Preprocess function for webform-results-submissions.tpl.php
  */
-function theme_webform_results_submissions($variables) {
-  global $user;
-  $node = $variables['node'];
-  $submissions = $variables['submissions'];
-  $total_count = $variables['total_count'];
-  $pager_count = $variables['pager_count'];
+function template_preprocess_webform_results_submissions(&$vars) {
+  $vars['node'] = $vars['element']['#node'];
+  $vars['submissions'] = $vars['element']['#submissions'];
+  $vars['table'] = $vars['element']['table'];
+  $vars['total_count'] = $vars['element']['#total_count'];
+  $vars['pager_count'] = $vars['element']['#pager_count'];
+  $vars['is_submissions'] = (arg(2) == 'submissions')? 1 : 0;
 
-  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', array('weight' => CSS_THEME, 'preprocess' => FALSE));
-
-  // This header has to be generated separately so we can add the SQL necessary
-  // to sort the results.
-  $header = theme('webform_results_submissions_header', array('node' => $node));
-  $operation_column = end($header);
-  $operation_total = $operation_column['colspan'];
-
-  $rows = array();
-  foreach ($submissions as $sid => $submission) {
-    $row = array(
-      $submission->is_draft ? t('@sid (draft)', array('@sid' => $sid)) : $sid,
-      format_date($submission->submitted, 'small'),
-    );
-    if (user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid)) {
-      $row[] = theme('username', array('account' => $submission));
-      $row[] = $submission->remote_addr;
-    }
-    $row[] = l(t('View'), "node/$node->nid/submission/$sid");
-    $operation_count = 1;
-    if (module_exists('print_pdf') && user_access('access PDF version')) {
-      $row[] = l(t('PDF'), "printpdf/$node->nid/submission/$sid", array('query' => drupal_get_destination()));
-      $operation_count++;
-    }
-    if (module_exists('print') && user_access('access print')) {
-      $row[] = l(t('Print'), "print/$node->nid/submission/$sid");
-      $operation_count++;
-    }
-    if ((user_access('edit own webform submissions') && $user->uid == $submission->uid) || user_access('edit all webform submissions')) {
-      $row[] = l(t('Edit'), "node/$node->nid/submission/$sid/edit", array('query' => drupal_get_destination()));
-      $operation_count++;
-    }
-    if ((user_access('delete own webform submissions') && $user->uid == $submission->uid) || user_access('delete all webform submissions')) {
-      $row[] = l(t('Delete'), "node/$node->nid/submission/$sid/delete", array('query' => drupal_get_destination()));
-      $operation_count++;
-    }
-    if ($operation_count < $operation_total) {
-      $row[count($row) - 1] = array('data' => $row[count($row) - 1], 'colspan' => $operation_total - $operation_count + 1);
-    }
-    $rows[] = $row;
-  }
-
-  if (count($rows) == 0) {
-    $rows[] = array(array('data' => t('There are no submissions for this form. <a href="!url">View this form</a>.', array('!url' => url('node/' . $node->nid))), 'colspan' => 4 + $operation_total));
-  }
-
-  $output = '';
-  $output .= theme('webform_results_per_page', array('total_count' => $total_count, 'pager_count' => $pager_count));
-  $output .= theme('table', array('header' => $header, 'rows' => $rows));
-  if (arg(2) == 'submissions') {
-    $output .= theme('links', array('links' => array('webform' => array('title' => t('Go back to the form'), 'href' => 'node/' . $node->nid))));
-  }
-  if ($pager_count) {
-    $output .= theme('pager');
-  }
-  return $output;
+  unset($vars['element']);
 }
 
 /**

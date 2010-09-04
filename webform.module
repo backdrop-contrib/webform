@@ -581,7 +581,8 @@ function webform_theme() {
       'file' => 'includes/webform.report.inc',
     ),
     'webform_results_submissions' => array(
-      'variables' => array('node' => NULL, 'submissions' => NULL, 'total_count' => 0, 'pager_count' => 0),
+      'render element' => 'element',
+      'template' => 'templates/webform-results-submissions',
       'file' => 'includes/webform.report.inc',
     ),
     'webform_results_table_header' => array(
@@ -606,7 +607,7 @@ function webform_theme() {
     ),
     // webform.submissions.inc
     'webform_submission' => array(
-      'arguments' => array('renderable' => NULL),
+      'render element' => 'renderable',
       'template' => 'templates/webform-submission',
       'pattern' => 'webform_submission_[0-9]+',
       'file' => 'includes/webform.submissions.inc',
