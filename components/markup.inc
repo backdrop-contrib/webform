@@ -47,7 +47,10 @@ function _webform_edit_markup($component) {
  * Element validate handler; Set the text format value.
  */
 function _webform_edit_markup_validate($form, &$form_state) {
-  $form_state['values']['extra']['format'] = $form_state['values']['format'];
+  if (is_array($form_state['values']['value'])) {
+    $form_state['values']['extra']['format'] = $form_state['values']['value']['format'];
+    $form_state['values']['value'] = $form_state['values']['value']['value'];
+  }
 }
 
 /**
