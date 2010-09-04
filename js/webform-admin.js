@@ -48,8 +48,9 @@ Drupal.webform.defaultValues = function(context) {
 };
 
 Drupal.webform.setActive = function(context) {
-  var setActive = function() {
+  var setActive = function(e) {
     $('.form-radio', $(this).parent().parent()).attr('checked', true);
+    e.preventDefault();
   };
   $('.webform-set-active', context).click(setActive).change(setActive);
 };
