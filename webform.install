@@ -412,7 +412,7 @@ function webform_update_7301() {
  * Add columns for e-mail HTML and attachment settings.
  */
 function webform_update_7302() {
-  if (!db_column_exists('webform_emails', 'html')) {
+  if (!db_field_exists('webform_emails', 'html')) {
     db_add_field('webform_emails', 'html', array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0, 'not null' => TRUE));
     db_add_field('webform_emails', 'attachments', array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0, 'not null' => TRUE));
   }
