@@ -181,7 +181,7 @@ function webform_submission_delete_form($form, $form_state, $node, $submission) 
   if (isset($_GET['destination'])) {
     $destination = $_GET['destination'];
   }
-  elseif (user_access('access all webform results') || ($node->uid == $user->uid && user_access('access own webform results'))) {
+  elseif (webform_results_access($node)) {
     $destination = 'node/' . $node->nid . '/webform-results';
   }
   else {
@@ -231,7 +231,7 @@ function webform_submission_page($node, $submission, $format) {
   }
 
   // Add navigation for administrators.
-  if (user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid)) {
+  if (webform_results_access($node)) {
     $navigation = ($mode != 'pdf') ? theme('webform_submission_navigation', array('node' => $node, 'submission' => $submission, 'mode' => $mode)) : NULL;
     $information = theme('webform_submission_information', array('node' => $node, 'submission' => $submission));
   }

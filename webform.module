@@ -416,15 +416,17 @@ function webform_submission_access($node, $submission, $op = 'view', $account = 
     webform_disable_page_cache();
   }
 
+  $module_access = count(array_filter(module_invoke_all('webform_submission_access', $node, $submission, $op, $account))) > 0;
+
   switch ($op) {
     case 'view':
-      return $general_access;
+      return $module_access || $general_access;
     case 'edit':
-      return $general_access && (user_access('edit all webform submissions', $account) || (user_access('edit own webform submissions', $account) && $account->uid == $submission->uid));
+      return $module_access || ($general_access && (user_access('edit all webform submissions', $account) || (user_access('edit own webform submissions', $account) && $account->uid == $submission->uid)));
     case 'delete':
-      return $general_access && (user_access('delete all webform submissions', $account) || (user_access('delete own webform submissions', $account) && $account->uid == $submission->uid));
+      return $module_access || ($general_access && (user_access('delete all webform submissions', $account) || (user_access('delete own webform submissions', $account) && $account->uid == $submission->uid)));
     case 'list':
-      return user_access('access all webform results', $account) || (user_access('access own webform submissions', $account) && ($account->uid || isset($_SESSION['webform_submission']))) || (user_access('access own webform results', $account) && $account->uid == $node->uid);
+      return $module_access || user_access('access all webform results', $account) || (user_access('access own webform submissions', $account) && ($account->uid || isset($_SESSION['webform_submission']))) || (user_access('access own webform results', $account) && $account->uid == $node->uid);
   }
 }
 
@@ -435,14 +437,18 @@ function webform_results_access($node, $account = NULL) {
   global $user;
   $account = isset($account) ? $account : $user;
 
-  return node_access('view', $node, $account) && (user_access('access all webform results', $account) || (user_access('access own webform results', $account) && $account->uid == $node->uid));
+  $module_access = count(array_filter(module_invoke_all('webform_results_access', $node, $account))) > 0;
+
+  return node_access('view', $node, $account) && ($module_access || user_access('access all webform results', $account) || (user_access('access own webform results', $account) && $account->uid == $node->uid));
 }
 
 function webform_results_clear_access($node, $account = NULL) {
   global $user;
   $account = isset($account) ? $account : $user;
 
-  return webform_results_access($node, $account) && user_access('delete all webform submissions', $account);
+  $module_access = count(array_filter(module_invoke_all('webform_results_clear_access', $node, $account))) > 0;
+
+  return webform_results_access($node, $account) && ($module_access || user_access('delete all webform submissions', $account));
 }
 
 /**

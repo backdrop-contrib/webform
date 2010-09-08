@@ -48,7 +48,7 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
       $submission->is_draft ? t('@sid (draft)', array('@sid' => $sid)) : $sid,
       format_date($submission->submitted, 'small'),
     );
-    if (user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid)) {
+    if (webform_results_access($node, $user)) {
       $row[] = theme('username', array('account' => $submission));
       $row[] = $submission->remote_addr;
     }
@@ -62,11 +62,11 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
       $row[] = l(t('Print'), "print/$node->nid/submission/$sid");
       $operation_count++;
     }
-    if ((user_access('edit own webform submissions') && $user->uid == $submission->uid) || user_access('edit all webform submissions')) {
+    if (webform_submission_access($node, $submission, 'edit', $user)) {
       $row[] = l(t('Edit'), "node/$node->nid/submission/$sid/edit", array('query' => drupal_get_destination()));
       $operation_count++;
     }
-    if ((user_access('delete own webform submissions') && $user->uid == $submission->uid) || user_access('delete all webform submissions')) {
+    if (webform_submission_access($node, $submission, 'delete', $user)) {
       $row[] = l(t('Delete'), "node/$node->nid/submission/$sid/delete", array('query' => drupal_get_destination()));
       $operation_count++;
     }
@@ -148,14 +148,13 @@ function theme_webform_results_per_page($variables) {
  * use it for sorting the results.
  */
 function theme_webform_results_submissions_header($variables) {
-  global $user;
   $node = $variables['node'];
 
   $columns = array(
     array('data' => t('#'), 'field' => 'sid', 'sort' => 'asc'),
     array('data' => t('Submitted'), 'field' => 'submitted'),
   );
-  if (user_access('access all webform results') || (user_access('access own webform results') && $user->uid == $node->uid)) {
+  if (webform_results_access($node)) {
     $columns[] = array('data' => t('User'), 'field' => 'name');
     $columns[] = array('data' => t('IP Address'), 'field' => 'remote_addr');
   }
