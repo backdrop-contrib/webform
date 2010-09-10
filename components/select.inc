@@ -714,7 +714,7 @@ function webform_select_options_ajax($source_name = '') {
  */
 function _webform_select_options($component, $filter = TRUE) {
   if ($component['extra']['options_source']) {
-    $options = _webform_select_options_callback($component['extra']['options_source'], 'options', $component);
+    $options = _webform_select_options_callback($component['extra']['options_source'], $component);
   }
   else {
     $options = _webform_select_options_from_text($component['extra']['items'], !$component['extra']['aslist'], $filter);
@@ -755,7 +755,7 @@ function _webform_select_options_info() {
  * @param $filter
  *   Whether information returned should be sanitized. Defaults to TRUE.
  */
-function _webform_select_options_callback($name, $type, $component, $filter = TRUE) {
+function _webform_select_options_callback($name, $component, $flat = FALSE, $filter = TRUE) {
   $info = _webform_select_options_info();
 
   // Include any necessary files.
@@ -766,9 +766,15 @@ function _webform_select_options_callback($name, $type, $component, $filter = TR
   }
 
   // Execute the callback function.
-  if (isset($info[$name][$type . ' callback']) && function_exists($info[$name][$type . ' callback'])) {
-    $function = $info[$name][$type . ' callback'];
-    return $function($component, $filter);
+  if (isset($info[$name]['options callback']) && function_exists($info[$name]['options callback'])) {
+    $function = $info[$name]['options callback'];
+
+    $options_args = array();
+    if (isset($info[$name]['options arguments'])) {
+      $arguments = $info[$name]['options arguments'];
+    }
+
+    return $function($component, $flat, $filter, $arguments);
   }
 }
 

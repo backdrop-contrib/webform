@@ -23,6 +23,7 @@
  *   be an array with the following additional keys:
  *     - title: The translated title for this list.
  *     - options callback: The name of the function that will return the list.
+ *     - options arguments: Any additional arguments to send to the callback.
  *     - file: Optional. The file containing the options callback, relative to
  *       the module root.
  */
