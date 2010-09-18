@@ -123,6 +123,7 @@ function _webform_edit_file($component) {
       '#field_suffix' => t('KB'),
       '#default_value' => $component['extra']['filtering']['size'],
       '#parents' => array('extra', 'filtering', 'size'),
+      '#element_validate' => array('_webform_edit_file_size_validate'),
     );
     $form['extra']['savelocation'] = array(
       '#type' => 'textfield',
@@ -145,6 +146,17 @@ function _webform_edit_file($component) {
       '#parents' => array('extra', 'width')
     );
     return $form;
+}
+
+/**
+ * A Form API element validate function to check filesize is numeric.
+ */
+function _webform_edit_file_size_validate($element) {
+  if (!empty($element['#value'])) {
+    if (!is_numeric($element['#value']) || intval($element['#value']) != $element['#value']) {
+      form_error($element, t('Max upload size must be a number in KB.'));
+    }
+  }
 }
 
 /**
