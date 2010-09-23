@@ -863,10 +863,8 @@ function webform_component_select($element) {
     );
   }
 
-  // Set value to NULL so that Drupal doesn't output "Array" as the markup.
-  $element['#value'] = NULL;
-  $element['#type'] = 'markup';
   $element['#theme_wrappers'] = array();
+  $element['#type'] = 'webform_component_select';
   $element['#theme'] = 'webform_component_select';
   $element['#attached'] = array(
     'js' => array(
@@ -886,7 +884,9 @@ function theme_webform_component_select($variables) {
 
   $rows = array();
   $header = array();
-  $header = array(array('class' => array('select-all'), 'data' => ' ' . t('Include all components')));
+  if (!isset($element['#all_checkbox']) || $element['#all_checkbox']) {
+    $header = array(array('class' => array('select-all'), 'data' => ' ' . t('Include all components')));
+  }
   foreach (element_children($element) as $key) {
     $rows[] = array(
       theme('indentation', array('size' => $element[$key]['#indent'])) . drupal_render($element[$key]),
@@ -894,8 +894,20 @@ function theme_webform_component_select($variables) {
   }
 
   $element['#type'] = 'fieldset';
-  $element['#attributes']['class'] = array('webform-component-select-table', 'collapsible', 'collapsed');
-  $element['#children'] = theme('table', array('header' => $header, 'rows' => $rows));
+  $element['#attributes']['class'] = array('webform-component-select-table');
+  if (!isset($element['#collapsible']) || $element['#collapsible']) {
+    $element['#attributes']['class'][] = 'collapsible';
+  }
+  if (!isset($element['#collapsed']) || $element['#collapsed']) {
+    $element['#attributes']['class'][] = 'collapsed';
+  }
+
+  if (empty($rows)) {
+    $element['#children'] = t('No available components.');
+  }
+  else {
+    $element['#children'] = theme('table', array('header' => $header, 'rows' => $rows));
+  }
 
   return theme('fieldset', array('element' => $element));
 }
