@@ -355,7 +355,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     '#type' => 'textfield',
     '#default_value' => empty($component['form_key']) ? _webform_safe_name($component['name']) : $component['form_key'],
     '#title' => t('Field Key'),
-    '#description' => t('Enter a machine readable key for this form element. May contain only lowercase alphanumeric characters and underscores. This key will be used as the name attribute of the form element. This value has no effect on the way data is saved, but may be helpful if using Additional Processing or Validation code.'),
+    '#description' => t('Enter a machine readable key for this form element. May contain only lowercase alphanumeric characters and underscores. This key will be used as the name attribute of the form element. This value has no effect on the way data is saved, but may be helpful if doing custom form processing.'),
     '#required' => TRUE,
     '#weight' => -9,
   );
