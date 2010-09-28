@@ -22,6 +22,7 @@ function _webform_defaults_email() {
       'width' => '',
       'unique' => 0,
       'disabled' => 0,
+      'title_display' => 0,
       'description' => '',
       'attributes' => array(),
     ),
@@ -77,7 +78,7 @@ function _webform_edit_email($component) {
     '#title' => t('Disabled'),
     '#return_value' => 1,
     '#description' => t('Make this field non-editable. Useful for setting an unchangeable default value.'),
-    '#weight' => 3,
+    '#weight' => 11,
     '#default_value' => $component['extra']['disabled'],
     '#parents' => array('extra', 'disabled'),
   );
@@ -105,18 +106,19 @@ function _webform_edit_email_validate($element, &$form_state) {
 /**
  * Implementation of _webform_render_component().
  */
-function _webform_render_email($component, $value = NULL) {
+function _webform_render_email($component, $value = NULL, $filter = TRUE) {
   global $user;
   $element = array(
-    '#type'          => 'textfield',
-    '#title'         => $component['name'],
+    '#type' => 'textfield',
+    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : NULL,
     '#default_value' => _webform_filter_values($component['value']),
-    '#required'      => $component['mandatory'],
-    '#weight'        => $component['weight'],
-    '#description'   => _webform_filter_descriptions($component['extra']['description']),
-    '#attributes'    => $component['extra']['attributes'],
-    '#prefix'        => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
-    '#suffix'        => '</div>',
+    '#required' => $component['mandatory'],
+    '#weight' => $component['weight'],
+    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#attributes' => $component['extra']['attributes'],
+    '#prefix' => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
+    '#suffix' => '</div>',
     '#element_validate'  => array('_webform_validate_email'),
     '#webform_component' => $component,
   );
@@ -176,9 +178,9 @@ function _webform_display_email($component, $value, $format = 'html') {
     '#weight' => $component['weight'],
     '#theme' => 'webform_display_email',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
-    '#component' => $component,
     '#format' => $format,
     '#value' => isset($value[0]) ? $value[0] : '',
+    '#webform_component' => $component,
   );
 }
 

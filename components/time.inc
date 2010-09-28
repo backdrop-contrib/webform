@@ -24,6 +24,7 @@ function _webform_defaults_time() {
     'extra' => array(
       'timezone' => 'user',
       'hourformat' => '12-hour',
+      'title_display' => 0,
       'description' => '',
     ),
   );
@@ -81,7 +82,7 @@ function _webform_edit_time($component) {
 /**
  * Implementation of _webform_render_component().
  */
-function _webform_render_time($component, $value = NULL) {
+function _webform_render_time($component, $value = NULL, $filter = TRUE) {
   if (drupal_strlen($component['value']) > 0) {
     // Adjust the time based on the user or site timezone.
     if (variable_get('configurable_timezones', 1) && $component['extra']['timezone'] == 'user') {
@@ -120,10 +121,11 @@ function _webform_render_time($component, $value = NULL) {
   $ampms = array('am' => t('am'), 'pm' => t('pm'));
 
   $element = array(
-    '#title' => $component['name'],
+    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : NULL,
     '#required' => $component['mandatory'],
     '#weight' => $component['weight'],
-    '#description' => _webform_filter_descriptions($component['extra']['description']),
+    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#prefix' => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
     '#suffix' => '</div>',
     '#theme' => 'webform_time',
@@ -234,10 +236,10 @@ function _webform_display_time($component, $value, $format = 'html') {
     '#weight' => $component['weight'],
     '#theme' => 'webform_display_time',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
-    '#component' => $component,
     '#format' => $format,
     '#hourformat' => $component['extra']['hourformat'],
     '#value' => $value,
+    '#webform_component' => $component,
   );
 }
 

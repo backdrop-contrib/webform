@@ -21,6 +21,7 @@ function _webform_defaults_textarea() {
     'extra' => array(
       'cols' => '',
       'rows' => '',
+      'title_display' => 0,
       'resizable' => 1,
       'disabled' => 0,
       'description' => '',
@@ -86,7 +87,7 @@ function _webform_edit_textarea($component) {
     '#title' => t('Disabled'),
     '#return_value' => 1,
     '#description' => t('Make this field non-editable. Useful for setting an unchangeable default value.'),
-    '#weight' => 3,
+    '#weight' => 11,
     '#default_value' => $component['extra']['disabled'],
     '#parents' => array('extra', 'disabled'),
   );
@@ -98,18 +99,20 @@ function _webform_edit_textarea($component) {
  */
 function _webform_render_textarea($component, $value = NULL, $filter = TRUE) {
   $element = array(
-    '#type'          => 'textarea',
-    '#title'         => $component['name'],
+    '#type' => 'textarea',
+    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : NULL,
     '#default_value' => $filter ? _webform_filter_values($component['value']) : $component['value'],
-    '#required'      => $component['mandatory'],
-    '#weight'        => $component['weight'],
-    '#description'   => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
-    '#rows'          => !empty($component['extra']['rows']) ? $component['extra']['rows'] : 5,
-    '#cols'          => !empty($component['extra']['cols']) ? $component['extra']['cols'] : 60,
-    '#attributes'    => $component['extra']['attributes'],
-    '#resizable'     => (bool) $component['extra']['resizable'], // MUST be FALSE to disable.
-    '#prefix'        => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
-    '#suffix'        => '</div>',
+    '#required' => $component['mandatory'],
+    '#weight' => $component['weight'],
+    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#rows' => !empty($component['extra']['rows']) ? $component['extra']['rows'] : 5,
+    '#cols' => !empty($component['extra']['cols']) ? $component['extra']['cols'] : 60,
+    '#attributes' => $component['extra']['attributes'],
+    '#resizable' => (bool) $component['extra']['resizable'], // MUST be FALSE to disable.
+    '#prefix' => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
+    '#suffix' => '</div>',
+    '#webform_component' => $component,
   );
 
   if ($component['extra']['disabled']) {
@@ -132,9 +135,9 @@ function _webform_display_textarea($component, $value, $format = 'html') {
     '#weight' => $component['weight'],
     '#theme' => 'webform_display_textarea',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
-    '#component' => $component,
     '#format' => $format,
     '#value' => isset($value[0]) ? $value[0] : '',
+    '#webform_component' => $component,
   );
 }
 

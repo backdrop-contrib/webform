@@ -25,9 +25,10 @@ function _webform_defaults_grid() {
       'questions' => '',
       'optrand' => 0,
       'qrand' => 0,
-      'description' => '',
+      'title_display' => 0,
       'custom_option_keys' => 0,
       'custom_question_keys' => 0,
+      'description' => '',
     ),
   );
 }
@@ -141,13 +142,15 @@ function _webform_edit_grid($component) {
  */
 function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
   $element = array(
-    '#title' => $component['name'],
+    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : NULL,
     '#required' => $component['mandatory'],
     '#weight' => $component['weight'],
     '#theme' => 'webform_grid',
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#prefix' => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
     '#suffix' => '</div>',
+    '#webform_component' => $component,
   );
 
   $questions = _webform_select_options_from_text($component['extra']['questions'], TRUE);
@@ -196,13 +199,13 @@ function _webform_display_grid($component, $value, $format = 'html') {
   $element = array(
     '#title' => $component['name'],
     '#weight' => $component['weight'],
-    '#component' => $component,
     '#format' => $format,
     '#questions' => $questions,
     '#options' => $options,
     '#theme' => 'webform_display_grid',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
     '#sorted' => TRUE,
+    '#webform_component' => $component,
   );
 
   $cid = 0;
@@ -225,7 +228,7 @@ function _webform_display_grid($component, $value, $format = 'html') {
 function theme_webform_display_grid($variables) {
   $element = $variables['element'];
 
-  $component = $element['#component'];
+  $component = $element['#webform_component'];
   $format = $element['#format'];
 
   if ($format == 'html') {

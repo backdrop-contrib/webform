@@ -16,6 +16,7 @@ function _webform_defaults_fieldset() {
     'pid' => 0,
     'weight' => 0,
     'extra' => array(
+      'title_display' => 0,
       'collapsible' => 0,
       'collapsed' => 0,
       'description' => '',
@@ -52,13 +53,14 @@ function _webform_edit_fieldset($component) {
  */
 function _webform_render_fieldset($component, $value = NULL, $filter = TRUE) {
   $element = array(
-    '#type'          => $component['type'],
-    '#title'         => filter_xss_admin($component['name']),
-    '#weight'        => $component['weight'],
-    '#description'   => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
-    '#collapsible'   => $component['extra']['collapsible'],
-    '#collapsed'     => $component['extra']['collapsed'],
-    '#attributes'    => array('class' => array('webform-component-' . $component['type']), 'id' => 'webform-component-' . $component['form_key']),
+    '#type' => $component['type'],
+    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#weight' => $component['weight'],
+    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#collapsible' => $component['extra']['collapsible'],
+    '#collapsed' => $component['extra']['collapsed'],
+    '#attributes' => array('class' => array('webform-component-' . $component['type']), 'id' => 'webform-component-' . $component['form_key']),
+    '#webform_component' => $component,
   );
 
   return $element;
@@ -79,7 +81,7 @@ function _webform_display_fieldset($component, $value, $format = 'html') {
     $element = _webform_render_fieldset($component, $value);
   }
 
-  $element['#component'] = $component;
+  $element['#webform_component'] = $component;
   $element['#format'] = $format;
 
   return $element;

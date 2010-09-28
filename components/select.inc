@@ -25,6 +25,7 @@ function _webform_defaults_select() {
       'optrand' => 0,
       'other_option' => NULL,
       'other_text' => t('Other...'),
+      'title_display' => 0,
       'description' => '',
       'custom_keys' => FALSE,
       'options_source' => '',
@@ -262,10 +263,12 @@ function _webform_edit_validate_options($element, &$form_state) {
  */
 function _webform_render_select($component, $value = NULL, $filter = TRUE) {
   $element = array(
-    '#title'         => $component['name'],
-    '#required'      => $component['mandatory'],
-    '#weight'        => $component['weight'],
-    '#description'   => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : NULL,
+    '#required' => $component['mandatory'],
+    '#weight' => $component['weight'],
+    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#webform_component' => $component,
   );
 
   // Convert the user-entered options list into an array.
@@ -422,9 +425,9 @@ function _webform_display_select($component, $value, $format = 'html') {
     '#weight' => $component['weight'],
     '#theme' => 'webform_display_select',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
-    '#component' => $component,
     '#format' => $format,
     '#value' => $value,
+    '#webform_component' => $component,
   );
 }
 
@@ -481,7 +484,7 @@ function _webform_submit_select($component, $value) {
  */
 function theme_webform_display_select($variables) {
   $element = $variables['element'];
-  $component = $element['#component'];
+  $component = $element['#webform_component'];
 
   // Convert submitted 'safe' values to un-edited, original form.
   $options = _webform_select_options($component);

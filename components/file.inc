@@ -25,6 +25,7 @@ function _webform_defaults_file() {
       ),
       'savelocation' => '',
       'width' => '',
+      'title_display' => 0,
       'description' => '',
       'attributes' => array(),
     ),
@@ -291,17 +292,18 @@ function theme_webform_edit_file($variables) {
 /**
  * Implementation of _webform_render_component().
  */
-function _webform_render_file($component, $value = NULL) {
+function _webform_render_file($component, $value = NULL, $filter = TRUE) {
   $node = node_load($component['nid']);
   $form_key = implode('_', webform_component_parent_keys($node, $component));
   $element[$form_key] = array(
-    '#type'          => $component['type'],
-    '#title'         => $component['name'],
-    //'#required'      => $component['mandatory'], // Drupal core bug with required file uploads.
-    '#weight'        => $component['weight'],
-    '#description'   => _webform_filter_descriptions($component['extra']['description']),
-    '#attributes'    => $component['extra']['attributes'],
-    '#tree'          => FALSE, // file_check_upload assumes a flat $_FILES structure.
+    '#type' => $component['type'],
+    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : NULL,
+    //'#required' => $component['mandatory'], // Drupal core bug with required file uploads.
+    '#weight' => $component['weight'],
+    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#attributes' => $component['extra']['attributes'],
+    '#tree' => FALSE, // file_check_upload assumes a flat $_FILES structure.
     '#element_validate' => array(
       '_webform_validate_file',
       '_webform_required_file',  // Custom required routine.
@@ -497,7 +499,7 @@ function _webform_display_file($component, $value, $format = 'html') {
      '#weight' => $component['weight'],
      '#theme' => 'webform_display_file',
      '#theme_wrappers' => $format == 'text' ? array('webform_element_text') : array('webform_element'),
-     '#component' => $component,
+     '#webform_component' => $component,
      '#format' => $format,
   );
 }

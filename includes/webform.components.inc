@@ -375,6 +375,15 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     '#collapsed' => FALSE,
     '#weight' => 8,
   );
+  $form['display']['title_display'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Hide component title'),
+    '#default_value' => $component['extra']['title_display'],
+    '#return_value' => 'none',
+    '#description' => t('Do not display the title or label of this field in the form.'),
+    '#weight' => 8,
+    '#parents' => array('extra', 'title_display'),
+  );
 
   // Validation settings.
   $form['validation'] = array(
@@ -512,9 +521,6 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
   if (isset($additional_form_elements['display'])) {
     $form['display'] = array_merge($form['display'], $additional_form_elements['display']);
     unset($additional_form_elements['display']);
-  }
-  else {
-    unset($form['display']);
   }
   if (isset($additional_form_elements['validation'])) {
     $form['validation'] = array_merge($form['validation'], $additional_form_elements['validation']);

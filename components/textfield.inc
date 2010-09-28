@@ -25,6 +25,7 @@ function _webform_defaults_textfield() {
       'field_suffix' => '',
       'disabled' => 0,
       'unique' => 0,
+      'title_display' => 0,
       'description' => '',
       'attributes' => array(),
     ),
@@ -91,7 +92,7 @@ function _webform_edit_textfield($component) {
     '#title' => t('Disabled'),
     '#return_value' => 1,
     '#description' => t('Make this field non-editable. Useful for setting an unchangeable default value.'),
-    '#weight' => 3,
+    '#weight' => 11,
     '#default_value' => $component['extra']['disabled'],
     '#parents' => array('extra', 'disabled'),
   );
@@ -122,17 +123,18 @@ function _webform_edit_textfield($component) {
  */
 function _webform_render_textfield($component, $value = NULL, $filter = TRUE) {
   $element = array(
-    '#type'          => $component['type'],
-    '#title'         => $component['name'],
+    '#type' => $component['type'],
+    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : NULL,
     '#default_value' => $filter ? _webform_filter_values($component['value'], NULL, NULL, NULL, FALSE) : $component['value'],
-    '#required'      => $component['mandatory'],
-    '#weight'        => $component['weight'],
-    '#field_prefix'  => empty($component['extra']['field_prefix']) ? NULL : check_plain($component['extra']['field_prefix']),
-    '#field_suffix'  => empty($component['extra']['field_suffix']) ? NULL : check_plain($component['extra']['field_suffix']),
-    '#description'   => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
-    '#attributes'    => $component['extra']['attributes'],
-    '#prefix'        => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
-    '#suffix'        => '</div>',
+    '#required' => $component['mandatory'],
+    '#weight' => $component['weight'],
+    '#field_prefix' => empty($component['extra']['field_prefix']) ? NULL : ($filter ? _webform_filter_xss($component['extra']['field_prefix']) : $component['extra']['field_prefix']),
+    '#field_suffix' => empty($component['extra']['field_suffix']) ? NULL : ($filter ? _webform_filter_xss($component['extra']['field_suffix']) : $component['extra']['field_prefix']),
+    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#attributes' => $component['extra']['attributes'],
+    '#prefix' => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
+    '#suffix' => '</div>',
     '#webform_component' => $component,
     '#element_validate' => array(),
   );
@@ -172,9 +174,9 @@ function _webform_display_textfield($component, $value, $format = 'html') {
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
     '#field_prefix' => $component['extra']['field_prefix'],
     '#field_suffix' => $component['extra']['field_suffix'],
-    '#component' => $component,
     '#format' => $format,
     '#value' => isset($value[0]) ? $value[0] : '',
+    '#webform_component' => $component,
   );
 }
 

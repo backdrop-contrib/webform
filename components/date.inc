@@ -24,6 +24,7 @@ function _webform_defaults_date() {
       'year_end' => '+2',
       'year_textfield' => 0,
       'datepicker' => 1,
+      'title_display' => 0,
       'description' => '',
     ),
   );
@@ -116,21 +117,22 @@ function _webform_edit_date($component) {
 /**
  * Implementation of _webform_render_component().
  */
-function _webform_render_date($component, $value = NULL) {
+function _webform_render_date($component, $value = NULL, $filter = TRUE) {
   $element = array(
-    '#title' => $component['name'],
+    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : NULL,
     '#weight' => $component['weight'],
     '#type' => 'date',
-    '#description' => _webform_filter_descriptions($component['extra']['description']),
+    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#prefix' => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
     '#suffix' => '</div>',
     '#required' => $component['mandatory'],
     '#year_start' => $component['extra']['year_start'],
     '#year_end' => $component['extra']['year_end'],
-    '#webform_component' => $component,
     '#process' => array('webform_expand_date'),
     '#theme' => 'webform_date',
     '#element_validate' => array('webform_validate_date'),
+    '#webform_component' => $component,
   );
 
   if ($component['extra']['datepicker']) {
@@ -317,9 +319,9 @@ function _webform_display_date($component, $value, $format = 'html') {
     '#weight' => $component['weight'],
     '#theme' => 'webform_display_date',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
-    '#component' => $component,
     '#format' => $format,
     '#value' => $value,
+    '#webform_component' => $component,
   );
 }
 
