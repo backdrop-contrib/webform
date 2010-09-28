@@ -1077,8 +1077,11 @@ function webform_node_load($nodes, $types) {
       continue;
     }
 
-    // Load defaults if a record was not in the database.
-    $nodes[$nid]->webform = isset($nodes[$nid]->webform) ? $nodes[$nid]->webform : webform_node_defaults();
+    // If a webform record doesn't exist, just return the defaults.
+    if (!isset($nodes[$nid]->webform)) {
+      $nodes[$nid]->webform = webform_node_defaults();
+      continue;
+    }
 
     $nodes[$nid]->webform['roles'] = db_select('webform_roles')
       ->fields('webform_roles', array('rid'))
@@ -1186,8 +1189,8 @@ function webform_node_view($node, $view_mode) {
   $teaser = $view_mode == 'teaser';
   $page = arg(0) == 'node' && arg(1) == $node->nid;
 
-  // If a teaser or a new node (during preview), do not display the form.
-  if (($teaser && !$node->webform['teaser']) || empty($node->nid)) {
+  // If empty, a teaser, or a new node (during preview) do not display.
+  if (empty($node->webform['components']) || ($teaser && !$node->webform['teaser']) || empty($node->nid)) {
     return;
   }
 
