@@ -13,6 +13,10 @@
 .webform-submission-next {
   margin-left: 20px;
 }
+.webform-component-select-wrapper {
+  max-height: 300px;
+  overflow: auto;
+}
 .webform-component-select-table table {
   margin: 0;
 }

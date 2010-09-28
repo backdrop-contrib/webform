@@ -906,7 +906,7 @@ function theme_webform_component_select($variables) {
     $element['#children'] = t('No available components.');
   }
   else {
-    $element['#children'] = theme('table', array('header' => $header, 'rows' => $rows));
+    $element['#children'] = '<div class="webform-component-select-wrapper">' . theme('table', array('header' => $header, 'rows' => $rows)) . '</div>';
   }
 
   return theme('fieldset', array('element' => $element));
