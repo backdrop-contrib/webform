@@ -358,6 +358,17 @@ function webform_results_download_form($form, &$form_state, $node) {
     '#collapsed' => TRUE,
   );
 
+  $form['select_options']['select_keys'] = array(
+    '#type' => 'radios',
+    '#title' => t('Select keys'),
+    '#options' => array(
+      0 => t('Full, human-readable options (values)'),
+      1 => t('Short, raw options (keys)'),
+    ),
+    '#default_value' => 0,
+    '#description' => t('Choose which part of options should be displayed from key|value pairs.'),
+  );
+
   $form['select_options']['select_format'] = array(
     '#type' => 'radios',
     '#title' => t('Select list format'),
@@ -405,6 +416,7 @@ function webform_results_download_form_submit(&$form, &$form_state) {
   $options = array(
     'delimiter' => $form_state['values']['delimiter'],
     'components' => array_keys(array_filter($form_state['values']['components'])),
+    'select_keys' => $form_state['values']['select_keys'],
     'select_format' => $form_state['values']['select_format'],
   );
   webform_results_download($form_state['values']['node'], $form_state['values']['format'], $options);
@@ -509,6 +521,7 @@ function webform_results_download($node, $format = 'delimiter', $options = array
     $options = array(
       'delimiter' => variable_get('webform_csv_delimiter', '\t'),
       'components' => array_keys($submission_information) + array_keys(webform_component_list($node, 'csv', TRUE)),
+      'select_keys' => 0,
       'select_format' => 'separate',
     );
   }

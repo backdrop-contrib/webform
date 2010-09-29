@@ -666,7 +666,12 @@ function _webform_csv_data_select($component, $export_options, $value) {
     foreach ($options as $key => $item) {
       $index = array_search($key, (array) $value);
       if ($index !== FALSE) {
-        $return[] = ($export_options['select_format'] == 'separate') ? 'X' : $key;
+        if ($export_options['select_format'] == 'separate') {
+          $return[] = 'X';
+        }
+        else {
+          $return[] = $export_options['select_keys'] ? $key : $item;
+        }
         unset($value[$index]);
       }
       elseif ($export_options['select_format'] == 'separate') {
@@ -680,7 +685,13 @@ function _webform_csv_data_select($component, $export_options, $value) {
     }
   }
   else {
-    $return = $value[0];
+    $key = $value[0];
+    if ($export_options['select_keys']){
+      $return = $key;
+    }
+    else {
+      $return = isset($options[$key]) ? $options[$key] : $key;
+    }
   }
 
   if ($component['extra']['multiple'] && $export_options['select_format'] == 'compact') {
