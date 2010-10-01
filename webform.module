@@ -2020,9 +2020,9 @@ function webform_client_form_submit($form, &$form_state) {
       }
 
       // Update the to e-mail if set in the themed headers.
-      if (isset($headers['To'])) {
-        $email['email'] = $headers['To'];
-        unset($headers['To']);
+      if (isset($email['headers']['To'])) {
+        $email['email'] = $email['headers']['To'];
+        unset($email['headers']['To']);
       }
 
       // Generate the list of addresses that this e-mail will be sent to.
