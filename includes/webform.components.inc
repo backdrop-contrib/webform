@@ -378,7 +378,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
   $form['display']['title_display'] = array(
     '#type' => 'checkbox',
     '#title' => t('Hide component title'),
-    '#default_value' => $component['extra']['title_display'],
+    '#default_value' => !empty($component['extra']['title_display']),
     '#return_value' => 'none',
     '#description' => t('Do not display the title or label of this field in the form.'),
     '#weight' => 8,
@@ -791,7 +791,7 @@ function webform_component_feature($type, $feature) {
     'spam_analysis' => FALSE,
     'group' => FALSE,
   );
-  return isset($components[$type]['features'][$feature]) ? $components[$type]['features'][$feature] : $defaults[$feature];
+  return isset($components[$type]['features'][$feature]) ? $components[$type]['features'][$feature] : !empty($defaults[$feature]);
 }
 
 /**

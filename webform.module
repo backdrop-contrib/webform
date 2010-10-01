@@ -2275,7 +2275,7 @@ function theme_webform_element_text($variables) {
   $value = $variables['element']['#children'];
 
   $output = '';
-  $is_group = webform_component_feature($element['#component']['type'], 'group');
+  $is_group = webform_component_feature($element['#webform_component']['type'], 'group');
 
   // Output the element title.
   if (isset($element['#title'])) {
