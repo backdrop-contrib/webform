@@ -76,6 +76,9 @@ function webform_components_form($form, $form_state, $node) {
       '#default_value' => $component['mandatory'],
       '#access' => webform_component_feature($component['type'], 'required'),
     );
+    if (!isset($max_weight) || $component['weight'] > $max_weight) {
+      $max_weight = $component['weight'];
+    }
   }
 
   $form['add']['name'] = array(
@@ -101,10 +104,28 @@ function webform_components_form($form, $form_state, $node) {
     '#default_value' => (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) ? $node->webform['components'][$_GET['cid']]['pid'] : 0,
   );
   $form['add']['weight'] = array(
-    '#type' => 'weight',
+    '#type' => 'textfield',
+    '#size' => 4,
     '#delta' => count($node->webform['components']) > 10 ? count($node->webform['components']) : 10,
-    '#default_value' => (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) ? $node->webform['components'][$_GET['cid']]['weight'] + 1: count($node->webform['components']),
   );
+
+  if (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) {
+    // Make the new component appear by default directly after the one that was
+    // just added.
+    $form['add']['weight']['#default_value'] = $node->webform['components'][$_GET['cid']]['weight'] + 1;
+    foreach (array_keys($node->webform['components']) as $cid) {
+      // Adjust all later components also, to make sure none of them have the
+      // same weight as the new component.
+      if ($form['components'][$cid]['weight']['#default_value'] >= $form['add']['weight']['#default_value']) {
+        $form['components'][$cid]['weight']['#default_value']++;
+      }
+    }
+  }
+  else {
+    // If no component was just added, the new component should appear by
+    // default at the end of the list.
+    $form['add']['weight']['#default_value'] = isset($max_weight) ? $max_weight + 1 : 0;
+  }
 
   $form['add']['add'] = array(
     '#type' => 'submit',
