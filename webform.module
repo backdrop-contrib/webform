@@ -2729,7 +2729,7 @@ function webform_get_cid(&$node, $form_key, $pid) {
 function webform_variable_get($variable) {
   switch ($variable) {
     case 'webform_allowed_tags':
-      $result = array('a', 'em', 'strong', 'code', 'img')
+      $result = array('a', 'em', 'strong', 'code', 'img');
       break;
     case 'webform_default_from_name':
       $result = variable_get('webform_default_from_name', variable_get('site_name', ''));
