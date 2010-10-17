@@ -788,29 +788,42 @@ function webform_webform_select_options_info() {
  *
  * Only allow users with view webform submissions to download files.
  */
-function webform_file_download($file) {
+function webform_file_download($uri) {
   global $user;
 
-  // If the Webform directory doesn't exist, don't attempt to deliver a file.
-  $webform_directory = file_directory_path() . '/webform/';
-  if (!is_dir($webform_directory)) {
-    return;
-  }
-
-  $file = file_check_location(file_directory_path() . '/' . $file, $webform_directory);
-  if ($file && (user_access('access all webform results') || user_access('access own webform results'))) {
-    $info = image_get_info(file_create_path($file));
-    if (isset($info['mime_type'])) {
-      $headers = array('Content-type: ' . $info['mime_type']);
-    }
-    else {
-      $headers = array(
-        'Content-type: force-download',
-        'Content-disposition: attachment',
+  // Determine whether this file was a webform upload. If it was, retrieve file
+  // information, plus the user id of the uploader.
+  $file = db_query("SELECT ws.uid, f.* FROM {file_managed} f INNER JOIN {webform_submitted_data} wsd ON f.fid = wsd.data INNER JOIN {webform_submissions} ws ON ws.sid = wsd.sid WHERE f.uri = :uri", array('uri' => $uri))->fetchObject();
+  if ($file) {
+    // Allow file access for admins, or for users who are viewing their own
+    // submissions.
+    if (user_access('access all webform results') || ($user->uid == $file->uid && user_access('access own webform results'))) {
+      // TODO: This is a copy/paste from file_file_download. Switch to using
+      // file_get_content_headers() instead if http://drupal.org/node/943112
+      // gets committed.
+      $name = mime_header_encode($file->filename);
+      $type = mime_header_encode($file->filemime);
+      // Serve images, text, and flash content for display rather than download.
+      $inline_types = variable_get('file_inline_types', array('^text/', '^image/', 'flash$'));
+      $disposition = 'attachment';
+      foreach ($inline_types as $inline_type) {
+        // Exclamation marks are used as delimiters to avoid escaping slashes.
+        if (preg_match('!' . $inline_type . '!', $file->filemime)) {
+          $disposition = 'inline';
+        }
+      }
+      return array(
+        'Content-Type' => $type . '; name="' . $name . '"',
+        'Content-Length' => $file->filesize,
+        'Content-Disposition' => $disposition . '; filename="' . $name . '"',
+        'Cache-Control' => 'private',
       );
     }
-    return $headers;
+    // This is a webform-controlled file, but the user doesn't have access.
+    return -1;
   }
+  // This is not a webform-controlled file.
+  return NULL;
 }
 
 /**
