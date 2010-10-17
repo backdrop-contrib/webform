@@ -982,7 +982,7 @@ function webform_validate_unique($element, $form_state) {
   $nid = $form_state['values']['details']['nid'];
   $sid = $form_state['values']['details']['sid'];
   $count = db_select('webform_submitted_data')
-    ->fields('webform_submitted_data', 'sid')
+    ->fields('webform_submitted_data', array('sid'))
     ->condition('nid', $nid)
     ->condition('cid', $element['#webform_component']['cid'])
     ->condition('sid', $sid, '<>')
