@@ -2739,7 +2739,7 @@ function webform_variable_get($variable) {
       $result = variable_get('webform_node_types', array('webform'));
       break;
     case 'webform_node_types_redirect':
-      $result = variable_get('webform_node_types', array('webform'));
+      $result = variable_get('webform_node_types_redirect', array('webform'));
       break;
   }
   return $result;
