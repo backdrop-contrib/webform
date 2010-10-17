@@ -295,7 +295,7 @@ function hook_webform_component_info() {
       // If this field can be used as a conditional SOURCE. All fields may
       // always be displayed conditionally, regardless of this setting.
       // Defaults to TRUE.
-      'conditonal' => TRUE,
+      'conditional' => TRUE,
       // If this field allows other fields to be grouped within it (like a 
       // fieldset or tabs). Defaults to FALSE.
       'group' => FALSE,
@@ -348,7 +348,6 @@ function _webform_defaults_component() {
   return array(
     'name' => '',
     'form_key' => NULL,
-    'email' => 1,
     'mandatory' => 0,
     'pid' => 0,
     'weight' => 0,

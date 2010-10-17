@@ -20,7 +20,6 @@ function _webform_defaults_time() {
     'weight' => 0,
     'value' => '',
     'mandatory' => 0,
-    'email' => 1,
     'extra' => array(
       'timezone' => 'user',
       'hourformat' => '12-hour',

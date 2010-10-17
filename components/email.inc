@@ -17,7 +17,6 @@ function _webform_defaults_email() {
     'weight' => 0,
     'value' => '',
     'mandatory' => 0,
-    'email' => 1,
     'extra' => array(
       'width' => '',
       'unique' => 0,
