@@ -188,7 +188,7 @@ function theme_webform_display_textfield($variables) {
   $prefix = $element['#format'] == 'html' ? filter_xss($element['#field_prefix']) : $element['#field_prefix'];
   $suffix = $element['#format'] == 'html' ? filter_xss($element['#field_suffix']) : $element['#field_suffix'];
   $value = $element['#format'] == 'html' ? check_plain($element['#value']) : $element['#value'];
-  return $value ? ($prefix . $value . $suffix) : ' ';
+  return $value !== '' ? ($prefix . $value . $suffix) : ' ';
 }
 
 /**

@@ -150,7 +150,7 @@ function theme_webform_display_textarea($variables) {
   if (strlen($output) > 80) {
     $output = ($element['#format'] == 'html') ? '<div class="webform-long-answer">' . $output . '</div>' : $output;
   }
-  return $output ? $output : ' ';
+  return $value !== '' ? $output : ' ';
 }
 
 /**
