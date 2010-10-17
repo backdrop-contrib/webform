@@ -396,7 +396,6 @@ function webform_get_submission_count($nid, $uid = NULL, $reset = FALSE) {
 
   if (!isset($counts[$nid][$uid]) || $reset) {
     $query = db_select('webform_submissions')
-      ->countQuery()
       ->condition('nid', $nid);
     $arguments = array($nid);
     if ($uid !== NULL) {
@@ -407,7 +406,7 @@ function webform_get_submission_count($nid, $uid = NULL, $reset = FALSE) {
       $query->condition('sid', $submissions, 'IN');
     }
 
-    $counts[$nid][$uid] = $query->execute()->fetchField();
+    $counts[$nid][$uid] = $query->countQuery()->execute()->fetchField();
   }
   return $counts[$nid][$uid];
 }
@@ -466,7 +465,6 @@ function _webform_submission_limit_check($node) {
 
   // Retrieve submission data for this IP address or username from the database.
   $query = db_select('webform_submissions')
-    ->countQuery()
     ->condition('nid', $node->nid)
     ->condition('is_draft', 0);
 
@@ -482,7 +480,7 @@ function _webform_submission_limit_check($node) {
   }
 
   // Fetch all the entries from the database within the submit interval with this username and IP.
-  $num_submissions_database = $query->execute()->fetchField();
+  $num_submissions_database = $query->countQuery()->execute()->fetchField();
 
   // Double check the submission history from the users machine using cookies.
   $num_submissions_cookie = 0;
