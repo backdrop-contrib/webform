@@ -385,6 +385,7 @@ function webform_uninstall() {
   variable_del('webform_default_format');
   variable_del('webform_format_override');
   variable_del('webform_csv_delimiter');
+  variable_del('webform_allowed_tags');
   variable_del('webform_blocks');
 
   $component_list = array();

@@ -2700,7 +2700,9 @@ function _webform_filter_descriptions($string, $node = NULL, $submission = NULL)
  * Filter labels for display by running through XSS checks.
  */
 function _webform_filter_xss($string) {
-  return filter_xss($string, array('a', 'em', 'strong', 'code'));
+  static $allowed_tags;
+  $allowed_tags = isset($allowed_tags) ? $allowed_tags : webform_variable_get('webform_allowed_tags');
+  return filter_xss($string, $allowed_tags);
 }
 
 /**
@@ -2726,6 +2728,9 @@ function webform_get_cid(&$node, $form_key, $pid) {
  */
 function webform_variable_get($variable) {
   switch ($variable) {
+    case 'webform_allowed_tags':
+      $result = array('a', 'em', 'strong', 'code', 'img')
+      break;
     case 'webform_default_from_name':
       $result = variable_get('webform_default_from_name', variable_get('site_name', ''));
       break;
