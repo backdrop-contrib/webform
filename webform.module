@@ -1158,7 +1158,7 @@ function webform_form_alter(&$form, $form_state, $form_id) {
     );
 
     // If a new node, redirect the user to the components form after save.
-    if (empty($node->nid)) {
+    if (empty($node->nid) && in_array($node->type, webform_variable_get('webform_node_types_redirect'))) {
       $form['actions']['submit']['#submit'][] = 'webform_form_submit';
     }
   }
@@ -2736,6 +2736,9 @@ function webform_variable_get($variable) {
       $result = variable_get('webform_default_subject', t('Form submission from: %title'));
       break;
     case 'webform_node_types':
+      $result = variable_get('webform_node_types', array('webform'));
+      break;
+    case 'webform_node_types_redirect':
       $result = variable_get('webform_node_types', array('webform'));
       break;
   }
