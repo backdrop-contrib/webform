@@ -64,7 +64,8 @@ td.webform-pagebreak {
   text-align: center;
   width: 40px;
 }
-.webform-container-inline div {
+.webform-container-inline div,
+.webform-container-inline div.form-item {
   display: inline;
 }
 .webform-default-value {

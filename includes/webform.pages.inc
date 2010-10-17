@@ -36,7 +36,7 @@ function webform_configure_form($form, &$form_state, $node) {
   $form['submission']['confirmation'] = array(
     '#type' => 'text_format',
     '#title' => t('Confirmation message'),
-    '#description' => t('Message to be shown upon successful submission. If <em>Redirect URL</em> is set this displays as a message, otherwise it will be shown on its own page.'),
+    '#description' => t('Message to be shown upon successful submission. If the redirection location is set to <em>Confirmation page</em> it will be shown on its own page, otherwise this displays as a message.'),
     '#default_value' => $node->webform['confirmation'],
     '#cols' => 40,
     '#rows' => 10,
@@ -44,12 +44,42 @@ function webform_configure_form($form, &$form_state, $node) {
     '#parents' => array('confirmation'),
   );
 
-  // Redirect URL.
-  $form['submission']['redirect_url'] = array(
+  // Redirection settings.
+  if (strpos($node->webform['redirect_url'], '<') === 0) {
+    $redirect = trim($node->webform['redirect_url'], '<>');
+    // Redirection is set to front page.
+    if ($redirect == 'front') {
+      $redirect = 'url';
+      $redirect_url = $node->webform['redirect_url'];
+    }
+    else {
+      $redirect_url = '';
+    }
+  }
+  else {
+    $redirect = 'url';
+    $redirect_url = $node->webform['redirect_url'];
+  }
+  $form['submission']['redirection'] = array(
+    '#type' => 'item',
+    '#title' => t('Redirection location'),
+    '#theme' => 'webform_advanced_redirection_form',
+    '#description' => t('Choose where to redirect the user upon successful submission.'),
+  );
+  $form['submission']['redirection']['redirect']= array(
+    '#type' => 'radios',
+    '#default_value' => $redirect,
+    '#options' => array(
+      'confirmation' => t('Confirmation page'),
+      'url' => t('Custom URL'),
+      'none' => t('No redirect (reload current page)'),
+    ),
+  );
+  $form['submission']['redirection']['redirect_url'] = array(
     '#type' => 'textfield',
     '#title' => t('Redirect URL'),
     '#description' => t('URL to redirect the user to upon successful submission.'),
-    '#default_value' => $node->webform['redirect_url'],
+    '#default_value' => $redirect_url,
     '#maxlength' => 255,
   );
 
@@ -121,6 +151,13 @@ function webform_configure_form($form, &$form_state, $node) {
     '#collapsed' => TRUE,
     '#weight' => -1,
   );
+  $form['advanced']['block'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Available as block'),
+    '#default_value' => $node->webform['block'],
+    '#description' => t('If enabled this webform will be available as a block.'),
+    '#access' => user_access('administer blocks') || user_access('administer site configuration') || user_access('use panels dashboard'),
+  );
   $form['advanced']['teaser'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show complete form in teaser'),
@@ -172,12 +209,23 @@ function webform_configure_form_validate($form, &$form_state) {
   }
 
   // Ensure the entered redirect URL is valid.
-  $redirect_url = trim($form_state['values']['redirect_url']);
-  if (!empty($redirect_url) && strpos($redirect_url, 'http') === 0 && !valid_url($redirect_url, TRUE)) {
-    form_error($form['submission']['redirect_url'], t('The entered URL is not a valid address.'));
+  if ($form_state['values']['redirect'] == 'url') {
+    $redirect_url = trim($form_state['values']['redirect_url']);
+    if (empty($redirect_url)) {
+      form_error($form['submission']['redirection']['redirect_url'], t('A valid URL is required for custom redirection.'));
+    }
+    elseif (strpos($redirect_url, 'http') === 0 && !valid_url($redirect_url, TRUE)) {
+      form_error($form['submission']['redirection']['redirect_url'], t('The entered URL is not a valid address.'));
+    }
+    else {
+      form_set_value($form['submission']['redirection']['redirect_url'], $redirect_url, $form_state);
+    }
+  }
+  elseif ($form_state['values']['redirect'] == 'confirmation') {
+    form_set_value($form['submission']['redirection']['redirect_url'], '<confirmation>', $form_state);
   }
   else {
-    form_set_value($form['submission']['redirect_url'], $redirect_url, $form_state);
+    form_set_value($form['submission']['redirection']['redirect_url'], '<none>', $form_state);
   }
 }
 
@@ -196,6 +244,9 @@ function webform_configure_form_submit($form, &$form_state) {
 
   // Save roles.
   $node->webform['roles'] = array_keys(array_filter($form_state['values']['roles']));
+
+  // Set the block option.
+  $node->webform['block'] = $form_state['values']['block'];
 
   // Set the Show complete form in teaser setting.
   $node->webform['teaser'] = $form_state['values']['teaser'];
@@ -222,6 +273,27 @@ function webform_configure_form_submit($form, &$form_state) {
   node_save($node);
 
   drupal_set_message(t('The form settings have been updated.'));
+}
+
+/**
+ * Theme the redirection setting on the webform node form.
+ */
+function theme_webform_advanced_redirection_form($variables) {
+  $form = $variables['form'];
+  // Add special class for setting the active radio button.
+  $form['redirect_url']['#attributes']['class'] = array('webform-set-active');
+
+  // Remove title and description for Redirect URL field.
+  $form['redirect_url']['#title'] = NULL;
+  $form['redirect_url']['#description'] = NULL;
+
+  $form['redirect']['confirmation']['#theme_wrappers'] = array('webform_inline_radio');
+  $form['redirect']['url']['#theme_wrappers'] = array('webform_inline_radio');
+  $form['redirect']['none']['#theme_wrappers'] = array('webform_inline_radio');
+  $form['redirect']['url']['#inline_element'] = $form['redirect']['url']['#title'] . ': ' . drupal_render($form['redirect_url']);
+  $form['redirect']['url']['#title'] = NULL;
+
+  return drupal_render_children($form);
 }
 
 /**

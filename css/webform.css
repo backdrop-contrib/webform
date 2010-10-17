@@ -8,6 +8,7 @@ input.webform-calendar {
   padding: 3px;
   vertical-align: top;
 }
-.webform-container-inline div {
+.webform-container-inline div,
+.webform-container-inline div.form-item {
   display: inline;
 }

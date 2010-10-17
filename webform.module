@@ -517,10 +517,6 @@ function webform_theme() {
       'template' => 'templates/webform-form',
       'pattern' => 'webform_form_[0-9]+',
     ),
-    'webform_advanced_submit_limit_form' => array(
-      'render element' => 'form',
-      'file' => 'includes/webform.pages.inc',
-    ),
     'webform_confirmation' => array(
       'variables' => array('node' => NULL, 'sid' => NULL),
       'template' => 'templates/webform-confirmation',
@@ -581,6 +577,15 @@ function webform_theme() {
     'webform_component_select' => array(
       'render element' => 'element',
       'file' => 'includes/webform.components.inc',
+    ),
+    // webform.pages.inc.
+    'webform_advanced_redirection_form' => array(
+      'render element' => 'form',
+      'file' => 'includes/webform.pages.inc',
+    ),
+    'webform_advanced_submit_limit_form' => array(
+      'render element' => 'form',
+      'file' => 'includes/webform.pages.inc',
     ),
     // webform.report.inc.
     'webform_results_per_page' => array(
@@ -877,20 +882,8 @@ function webform_node_insert($node) {
   module_load_include('inc', 'webform', 'includes/webform.emails');
 
   // Insert the webform.
-  db_insert('webform')
-    ->fields(array(
-      'nid' => $node->nid,
-      'confirmation' => $node->webform['confirmation'],
-      'confirmation_format' => $node->webform['confirmation_format'],
-      'redirect_url' => $node->webform['redirect_url'],
-      'teaser' => $node->webform['teaser'],
-      'allow_draft' => $node->webform['allow_draft'],
-      'submit_notice' => $node->webform['submit_notice'],
-      'submit_text' => $node->webform['submit_text'],
-      'submit_limit' => $node->webform['submit_limit'],
-      'submit_interval' => $node->webform['submit_interval'],
-    ))
-    ->execute();
+  $node->webform['nid'] = $node->nid;
+  drupal_write_record('webform', $node->webform);
 
   // Insert the components into the database. Used with clone.module.
   if (isset($node->webform['components']) && !empty($node->webform['components'])) {
@@ -923,20 +916,8 @@ function webform_node_update($node) {
   }
 
   // Update the webform entry.
-  db_merge('webform')
-    ->fields(array(
-      'confirmation' => $node->webform['confirmation'],
-      'confirmation_format' => $node->webform['confirmation_format'],
-      'redirect_url' => $node->webform['redirect_url'],
-      'teaser' => $node->webform['teaser'],
-      'allow_draft' => $node->webform['allow_draft'],
-      'submit_notice' => $node->webform['submit_notice'],
-      'submit_text' => $node->webform['submit_text'],
-      'submit_limit' => $node->webform['submit_limit'],
-      'submit_interval' => $node->webform['submit_interval'],
-    ))
-    ->key(array('nid' => $node->nid))
-    ->execute();
+  $node->webform['nid'] = $node->nid;
+  drupal_write_record('webform', $node->webform, array('nid'));
 
   // Compare the webform components and don't do anything if it's not needed.
   $original = node_load($node->nid);
@@ -1029,8 +1010,9 @@ function webform_node_defaults() {
   return array(
     'confirmation' => '',
     'confirmation_format' => filter_default_format(),
-    'redirect_url' => '',
+    'redirect_url' => '<confirmation>',
     'teaser' => 0,
+    'block' => 0,
     'allow_draft' => 0,
     'submit_notice' => 1,
     'submit_text' => '',
@@ -1212,6 +1194,7 @@ function webform_node_view($node, $view_mode) {
     return;
   }
 
+  $info = array();
   $submission = array();
   $submission_count = 0;
   $enabled = TRUE;
@@ -1277,7 +1260,7 @@ function webform_node_view($node, $view_mode) {
   }
 
   // Print out messages for the webform.
-  if (empty($node->in_preview) && !$logging_in) {
+  if (empty($node->in_preview) && !isset($node->webform_block) && !$logging_in) {
     theme('webform_view_messages', array('node' => $node, 'teaser' => $teaser, 'page' => $page, 'submission_count' => $submission_count, 'limit_exceeded' => $limit_exceeded, 'allowed_roles' => $allowed_roles));
   }
 
@@ -1408,6 +1391,125 @@ function webform_mail($key, &$message, $params) {
 }
 
 /**
+ * Implementation of hook_block_info().
+ */
+function webform_block_info() {
+  $blocks = array();
+  $webform_node_types = webform_variable_get('webform_node_types');
+  if (!empty($webform_node_types)) {
+    $query = db_select('webform', 'w')->fields('w')->fields('n', array('title'));
+    $query->leftJoin('node', 'n', 'w.nid = n.nid');
+    $query->condition('w.block', 1);
+    $query->condition('n.type', $webform_node_types, 'IN');
+    $result = $query->execute();
+    foreach ($result as $data) {
+      $blocks['client-block-'. $data->nid] = array(
+        'info' => t('Webform: !title', array('!title' => $data->title)),
+        'cache' => DRUPAL_NO_CACHE,
+      );
+    }
+  }
+  return $blocks;
+}
+
+/**
+ * Implementation of hook_block_view().
+ */
+function webform_block_view($delta = '') {
+  global $user;
+
+  // Load the block-specific configuration settings.
+  $webform_blocks = variable_get('webform_blocks', array());
+  $settings = isset($webform_blocks[$delta]) ? $webform_blocks[$delta] : array();
+  $settings += array(
+    'display' => 'form',
+  );
+
+  // Get the node ID from delta.
+  $nid = drupal_substr($delta, strrpos($delta, '-') + 1);
+
+  // Load node in current language.
+  if (module_exists('translation')) {
+    global $language;
+    if (($translations = translation_node_get_translations($nid)) && (isset($translations[$language->language]))) {
+      $nid = $translations[$language->language]->nid;
+    }
+  }
+
+  // The webform node to display in the block.
+  $node = node_load($nid);
+
+  // Return if user has no access to the webform node.
+  if (!node_access('view', $node)) {
+    return;
+  }
+
+  // This is a webform node block.
+  $node->webform_block = TRUE;
+
+  // Use the node title for the block title.
+  $subject = $node->title;
+
+  // Generate the content of the block based on display settings.
+  if ($settings['display'] == 'form') {
+    webform_node_view($node, 'full');
+    $content = $node->content['webform'];
+  }
+  else {
+    $teaser = ($settings['display'] == 'teaser') ? 'teaser' : 'full';
+    $content = node_view($node, $teaser);
+  }
+
+  // Create the block.
+  $block = array(
+    'subject' => $subject,
+    'content' => $content,
+  );
+  return $block;
+}
+
+/**
+ * Implementation of hook_block_configure().
+ */
+function webform_block_configure($delta = '') {
+  // Load the block-specific configuration settings.
+  $webform_blocks = variable_get('webform_blocks', array());
+  $settings = isset($webform_blocks[$delta]) ? $webform_blocks[$delta] : array();
+  $settings += array(
+    'display' => 'form',
+  );
+
+  $form = array();
+  $form['display'] = array(
+    '#type' => 'radios',
+    '#title' => t('Display mode'),
+    '#default_value' => $settings['display'],
+    '#options' => array(
+      'form' => t('Form only'),
+      'full' => t('Full node'),
+      'teaser' => t('Teaser'),
+    ),
+    '#description' => t('The display mode determines how much of the webform to show within the block.'),
+  );
+  return $form;
+}
+
+/**
+ * Implementation of hook_block_save().
+ */
+function webform_block_save($delta = '', $edit = array()) {
+  // Load the previously defined block-specific configuration settings.
+  $settings = variable_get('webform_blocks', array());
+  // Build the settings array.
+  $new_settings[$delta] = array(
+    'display' => $edit['display'],
+  );
+  // We store settings for multiple blocks in just one variable
+  // so we merge the existing settings with the new ones before save.
+  variable_set('webform_blocks', array_merge($settings, $new_settings));
+}
+
+/**
  * Client form generation function. If this is displaying an existing
  * submission, pass in the $submission variable with the contents of the
  * submission to be displayed.
@@ -1455,7 +1557,7 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
 
   // Set the form action to the node ID in case this is being displayed on the
   // teaser, subsequent pages should be on the node page directly.
-  if (empty($submission)) {
+  if (!isset($node->webform_block) && empty($submission)) {
     $form['#action'] = url('node/' . $node->nid);
   }
 
@@ -1951,7 +2053,7 @@ function webform_client_form_submit($form, &$form_state) {
     return;
   }
 
-  $node = node_load($form_state['values']['details']['nid']);
+  $node = $form['#node'];
 
   // Check if user is submitting as a draft.
   $is_draft = $form_state['values']['op'] == t('Save Draft');
@@ -2121,27 +2223,29 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Check confirmation and redirect_url fields.
   $message = NULL;
+  $redirect = NULL;
   $external_url = FALSE;
   if ($is_draft) {
-    $redirect = NULL;
     $message = t('Draft saved');
   }
   elseif (!empty($form_state['values']['details']['finished'])) {
-    $redirect = NULL;
     $message = t('Submission updated.');
+  }
+  elseif ($redirect_url == '<none>') {
+    $redirect = NULL;
+  }
+  elseif ($redirect_url == '<confirmation>') {
+    $redirect = array('node/' . $node->nid . '/done', array('query' => array('sid' => $sid)));
   }
   elseif (valid_url($redirect_url, TRUE)) {
     $redirect = $redirect_url;
     $external_url = TRUE;
-   }
+  }
   elseif ($redirect_url && strpos($redirect_url, 'http') !== 0) {
     $parts = drupal_parse_url($redirect_url);
     $parts['query'] ? ($parts['query']['sid'] = $sid) : ($parts['query'] = array('sid' => $sid));
     $query = $parts['query'];
     $redirect = array($parts['path'], array('query' => $query, 'fragment' => $parts['fragment']));
-  }
-  else {
-    $redirect = array('node/' . $node->nid . '/done', array('query' => array('sid' => $sid)));
   }
 
   // Show a message if manually set.
@@ -2149,7 +2253,7 @@ function webform_client_form_submit($form, &$form_state) {
     drupal_set_message($message);
   }
   // If redirecting and we have a confirmation message, show it as a message.
-  elseif (!$external_url && !empty($redirect_url) && !empty($confirmation)) {
+  elseif (!$external_url && (!empty($redirect_url) && $redirect_url != '<confirmation>') && !empty($confirmation)) {
     drupal_set_message(check_markup($confirmation, $node->webform['confirmation_format'], FALSE));
   }
 
