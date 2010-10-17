@@ -101,7 +101,7 @@ function _webform_render_textarea($component, $value = NULL, $filter = TRUE) {
   $element = array(
     '#type' => 'textarea',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
-    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : NULL,
+    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#default_value' => $filter ? _webform_filter_values($component['value']) : $component['value'],
     '#required' => $component['mandatory'],
     '#weight' => $component['weight'],

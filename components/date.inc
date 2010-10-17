@@ -120,7 +120,7 @@ function _webform_edit_date($component) {
 function _webform_render_date($component, $value = NULL, $filter = TRUE) {
   $element = array(
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
-    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : NULL,
+    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#weight' => $component['weight'],
     '#type' => 'date',
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
