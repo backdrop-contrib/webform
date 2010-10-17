@@ -446,3 +446,13 @@ function webform_update_7304() {
     ->condition('redirect_url', '')
     ->execute();
 }
+
+/**
+ * Set additional_validate and additional_submit columns to allow NULL.
+ */
+function webform_update_7305() {
+  if (db_field_exists('webform', 'additional_validate')) {
+    db_change_field('webform', 'additional_validate', 'additional_validate', array('type' => 'text', 'not null' => FALSE));
+    db_change_field('webform', 'additional_submit', 'additional_submit', array('type' => 'text', 'not null' => FALSE));
+  }
+}
