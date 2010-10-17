@@ -130,9 +130,9 @@ function _webform_edit_file($component) {
       '#type' => 'textfield',
       '#title' => t('Upload Directory'),
       '#default_value' => $component['extra']['savelocation'],
-      '#description' => '<div style="display: block">' . t('Webform uploads are always saved in the site files directory. You may optionally specify a subfolder to store your files.') . '</div>',
+      '#description' => t('Webform uploads are always saved in the site files directory. You may optionally specify a subfolder to store your files.'),
       '#weight' => 3,
-      '#field_prefix' => file_directory_path() . '/webform/',
+      '#field_prefix' => file_stream_wrapper_get_instance_by_scheme(file_default_scheme())->getDirectoryPath() . '/webform/',
       '#element_validate' => array('_webform_edit_file_check_directory'),
       '#after_build' => array('_webform_edit_file_check_directory'),
     );

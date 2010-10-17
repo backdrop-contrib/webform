@@ -387,7 +387,7 @@ function webform_uninstall() {
 
   // Delete uploaded files.
   $filepath = file_build_uri('webform');
-  _webform_recursive_delete($filepath);
+  file_unmanaged_delete_recursive($filepath);
 }
 
 /**
@@ -415,29 +415,5 @@ function webform_update_7302() {
   if (!db_field_exists('webform_emails', 'html')) {
     db_add_field('webform_emails', 'html', array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0, 'not null' => TRUE));
     db_add_field('webform_emails', 'attachments', array('type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE, 'default' => 0, 'not null' => TRUE));
-  }
-}
-
-/**
- * Recursively delete all files and folders in the specified filepath, then
- * delete the containing folder.
- *
- * Note that this only deletes visible files with write permission
- *
- * @param string $path
- *   A filepath relative to file_directory_path
- */
-function _webform_recursive_delete($path) {
-  if ($path && is_dir($path)) {
-    $listing = $path . '/*';
-    foreach (glob($listing) as $file) {
-      if (is_file($file) === TRUE) {
-        @unlink($file);
-      }
-      elseif (is_dir($file) === TRUE) {
-        _webform_recursive_delete($file);
-      }
-    }
-    @rmdir($path);
   }
 }
