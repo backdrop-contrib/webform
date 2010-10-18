@@ -1655,7 +1655,7 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
       if ($page_num == $page_count) {
         $form['actions']['submit'] = array(
           '#type' => 'submit',
-          '#value' => empty($node->webform['submit_text']) ? t('Submit') : $node->webform['submit_text'],
+          '#value' => empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text']),
           '#weight' => 10,
         );
       }
@@ -1671,7 +1671,7 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
       // Add the submit button.
       $form['actions']['submit'] = array(
         '#type' => 'submit',
-        '#value' => empty($node->webform['submit_text']) ? t('Submit') : $node->webform['submit_text'],
+        '#value' => empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text']),
         '#weight' => 10,
       );
     }
@@ -1945,7 +1945,7 @@ function webform_client_form_pages($form, &$form_state) {
   }
 
   // Check for a multi-page form that is not yet complete.
-  $submit_op = empty($node->webform['submit_text']) ? t('Submit') : $node->webform['submit_text'];
+  $submit_op = empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text']);
   $draft_op = t('Save Draft');
   if (!in_array($form_state['values']['op'], array($submit_op, $draft_op))) {
     // Checkboxes need post-processing to maintain their values.
