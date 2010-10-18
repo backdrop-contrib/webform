@@ -125,13 +125,11 @@ function _webform_render_time($component, $value = NULL, $filter = TRUE) {
     '#required' => $component['mandatory'],
     '#weight' => $component['weight'],
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
-    '#prefix' => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
-    '#suffix' => '</div>',
-    '#theme' => 'webform_time',
     '#element_validate' => array('webform_validate_time'),
     '#hourformat' => $component['extra']['hourformat'],
+    '#theme' => 'webform_time',
+    '#theme_wrappers' => array('webform_element'),
     '#webform_component' => $component,
-    '#theme_wrappers' => array('form_element'),
   );
 
   $element['hour'] = array(
@@ -248,7 +246,7 @@ function _webform_display_time($component, $value, $format = 'html') {
 function theme_webform_display_time($variables) {
   $element = $variables['element'];
   $output = ' ';
-  if (isset($element['#value']['hour']) && isset($element['#value']['minute'])) {
+  if (isset($element['#value']['hour']) && $element['#value']['hour'] !== '' && isset($element['#value']['minute']) && $element['#value']['minute'] !== '') {
     if ($element['#hourformat'] == '24-hour') {
       $output = sprintf('%02d', $element['#value']['hour']) . ':' . sprintf('%02d', $element['#value']['minute']);
     }

@@ -267,6 +267,8 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
     '#required' => $component['mandatory'],
     '#weight' => $component['weight'],
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#theme_wrappers' => array('webform_element'),
+    '#pre_render' => array(), // Needed to disable double-wrapping of radios and checkboxes.
     '#webform_component' => $component,
   );
 
@@ -351,18 +353,17 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
     if ($component['extra']['multiple']) {
       // Set display as a checkbox set.
       $element['#type'] = 'checkboxes';
+      $element['#theme_wrappers'] = array_merge(array('checkboxes'), $element['#theme_wrappers']);
       // Drupal 6 hack to properly render on multipage forms.
       $element['#process'] = array('webform_expand_checkboxes', 'webform_expand_select_ids');
     }
     else {
       // Set display as a radio set.
       $element['#type'] = 'radios';
+      $element['#theme_wrappers'] = array_merge(array('radios'), $element['#theme_wrappers']);
       $element['#process'] = array('form_process_radios', 'webform_expand_select_ids');
     }
   }
-
-  $element['#prefix'] = '<div class="webform-component webform-component-' . $element['#type'] . '" id="webform-component-' . $component['form_key'] . '">';
-  $element['#suffix'] = '</div>';
 
   return $element;
 }

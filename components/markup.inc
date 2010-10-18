@@ -59,13 +59,12 @@ function _webform_edit_markup_validate($form, &$form_state) {
  */
 function _webform_render_markup($component, $value = NULL, $filter = TRUE) {
   $element = array(
-    '#type'   => 'markup',
-    '#title'  => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#type' => 'markup',
+    '#title' => $filter ? NULL : $component['name'],
     '#weight' => $component['weight'],
     '#markup' => $filter ? _webform_filter_values(check_markup($component['value'], $component['extra']['format'], FALSE), NULL, NULL, NULL, FALSE) : $component['value'],
     '#input_format' => $component['extra']['format'],
-    '#prefix' => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
-    '#suffix' => '</div>',
+    '#theme_wrappers' => array('webform_element'),
     '#webform_component' => $component,
   );
 

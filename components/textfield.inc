@@ -132,10 +132,8 @@ function _webform_render_textfield($component, $value = NULL, $filter = TRUE) {
     '#field_suffix' => empty($component['extra']['field_suffix']) ? NULL : ($filter ? _webform_filter_xss($component['extra']['field_suffix']) : $component['extra']['field_prefix']),
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#attributes' => $component['extra']['attributes'],
-    '#prefix' => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
-    '#suffix' => '</div>',
+    '#theme_wrappers' => array('webform_element'),
     '#webform_component' => $component,
-    '#element_validate' => array(),
   );
 
   if ($component['extra']['disabled']) {
@@ -184,8 +182,8 @@ function _webform_display_textfield($component, $value, $format = 'html') {
  */
 function theme_webform_display_textfield($variables) {
   $element = $variables['element'];
-  $prefix = $element['#format'] == 'html' ? filter_xss($element['#field_prefix']) : $element['#field_prefix'];
-  $suffix = $element['#format'] == 'html' ? filter_xss($element['#field_suffix']) : $element['#field_suffix'];
+  $prefix = $element['#format'] == 'html' ? '' : $element['#field_prefix'];
+  $suffix = $element['#format'] == 'html' ? '' : $element['#field_suffix'];
   $value = $element['#format'] == 'html' ? check_plain($element['#value']) : $element['#value'];
   return $value !== '' ? ($prefix . $value . $suffix) : ' ';
 }

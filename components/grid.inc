@@ -145,10 +145,9 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#required' => $component['mandatory'],
     '#weight' => $component['weight'],
-    '#theme' => 'webform_grid',
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
-    '#prefix' => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
-    '#suffix' => '</div>',
+    '#theme' => 'webform_grid',
+    '#theme_wrappers' => array('webform_element'),
     '#webform_component' => $component,
   );
 
@@ -207,15 +206,13 @@ function _webform_display_grid($component, $value, $format = 'html') {
     '#webform_component' => $component,
   );
 
-  $cid = 0;
-  foreach ($questions as $question) {
-    if ($question != '') {
+  foreach ($questions as $key => $question) {
+    if ($question !== '') {
       $element[$question] = array(
         '#title' => $question,
-        '#value' => isset($value[$cid]) ? $value[$cid] : NULL,
+        '#value' => isset($value[$key]) ? $value[$key] : NULL,
       );
     }
-    $cid++;
   }
 
   return $element;
@@ -240,7 +237,7 @@ function theme_webform_display_grid($variables) {
       $row = array();
       $row[] = array('data' => _webform_filter_xss($element[$key]['#title']), 'class' => 'webform-grid-question');
       foreach ($element['#options'] as $option_value => $option_label) {
-        if ($option_value == $element[$key]['#value']) {
+        if (strcmp($option_value, $element[$key]['#value']) == 0) {
           $row[] = array('data' => '<strong>X</strong>', 'class' => 'checkbox webform-grid-option');
         }
         else {

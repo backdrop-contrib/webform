@@ -296,11 +296,7 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE) {
   $form_key = implode('_', webform_component_parent_keys($node, $component));
   $element[$form_key] = array(
     '#type' => $component['type'],
-    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
-    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     //'#required' => $component['mandatory'], // Drupal core bug with required file uploads.
-    '#weight' => $component['weight'],
-    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#attributes' => $component['extra']['attributes'],
     '#tree' => FALSE, // file_check_upload assumes a flat $_FILES structure.
     '#element_validate' => array(
@@ -308,14 +304,18 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE) {
       '_webform_required_file',  // Custom required routine.
     ),
     '#webform_component' => $component,
+    '#theme_wrappers' => array(),
   );
+  $element['#webform_component'] = $component;
   $element['#webform_required'] = $component['mandatory'];
   $element['#webform_form_key'] = $form_key;
   $element['#weight'] = $component['weight'];
-  $element['#theme'] = 'webform_render_file';
-  $element['#prefix'] = '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">';
-  $element['#suffix'] = '</div>';
+  $element['#title'] = $filter ? _webform_filter_xss($component['name']) : $component['name'];
+  $element['#title_display'] = $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before';
+  $element['#description'] = $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'];
 
+  $element['#theme'] = 'webform_render_file';
+  $element['#theme_wrappers'] = array('webform_element');
 
   // Change the 'width' option to the correct 'size' option.
   if ($component['extra']['width'] > 0) {

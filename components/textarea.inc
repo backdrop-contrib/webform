@@ -109,8 +109,7 @@ function _webform_render_textarea($component, $value = NULL, $filter = TRUE) {
     '#cols' => !empty($component['extra']['cols']) ? $component['extra']['cols'] : 60,
     '#attributes' => $component['extra']['attributes'],
     '#resizable' => (bool) $component['extra']['resizable'], // MUST be FALSE to disable.
-    '#prefix' => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
-    '#suffix' => '</div>',
+    '#theme_wrappers' => array('webform_element'),
     '#webform_component' => $component,
   );
 
@@ -149,7 +148,7 @@ function theme_webform_display_textarea($variables) {
   if (strlen($output) > 80) {
     $output = ($element['#format'] == 'html') ? '<div class="webform-long-answer">' . $output . '</div>' : $output;
   }
-  return $value !== '' ? $output : ' ';
+  return $output !== '' ? $output : ' ';
 }
 
 /**

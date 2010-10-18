@@ -76,7 +76,7 @@ function _webform_render_hidden($component, $value = NULL, $filter = TRUE) {
 function _webform_display_hidden($component, $value, $format = 'html') {
   $element = array(
     '#title' => t('!name (hidden)', array('!name' => $component['name'])),
-    '#value' => isset($value[0]) ? $value[0] : NULL,
+    '#markup' => isset($value[0]) ? $value[0] : NULL,
     '#weight' => $component['weight'],
     '#theme' => 'webform_display_hidden',
     '#format' => $format,
@@ -100,7 +100,7 @@ function _webform_display_hidden($component, $value, $format = 'html') {
 function theme_webform_display_hidden($variables) {
   $element = $variables['element'];
 
-  return $element['#format'] == 'html' ? check_plain($element['#value']) : $element['#value'];
+  return $element['#format'] == 'html' ? check_plain($element['#markup']) : $element['#markup'];
 }
 
 /**

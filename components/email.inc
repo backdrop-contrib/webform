@@ -116,9 +116,8 @@ function _webform_render_email($component, $value = NULL, $filter = TRUE) {
     '#weight' => $component['weight'],
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#attributes' => $component['extra']['attributes'],
-    '#prefix' => '<div class="webform-component webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
-    '#suffix' => '</div>',
     '#element_validate'  => array('_webform_validate_email'),
+    '#theme_wrappers' => array('webform_element'),
     '#webform_component' => $component,
   );
 
