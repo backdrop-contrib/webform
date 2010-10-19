@@ -60,9 +60,18 @@ function _webform_render_fieldset($component, $value = NULL, $filter = TRUE) {
     '#collapsible' => $component['extra']['collapsible'],
     '#collapsed' => $component['extra']['collapsed'],
     '#attributes' => array('class' => array('webform-component-' . $component['type']), 'id' => 'webform-component-' . $component['form_key']),
+    '#pre_render' => array('webform_fieldset_prerender'),
     '#webform_component' => $component,
   );
 
+  return $element;
+}
+
+/**
+ * Pre-render function to set a fieldset ID.
+ */
+function webform_fieldset_prerender($element) {
+  $element['#attributes']['id'] = 'webform-component-' . str_replace('_', '-', implode('--', array_slice($element['#parents'], 1)));
   return $element;
 }
 
