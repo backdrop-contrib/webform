@@ -885,6 +885,7 @@ function webform_component_select($element) {
       '#title' => $label,
       '#type' => 'checkbox',
       '#default_value' => array_search($key, $element['#value']) !== FALSE,
+      '#return_value' => $key,
       '#parents' => array_merge($element['#parents'], array($key)),
       '#indent' => $indents,
     );
