@@ -994,18 +994,20 @@ function webform_component_defaults(&$component) {
  * Validate an element value is unique with no duplicates in the database.
  */
 function webform_validate_unique($element, $form_state) {
-  $nid = $form_state['values']['details']['nid'];
-  $sid = $form_state['values']['details']['sid'];
-  $count = db_select('webform_submitted_data')
-    ->fields('webform_submitted_data', array('sid'))
-    ->condition('nid', $nid)
-    ->condition('cid', $element['#webform_component']['cid'])
-    ->condition('sid', $sid, '<>')
-    ->condition('data', $element['#value'])
-    ->range(0, 1) // More efficient than using countQuery() for data checks.
-    ->execute()
-    ->fetchField();
-  if ($count) {
-    form_error($element, t('The value %value has already been submitted once for the %title field. You may have already submitted this form, or you need to use a different value.', array('%value' => $element['#value'], '%title' => $element['#title'])));
+  if ($element['#value'] !== '') {
+    $nid = $form_state['values']['details']['nid'];
+    $sid = $form_state['values']['details']['sid'];
+    $count = db_select('webform_submitted_data')
+      ->fields('webform_submitted_data', array('sid'))
+      ->condition('nid', $nid)
+      ->condition('cid', $element['#webform_component']['cid'])
+      ->condition('sid', $sid, '<>')
+      ->condition('data', $element['#value'])
+      ->range(0, 1) // More efficient than using countQuery() for data checks.
+      ->execute()
+      ->fetchField();
+    if ($count) {
+      form_error($element, t('The value %value has already been submitted once for the %title field. You may have already submitted this form, or you need to use a different value.', array('%value' => $element['#value'], '%title' => $element['#title'])));
+    }
   }
 }
