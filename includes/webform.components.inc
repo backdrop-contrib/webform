@@ -857,6 +857,20 @@ function webform_component_list($node, $component_filter = NULL, $indent = TRUE,
     }
   }
 
+  // Remove groups that do not have any children.
+  $previous_cid = 0;
+  foreach ($options as $cid => $label) {
+    if (isset($node->webform['components'][$previous_cid]['type']) && webform_component_feature($node->webform['components'][$previous_cid]['type'], 'group') && webform_component_feature($node->webform['components'][$cid]['type'], 'group')) {
+      unset($options[$cid]);
+    }
+  }
+
+  // Remove the last item from the list if it's a group.
+  if (webform_component_feature($node->webform['components'][$cid]['type'], 'group')) {
+    unset($options[$cid]);
+  }
+
+  // Convert page breaks into optgroups.
   if ($optgroups) {
     $grouped_options = $options;
     $options = array();
