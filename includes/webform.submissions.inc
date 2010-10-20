@@ -102,7 +102,7 @@ function webform_submission_insert($node, $submission) {
           'sid' => $submission->sid,
           'cid' => $cid,
           'no' => $delta,
-          'data' => $value
+          'data' => is_null($value) ? '' : $value,
         ))
         ->execute();
     }
