@@ -270,6 +270,7 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
       'default' => t('Default template'),
       'custom' => t('Custom template'),
     ),
+    '#default_value' => $email['template'] == 'default' ? 'default' : 'custom',
   );
 
   $default_template = theme(array('webform_mail_' . $node->nid, 'webform_mail', 'webform_mail_message'), array('node' => $node, 'email' => $email));
