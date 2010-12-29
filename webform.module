@@ -2642,7 +2642,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
   }
 
   // Token for the entire form tree for e-mails.
-  if (isset($submission) && isset($email) && !isset($replacements['email'][$format]['%email_values'])) {
+  if (isset($submission) && isset($email)) {
     $replacements['email'][$format]['%email_values'] = webform_submission_render($node, $submission, $email, $format);
   }
 
