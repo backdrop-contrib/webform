@@ -1107,6 +1107,8 @@ function webform_node_load($nodes, $types) {
     $nodes[$nid]->webform['components'] = db_select('webform_component')
       ->fields('webform_component')
       ->condition('nid', $nid)
+      ->orderBy('weight')
+      ->orderBy('name')
       ->execute()
       ->fetchAllAssoc('cid', PDO::FETCH_ASSOC);
 
