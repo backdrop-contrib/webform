@@ -449,7 +449,7 @@ function webform_email_edit_form_submit($form, &$form_state) {
 
   if (empty($form_state['values']['eid'])) {
     drupal_set_message(t('Email settings added.'));
-    $cid = webform_email_insert($email);
+    $form_state['values']['eid'] = webform_email_insert($email);
   }
   else {
     drupal_set_message(t('Email settings updated.'));
