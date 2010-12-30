@@ -365,6 +365,9 @@ function _webform_csv_data_grid($component, $export_options, $value) {
     if (isset($value[$key]) && isset($options[$value[$key]])) {
       $return[] = $export_options['select_keys'] ? $value[$key] : $options[$value[$key]];
     }
+    else {
+      $return[] = '';
+    }
   }
   return $return;
 }
