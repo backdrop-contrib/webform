@@ -643,7 +643,11 @@ function _webform_csv_headers_select($component, $export_options) {
         $headers[0][] = '';
         $headers[1][] = '';
       }
-      $headers[2][] = $key;
+      if ($export_options['select_keys']) {
+        $headers[2][] = $key;
+      } else {
+        $headers[2][] = $item;
+      }
       $count++;
     }
   }
