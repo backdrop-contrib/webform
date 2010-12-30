@@ -439,12 +439,14 @@ function webform_update_7303() {
  * Add field for block feature and redirection setting.
  */
 function webform_update_7304() {
-  db_add_field('webform', 'block', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
-  db_change_field('webform', 'redirect_url', 'redirect_url', array('type' => 'varchar', 'length' => 255, 'default' => '<confirmation>'));
-  db_update('webform')
-    ->fields(array('redirect_url' => 'confirmation'))
-    ->condition('redirect_url', '')
-    ->execute();
+  if (!db_field_exists('webform', 'block')) {
+    db_add_field('webform', 'block', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
+    db_change_field('webform', 'redirect_url', 'redirect_url', array('type' => 'varchar', 'length' => 255, 'default' => '<confirmation>'));
+    db_update('webform')
+      ->fields(array('redirect_url' => 'confirmation'))
+      ->condition('redirect_url', '')
+      ->execute();
+  }
 }
 
 /**
