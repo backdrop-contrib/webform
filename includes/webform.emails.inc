@@ -553,7 +553,7 @@ function webform_email_insert($email) {
  */
 function webform_email_update($email) {
   $email['excluded_components'] = implode(',', $email['excluded_components']);
-  return drupal_write_record('webform_emails', $email, 'eid');
+  return drupal_write_record('webform_emails', $email, array('nid', 'eid'));
 }
 
 /**
