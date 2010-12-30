@@ -58,7 +58,7 @@ Drupal.webform.setActive = function(context) {
 Drupal.webform.updateTemplate = function(context) {
   var defaultTemplate = $('#edit-templates-default').val();
   var $templateSelect = $('#webform-template-fieldset select#edit-template-option', context);
-  var $templateTextarea = $('#webform-template-fieldset textarea#edit-template', context);
+  var $templateTextarea = $('#webform-template-fieldset textarea:visible', context);
 
   var updateTemplateSelect = function() {
     if ($(this).val() == defaultTemplate) {
