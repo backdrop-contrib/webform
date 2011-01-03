@@ -2137,7 +2137,7 @@ function webform_client_form_submit($form, &$form_state) {
 
       // Update the subject if set in the themed headers.
       if (isset($email['headers']['Subject'])) {
-        $email['headers']['subject'] = $email['headers']['Subject'];
+        $email['subject'] = $email['headers']['Subject'];
         unset($email['headers']['Subject']);
       }
       else {
