@@ -316,10 +316,13 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
       $pager_query->condition($column, $value);
     }
 
-    if (isset($filters['uid']) && $filters['uid'] === 0&& isset($_SESSION['webform_submission'])) {
-      $anonymous_sids = array_keys($_SESSION['webform_submission']);
-      if (count($anonymous_sids)) {
+    if (isset($filters['uid']) && $filters['uid'] === 0) {
+      if (!empty($_SESSION['webform_submission'])) {
+        $anonymous_sids = array_keys($_SESSION['webform_submission']);
         $pager_query->condition('sid', $anonymous_sids, 'IN');
+      }
+      else {
+        $pager_query->condition('sid', 0);
       }
     }
 
