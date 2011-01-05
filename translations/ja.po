@@ -1272,10 +1272,6 @@ msgstr "チェックを入れると、項目の選択肢を、ラジオボタン
 msgid "The options for this select contain illegal characters (quotes or spaces). Specify your options as <em>safe_value_no_spaces</em>|<em>The Real Value</em>."
 msgstr "このセレクトのオプションに無効な文字が含まれています (クオートや空白)。<em>空白なしの安全な値</em>|<em>表示する値</em>という形式でオプションを指定してください。"
 
-#: components/select.inc:94
-msgid "select..."
-msgstr "選択..."
-
 #: components/select.inc:310
 msgid "Allows creation of checkboxes, radio buttons, or select menus."
 msgstr "チェックボックスやラジオボタン、セレクトメニューを作成できます。"

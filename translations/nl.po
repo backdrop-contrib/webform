@@ -1526,10 +1526,6 @@ msgstr "Om deze optie te gebruiken met een keuzelijst besturingselement moeten s
 msgid "Options within the select list must be unique. The following keys have been used multiple times:"
 msgstr "Opties in de selectielijst moeten uniek zijn. De volgende sleutelwaarden zijn meerdere keren gebruikt:"
 
-#: components/select.inc:155
-msgid "select..."
-msgstr "selecteer..."
-
 #: components/select.inc:325
 msgid "Allows creation of checkboxes, radio buttons, or select menus."
 msgstr "Maakt het creëren van selectievakjes, keuzerondjes of keuzelijsten mogelijk."

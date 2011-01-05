@@ -879,10 +879,6 @@ msgstr "Выпадающий список"
 msgid "Check this option if you want the select component to be of listbox type instead of radiobuttons or checkboxes."
 msgstr "Чтобы показывать значения в виде выпадающего списка, поставьте галочку здесь"
 
-#: components/select.inc:69
-msgid "select..."
-msgstr "выбор..."
-
 #: components/select.inc:219
 msgid "Allows creation of checkboxes, radio buttons, or select menus."
 msgstr "Позволяет создавать поля с галочками, радиокнопки или выпадающий список значений"

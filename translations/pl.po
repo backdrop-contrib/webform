@@ -1380,10 +1380,6 @@ msgstr ""
 msgid "Options within the select list must be unique. The following keys have been used multiple times:"
 msgstr "Opcje na liście muszą być unikalne. Poniższe opcje zostały użyte więcej niż raz:"
 
-#: components/select.inc:155
-msgid "select..."
-msgstr "wybierz..."
-
 #: components/select.inc:325
 msgid "Allows creation of checkboxes, radio buttons, or select menus."
 msgstr "Umożliwia stworzenie checkboxów, elementów radio i wyborów z menu."

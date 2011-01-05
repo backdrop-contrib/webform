@@ -946,10 +946,6 @@ msgstr "Marque esta opción si quiere que el componente sea una listbox en vez d
 msgid "The options for this select contain illegal characters (quotes or spaces). Specify your options as <em>safe_value_no_spaces</em>|<em>The Real Value</em>."
 msgstr "Las opciones contienen caracteres no permitidos (comillas o espacios). Especifique los valores como <em>valor_seguro_sin_espacios</em>|<em>Valor legible para las personas</em>."
 
-#: components/select.inc:87
-msgid "select..."
-msgstr "seleccione..."
-
 #: components/select.inc:294
 msgid "Allows creation of checkboxes, radio buttons, or select menus."
 msgstr "Permite crear checkboxes, radio buttons o menús de selección."

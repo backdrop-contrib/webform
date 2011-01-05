@@ -1905,10 +1905,6 @@ msgstr ""
 "kľúčové páry oddelené zvyslými oddeľovačmi. Napr.: "
 "pouzivatel@priklad.sk|Nejaký používateľ."
 
-#: components/select.inc:115
-msgid "select..."
-msgstr "výber..."
-
 #: components/select.inc:285
 msgid "Allows creation of checkboxes, radio buttons, or select menus."
 msgstr ""

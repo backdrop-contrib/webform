@@ -1347,10 +1347,6 @@ msgstr "Pokud je povoleno, jednotlivé volby budou umístěny do rozbalovacího 
 msgid "To use the option with a select component, you must use key-value pairs seperated by pipes. i.e. user@example.com|Sample user."
 msgstr "Při použití s rozbalovacím menu je nutné zadávat hodnoty jako dvojice klíč-hodnota oddělené znakem roury, např. uzivatel@priklad.cz|Jmeno."
 
-#: components/select.inc:110
-msgid "select..."
-msgstr "zvolte..."
-
 #: components/select.inc:271
 msgid "Allows creation of checkboxes, radio buttons, or select menus."
 msgstr "Umožňuje vytváření zaškrtávacích a přepínacích políček a rozbalovacích menu."

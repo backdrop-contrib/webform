@@ -1595,10 +1595,6 @@ msgid ""
 "seperated by pipes. i.e. user@example.com|Sample user."
 msgstr ""
 
-#: webform/components/select.inc:87
-msgid "select..."
-msgstr "lista..."
-
 #: webform/components/select.inc:248
 msgid "Allows creation of checkboxes, radio buttons, or select menus."
 msgstr ""

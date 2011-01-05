@@ -1299,10 +1299,6 @@ msgstr "Cochez cette option si vous souhaitez que le composant apparaisse sous l
 msgid "To use the option with a select component, you must use key-value pairs seperated by pipes. i.e. user@example.com|Sample user."
 msgstr "Pour utiliser cette option avec un composant de type 'select', vous devez utiliser les paires 'key-value' séparées par des pipes, i.e. usager@exemple.com|utilisateur de l'exemple."
 
-#: components/select.inc:110
-msgid "select..."
-msgstr "Sélectionnez..."
-
 #: components/select.inc:271
 msgid "Allows creation of checkboxes, radio buttons, or select menus."
 msgstr "Permet la création de cases à cocher, de boutons de radio ou de listes déroulantes."
