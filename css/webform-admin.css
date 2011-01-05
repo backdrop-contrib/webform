@@ -1,5 +1,12 @@
 /* $Id$ */
 
+.webform-submission-info .user-picture {
+  float: right;
+  margin-left: 10px;
+}
+.webform-submission-info-text {
+  overflow: hidden;
+}
 .webform-submission-navigation {
   text-align: right;
 }

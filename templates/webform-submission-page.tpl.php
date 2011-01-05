@@ -19,6 +19,8 @@ drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', 
 <?php print $submission_navigation; ?>
 <?php print $submission_information; ?>
 
-<?php print render($submission_content); ?>
+<div class="webform-submission">
+  <?php print render($submission_content); ?>
+</div>
 
 <?php print $submission_navigation; ?>

@@ -11,11 +11,13 @@
  * - $account: The user that submitted the form.
  */
 ?>
-<fieldset>
+<fieldset class="webform-submission-info clearfix">
   <legend><?php print t('Submission information'); ?></legend>
   <?php print theme('user_picture', array('account' => $account)); ?>
-  <div><?php print t('Form: !form', array('!form' => l($node->title, 'node/' . $node->nid))); ?></div>
-  <div><?php print t('Submitted by !name', array('!name' => theme('username', array('account' => $account)))); ?></div>
-  <div><?php print format_date($submission->submitted, 'large'); ?></div>
-  <div><?php print $submission->remote_addr; ?></div>
+  <div class="webform-submission-info-text">
+    <div><?php print t('Form: !form', array('!form' => l($node->title, 'node/' . $node->nid))); ?></div>
+    <div><?php print t('Submitted by !name', array('!name' => theme('username', array('account' => $account)))); ?></div>
+    <div><?php print format_date($submission->submitted, 'large'); ?></div>
+    <div><?php print $submission->remote_addr; ?></div>
+  </div>
 </fieldset>

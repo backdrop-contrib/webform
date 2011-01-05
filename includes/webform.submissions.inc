@@ -212,6 +212,11 @@ function webform_submission_title($node, $submission) {
  */
 function webform_submission_page($node, $submission, $format) {
   global $user;
+
+  // Add admin CSS.
+  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', array('group' => CSS_DEFAULT));
+
+  // Render the admin UI breadcrumb.
   webform_set_breadcrumb($node, $submission);
 
   if ($format == 'form') {
