@@ -115,6 +115,14 @@ function webform_configure_form($form, &$form_state, $node) {
     '#parents' => array('submit_interval'),
   );
 
+  $form['submission']['status'] = array(
+    '#type' => 'radios',
+    '#title' => t('Status of this form'),
+    '#default_value' => $node->webform['status'] == 0 ? 0 : 1,
+    '#description' => t('Closing a form prevents any further submissions by any users.'),
+    '#parents' => array('status'),
+    '#options' => array(1 => t('Open'), 0 => t('Closed')),
+  );
   /* End Edit Form */
 
   /* Start per-role submission control */
@@ -139,7 +147,7 @@ function webform_configure_form($form, &$form_state, $node) {
     '#options' => $user_roles,
     '#type' => 'checkboxes',
     '#title' => t('Roles that can submit this webform'),
-    '#description' => t('Uncheck all roles to prevent new submissions. The %authenticated role applies to any user signed into the site, regardless of other assigned roles.', array('%authenticated' => $user_roles[2])),
+    '#description' => t('The %authenticated role applies to any user signed into the site, regardless of other assigned roles.', array('%authenticated' => $user_roles[2])),
   );
   /* End per-role submission control */
 
@@ -241,6 +249,9 @@ function webform_configure_form_submit($form, &$form_state) {
 
   // Save the redirect URL
   $node->webform['redirect_url'] = $form_state['values']['redirect_url'];
+
+  // Overall form status.
+  $node->webform['status'] = $form_state['values']['status'];
 
   // Save roles.
   $node->webform['roles'] = array_keys(array_filter($form_state['values']['roles']));

@@ -39,6 +39,13 @@ function webform_schema() {
         'length' => 255,
         'default' => '<confirmation>',
       ),
+      'status' => array(
+        'description' => 'Boolean value of a webform for open (1) or closed (0).',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
       'block' => array(
          'description' => 'Boolean value for whether this form be available as a block.',
          'type' => 'int',
@@ -456,5 +463,14 @@ function webform_update_7305() {
   if (db_field_exists('webform', 'additional_validate')) {
     db_change_field('webform', 'additional_validate', 'additional_validate', array('type' => 'text', 'not null' => FALSE));
     db_change_field('webform', 'additional_submit', 'additional_submit', array('type' => 'text', 'not null' => FALSE));
+  }
+}
+
+/**
+ * Add column for webform status (open or closed).
+ */
+function webform_update_7306() {
+  if (!db_field_exists('webform', 'status')) {
+    db_add_field('webform', 'status', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 1));
   }
 }
