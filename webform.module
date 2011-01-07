@@ -1143,7 +1143,7 @@ function webform_link($type, $node = NULL, $teaser = FALSE) {
       $links['webform_goto'] = array(
         'title' => t('Go to form'),
         'href' => 'node/' . $node->nid,
-        'attributes' => array('title' => t('View this form.'), 'class' => 'read-more')
+        'attributes' => array('title' => t('View this form.'), 'class' => array('read-more'))
       );
     }
   }

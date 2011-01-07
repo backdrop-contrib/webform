@@ -122,7 +122,7 @@ function theme_webform_results_per_page($variables) {
 
   foreach ($counts as $number => $text) {
     if ($number < $total_count) {
-      $count_links[] = l($text, $_GET['q'], array('query' => array('results' => $number), 'attributes' => array('class' => $pager_count == $number ? 'selected' : '')));
+      $count_links[] = l($text, $_GET['q'], array('query' => array('results' => $number), 'attributes' => array('class' => array($pager_count == $number ? 'selected' : ''))));
     }
   }
 

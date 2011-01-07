@@ -229,19 +229,19 @@ function theme_webform_display_grid($variables) {
 
   if ($format == 'html') {
     $rows = array();
-    $header = array(array('data' => '', 'class' => 'webform-grid-question'));
+    $header = array(array('data' => '', 'class' => array('webform-grid-question')));
     foreach ($element['#options'] as $option) {
-      $header[] = array('data' => _webform_filter_xss($option), 'class' => 'checkbox webform-grid-option');
+      $header[] = array('data' => _webform_filter_xss($option), 'class' => array('checkbox', 'webform-grid-option'));
     }
     foreach (element_children($element) as $key) {
       $row = array();
-      $row[] = array('data' => _webform_filter_xss($element[$key]['#title']), 'class' => 'webform-grid-question');
+      $row[] = array('data' => _webform_filter_xss($element[$key]['#title']), 'class' => array('webform-grid-question'));
       foreach ($element['#options'] as $option_value => $option_label) {
         if (strcmp($option_value, $element[$key]['#value']) == 0) {
-          $row[] = array('data' => '<strong>X</strong>', 'class' => 'checkbox webform-grid-option');
+          $row[] = array('data' => '<strong>X</strong>', 'class' => array('checkbox', 'webform-grid-option'));
         }
         else {
-          $row[] = array('data' => '&nbsp', 'class' => 'checkbox webform-grid-option');
+          $row[] = array('data' => '&nbsp', 'class' => array('checkbox', 'webform-grid-option'));
         }
       }
       $rows[] = $row;
@@ -376,7 +376,7 @@ function theme_webform_grid($variables) {
   $element = $variables['element'];
 
   $rows = array();
-  $header = array(array('data' => '', 'class' => 'webform-grid-question'));
+  $header = array(array('data' => '', 'class' => array('webform-grid-question')));
   $first = TRUE;
   foreach (element_children($element) as $key) {
     $question_element = $element[$key];
@@ -384,19 +384,19 @@ function theme_webform_grid($variables) {
     // Set the header for the table.
     if ($first) {
       foreach ($question_element['#options'] as $option) {
-        $header[] = array('data' => _webform_filter_xss($option), 'class' => 'checkbox webform-grid-option');
+        $header[] = array('data' => _webform_filter_xss($option), 'class' => array('checkbox', 'webform-grid-option'));
       }
       $first = FALSE;
     }
 
     // Create a row with the question title.
-    $row = array(array('data' => _webform_filter_xss($question_element['#title']), 'class' => 'webform-grid-question'));
+    $row = array(array('data' => _webform_filter_xss($question_element['#title']), 'class' => array('webform-grid-question')));
 
     // Render each radio button in the row.
     $radios = form_process_radios($question_element);
     foreach (element_children($radios) as $key) {
       unset($radios[$key]['#title']);
-      $row[] = array('data' => drupal_render($radios[$key]), 'class' => 'checkbox webform-grid-option');
+      $row[] = array('data' => drupal_render($radios[$key]), 'class' => array('checkbox', 'webform-grid-option'));
     }
     $rows[] = $row;
   }

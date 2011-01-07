@@ -190,7 +190,7 @@ function theme_webform_admin_settings($variables) {
     $row[] = array('data' => drupal_render($form['components'][$key]), 'align' => 'center');
     $rows[] = $row;
   }
-  $header = array(t('Name'), t('Description'), array('data' => t('Enabled'), 'class' => 'checkbox'));
+  $header = array(t('Name'), t('Description'), array('data' => t('Enabled'), 'class' => array('checkbox')));
 
   // Create the table inside the form.
   $form['components']['table'] = array(
