@@ -2648,7 +2648,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
         $display_element['#id'] = drupal_html_id('edit-' . implode('-', $display_element['#parents']));
       }
       $replacements['email'][$format]['%email[' . $form_key . ']'] = drupal_render($display_element);
-      $replacements['email'][$format]['%value[' . $form_key . ']'] = isset($display_element['#children']) ? $display_element['#children'] : '';
+      $replacements['email'][$format]['%value[' . $form_key . ']'] = isset($display_element['#value']) ? $display_element['#value'] : '';
     }
 
     // Submission edit URL.
