@@ -783,7 +783,7 @@ function _webform_select_options_callback($name, $component, $flat = FALSE, $fil
   if (isset($info[$name]['options callback']) && function_exists($info[$name]['options callback'])) {
     $function = $info[$name]['options callback'];
 
-    $options_args = array();
+    $arguments = array();
     if (isset($info[$name]['options arguments'])) {
       $arguments = $info[$name]['options arguments'];
     }
