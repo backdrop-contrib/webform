@@ -1,5 +1,8 @@
 /* $Id$ */
 
+.webform-submission-info {
+  padding: 10px;
+}
 .webform-submission-info .user-picture {
   float: right;
   margin-left: 10px;
