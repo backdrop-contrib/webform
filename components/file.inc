@@ -445,7 +445,7 @@ function _webform_validate_file($element, &$form_state) {
   if (!$file_error) {
     $upload_dir = file_build_uri('webform/' . $component['extra']['savelocation']);
     if (file_prepare_directory($upload_dir, FILE_CREATE_DIRECTORY)) {
-      $file = file_save_upload($form_key, array(), $upload_dir);
+      $file = file_save_upload($form_key, array('file_validate_extensions' => array(implode(' ', $component['extra']['filtering']['types']))), $upload_dir);
       if ($file) {
         // Set the hidden field value.
         $parents = $element['#array_parents'];
