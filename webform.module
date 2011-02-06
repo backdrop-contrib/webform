@@ -1012,7 +1012,7 @@ function webform_node_delete($node) {
 function webform_node_defaults() {
   return array(
     'confirmation' => '',
-    'confirmation_format' => filter_default_format(),
+    'confirmation_format' => NULL,
     'redirect_url' => '<confirmation>',
     'teaser' => 0,
     'block' => 0,
@@ -2273,7 +2273,7 @@ function webform_client_form_submit($form, &$form_state) {
   }
   // If redirecting and we have a confirmation message, show it as a message.
   elseif (!$external_url && (!empty($redirect_url) && $redirect_url != '<confirmation>') && !empty($confirmation)) {
-    drupal_set_message(check_markup($confirmation, $node->webform['confirmation_format'], FALSE));
+    drupal_set_message(check_markup($confirmation, $node->webform['confirmation_format'], '', TRUE));
   }
 
   $form_state['redirect'] = $redirect;
@@ -2363,7 +2363,7 @@ function template_preprocess_webform_form(&$vars) {
  * Prepare for theming of the webform submission confirmation.
  */
 function template_preprocess_webform_confirmation(&$vars) {
-  $confirmation = check_markup($vars['node']->webform['confirmation'], $vars['node']->webform['confirmation_format'], FALSE);
+  $confirmation = check_markup($vars['node']->webform['confirmation'], $vars['node']->webform['confirmation_format'], '', TRUE);
   // Strip out empty tags added by WYSIWYG editors if needed.
   $vars['confirmation_message'] = strlen(trim(strip_tags($confirmation))) ? $confirmation : '';
 }
@@ -2752,7 +2752,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
  * Filters all special tokens provided by webform, and allows basic layout in descriptions.
  */
 function _webform_filter_descriptions($string, $node = NULL, $submission = NULL) {
-  return strlen($string) == 0 ? '' : check_markup(_webform_filter_values($string, $node, $submission, NULL, FALSE));
+  return strlen($string) == 0 ? '' : _webform_filter_xss(_webform_filter_values($string, $node, $submission, NULL, FALSE));
 }
 
 /**

@@ -27,11 +27,10 @@ function webform_schema() {
         'not null' => TRUE,
       ),
       'confirmation_format' => array(
-        'description' => 'The input format used by the confirmation message.',
-        'type' => 'int',
-        'size' => 'tiny',
-        'not null' => TRUE,
-        'default' => 0,
+        'description' => 'The {filter_format}.format of the confirmation message.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
       ),
       'redirect_url' => array(
         'description' => 'The URL a user is redirected to after submitting a form.',
@@ -473,4 +472,41 @@ function webform_update_7306() {
   if (!db_field_exists('webform', 'status')) {
     db_add_field('webform', 'status', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 1));
   }
+}
+
+/**
+ * Update the confirmation_format column for default text format changes.
+ */
+function webform_update_7307() {
+  // These changes are modeled after user_update_7010().
+  db_change_field('webform', 'confirmation_format', 'confirmation_format', array(
+    'description' => 'The {filter_format}.format of the confirmation message.',
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => FALSE,
+  ));
+  db_update('webform')
+    ->fields(array('confirmation_format' => NULL))
+    ->condition('confirmation', '')
+    ->condition('confirmation_format', 0)
+    ->execute();
+  $existing_formats = db_query("SELECT format FROM {filter_format}")->fetchCol();
+  $default_format = variable_get('filter_default_format', 1);
+  db_update('webform')
+    ->fields(array('confirmation_format' => $default_format))
+    ->isNotNull('confirmation_format')
+    ->condition('confirmation_format', $existing_formats, 'NOT IN')
+    ->execute();
+}
+
+/**
+ * Update the confirmation_format column to allow it to store strings.
+ */
+function webform_update_7308() {
+  db_change_field('webform', 'confirmation_format', 'confirmation_format', array(
+    'description' => 'The {filter_format}.format of the confirmation message.',
+    'type' => 'varchar',
+    'length' => 255,
+    'not null' => FALSE,
+  ));
 }
