@@ -404,7 +404,8 @@ function webform_get_submission_count($nid, $uid = NULL, $reset = FALSE) {
 
   if (!isset($counts[$nid][$uid]) || $reset) {
     $query = db_select('webform_submissions')
-      ->condition('nid', $nid);
+      ->condition('nid', $nid)
+      ->condition('is_draft', 0);
     $arguments = array($nid);
     if ($uid !== NULL) {
       $query->condition('uid', $uid);

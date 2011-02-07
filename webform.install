@@ -66,6 +66,13 @@ function webform_schema() {
          'not null' => TRUE,
          'default' => 0,
       ),
+      'auto_save' => array(
+         'description' => 'Boolean value for whether submissions to this form should be auto-saved between pages.',
+         'type' => 'int',
+         'size' => 'tiny',
+         'not null' => TRUE,
+         'default' => 0,
+      ),
       'submit_notice' => array(
         'description' => 'Boolean value for whether to show or hide the previous submissions notification.',
         'type' => 'int',
@@ -509,4 +516,13 @@ function webform_update_7308() {
     'length' => 255,
     'not null' => FALSE,
   ));
+}
+
+/**
+ * Add the ability to auto-save as draft between pages.
+ */
+function webform_update_7309() {
+  if (!db_field_exists('webform', 'auto_save')) {
+    db_add_field('webform', 'auto_save', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
+  }
 }

@@ -459,7 +459,7 @@ function _webform_submit_select($component, $value) {
           unset($value[$key]);
         }
         else {
-          $return[] = $key;
+          $return[] = $option_value;
         }
       }
       // Handle options that are added through the "other" field.

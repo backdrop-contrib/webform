@@ -1017,6 +1017,7 @@ function webform_node_defaults() {
     'teaser' => 0,
     'block' => 0,
     'allow_draft' => 0,
+    'auto_save' => 0,
     'submit_notice' => 1,
     'submit_text' => '',
     'submit_limit' => -1,
@@ -1254,7 +1255,7 @@ function webform_node_view($node, $view_mode) {
 
   // Check if this user has a draft for this webform.
   $is_draft = FALSE;
-  if ($node->webform['allow_draft'] && $user->uid != 0) {
+  if (($node->webform['allow_draft'] || $node->webform['auto_save']) && $user->uid != 0) {
     // Draft found - display form with draft data for further editing.
     if ($draft_sid = _webform_fetch_draft_sid($node->nid, $user->uid)) {
       module_load_include('inc', 'webform', 'includes/webform.submissions');
@@ -1558,6 +1559,14 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
     'js' => array(drupal_get_path('module', 'webform') . '/js/webform.js'),
   );
   module_load_include('inc', 'webform', 'includes/webform.components');
+  module_load_include('inc', 'webform', 'includes/webform.submissions');
+
+  // If in a multi-step form, a submission ID may be specified in form state.
+  // Load this submission. This allows anonymous users to use auto-save.
+  if (empty($submission) && !empty($form_state['values']['details']['sid'])) {
+    $submission = webform_get_submission($node->nid, $form_state['values']['details']['sid']);
+    $is_draft = $submission->is_draft;
+  }
 
   // Bind arguments to $form to make them available in theming and form_alter.
   $form['#node'] = $node;
@@ -1612,7 +1621,7 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
 
     // Recursively add components to the form.
     foreach ($component_tree['children'] as $cid => $component) {
-      $component_value = isset($form_state['values']['submitted'][$component['form_key']]) ? $form_state['values']['submitted'][$component['form_key']] : NULL;
+      $component_value = isset($form_state['values']['submitted'][$cid]) ? $form_state['values']['submitted'][$cid] : NULL;
       if (_webform_client_form_rule_check($node, $component, $page_num, $form_state)) {
         _webform_client_form_add_component($node, $component, $component_value, $form['submitted'], $form, $form_state, $submission, 'form', $page_num, $filter);
       }
@@ -1650,19 +1659,21 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
       '#weight' => 1000,
     );
 
+    // Add the draft button.
+    if ($node->webform['allow_draft'] && (empty($submission) || $submission->is_draft) && $user->uid != 0) {
+      $form['actions']['draft'] = array(
+        '#type' => 'submit',
+        '#value' => t('Save Draft'),
+        '#weight' => -2,
+        '#validate' => array(),
+      );
+    }
+
     if ($page_count > 1) {
       $next_page = t('Next Page >');
       $prev_page = t('< Previous Page');
 
       // Add the submit button(s).
-     if ($node->webform['allow_draft'] && (empty($submission) || $submission->is_draft) && $user->uid != 0) {
-        $form['actions']['draft'] = array(
-          '#type' => 'submit',
-          '#value' => t('Save Draft'),
-          '#weight' => -2,
-          '#validate' => array(),
-        );
-      }
       if ($page_num > 1) {
         $form['actions']['previous'] = array(
           '#type' => 'submit',
@@ -1850,7 +1861,7 @@ function _webform_client_form_add_component($node, $component, $component_value,
 
   if (isset($component['children']) && is_array($component['children'])) {
     foreach ($component['children'] as $scid => $subcomponent) {
-      $subcomponent_value = isset($component_value[$subcomponent['form_key']]) ? $component_value[$subcomponent['form_key']] : NULL;
+      $subcomponent_value = isset($form_state['values']['submitted'][$scid]) ? $form_state['values']['submitted'][$scid] : NULL;
       if (_webform_client_form_rule_check($node, $subcomponent, $page_num, $form_state, $submission)) {
         _webform_client_form_add_component($node, $subcomponent, $subcomponent_value, $parent_fieldset[$component['form_key']], $form, $form_state, $submission, $format, $page_num, $filter);
       }
@@ -1963,9 +1974,12 @@ function webform_client_form_pages($form, &$form_state) {
     $form_state['storage']['page_num'] = $form_state['webform']['page_num'];
   }
 
+  // Assume the form is completed unless the page logic says otherwise.
+  $form_state['webform_completed'] = TRUE;
+
   // Check for a multi-page form that is not yet complete.
-  $submit_op = empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text']);
-  $draft_op = t('Save Draft');
+  $submit_op = !empty($form['actions']['submit']['#value']) ? $form['actions']['submit']['#value'] : t('Submit');
+  $draft_op = !empty($form['actions']['draft']['#value']) ? $form['actions']['draft']['#value'] : t('Save Draft');
   if (!in_array($form_state['values']['op'], array($submit_op, $draft_op))) {
     // Checkboxes need post-processing to maintain their values.
     _webform_client_form_submit_process($node, $form_state['values']['submitted'], array('select', 'grid'));
@@ -2022,15 +2036,12 @@ function webform_client_form_pages($form, &$form_state) {
       }
     }
 
-    // Rebuild the form and display the next page.
-    if ($form_state['storage']['page_num'] <= $form_state['storage']['page_count']) {
-      $form_state['rebuild'] = TRUE;
-      return;
-    }
+    // The form is done if the page number is greater than the page count.
+    $form_state['webform_completed'] = $form_state['storage']['page_num'] > $form_state['storage']['page_count'];
   }
 
+  // Merge any stored submission data for multistep forms.
   if (isset($form_state['storage']['submitted'])) {
-    // Merge any stored submission data for multistep forms.
     $original_values = is_array($form_state['values']['submitted']) ? $form_state['values']['submitted'] : array();
     unset($form_state['values']['submitted']);
 
@@ -2045,10 +2056,6 @@ function webform_client_form_pages($form, &$form_state) {
     unset($original_values);
   }
 
-  // Remove the form state storage now that we're done with the pages.
-  unset($form_state['rebuild']);
-  unset($form_state['storage']);
-
   // Perform post processing by components.
   _webform_client_form_submit_process($node, $form_state['values']['submitted']);
 
@@ -2056,8 +2063,21 @@ function webform_client_form_pages($form, &$form_state) {
   $form_state['values']['submitted_tree'] = $form_state['values']['submitted'];
   $form_state['values']['submitted'] = _webform_client_form_submit_flatten($node, $form_state['values']['submitted']);
 
-  // Set a flag indicating processing should continue and be saved.
-  $form_state['webform_completed'] = TRUE;
+  // Inform the submit handlers that a draft will be saved.
+  if ($form_state['values']['op'] == $draft_op || ($node->webform['auto_save'] && !$form_state['webform_completed'])) {
+    $form_state['save_draft'] = TRUE;
+  }
+
+  // Determine what we need to do on the next page.
+  if (!empty($form_state['save_draft']) || !$form_state['webform_completed']) {
+    // Rebuild the form and display the current (on drafts) or next page.
+    $form_state['rebuild'] = TRUE;
+  }
+  else {
+    // Remove the form state storage now that we're done with the pages.
+    unset($form_state['rebuild']);
+    unset($form_state['storage']);
+  }
 }
 
 /**
@@ -2068,14 +2088,14 @@ function webform_client_form_submit($form, &$form_state) {
   module_load_include('inc', 'webform', 'includes/webform.components');
   global $user;
 
-  if (empty($form_state['webform_completed'])) {
+  if (empty($form_state['save_draft']) && empty($form_state['webform_completed'])) {
     return;
   }
 
   $node = $form['#node'];
 
   // Check if user is submitting as a draft.
-  $is_draft = $form_state['values']['op'] == t('Save Draft');
+  $is_draft = !empty($form_state['save_draft']);
 
   // Create a submission object.
   $submission = (object) array(
@@ -2244,8 +2264,11 @@ function webform_client_form_submit($form, &$form_state) {
   $message = NULL;
   $redirect = NULL;
   $external_url = FALSE;
-  if ($is_draft) {
-    $message = t('Draft saved');
+  if (isset($form['actions']['draft']['#value']) && $form_state['values']['op'] == $form['actions']['draft']['#value']) {
+    $message = t('Submission saved. You may return to this form later and it will restore the current values.');
+  }
+  elseif ($is_draft) {
+    $redirect = NULL;
   }
   elseif (!empty($form_state['values']['details']['finished'])) {
     $message = t('Submission updated.');
@@ -2302,11 +2325,8 @@ function _webform_client_form_submit_process($node, &$form_values, $types = NULL
       if (isset($node->webform['components'][$cid])) {
         // Call the component process submission function.
         $component = $node->webform['components'][$cid];
-        if ((!isset($types) || in_array($component['type'], $types))) {
-          $new_value = webform_component_invoke($component['type'], 'submit', $component, $form_values[$component['form_key']]);
-          if ($new_value !== NULL) {
-            $form_values[$component['form_key']] = $new_value;
-          }
+        if ((!isset($types) || in_array($component['type'], $types)) && webform_component_implements($component['type'], 'submit')) {
+          $form_values[$component['form_key']] = webform_component_invoke($component['type'], 'submit', $component, $form_values[$component['form_key']]);
         }
       }
     }
@@ -3141,6 +3161,20 @@ function webform_component_invoke($type, $callback) {
   if (function_exists($function)) {
     return call_user_func_array($function, $args);
   }
+}
+
+/**
+ * Check if a component implements a particular hook.
+ *
+ * @param $type
+ *   The component type as a string.
+ * @param $callback
+ *   The callback to check.
+ */
+function webform_component_implements($type, $callback) {
+  $function = '_webform_' . $callback . '_' . $type;
+  webform_component_include($type);
+  return function_exists($function);
 }
 
 /**
