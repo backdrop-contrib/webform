@@ -2654,6 +2654,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
     // E-mails may be sent in two formats, keep tokens separate for each one.
     $replacements['email'][$format] = array();
 
+    // Populate token values for each component.
     foreach ($submission->data as $cid => $value) {
       $component = $node->webform['components'][$cid];
 
@@ -2670,6 +2671,15 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
       $replacements['email'][$format]['%email[' . $form_key . ']'] = render($display_element);
       $display_element['#theme_wrappers'] = array(); // Remove label and wrappers.
       $replacements['email'][$format]['%value[' . $form_key . ']'] = render($display_element);
+    }
+
+    // Provide blanks for components in the webform but not in the submission.
+    $missing_components = array_diff_key($node->webform['components'], $submission->data);
+    foreach ($missing_components as $component) {
+      $parents = webform_component_parent_keys($node, $component);
+      $form_key = implode('][', $parents);
+      $replacements['email'][$format]['%email[' . $form_key . ']'] = '';
+      $replacements['email'][$format]['%value[' . $form_key . ']'] = '';
     }
 
     // Submission edit URL.
