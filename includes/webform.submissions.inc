@@ -11,6 +11,13 @@
 
 /**
  * Given an array of submitted values, flatten it into data for a submission.
+ *
+ * @param $node
+ *   The node object containing the current webform.
+ * @param $submitted
+ *   The submitted user values from the webform.
+ * @return
+ *   An array suitable for use in the 'data' property of a $submission object.
  */
 function webform_submission_data($node, $submitted) {
   $data = array();
@@ -32,6 +39,16 @@ function webform_submission_data($node, $submitted) {
   return $data;
 }
 
+/**
+ * Update a webform submission entry in the database.
+ *
+ * @param $node
+ *   The node object containing the current webform.
+ * @param $submission
+ *   The webform submission object to be saved into the database.
+ * @return
+ *   The existing submission SID.
+ */
 function webform_submission_update($node, $submission) {
   // Allow other modules to modify the submission before saving.
   foreach (module_implements('webform_submission_presave') as $module) {
@@ -73,6 +90,16 @@ function webform_submission_update($node, $submission) {
   return $submission->sid;
 }
 
+/**
+ * Insert a webform submission entry in the database.
+ *
+ * @param $node
+ *   The node object containing the current webform.
+ * @param $submission
+ *   The webform submission object to be saved into the database.
+ * @return
+ *   The new submission SID.
+ */
 function webform_submission_insert($node, $submission) {
   // The submission ID may already be set if being called as an update.
   if (!isset($submission->sid) && (!isset($submission->is_new) || $submission->is_new == FALSE)) {
