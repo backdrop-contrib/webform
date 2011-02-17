@@ -547,7 +547,7 @@ function _webform_analysis_select($component, $sids = array(), $single = FALSE) 
     ->condition('nid', $component['nid'])
     ->condition('cid', $component['cid'])
     ->condition('data', '', '<>')
-    ->condition('data', $options, $option_operator)
+    ->condition('data', array_keys($options), $option_operator)
     ->groupBy('data');
   $query->addExpression('COUNT(data)', 'datacount');
 
