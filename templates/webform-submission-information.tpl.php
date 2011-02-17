@@ -9,6 +9,8 @@
  * - $node: The node object for this webform.
  * - $submission: The contents of the webform submission.
  * - $account: The user that submitted the form.
+ * - $mode: The mode of the submission being viewed. May be one of "display",
+ *   "form", "print", or "pdf".
  */
 ?>
 <fieldset class="webform-submission-info clearfix">

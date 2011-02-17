@@ -54,20 +54,14 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
     }
     $row[] = l(t('View'), "node/$node->nid/submission/$sid");
     $operation_count = 1;
-    if (module_exists('print_pdf') && user_access('access PDF version')) {
-      $row[] = l(t('PDF'), "printpdf/$node->nid/submission/$sid", array('query' => drupal_get_destination()));
-      $operation_count++;
-    }
-    if (module_exists('print') && user_access('access print')) {
-      $row[] = l(t('Print'), "print/$node->nid/submission/$sid");
-      $operation_count++;
-    }
+    // No need to call this multiple times, just reference this in a variable.
+    $destination = drupal_get_destination();
     if (webform_submission_access($node, $submission, 'edit', $user)) {
-      $row[] = l(t('Edit'), "node/$node->nid/submission/$sid/edit", array('query' => drupal_get_destination()));
+      $row[] = l(t('Edit'), "node/$node->nid/submission/$sid/edit", array('query' => $destination));
       $operation_count++;
     }
     if (webform_submission_access($node, $submission, 'delete', $user)) {
-      $row[] = l(t('Delete'), "node/$node->nid/submission/$sid/delete", array('query' => drupal_get_destination()));
+      $row[] = l(t('Delete'), "node/$node->nid/submission/$sid/delete", array('query' => $destination));
       $operation_count++;
     }
     if ($operation_count < $operation_total) {

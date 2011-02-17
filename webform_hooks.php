@@ -129,6 +129,30 @@ function hook_webform_submission_delete($node, $submission) {
 }
 
 /**
+ * Provide a list of actions that can be executed on a submission.
+ *
+ * Some actions are displayed in the list of submissions such as edit, view, and
+ * delete. All other actions are displayed only when viewing the submission.
+ * These additional actions may be specified in this hook. Examples included
+ * directly in the Webform module include PDF, print, and resend e-mails. Other
+ * modules may extend this list by using this hook.
+ *
+ * @param $node
+ *   The Webform node on which this submission was made.
+ * @param $submission
+ *   The Webform submission on which the actions may be performed.
+ */
+function hook_webform_submission_actions($node, $submission) {
+  if (webform_results_access($node)) {
+    $actions['myaction'] = array(
+      'title' => t('Do my action'),
+      'href' => 'node/' . $node->nid . '/submission/' . $submission->sid . '/myaction',
+      'query' => drupal_get_destination(),
+    );
+  }
+}
+
+/**
  * Alter the display of a Webform submission.
  *
  * This function applies to both e-mails sent by Webform and normal display of

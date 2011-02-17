@@ -66,6 +66,9 @@ function webform_help($section = 'admin/help#webform', $arg = NULL) {
       $output .= '<p>' . t('This page displays all the components currently configured for this webform node. You may add any number of components to the form, even multiple of the same type. To add a new component, fill in a name and select a type from the fields at the bottom of the table. Submit the form to create the new component or update any changed form values.') . '</p>';
       $output .= '<p>' . t('Click on any existing component\'s name to edit its settings.') . '</p>';
       break;
+    case 'node/%/submission/%/resend':
+      $output .= '<p>' . t('This form may be used to resend e-mails configured for this webform. Check the e-mails that need to be sent and click <em>Resend e-mails</em> to send these e-mails again.') . '</p>';
+      break;
   }
 
   return $output;
@@ -331,6 +334,16 @@ function webform_menu() {
     'weight' => 2,
     'file' => 'includes/webform.submissions.inc',
     'type' => MENU_LOCAL_TASK,
+  );
+  $items['node/%webform_menu/submission/%webform_menu_submission/resend'] = array(
+    'title' => 'Resend e-mails',
+    'load arguments' => array(1),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('webform_submission_resend', 1, 3),
+    'access callback' => 'webform_results_access',
+    'access arguments' => array(1),
+    'file' => 'includes/webform.submissions.inc',
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
@@ -635,13 +648,17 @@ function webform_theme() {
       'file' => 'includes/webform.submissions.inc',
     ),
     'webform_submission_information' => array(
-      'variables' => array('node' => NULL, 'submission' => NULL),
+      'variables' => array('node' => NULL, 'submission' => NULL, 'mode' => 'display'),
       'template' => 'templates/webform-submission-information',
       'file' => 'includes/webform.submissions.inc',
     ),
     'webform_submission_navigation' => array(
       'variables' => array('node' => NULL, 'submission' => NULL, 'mode' => NULL),
       'template' => 'templates/webform-submission-navigation',
+      'file' => 'includes/webform.submissions.inc',
+    ),
+    'webform_submission_resend' => array(
+      'render element' => 'form',
       'file' => 'includes/webform.submissions.inc',
     ),
   );
@@ -792,6 +809,37 @@ function webform_forms($form_id) {
 function webform_webform_select_options_info() {
   module_load_include('inc', 'webform', 'includes/webform.options');
   return _webform_options_info();
+}
+
+/**
+ * Implementation of hook_webform_webform_submission_actions().
+ */
+function webform_webform_submission_actions($node, $submission) {
+  $actions = array();
+  if (module_exists('print_pdf') && user_access('access PDF version')) {
+    $actions['printpdf'] = array(
+      'title' => t('Download PDF'),
+      'href' => 'printpdf/' . $node->nid . '/submission/' . $submission->sid,
+      'query' => $destination,
+    );
+  }
+
+  if (module_exists('print') && user_access('access print')) {
+    $actions['print'] = array(
+      'title' => t('Print'),
+      'href' => 'print/' . $node->nid . '/submission/' . $submission->sid,
+    );
+  }
+
+  if (webform_results_access($node)) {
+    $actions['resend'] = array(
+      'title' => t('Resend e-mails'),
+      'href' => 'node/' . $node->nid . '/submission/' . $submission->sid . '/resend',
+      'query' => drupal_get_destination(),
+    );
+  }
+
+  return $actions;
 }
 
 /**
@@ -2139,118 +2187,7 @@ function webform_client_form_submit($form, &$form_state) {
   // Check if this form is sending an email.
   if (!$is_draft && !$form_state['values']['details']['finished']) {
     $submission = webform_get_submission($node->nid, $sid, TRUE);
-
-    // Create a themed message for mailing.
-    foreach ($node->webform['emails'] as $eid => $email) {
-      $cid = is_numeric($email['email']) && isset($node->webform['components'][$email['email']]) ? $email['email'] : 'custom';
-
-      // Pass through the theme layer if using the default template.
-      if ($email['template'] == 'default') {
-        $email['message'] = theme(array('webform_mail_' . $node->nid, 'webform_mail', 'webform_mail_message'), array('node' => $node, 'submission' => $submission, 'email' => $email));
-      }
-      else {
-        $email['message'] = $email['template'];
-      }
-
-      // Replace tokens in the message.
-      $email['html'] = ($email['html'] && module_exists('mimemail'));
-      $email['message'] = _webform_filter_values($email['message'], $node, $submission, $email, FALSE, TRUE);
-
-      // Build the e-mail headers.
-      $email['headers'] = theme(array('webform_mail_headers_' . $node->nid, 'webform_mail_headers'), array('node' => $node, 'submission' => $submission, 'email' => $email));
-
-      // Assemble the FROM string.
-      if (isset($email['headers']['From'])) {
-        // If a header From is already set, don't override it.
-        $email['from'] = $email['headers']['From'];
-        unset($email['headers']['From']);
-      }
-      else {
-        $email['from'] = webform_format_email_address($email['from_address'], $email['from_name'], $node, $submission);
-      }
-
-      // Update the subject if set in the themed headers.
-      if (isset($email['headers']['Subject'])) {
-        $email['subject'] = $email['headers']['Subject'];
-        unset($email['headers']['Subject']);
-      }
-      else {
-        $email['subject'] = webform_format_email_subject($email['subject'], $node, $submission);
-      }
-
-      // Update the to e-mail if set in the themed headers.
-      if (isset($email['headers']['To'])) {
-        $email['email'] = $email['headers']['To'];
-        unset($email['headers']['To']);
-      }
-
-      // Generate the list of addresses that this e-mail will be sent to.
-      $addresses = array_filter(explode(',', $email['email']));
-      $addresses_final = array();
-      foreach ($addresses as $address) {
-        $address = trim($address);
-
-        // After filtering e-mail addresses with component values, a single value
-        // might contain multiple addresses (such as from checkboxes or selects).
-        $address = webform_format_email_address($address, NULL, $node, $submission, TRUE, FALSE, 'short');
-
-        if (is_array($address)) {
-          foreach ($address as $new_address) {
-            $new_address = trim($new_address);
-            if (valid_email_address($new_address)) {
-              $addresses_final[] = $new_address;
-            }
-          }
-        }
-        elseif (valid_email_address($address)) {
-          $addresses_final[] = $address;
-        }
-      }
-
-      // Mail the webform results.
-      foreach ($addresses_final as $address) {
-        // Verify that this submission is not attempting to send any spam hacks.
-        if (_webform_submission_spam_check($address, $email['subject'], $email['from'], $email['headers'])) {
-          watchdog('webform', 'Possible spam attempt from @remote_addr' . "<br />\n" . nl2br(htmlentities($email['message'])), array('@remote_add' => ip_address()));
-          drupal_set_message(t('Illegal information. Data not submitted.'), 'error');
-          return FALSE;
-        }
-
-        $language = $user->uid ? user_preferred_language($user) : language_default();
-        $mail_params = array(
-          'message' => $email['message'],
-          'subject' => $email['subject'],
-          'headers' => $email['headers'],
-          'node' => $node,
-          'submission' => $submission,
-        );
-
-        if (module_exists('mimemail')) {
-          // Load attachments for the e-mail.
-          $attachments = array();
-          if ($email['attachments']) {
-            webform_component_include('file');
-            foreach ($node->webform['components'] as $component) {
-              if (webform_component_feature($component['type'], 'attachment') && !empty($submission->data[$component['cid']]['value'][0])) {
-                $file = webform_get_file($submission->data[$component['cid']]['value'][0]);
-                if ($file) {
-                  $file->list = 1; // Needed to include in attachments.
-                  $attachments[] = $file;
-                }
-              }
-            }
-          }
-
-          // Send the e-mail via MIME mail.
-          mimemail($email['from'], $address, $email['subject'], $email['message'], !$email['html'], $email['headers'], $email['html'] ? NULL : $email['message'], $attachments, 'webform');
-        }
-        else {
-          // Normal Drupal mailer.
-          drupal_mail('webform', 'submission', $address, $language, $mail_params, $email['from']);
-        }
-      }
-
-    }
+    webform_submission_send_mail($node, $submission);
   }
 
   // Strip out empty tags added by WYSIWYG editors if needed.
