@@ -305,10 +305,13 @@ function webform_schema() {
         'length' => 128,
       ),
     ),
+    'primary key' => array('sid'),
     'unique keys' => array(
       'sid_nid' => array('sid', 'nid'),
     ),
-    'primary key' => array('sid'),
+    'indexes' => array(
+      'nid_uid_sid' => array('nid', 'uid', 'sid'),
+    ),
   );
 
   $schema['webform_submitted_data'] = array(
@@ -350,11 +353,11 @@ function webform_schema() {
         'not null' => TRUE,
       ),
     ),
+    'primary key' => array('nid', 'sid', 'cid', 'no'),
     'indexes' => array(
       'nid' => array('nid'),
       'sid_nid' => array('sid', 'nid'),
     ),
-    'primary key' => array('nid', 'sid', 'cid', 'no'),
   );
 
   return $schema;
@@ -544,5 +547,14 @@ function webform_update_7310() {
   }
   if (!empty($empty_nids)) {
     db_delete('webform')->condition('nid', $empty_nids, 'IN')->execute();
+  }
+}
+
+/**
+ * Add an index for sid_nid_uid to webform_submissions.
+ */
+function webform_update_7311() {
+  if (!db_index_exists('webform_submissions', 'nid_uid_sid')) {
+    db_add_index('webform_submissions', 'nid_uid_sid', array('nid', 'uid', 'sid'));
   }
 }
