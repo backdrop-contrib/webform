@@ -390,8 +390,9 @@ function webform_install() {
  */
 function webform_uninstall() {
   // Unset webform variables.
+  variable_del('webform_node_types');
+  variable_del('webform_node_types_primary');
   variable_del('webform_use_cookies');
-  variable_del('webform_enable_fieldset');
   variable_del('webform_default_from_address');
   variable_del('webform_default_from_name');
   variable_del('webform_default_subject');
@@ -524,5 +525,24 @@ function webform_update_7308() {
 function webform_update_7309() {
   if (!db_field_exists('webform', 'auto_save')) {
     db_add_field('webform', 'auto_save', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
+  }
+}
+
+/**
+ * Remove orphaned and unnecessary rows in the webform table.
+ */
+function webform_update_7310() {
+  $result = db_query("SELECT nid FROM {webform} WHERE
+    nid NOT IN
+    (SELECT DISTINCT(w1.nid) FROM webform w1 INNER JOIN webform_component wc ON w1.nid = wc.nid)
+    AND nid NOT IN
+    (SELECT w2.nid FROM webform w2 INNER JOIN node n ON w2.nid = n.nid WHERE n.type = 'webform')"
+  );
+  $empty_nids = array();
+  foreach ($result as $row) {
+    $empty_nids[] = $row->nid;
+  }
+  if (!empty($empty_nids)) {
+    db_delete('webform')->condition('nid', $empty_nids, 'IN')->execute();
   }
 }

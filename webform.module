@@ -927,12 +927,22 @@ function webform_node_insert($node) {
     return;
   }
 
+  // If added directly through node_save(), set defaults for the node.
+  if (!isset($node->webform)) {
+    $node->webform = webform_node_defaults();
+  }
+
+  // Do not make an entry if this node does not have any Webform settings.
+  if ($node->webform == webform_node_defaults() && !in_array($node->type, webform_variable_get('webform_node_types_primary'))) {
+    //return;
+  }
+
   module_load_include('inc', 'webform', 'includes/webform.components');
   module_load_include('inc', 'webform', 'includes/webform.emails');
 
   // Insert the webform.
   $node->webform['nid'] = $node->nid;
-  drupal_write_record('webform', $node->webform);
+  $node->webform['record_exists'] = (bool) drupal_write_record('webform', $node->webform);
 
   // Insert the components into the database. Used with clone.module.
   if (isset($node->webform['components']) && !empty($node->webform['components'])) {
@@ -961,6 +971,17 @@ function webform_node_insert($node) {
  */
 function webform_node_update($node) {
   if (!in_array($node->type, webform_variable_get('webform_node_types'))) {
+    return;
+  }
+
+  // Check if this node needs a webform record at all. If it matches the
+  // defaults, any existing record will be deleted.
+  webform_check_record($node);
+
+  // If a webform row doesn't even exist, we can assume it needs to be inserted.
+  // If the the webform matches the defaults, no row will be inserted.
+  if (!$node->webform['record_exists']) {
+    webform_node_insert($node);
     return;
   }
 
@@ -1058,23 +1079,26 @@ function webform_node_delete($node) {
  * Default settings for a newly created webform node.
  */
 function webform_node_defaults() {
-  return array(
+  $defaults = array(
     'confirmation' => '',
     'confirmation_format' => NULL,
     'redirect_url' => '<confirmation>',
-    'teaser' => 0,
-    'block' => 0,
-    'allow_draft' => 0,
-    'auto_save' => 0,
-    'submit_notice' => 1,
+    'teaser' => '0',
+    'block' => '0',
+    'allow_draft' => '0',
+    'auto_save' => '0',
+    'submit_notice' => '1',
     'submit_text' => '',
-    'submit_limit' => -1,
-    'submit_interval' => -1,
-    'status' => 1,
-    'roles' => array(1, 2),
+    'submit_limit' => '-1',
+    'submit_interval' => '-1',
+    'status' => '1',
+    'record_exists' => FALSE,
+    'roles' => array('1', '2'),
     'emails' => array(),
     'components' => array(),
   );
+  drupal_alter('webform_node_defaults', $defaults);
+  return $defaults;
 }
 
 /**
@@ -1120,6 +1144,7 @@ function webform_node_load($nodes, $types) {
   foreach ($result as $nid => $webform) {
     // Load the basic information for each node.
     $nodes[$nid]->webform = $webform;
+    $nodes[$nid]->webform['record_exists'] = TRUE;
   }
 
   // Load the components, emails, and defaults for all webform-enabled nodes.
@@ -1213,7 +1238,7 @@ function webform_form_alter(&$form, $form_state, $form_id) {
     );
 
     // If a new node, redirect the user to the components form after save.
-    if (empty($node->nid) && in_array($node->type, webform_variable_get('webform_node_types_redirect'))) {
+    if (empty($node->nid) && in_array($node->type, webform_variable_get('webform_node_types_primary'))) {
       $form['actions']['submit']['#submit'][] = 'webform_form_submit';
     }
   }
@@ -2731,6 +2756,58 @@ function _webform_filter_xss($string) {
   return filter_xss($string, $allowed_tags);
 }
 
+
+/**
+ * Utility function to ensure that a webform record exists in the database.
+ *
+ * @param $node
+ *   The node object to check if a database entry exists.
+ * @return
+ *   This function should always return TRUE if no errors were encountered,
+ *   ensuring that a webform table row has been created. Will return FALSE if
+ *   a record does not exist and a new one could not be created.
+ */
+function webform_ensure_record(&$node) {
+  if (!$node->webform['record_exists']) {
+    // Even though webform_node_insert() would set this property to TRUE,
+    // we set record_exists to trigger a difference from the defaults.
+    $node->webform['record_exists'] = TRUE;
+    webform_node_insert($node);
+  }
+  return $node->webform['record_exists'];
+}
+
+/**
+ * Utility function to check if a webform record is necessary in the database.
+ *
+ * If the node is no longer using any webform settings, this function will
+ * delete the settings from the webform table. Note that this function will NOT
+ * delete rows from the webform table if the node-type is exclusively used for
+ * webforms (per the "webform_node_types_primary" variable).
+ *
+ * @param $node
+ *   The node object to check if a database entry is still required.
+ * @return
+ *   Returns TRUE if the webform still has a record in the database. Returns
+ *   FALSE if the webform does not have a record or if the previously existing
+ *   record was just deleted.
+ */
+function webform_check_record(&$node) {
+  $webform = $node->webform;
+  $webform['record_exists'] = FALSE;
+  unset($webform['nid']);
+
+  // Don't include empty values in the comparison, this makes it so modules that
+  // extend Webform with empty defaults won't affect cleanup of rows.
+  $webform = array_filter($webform);
+  $defaults = array_filter(webform_node_defaults());
+  if ($webform == $defaults && !in_array($node->type, webform_variable_get('webform_node_types_primary'))) {
+    webform_node_delete($node);
+    $node->webform = webform_node_defaults();
+  }
+  return $node->webform['record_exists'];
+}
+
 /**
  * Given a form_key and a list of form_key parents, determine the cid.
  *
@@ -2769,8 +2846,8 @@ function webform_variable_get($variable) {
     case 'webform_node_types':
       $result = variable_get('webform_node_types', array('webform'));
       break;
-    case 'webform_node_types_redirect':
-      $result = variable_get('webform_node_types_redirect', array('webform'));
+    case 'webform_node_types_primary':
+      $result = variable_get('webform_node_types_primary', array('webform'));
       break;
   }
   return $result;
