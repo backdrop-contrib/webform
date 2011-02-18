@@ -307,8 +307,6 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE) {
     '#theme_wrappers' => array(),
   );
   $element['#webform_component'] = $component;
-  $element['#webform_required'] = $component['mandatory'];
-  $element['#webform_form_key'] = $form_key;
   $element['#weight'] = $component['weight'];
   $element['#title'] = $filter ? _webform_filter_xss($component['name']) : $component['name'];
   $element['#title_display'] = $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before';
@@ -320,6 +318,12 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE) {
   // Change the 'width' option to the correct 'size' option.
   if ($component['extra']['width'] > 0) {
     $element[$form_key]['#size'] = $component['extra']['width'];
+  }
+
+  // Handles the asterisk for mandatory fields. Note that this is only on the
+  // wrapper, not on the file field itself. We handle validation separately.
+  if ($component['mandatory']) {
+    $element['#required'] = TRUE;
   }
 
   // Add a hidden element to store the FID for new files.
@@ -353,11 +357,6 @@ function theme_webform_render_file($variables) {
     $firstchild = array_shift(array_keys($element));
     $element[$firstchild]['#suffix'] = ' ' . l(t('Download !filename', array('!filename' => webform_file_name($file->uri))), webform_file_url($file->uri)) . (isset($element['#suffix']) ? $element['#suffix'] : '');
     $element[$firstchild]['#description'] = '<div class="webform-newfile-message">'. t('Uploading a new file will replace the current file.') . '</div>' . (isset($element[$firstchild]['#description']) ? $element[$firstchild]['#description'] : '');
-  }
-
-  // Add the required asterisk.
-  if ($element['#webform_required']) {
-    $element[$element['#webform_form_key']]['#required'] = TRUE;
   }
 
   return drupal_render_children($element);
