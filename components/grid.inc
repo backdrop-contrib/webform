@@ -360,6 +360,7 @@ function _webform_csv_headers_grid($component, $export_options) {
  */
 function _webform_csv_data_grid($component, $export_options, $value) {
   $questions = _webform_select_options_from_text($component['extra']['questions'], TRUE);
+  $options = _webform_select_options_from_text($component['extra']['options'], TRUE);
   $return = array();
   foreach ($questions as $key => $question) {
     if (isset($value[$key]) && isset($options[$value[$key]])) {
