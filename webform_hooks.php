@@ -590,21 +590,26 @@ function _webform_theme_component() {
  */
 function _webform_analysis_component($component, $sids = array(), $single = FALSE) {
   // Generate the list of options and questions.
-  $options = _webform_component_options($component['extra']['options']);
-  $questions = array_values(_webform_component_options($component['extra']['questions']));
+  $options = _webform_select_options_from_text($component['extra']['options'], TRUE);
+  $questions = _webform_select_options_from_text($component['extra']['questions'], TRUE);
 
   // Generate a lookup table of results.
-  $placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sidfilter = count($sids) ? " AND sid in (".implode(",", $placeholders).")" : "";
-  $query = 'SELECT no, data, count(data) as datacount '.
-    ' FROM {webform_submitted_data} '.
-    ' WHERE nid = %d '.
-    ' AND cid = %d '.
-    " AND data != '' ". $sidfilter .
-    ' GROUP BY no, data';
-  $result = db_query($query, array_merge(array($component['nid'], $component['cid']), $sids));
+  $query = db_select('webform_submitted_data', 'wsd')
+    ->fields('wsd', array('no', 'data'))
+    ->condition('nid', $component['nid'])
+    ->condition('cid', $component['cid'])
+    ->condition('data', '', '<>')
+    ->groupBy('no')
+    ->groupBy('data');
+  $query->addExpression('COUNT(sid)', 'datacount');
+
+  if (count($sids)) {
+    $query->condition('sid', $sids, 'IN');
+  }
+
+  $result = $query->execute();
   $counts = array();
-  while ($data = db_fetch_object($result)) {
+  foreach ($result as $data) {
     $counts[$data->no][$data->data] = $data->datacount;
   }
 
