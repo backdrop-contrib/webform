@@ -2257,7 +2257,7 @@ function webform_client_form_submit($form, &$form_state) {
     drupal_set_message($message);
   }
   // If redirecting and we have a confirmation message, show it as a message.
-  elseif (!$external_url && (!empty($redirect_url) && $redirect_url != '<confirmation>') && !empty($confirmation)) {
+  elseif (!$is_draft && !$external_url && (!empty($redirect_url) && $redirect_url != '<confirmation>') && !empty($confirmation)) {
     drupal_set_message(check_markup($confirmation, $node->webform['confirmation_format'], '', TRUE));
   }
 
