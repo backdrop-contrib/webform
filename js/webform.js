@@ -53,6 +53,9 @@ Drupal.webform.datepicker = function(context) {
         month = month ? month : today.getMonth() + 1;
         day = day ? day : today.getDate();
 
+        // Make sure that the default year fits in the available options.
+        year = (year < startYear || year > endYear) ? startYear : year;
+
         // jQuery UI Datepicker will read the input field and base its date off
         // of that, even though in our case the input field is a button.
         $(input).val(year + '-' + month + '-' + day);
