@@ -948,6 +948,7 @@ function theme_webform_component_select($variables) {
   }
 
   $element['#type'] = 'fieldset';
+  $element['#value'] = NULL;
   $element['#attributes']['class'] = array('webform-component-select-table');
   if (!isset($element['#collapsible']) || $element['#collapsible']) {
     $element['#attributes']['class'][] = 'collapsible';
