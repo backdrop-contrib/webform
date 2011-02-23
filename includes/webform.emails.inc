@@ -19,7 +19,7 @@ function webform_emails_form($form, $form_state, $node) {
     '#tree' => TRUE,
     '#node' => $node,
     '#attached' =>  array(
-      'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
+      'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'group' => CSS_DEFAULT, 'weight' => 1)),
       'js' => array($path . '/js/webform-admin.js' => array('preprocess' => FALSE)),
     ),
     'components' => array(),
@@ -175,7 +175,7 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
   $form = array(
     '#tree' => TRUE,
     '#attached' =>  array(
-      'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
+      'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'group' => CSS_DEFAULT, 'weight' => 1)),
       'js' => array(
         $path . '/js/webform-admin.js' => array('preprocess' => FALSE),
         array('data' => array('webform' => array('revertConfirm' => t('Are you sure you want to revert any changes to your template back to the default?'))), 'type' => 'setting'),

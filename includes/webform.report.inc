@@ -76,7 +76,7 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
   $element['#total_count'] = $count;
   $element['#pager_count'] = $pager_count;
   $element['#attached']['css'] = array(
-    drupal_get_path('module', 'webform') . '/css/webform-admin.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1),
+    drupal_get_path('module', 'webform') . '/css/webform-admin.css' => array('preprocess' => FALSE, 'group' => CSS_DEFAULT, 'weight' => 1),
   );
 
   $element['table']['#theme'] = 'table';
@@ -215,7 +215,7 @@ function theme_webform_results_table_header($variables) {
  *   The number of results to be shown per page.
  */
 function theme_webform_results_table($variables) {
-  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', array('weight' => CSS_THEME, 'preprocess' => FALSE));
+  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', array('group' => CSS_THEME, 'preprocess' => FALSE));
 
   $node = $variables['node'];
   $components = $variables['components'];
@@ -420,7 +420,7 @@ function webform_results_download_form_submit(&$form, &$form_state) {
  * Theme the output of the export form.
  */
 function theme_webform_results_download_form($variables) {
-  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', array('weight' => CSS_THEME, 'preprocess' => FALSE));
+  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', array('group' => CSS_THEME, 'preprocess' => FALSE));
 
   $form = $variables['form'];
 
@@ -431,7 +431,7 @@ function theme_webform_results_download_form($variables) {
  * Theme the output of the select list format radio buttons.
  */
 function theme_webform_results_download_select_format($variables) {
-  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', array('weight' => CSS_THEME, 'preprocess' => FALSE));
+  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', array('group' => CSS_THEME, 'preprocess' => FALSE));
 
   $element = $variables['element'];
   $output = '';

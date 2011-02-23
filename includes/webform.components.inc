@@ -156,7 +156,7 @@ function theme_webform_components_form($variables) {
 
   $path = drupal_get_path('module', 'webform');
   $form['components']['#attached'] =  array(
-    'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
+    'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'group' => CSS_DEFAULT, 'weight' => 1)),
     'js' => array($path . '/js/webform-admin.js' => array('preprocess' => FALSE)),
   );
 
@@ -341,7 +341,7 @@ function webform_components_form_submit($form, &$form_state) {
 
 function webform_component_edit_form($form, $form_state, $node, $component, $clone = FALSE) {
   drupal_set_title(t('Edit component: @name', array('@name' => $component['name'])), PASS_THROUGH);
-  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', array('weight' => CSS_THEME, 'preprocess' => FALSE));
+  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', array('group' => CSS_THEME, 'preprocess' => FALSE));
 
   // Print the correct field type specification.
   // We always need: name and description.
