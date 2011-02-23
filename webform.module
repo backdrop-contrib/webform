@@ -524,7 +524,7 @@ function webform_theme() {
       'render element' => 'webform',
     ),
     'webform_view_messages' => array(
-      'variables' => array('node' => NULL, 'teaser' => NULL, 'page' => NULL, 'submission_count' => NULL, 'limit_exceeded' => NULL, 'allowed_roles' => NULL, 'closed' => NULL),
+      'variables' => array('node' => NULL, 'teaser' => NULL, 'page' => NULL, 'submission_count' => NULL, 'limit_exceeded' => NULL, 'allowed_roles' => NULL, 'closed' => NULL, 'cached' => NULL),
     ),
     'webform_form' => array(
       'render element' => 'form',
@@ -1310,20 +1310,25 @@ function webform_node_view($node, $view_mode) {
     }
   }
 
+  // Get a count of previous submissions by this user. Note that the
+  // webform_submission_access() function may disable the page cache for
+  // anonymous users if they are allowed to edit their own submissions!
+  if ($page && webform_submission_access($node, NULL, 'list')) {
+    module_load_include('inc', 'webform', 'includes/webform.submissions');
+    $submission_count = webform_get_submission_count($node->nid, $user->uid);
+  }
+
+  // Check if this page is cached or not.
+  $cached = $user->uid == 0 && (variable_get('cache', 0) || drupal_page_is_cacheable() === FALSE);
+
   // Check if the user can add another submission.
   if ($node->webform['submit_limit'] != -1) { // -1: Submissions are never throttled.
     module_load_include('inc', 'webform', 'includes/webform.submissions');
 
     // Disable the form if the limit is exceeded and page cache is not active.
-    if (($limit_exceeded = _webform_submission_limit_check($node)) && ($user->uid != 0 || variable_get('cache', 0) == 0)) {
+    if (($limit_exceeded = _webform_submission_limit_check($node)) && !$cached) {
       $enabled = FALSE;
     }
-  }
-
-  // Get a count of previous submissions by this user.
-  if ($page && webform_submission_access($node, NULL, 'list')) {
-    module_load_include('inc', 'webform', 'includes/webform.submissions');
-    $submission_count = webform_get_submission_count($node->nid, $user->uid);
   }
 
   // Check if this user has a draft for this webform.
@@ -1348,7 +1353,7 @@ function webform_node_view($node, $view_mode) {
 
   // Print out messages for the webform.
   if (empty($node->in_preview) && !isset($node->webform_block) && !$logging_in) {
-    theme('webform_view_messages', array('node' => $node, 'teaser' => $teaser, 'page' => $page, 'submission_count' => $submission_count, 'limit_exceeded' => $limit_exceeded, 'allowed_roles' => $allowed_roles, 'closed' => $closed));
+    theme('webform_view_messages', array('node' => $node, 'teaser' => $teaser, 'page' => $page, 'submission_count' => $submission_count, 'limit_exceeded' => $limit_exceeded, 'allowed_roles' => $allowed_roles, 'closed' => $closed, 'cached' => $cached));
   }
 
   // Add the output to the node.
@@ -1415,9 +1420,9 @@ function theme_webform_view_messages($variables) {
   $limit_exceeded = $variables['limit_exceeded'];
   $allowed_roles = $variables['allowed_roles'];
   $closed = $variables['closed'];
+  $cached = $variables['cached'];
 
   $type = 'notice';
-  $cached = $user->uid == 0 && variable_get('cache', 0);
 
   if ($closed) {
     $message = t('Submissions for this form are closed.');
@@ -1470,7 +1475,7 @@ function theme_webform_view_messages($variables) {
   }
 
   if ($page && isset($message)) {
-    drupal_set_message($message, $type, FALSE);
+    drupal_set_message($message, $type);
   }
 }
 
@@ -1953,8 +1958,10 @@ function webform_client_form_validate($form, &$form_state) {
     module_load_include('inc', 'webform', 'includes/webform.submissions');
 
     if (!$finished && $limit_exceeded = _webform_submission_limit_check($node)) {
-      $error = theme('webform_view_messages', array('node' => $node, 'teaser' => 0, 'pager' => 1, 'submission_count' => 0, 'limit_exceeded' => $limit_exceeded, 'allowed_roles' => array_keys(user_roles()), 'closed' => FALSE));
-      form_set_error('', $error);
+      // Assume that webform_view_messages will print out the necessary message,
+      // then stop the processing of the form with an empty form error.
+      theme('webform_view_messages', array('node' => $node, 'teaser' => 0, 'page' => 1, 'submission_count' => 0, 'limit_exceeded' => $limit_exceeded, 'allowed_roles' => array_keys(user_roles()), 'closed' => FALSE, 'cached' => FALSE));
+      form_set_error('', NULL);
       return;
     }
   }
@@ -3205,14 +3212,7 @@ function webform_component_implements($type, $callback) {
  * Disable the Drupal page cache.
  */
 function webform_disable_page_cache() {
-  // PressFlow and Drupal 7 method.
-  if (function_exists('drupal_page_is_cacheable')) {
-    drupal_page_is_cacheable(FALSE);
-  }
-  // Drupal 6 hack to disable page cache.
-  else {
-    $GLOBALS['conf']['cache'] = FALSE;
-  }
+  drupal_page_is_cacheable(FALSE);
 }
 
 /**
