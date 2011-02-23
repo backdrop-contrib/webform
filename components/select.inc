@@ -148,7 +148,7 @@ function _webform_edit_select($component) {
       '#default_value' => $component['value'],
       '#description' => t('The default value of the field. For multiple selects use commas to separate multiple defaults.') . theme('webform_token_help'),
       '#size' => 60,
-      '#maxlength' => 256,
+      '#maxlength' => 1024,
       '#weight' => 0,
     );
     $form['extra']['multiple'] = array(
