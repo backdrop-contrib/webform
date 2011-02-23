@@ -386,6 +386,7 @@ function webform_install() {
   );
   $webform_type = node_type_set_defaults($webform_type);
   node_type_save($webform_type);
+  node_add_body_field($webform_type);
 }
 
 /**
