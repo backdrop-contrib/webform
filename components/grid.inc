@@ -241,7 +241,7 @@ function theme_webform_display_grid($variables) {
           $row[] = array('data' => '<strong>X</strong>', 'class' => array('checkbox', 'webform-grid-option'));
         }
         else {
-          $row[] = array('data' => '&nbsp', 'class' => array('checkbox', 'webform-grid-option'));
+          $row[] = array('data' => '&nbsp;', 'class' => array('checkbox', 'webform-grid-option'));
         }
       }
       $rows[] = $row;
