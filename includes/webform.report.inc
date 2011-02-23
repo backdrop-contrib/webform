@@ -497,7 +497,7 @@ function theme_webform_results_download_select_format($variables) {
  *   27 Feb 2005       ,1035,56 ,212   ,X         ,        ,        ,..,       ,X          ,X       ,X       ,..,X       ,How is this?
  *
  */
-function webform_results_download($node, $format = 'delimiter', $options = array()) {
+function webform_results_download($node, $format = 'delimited', $options = array()) {
   module_load_include('inc', 'webform', 'includes/webform.export');
   module_load_include('inc', 'webform', 'includes/webform.components');
 
@@ -514,7 +514,7 @@ function webform_results_download($node, $format = 'delimiter', $options = array
   if (empty($options)) {
     $options = array(
       'delimiter' => variable_get('webform_csv_delimiter', '\t'),
-      'components' => array_keys($submission_information) + array_keys(webform_component_list($node, 'csv', TRUE)),
+      'components' => array_merge(array_keys($submission_information), array_keys(webform_component_list($node, 'csv', TRUE))),
       'select_keys' => 0,
       'select_format' => 'separate',
     );
