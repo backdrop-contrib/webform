@@ -593,7 +593,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
   }
   // Build the list of SIDs that need to be retrieved.
   else {
-    $pager_query = db_select('webform_submissions')->fields('webform_submissions', array('sid'));
+    $pager_query = db_select('webform_submissions', 'ws')->fields('ws', array('sid'));
     foreach ($filters as $column => $value) {
       $pager_query->condition($column, $value);
     }
@@ -609,14 +609,21 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     }
 
     if (is_array($header)) {
-      $pager_query->extend('TableSort')->orderByHeader($header);
+      // Join to the users table for sorting by user name.
+      $pager_query->leftJoin('users', 'u', 'u.uid = ws.uid');
+
+      // Extending the query instatiates a new query object.
+      $pager_query = $pager_query->extend('TableSort');
+      $pager_query->orderByHeader($header);
     }
     else {
       $pager_query->orderBy('sid', 'ASC');
     }
 
     if ($pager_count) {
-      $pager_query->extend('PagerDefault')->limit($pager_count);
+      // Extending the query instatiates a new query object.
+      $pager_query = $pager_query->extend('PagerDefault');
+      $pager_query->limit($pager_count);
     }
     $result = $pager_query->execute();
 
