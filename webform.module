@@ -1664,7 +1664,9 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
   // Set the form action to the node ID in case this is being displayed on the
   // teaser, subsequent pages should be on the node page directly.
   if (!isset($node->webform_block) && empty($submission)) {
-    $form['#action'] = url('node/' . $node->nid);
+    $query = $_GET;
+    unset($query['q']);
+    $form['#action'] = url('node/'. $node->nid, array('query' => $query));
   }
 
   $form['#submit'] = array('webform_client_form_pages', 'webform_client_form_submit');
