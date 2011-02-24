@@ -538,9 +538,9 @@ function webform_update_7309() {
 function webform_update_7310() {
   $result = db_query("SELECT nid FROM {webform} WHERE
     nid NOT IN
-    (SELECT DISTINCT(w1.nid) FROM webform w1 INNER JOIN webform_component wc ON w1.nid = wc.nid)
+    (SELECT DISTINCT(w1.nid) FROM {webform} w1 INNER JOIN {webform_component} wc ON w1.nid = wc.nid)
     AND nid NOT IN
-    (SELECT w2.nid FROM webform w2 INNER JOIN node n ON w2.nid = n.nid WHERE n.type = 'webform')"
+    (SELECT w2.nid FROM {webform} w2 INNER JOIN {node} n ON w2.nid = n.nid WHERE n.type = 'webform')"
   );
   $empty_nids = array();
   foreach ($result as $row) {
