@@ -35,4 +35,3 @@ Webform 2.x Changelog
 - Component descriptions are textareas rather than textfields.
 - _webform_filtervalues() has been renamed to _webform_filter_values.
 
-$Id$
