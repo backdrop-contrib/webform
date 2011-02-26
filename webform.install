@@ -513,11 +513,15 @@ function webform_update_7307() {
     }
   }
 
-  db_update('webform')
+  $query = db_update('webform')
     ->fields(array('confirmation_format' => $default_format))
-    ->isNotNull('confirmation_format')
-    ->condition('confirmation_format', $numeric_formats, 'NOT IN')
-    ->execute();
+    ->isNotNull('confirmation_format');
+
+  if (!empty($numeric_formats)) {
+    $query->condition('confirmation_format', $numeric_formats, 'NOT IN');
+  }
+
+  $query->execute();
 }
 
 /**
