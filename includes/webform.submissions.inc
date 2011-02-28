@@ -586,6 +586,12 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     $filters = array('nid' => $filters);
   }
 
+  // UID filters need to be against a specific table.
+  if (isset($filters['uid'])) {
+    $filters['u.uid'] = $filters['uid'];
+    unset($filters['uid']);
+  }
+
   // No need to find SIDs if it was given to us.
   if (isset($filters['sid'])) {
     $sids = array($filters['sid']);
@@ -597,7 +603,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
       $pager_query->condition($column, $value);
     }
 
-    if (isset($filters['uid']) && $filters['uid'] === 0) {
+    if (isset($filters['u.uid']) && $filters['u.uid'] === 0) {
       if (!empty($_SESSION['webform_submission'])) {
         $anonymous_sids = array_keys($_SESSION['webform_submission']);
         $pager_query->condition('sid', $anonymous_sids, 'IN');
