@@ -1795,6 +1795,7 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
 function _webform_client_form_rule_check($node, $component, $page_num, $form_state = NULL, $submission = NULL) {
   $conditional_values = isset($component['extra']['conditional_values']) ? $component['extra']['conditional_values'] : NULL;
   $conditional_component = isset($component['extra']['conditional_component']) && isset($node->webform['components'][$component['extra']['conditional_component']]) ? $node->webform['components'][$component['extra']['conditional_component']] : NULL;
+  $conditional_cid = $conditional_component['cid'];
 
   // Check the rules for this entire page. Note individual page breaks are
   // checked down below in the individual component rule checks.
@@ -1820,21 +1821,11 @@ function _webform_client_form_rule_check($node, $component, $page_num, $form_sta
   if ($show_component && ($page_num == 0 || $component['page_num'] == $page_num) && $conditional_component && strlen(trim($conditional_values))) {
     $input_values = array();
     if (isset($form_state)) {
-      $parents = webform_component_parent_keys($node, $conditional_component);
-      $input_value = isset($form_state['values']['submitted']) ? $form_state['values']['submitted'] : array();
-      foreach ($parents as $parent) {
-        if (isset($input_value[$parent])) {
-          $input_value = $input_value[$parent];
-        }
-        else {
-          $input_value = NULL;
-          break;
-        }
-      }
+      $input_value = isset($form_state['values']['submitted'][$conditional_cid]) ? $form_state['values']['submitted'][$conditional_cid] : NULL;
       $input_values = is_array($input_value) ? $input_value : array($input_value);
     }
     elseif (isset($submission)) {
-      $input_values = $submission->data[$conditional_component['cid']]['value'];
+      $input_values = $submission->data[$conditional_cid]['value'];
     }
 
     $test_values = array_map('trim', explode("\n", $conditional_values));
@@ -2055,6 +2046,13 @@ function webform_client_form_pages($form, &$form_state) {
     $form_state['storage']['page_num'] = $form_state['webform']['page_num'];
   }
 
+  // Perform post processing by components.
+  _webform_client_form_submit_process($node, $form_state['values']['submitted']);
+
+  // Flatten trees within the submission.
+  $form_state['values']['submitted_tree'] = $form_state['values']['submitted'];
+  $form_state['values']['submitted'] = _webform_client_form_submit_flatten($node, $form_state['values']['submitted']);
+
   // Assume the form is completed unless the page logic says otherwise.
   $form_state['webform_completed'] = TRUE;
 
@@ -2136,13 +2134,6 @@ function webform_client_form_pages($form, &$form_state) {
     // Remove the variable so it doesn't show up in the additional processing.
     unset($original_values);
   }
-
-  // Perform post processing by components.
-  _webform_client_form_submit_process($node, $form_state['values']['submitted']);
-
-  // Flatten trees within the submission.
-  $form_state['values']['submitted_tree'] = $form_state['values']['submitted'];
-  $form_state['values']['submitted'] = _webform_client_form_submit_flatten($node, $form_state['values']['submitted']);
 
   // Inform the submit handlers that a draft will be saved.
   if ($form_state['values']['op'] == $draft_op || ($node->webform['auto_save'] && !$form_state['webform_completed'])) {
