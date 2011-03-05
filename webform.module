@@ -1825,7 +1825,7 @@ function _webform_client_form_rule_check($node, $component, $page_num, $form_sta
       $input_values = is_array($input_value) ? $input_value : array($input_value);
     }
     elseif (isset($submission)) {
-      $input_values = $submission->data[$conditional_cid]['value'];
+      $input_values = isset($submission->data[$conditional_cid]['value']) ? $submission->data[$conditional_cid]['value'] : array();
     }
 
     $test_values = array_map('trim', explode("\n", $conditional_values));
