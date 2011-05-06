@@ -150,11 +150,6 @@ function _webform_render_date($component, $value = NULL, $filter = TRUE) {
     $element['#default_value'] = $value;
   }
 
-  // Allow the date to be edited as the string value in Form Builder.
-  if (!$filter) {
-    $element['#default_value'] = $component['value'];
-  }
-
   return $element;
 }
 
@@ -162,8 +157,6 @@ function _webform_render_date($component, $value = NULL, $filter = TRUE) {
  * Form API #process function for Webform date fields.
  */
 function webform_expand_date($element) {
-  $component = $element['#webform_component'];
-
   // Accept a string or array value for #default_value.
   if (isset($element['#default_value']) && is_string($element['#default_value'])) {
     $timezone = $element['#default_timezone'] != 'user' ? NULL : 'user';
@@ -212,7 +205,7 @@ function webform_expand_date($element) {
   foreach (array('year_start', 'year_end') as $start_end) {
     $year = $element['#' . $start_end];
     if (strpos($year, '-') === 0 || strpos($year, '+') === 0) {
-      $timezone = $component['extra']['timezone'] != 'user' ? NULL : 'user';
+      $timezone = $element['#default_timezone'] != 'user' ? NULL : 'user';
       $element['#' . $start_end] = webform_strtodate('Y', $year . ' years', $timezone);
     }
   }
@@ -278,21 +271,17 @@ function theme_webform_date($variables) {
  * Element validation for Webform date fields.
  */
 function webform_validate_date($element, $form_state) {
-  $component = $element['#webform_component'];
-  $form_key = $component['form_key'];
-  $name = $component['name'];
-
   // Check if the user filled the required fields.
   foreach (array('day', 'month', 'year') as $field_type) {
     if (!is_numeric($element[$field_type]['#value']) && $element['#required']) {
-      form_error($element, t('!name field is required.', array('!name' => $name)));
+      form_error($element, t('!name field is required.', array('!name' => $element['#title'])));
       return;
     }
   }
   // Check for a valid date.
   if ($element['month']['#value'] !== '' || $element['day']['#value'] !== '' || $element['year']['#value'] !== '') {
     if (!checkdate((int)$element['month']['#value'], (int)$element['day']['#value'], (int)$element['year']['#value'])) {
-      form_error($element, t('Entered !name is not a valid date.', array('!name' => $name)));
+      form_error($element, t('Entered !name is not a valid date.', array('!name' => $element['#title'])));
       return;
     }
   }
