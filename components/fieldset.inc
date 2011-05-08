@@ -52,13 +52,13 @@ function _webform_edit_fieldset($component) {
  */
 function _webform_render_fieldset($component, $value = NULL, $filter = TRUE) {
   $element = array(
-    '#type' => $component['type'],
+    '#type' => 'fieldset',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#weight' => $component['weight'],
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#collapsible' => $component['extra']['collapsible'],
     '#collapsed' => $component['extra']['collapsed'],
-    '#attributes' => array('class' => array('webform-component-' . $component['type']), 'id' => 'webform-component-' . $component['form_key']),
+    '#attributes' => array('class' => array('webform-component-fielset'), 'id' => 'webform-component-' . $component['form_key']),
     '#pre_render' => array('webform_fieldset_prerender'),
     '#webform_component' => $component,
   );

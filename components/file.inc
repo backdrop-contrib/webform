@@ -291,10 +291,18 @@ function theme_webform_edit_file($variables) {
  * Implementation of _webform_render_component().
  */
 function _webform_render_file($component, $value = NULL, $filter = TRUE) {
-  $node = node_load($component['nid']);
-  $form_key = implode('_', webform_component_parent_keys($node, $component));
+  // Normally every file component is given a unique ID based on its key.
+  if (isset($component['nid'])) {
+    $node = node_load($component['nid']);
+    $form_key = implode('_', webform_component_parent_keys($node, $component));
+  }
+  // If being used as a default though, we don't yet have a form key.
+  else {
+    $form_key = 'default';
+  }
+
   $element[$form_key] = array(
-    '#type' => $component['type'],
+    '#type' => 'file',
     //'#required' => $component['mandatory'], // Drupal core bug with required file uploads.
     '#attributes' => $component['extra']['attributes'],
     '#tree' => FALSE, // file_check_upload assumes a flat $_FILES structure.

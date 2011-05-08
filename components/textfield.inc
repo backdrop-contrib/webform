@@ -121,7 +121,7 @@ function _webform_edit_textfield($component) {
  */
 function _webform_render_textfield($component, $value = NULL, $filter = TRUE) {
   $element = array(
-    '#type' => $component['type'],
+    '#type' => 'textfield',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#default_value' => $filter ? _webform_filter_values($component['value'], NULL, NULL, NULL, FALSE) : $component['value'],
