@@ -60,9 +60,9 @@ function _webform_edit_time($component) {
     '#type' => 'radios',
     '#title' => t('Default value timezone'),
     '#default_value' => empty($component['extra']['timezone']) ? 'user' : $component['extra']['timezone'],
-    '#description' => t('Adjust the default time value according to a specific timezone.'),
+    '#description' => t('If using relative dates for a default value (e.g. "now") base the current time on this timezone.'),
     '#options' => array('user' => t('User timezone'), 'site' => t('Website timezone')),
-    '#weight' => -1,
+    '#weight' => 2,
     '#access' => variable_get('configurable_timezones', 1),
   );
   $form['display']['hourformat'] = array(
@@ -82,6 +82,7 @@ function _webform_edit_time($component) {
  */
 function _webform_render_time($component, $value = NULL, $filter = TRUE) {
   $element = array(
+    '#type' => 'webform_time',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#required' => $component['mandatory'],
@@ -89,15 +90,30 @@ function _webform_render_time($component, $value = NULL, $filter = TRUE) {
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#element_validate' => array('webform_validate_time'),
     '#hourformat' => $component['extra']['hourformat'],
-    '#after_build' => array('webform_expand_time'),
+    '#default_value' => $component['value'],
+    '#timezone' => $component['extra']['timezone'],
+    '#process' => array('webform_expand_time'),
     '#theme' => 'webform_time',
     '#theme_wrappers' => array('webform_element'),
     '#webform_component' => $component,
   );
 
-  if (drupal_strlen($component['value']) > 0) {
+  // Set the value from Webform if available.
+  if (!empty($value[0])) {
+    $element['#default_value'] = $value[0];
+  }
+
+  return $element;
+}
+
+/**
+ * Form API #process function for Webform time fields.
+ */
+function webform_expand_time($element) {
+  // Expand the default value from a string into an array.
+  if (!empty($element['#default_value'])) {
     // Adjust the time based on the user or site timezone.
-    if (variable_get('configurable_timezones', 1) && $component['extra']['timezone'] == 'user') {
+    if (variable_get('configurable_timezones', 1) && $element['#timezone'] == 'user') {
       $timezone_name = isset($GLOBALS['user']->timezone) ? $GLOBALS['user']->timezone : 'UTC';
     }
     else {
@@ -105,7 +121,7 @@ function _webform_render_time($component, $value = NULL, $filter = TRUE) {
     }
 
     $timezone = new DateTimeZone($timezone_name);
-    $datetime = new DateTime($component['value'], $timezone);
+    $datetime = new DateTime($element['#default_value'], $timezone);
     $default_values = webform_date_array($datetime->format('c'), 'time');
   }
   else {
@@ -116,13 +132,9 @@ function _webform_render_time($component, $value = NULL, $filter = TRUE) {
     );
   }
 
-  if (!empty($value[0])) {
-    $default_values = webform_date_array($value[0], 'time');
-  }
-
   $first_hour = 0;
   $last_hour = 23;
-  if ($component['extra']['hourformat'] == '12-hour') {
+  if ($element['#hourformat'] == '12-hour') {
     $first_hour = 1;
     $last_hour = 12;
     $default_values = webform_time_convert($default_values, '12-hour');
@@ -148,7 +160,7 @@ function _webform_render_time($component, $value = NULL, $filter = TRUE) {
     '#default_value' => $default_values['minute'],
     '#options' => $minutes,
   );
-  if ($component['extra']['hourformat'] == '12-hour') {
+  if (strcmp($element['#hourformat'], '12-hour') == 0) {
     $element['ampm'] = array(
       '#type' => 'radios',
       '#default_value' => $default_values['ampm'],
@@ -159,25 +171,6 @@ function _webform_render_time($component, $value = NULL, $filter = TRUE) {
   // Set the overall default value.
   if ($default_values['hour'] !== '') {
     $element['#default_value'] = webform_date_string($default_values);
-  }
-
-  return $element;
-}
-
-/**
- * Form API #after_build function for Webform time fields.
- *
- * Note that a #process function will not work on time fields, since they are
- * not actual FAPI elements. We use this function to set the proper default
- * values for the time fields.
- */
-function webform_expand_time($element) {
-  if (array_key_exists('#default_value', $element)) {
-    $time_value = webform_date_array($element['#default_value'], 'time');
-
-    foreach ($time_value as $key => $value) {
-      $element[$key]['#value'] = $value;
-    }
   }
 
   return $element;

@@ -673,6 +673,19 @@ function webform_theme() {
 }
 
 /**
+ * Implementation of hook_element_info().
+ */
+function webform_element_info() {
+  // A few of our components need to be defined here because Drupal does not
+  // provide these components natively. Because this hook fires on every page
+  // load (even on non-webform pages), we don't put this in the component .inc
+  // files because of the unnecessary loading that it would require.
+  $elements['webform_time'] = array('#input' => 'TRUE');
+  $elements['webform_grid'] = array('#input' => 'TRUE');
+  return $elements;
+}
+
+/**
  * Implementation of hook_webform_component_info().
  */
 function webform_webform_component_info() {

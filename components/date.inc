@@ -66,7 +66,7 @@ function _webform_edit_date($component) {
     '#default_value' => empty($component['extra']['timezone']) ? 'user' : $component['extra']['timezone'],
     '#description' => t('If using relative dates for a default value (e.g. "today") base the current day on this timezone.'),
     '#options' => array('user' => t('User timezone'), 'site' => t('Website timezone')),
-    '#weight' => -1,
+    '#weight' => 2,
     '#access' => variable_get('configurable_timezones', 1),
   );
 
@@ -127,7 +127,7 @@ function _webform_render_date($component, $value = NULL, $filter = TRUE) {
     '#year_end' => $component['extra']['year_end'],
     '#year_textfield' => $component['extra']['year_textfield'],
     '#default_value' => $component['value'],
-    '#default_timezone' => $component['extra']['timezone'],
+    '#timezone' => $component['extra']['timezone'],
     '#process' => array('webform_expand_date'),
     '#theme' => 'webform_date',
     '#theme_wrappers' => array('webform_element'),
@@ -159,7 +159,7 @@ function _webform_render_date($component, $value = NULL, $filter = TRUE) {
 function webform_expand_date($element) {
   // Accept a string or array value for #default_value.
   if (isset($element['#default_value']) && is_string($element['#default_value'])) {
-    $timezone = $element['#default_timezone'] != 'user' ? NULL : 'user';
+    $timezone = $element['#timezone'] != 'user' ? NULL : 'user';
     $timestring = webform_strtodate('c', $element['#default_value'], $timezone);
     $element['#default_value'] = webform_date_array($timestring, 'date');
   }
@@ -205,7 +205,7 @@ function webform_expand_date($element) {
   foreach (array('year_start', 'year_end') as $start_end) {
     $year = $element['#' . $start_end];
     if (strpos($year, '-') === 0 || strpos($year, '+') === 0) {
-      $timezone = $element['#default_timezone'] != 'user' ? NULL : 'user';
+      $timezone = $element['#timezone'] != 'user' ? NULL : 'user';
       $element['#' . $start_end] = webform_strtodate('Y', $year . ' years', $timezone);
     }
   }
