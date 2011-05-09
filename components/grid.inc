@@ -140,24 +140,41 @@ function _webform_edit_grid($component) {
  */
 function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
   $element = array(
+    '#type' => 'webform_grid',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#required' => $component['mandatory'],
     '#weight' => $component['weight'],
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#grid_questions' => _webform_select_options_from_text($component['extra']['questions'], TRUE),
+    '#grid_options' => _webform_select_options_from_text($component['extra']['options'], TRUE),
+    '#optrand' => $component['extra']['optrand'],
+    '#qrand' => $component['extra']['qrand'],
     '#theme' => 'webform_grid',
     '#theme_wrappers' => array('webform_element'),
+    '#process' => array('webform_expand_grid'),
     '#webform_component' => $component,
   );
 
-  $questions = _webform_select_options_from_text($component['extra']['questions'], TRUE);
-  $options = _webform_select_options_from_text($component['extra']['options'], TRUE);
+  if ($value) {
+    $element['#default_value'] = $value;
+  }
 
-  if ($component['extra']['optrand']) {
+  return $element;
+}
+
+/**
+ * A Form API #process function for Webform grid fields.
+ */
+function webform_expand_grid($element) {
+  $options = $element['#grid_options'];
+  $questions = $element['#grid_questions'];
+
+  if (!empty($element['#optrand'])) {
     _webform_shuffle_options($options);
   }
 
-  if ($component['extra']['qrand']) {
+  if (!empty($element['#qrand'])) {
     _webform_shuffle_options($questions);
   }
 
@@ -165,7 +182,7 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
     if ($question != '') {
       $element[$key] = array(
         '#title' => $question,
-        '#required' => $component['mandatory'],
+        '#required' => $element['#required'],
         '#options' => $options,
         '#type' => 'radios',
         '#process' => array('form_process_radios', 'webform_expand_select_ids'),
@@ -177,9 +194,13 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
     }
   }
 
-  if (isset($value)) {
-    foreach (element_children($element) as $key) {
-      $element[$key]['#default_value'] = isset($value[$key]) ? $value[$key] : NULL;
+  $value = isset($element['#default_value']) ? $element['#default_value'] : array();
+  foreach (element_children($element) as $key) {
+    if (isset($value[$key])) {
+      $element[$key]['#default_value'] = $value[$key];
+    }
+    else {
+      $element[$key]['#default_value'] = FALSE;
     }
   }
 
@@ -197,8 +218,8 @@ function _webform_display_grid($component, $value, $format = 'html') {
     '#title' => $component['name'],
     '#weight' => $component['weight'],
     '#format' => $format,
-    '#questions' => $questions,
-    '#options' => $options,
+    '#grid_questions' => $questions,
+    '#grid_options' => $options,
     '#theme' => 'webform_display_grid',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
     '#sorted' => TRUE,
@@ -229,13 +250,13 @@ function theme_webform_display_grid($variables) {
   if ($format == 'html') {
     $rows = array();
     $header = array(array('data' => '', 'class' => array('webform-grid-question')));
-    foreach ($element['#options'] as $option) {
+    foreach ($element['#grid_options'] as $option) {
       $header[] = array('data' => _webform_filter_xss($option), 'class' => array('checkbox', 'webform-grid-option'));
     }
     foreach (element_children($element) as $key) {
       $row = array();
       $row[] = array('data' => _webform_filter_xss($element[$key]['#title']), 'class' => array('webform-grid-question'));
-      foreach ($element['#options'] as $option_value => $option_label) {
+      foreach ($element['#grid_options'] as $option_value => $option_label) {
         if (strcmp($option_value, $element[$key]['#value']) == 0) {
           $row[] = array('data' => '<strong>X</strong>', 'class' => array('checkbox', 'webform-grid-option'));
         }
