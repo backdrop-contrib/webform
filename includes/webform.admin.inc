@@ -155,11 +155,14 @@ function webform_admin_settings() {
 
   $form = system_settings_form($form);
   $form['#theme'] = 'webform_admin_settings';
-  $form['#submit'][] = 'webform_admin_settings_submit';
+  array_unshift($form['#submit'], 'webform_admin_settings_submit');
 
   return $form;
 }
 
+/**
+ * Submit handler for the webform_admin_settings() form.
+ */
 function webform_admin_settings_submit($form, &$form_state) {
   $disabled_components = array();
   foreach ($form_state['values']['components'] as $name => $enabled) {
@@ -167,17 +170,18 @@ function webform_admin_settings_submit($form, &$form_state) {
       $disabled_components[] = $name;
     }
   }
-  variable_set('webform_disabled_components', $disabled_components);
+  // Update $form_state and let system_settings_form_submit() handle saving.
+  $form_state['values']['webform_disabled_components'] = $disabled_components;
+  unset($form_state['values']['components']);
 
-  $webform_types = array();
-  foreach ($form_state['values']['node_types'] as $type) {
-    if ($type) {
-      $webform_types[] = $type;
-    }
-  }
-  variable_set('webform_node_types', $webform_types);
+  // Change the name of the node type variable and clean it up.
+  $form_state['values']['webform_node_types'] = array_keys(array_filter($form_state['values']['node_types']));
+  unset($form_state['values']['node_types']);
 }
 
+/**
+ * Theme the output of the webform_admin_settings() form.
+ */
 function theme_webform_admin_settings($variables) {
   $form = $variables['form'];
 

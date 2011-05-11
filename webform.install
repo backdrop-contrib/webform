@@ -572,3 +572,11 @@ function webform_update_7311() {
     db_add_index('webform_submissions', 'nid_uid_sid', array('nid', 'uid', 'sid'));
   }
 }
+
+/**
+ * Remove unused Webform variables.
+ */
+function webform_update_6327() {
+  variable_del('node_types');
+  variable_del('components');
+}
