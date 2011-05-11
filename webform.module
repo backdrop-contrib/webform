@@ -2773,7 +2773,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
     }
   }
 
-  return $strict ? filter_xss($string) : $string;
+  return $strict ? _webform_filter_xss($string) : $string;
 }
 
 /**
@@ -2868,7 +2868,7 @@ function webform_get_cid(&$node, $form_key, $pid) {
 function webform_variable_get($variable) {
   switch ($variable) {
     case 'webform_allowed_tags':
-      $result = array('a', 'em', 'strong', 'code', 'img');
+      $result = variable_get('webform_allowed_tags', array('a', 'em', 'strong', 'code', 'img'));
       break;
     case 'webform_default_from_name':
       $result = variable_get('webform_default_from_name', variable_get('site_name', ''));
