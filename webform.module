@@ -1487,7 +1487,7 @@ function theme_webform_view_messages($variables) {
   }
 
   if ($page && isset($message)) {
-    drupal_set_message($message, $type);
+    drupal_set_message($message, $type, FALSE);
   }
 }
 
