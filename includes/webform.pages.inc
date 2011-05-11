@@ -57,7 +57,7 @@ function webform_configure_form($form, &$form_state, $node) {
     '#type' => 'item',
     '#title' => t('Redirection location'),
     '#theme' => 'webform_advanced_redirection_form',
-    '#description' => t('Choose where to redirect the user upon successful submission.'),
+    '#description' => t('Choose where to redirect the user upon successful submission.') . ' ' . t('The <em>Custom URL</em> option supports Webform token replacements.') . theme('webform_token_help'),
   );
   $form['submission']['redirection']['redirect']= array(
     '#type' => 'radios',
