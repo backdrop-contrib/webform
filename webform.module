@@ -946,7 +946,7 @@ function webform_node_insert($node) {
 
   // Do not make an entry if this node does not have any Webform settings.
   if ($node->webform == webform_node_defaults() && !in_array($node->type, webform_variable_get('webform_node_types_primary'))) {
-    //return;
+    return;
   }
 
   module_load_include('inc', 'webform', 'includes/webform.components');
