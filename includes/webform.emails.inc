@@ -272,16 +272,14 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
     '#type' => 'checkbox',
     '#title' => t('Send e-mail as HTML'),
     '#default_value' => $email['html'],
-    '#access' => module_exists('mimemail') && !variable_get('webform_format_override', 0),
-    '#description' => t('This feature not yet working in Drupal 7. See <a href="https://drupal.org/node/1043086">Webform-MIME Mail integration issue</a>.'),
+    '#access' => webform_email_html_capable() && !variable_get('webform_format_override', 0),
   );
 
   $form['template']['attachments'] = array(
     '#type' => 'checkbox',
     '#title' => t('Include files as attachments'),
     '#default_value' => $email['attachments'],
-    '#access' => module_exists('mimemail'),
-    '#description' => t('This feature not yet working in Drupal 7. See <a href="https://drupal.org/node/1043086">Webform-MIME Mail integration issue</a>.'),
+    '#access' => webform_email_html_capable(),
   );
 
   $form['template']['tokens'] = array(

@@ -199,7 +199,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
   $send_count = 0;
   foreach ($emails as $eid => $email) {
     // Set the HTML property based on availablity of MIME Mail.
-    $email['html'] = ($email['html'] && module_exists('mimemail'));
+    $email['html'] = ($email['html'] && webform_email_html_capable());
 
     // Pass through the theme layer if using the default template.
     if ($email['template'] == 'default') {
@@ -281,7 +281,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
         'submission' => $submission,
       );
 
-      if (module_exists('mimemail')) {
+      if (webform_email_html_capable()) {
         // Load attachments for the e-mail.
         $attachments = array();
         if ($email['attachments']) {
@@ -289,8 +289,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
           foreach ($node->webform['components'] as $component) {
             if (webform_component_feature($component['type'], 'attachment') && !empty($submission->data[$component['cid']]['value'][0])) {
               $file = webform_get_file($submission->data[$component['cid']]['value'][0]);
-              if ($file) {
-                $file->list = 1; // Needed to include in attachments.
+              if ($file && ($file->filepath = drupal_realpath($file->uri))) {
                 $attachments[] = $file;
               }
             }
@@ -300,8 +299,14 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
         // Add the attachments to the mail parameters.
         $mail_params['attachments'] = $attachments;
 
-        // TODO: Perform any other modifications necessary to get MIME Mail
-        // sending e-mail properly as HTML and attachments.
+        // Set all other properties for HTML e-mail handling.
+        $mail_params['plain'] = !$email['html'];
+        $mail_params['plaintext'] = $email['html'] ? NULL : $email['message'];
+        $mail_params['headers'] = $email['headers'];
+        if ($email['html']) {
+          // MIME Mail requires this header or it will filter all text.
+          $mail_params['headers']['Content-Type'] = 'text/html; charset=UTF-8';
+        }
       }
 
       // Mail the submission.
