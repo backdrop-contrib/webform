@@ -126,7 +126,7 @@ function _webform_render_date($component, $value = NULL, $filter = TRUE) {
     '#year_start' => $component['extra']['year_start'],
     '#year_end' => $component['extra']['year_end'],
     '#year_textfield' => $component['extra']['year_textfield'],
-    '#default_value' => $component['value'],
+    '#default_value' => $filter ? _webform_filter_values($component['value'], NULL, NULL, NULL, FALSE) : $component['value'],
     '#timezone' => $component['extra']['timezone'],
     '#process' => array('webform_expand_date'),
     '#theme' => 'webform_date',
