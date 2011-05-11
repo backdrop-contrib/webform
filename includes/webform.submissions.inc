@@ -457,7 +457,7 @@ function webform_submission_resend($form, $form_state, $node, $submission) {
     $form['actions'] = array('#type' => 'actions');
     $form['actions']['resend'] = array(
       '#type' => 'submit',
-      '#value' => 'Resend e-mails',
+      '#value' => t('Resend e-mails'),
     );
     $form['actions']['cancel'] = array(
       '#type' => 'markup',
