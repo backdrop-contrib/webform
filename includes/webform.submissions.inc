@@ -650,7 +650,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
   $query->leftJoin('users', 'u', 'u.uid = s.uid');
   $query
     ->fields('s')
-    ->fields('sd')
+    ->fields('sd', array('cid', 'no', 'data'))
     ->fields('u', array('name'))
      ->condition('s.sid', $sids, 'IN')
     ->orderBy('sd.sid', 'ASC')
