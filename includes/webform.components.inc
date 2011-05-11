@@ -673,13 +673,19 @@ function webform_component_insert(&$component) {
   $component['value'] = isset($component['value']) ? $component['value'] : NULL;
   $component['mandatory'] = isset($component['mandatory']) ? $component['mandatory'] : 0;
 
-  // TODO: This is not race-condition safe. Switch to using transactions?
   if (!isset($component['cid'])) {
-    $next_id_query = db_select('webform_component')->condition('nid', $component['nid']);
-    $next_id_query->addExpression('MAX(cid) + 1', 'cid');
-    $component['cid'] = $next_id_query->execute()->fetchField();
-    if ($component['cid'] == NULL) {
-      $component['cid'] = 1;
+    if (lock_acquire('webform_component_insert_' . $component['nid'], 5)) {
+      $next_id_query = db_select('webform_component')->condition('nid', $component['nid']);
+      $next_id_query->addExpression('MAX(cid) + 1', 'cid');
+      $component['cid'] = $next_id_query->execute()->fetchField();
+      if ($component['cid'] == NULL) {
+        $component['cid'] = 1;
+      }
+      lock_release('webform_component_insert_' . $component['nid']);
+    }
+    else {
+      watchdog('webform', 'A Webform component could not be saved because a timeout occurred while trying to acquire a lock for the node. Details: <pre>@component</pre>', array('@component' => print_r($component, TRUE)));
+      return FALSE;
     }
   }
 
