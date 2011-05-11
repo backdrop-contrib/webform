@@ -10,13 +10,7 @@
  * Main configuration form for editing a webform node.
  */
 function webform_configure_form($form, &$form_state, $node) {
-  $path = drupal_get_path('module', 'webform');
-  $form = array(
-    '#attached' =>  array(
-      'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'weight' => CSS_DEFAULT + 1)),
-      'js' => array($path . '/js/webform-admin.js' => array('preprocess' => FALSE)),
-    ),
-  );
+  $form['#attached']['library'][] = array('webform', 'admin');
 
   $form['nid'] = array(
     '#type' => 'value',

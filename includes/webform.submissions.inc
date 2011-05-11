@@ -379,9 +379,6 @@ function webform_submission_title($node, $submission) {
 function webform_submission_page($node, $submission, $format) {
   global $user;
 
-  // Add admin CSS.
-  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', array('group' => CSS_DEFAULT));
-
   // Render the admin UI breadcrumb.
   webform_set_breadcrumb($node, $submission);
 
@@ -419,7 +416,16 @@ function webform_submission_page($node, $submission, $format) {
     webform_disable_page_cache();
   }
 
-  return theme('webform_submission_page', array('node' => $node, 'submission' => $submission, 'submission_content' => $output, 'submission_navigation' => $navigation, 'submission_information' => $information, 'submission_actions' => $actions));
+  $page = array(
+    '#theme' => 'webform_submission_page',
+    '#node' => $node,
+    '#submission' => $submission,
+    '#submission_content' => $output,
+    '#submission_navigation' => $navigation,
+    '#submission_information' => $information,
+  );
+  $page['#attached']['library'][] = array('webform', 'admin');
+  return $page;
 }
 
 /**

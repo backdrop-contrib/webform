@@ -11,8 +11,6 @@
  * - $submission_navigation: The previous submission ID.
  * - $submission_information: The next submission ID.
  */
-
-drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', array('group' => CSS_THEME, 'preprocess' => FALSE));
 ?>
 
 <?php if ($submission_actions || $submission_navigation): ?>

@@ -153,11 +153,7 @@ function webform_components_form($form, $form_state, $node) {
 function theme_webform_components_form($variables) {
   $form = $variables['form'];
 
-  $path = drupal_get_path('module', 'webform');
-  $form['components']['#attached'] =  array(
-    'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'group' => CSS_DEFAULT, 'weight' => 1)),
-    'js' => array($path . '/js/webform-admin.js' => array('preprocess' => FALSE)),
-  );
+  $form['components']['#attached']['library'][] = array('webform', 'admin');
 
   // TODO: Attach these. See http://drupal.org/node/732022.
   drupal_add_tabledrag('webform-components', 'order', 'sibling', 'webform-weight');
@@ -340,13 +336,12 @@ function webform_components_form_submit($form, &$form_state) {
 
 function webform_component_edit_form($form, $form_state, $node, $component, $clone = FALSE) {
   drupal_set_title(t('Edit component: @name', array('@name' => $component['name'])), PASS_THROUGH);
-  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform-admin.css', array('group' => CSS_THEME, 'preprocess' => FALSE));
+
+  $form['#attached']['library'][] = array('webform', 'admin');
+  $form['#tree'] = TRUE;
 
   // Print the correct field type specification.
   // We always need: name and description.
-  $form = array(
-    '#tree' => TRUE,
-  );
   $form['type'] = array(
     '#type' => 'value',
     '#value' => $component['type'],
@@ -920,9 +915,11 @@ function webform_component_select($element) {
   $element['#type'] = 'webform_component_select';
   $element['#theme'] = 'webform_component_select';
   $element['#attached'] = array(
+    'library' => array(
+      array('webform', 'admin'),
+    ),
     'js' => array(
-      'misc/tableselect.js' => array('preprocess' => FALSE),
-      drupal_get_path('module', 'webform') . '/js/webform-admin.js' => array('preprocess' => FALSE),
+      'misc/tableselect.js' => array(),
     ),
   );
 

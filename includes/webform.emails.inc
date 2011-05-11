@@ -13,16 +13,12 @@
 function webform_emails_form($form, $form_state, $node) {
   module_load_include('inc', 'webform', 'includes/webform.components');
 
-  $path = drupal_get_path('module', 'webform');
-  $form = array(
-    '#tree' => TRUE,
-    '#node' => $node,
-    '#attached' =>  array(
-      'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'group' => CSS_DEFAULT, 'weight' => 1)),
-      'js' => array($path . '/js/webform-admin.js' => array('preprocess' => FALSE)),
-    ),
-    'components' => array(),
-  );
+  $form['#attached']['library'][] = array('webform', 'admin');
+  $form['#attached']['js'][] = array(array('webform' => array('revertConfirm' => t('Are you sure you want to revert any changes to your template back to the default?'))), 'type' => 'setting');
+
+  $form['#tree'] = TRUE;
+  $form['#node'] = $node;
+  $form['components'] = array();
 
   $form['nid'] = array(
     '#type' => 'value',
@@ -170,17 +166,9 @@ function webform_emails_form_submit($form, &$form_state) {
 function webform_email_edit_form($form, $form_state, $node, $email = array()) {
   module_load_include('inc', 'webform', 'includes/webform.components');
 
-  $path = drupal_get_path('module', 'webform');
-  $form = array(
-    '#tree' => TRUE,
-    '#attached' =>  array(
-      'css' => array($path . '/css/webform-admin.css' => array('preprocess' => FALSE, 'group' => CSS_DEFAULT, 'weight' => 1)),
-      'js' => array(
-        $path . '/js/webform-admin.js' => array('preprocess' => FALSE),
-        array('data' => array('webform' => array('revertConfirm' => t('Are you sure you want to revert any changes to your template back to the default?'))), 'type' => 'setting'),
-      ),
-    ),
-  );
+  $form['#attached']['library'][] = array('webform', 'admin');
+
+  $form['#tree'] = TRUE;
   $form['node'] = array(
     '#type' => 'value',
     '#value' => $node,
