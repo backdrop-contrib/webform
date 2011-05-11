@@ -6,7 +6,7 @@
  */
 
 /**
- * Implementation of _webform_defaults_component().
+ * Implements _webform_defaults_component().
  */
 function _webform_defaults_date() {
   return array(
@@ -29,7 +29,7 @@ function _webform_defaults_date() {
 }
 
 /**
- * Implementation of _webform_theme_component().
+ * Implements _webform_theme_component().
  */
 function _webform_theme_date() {
   return array(
@@ -47,7 +47,7 @@ function _webform_theme_date() {
 }
 
 /**
- * Implementation of _webform_edit_component().
+ * Implements _webform_edit_component().
  */
 function _webform_edit_date($component) {
   $form = array();
@@ -113,7 +113,7 @@ function _webform_edit_date($component) {
 }
 
 /**
- * Implementation of _webform_render_component().
+ * Implements _webform_render_component().
  */
 function _webform_render_date($component, $value = NULL, $filter = TRUE) {
   $element = array(
@@ -298,7 +298,7 @@ function webform_validate_date($element, $form_state) {
 }
 
 /**
- * Implementation of _webform_submit_component().
+ * Implements _webform_submit_component().
  */
 function _webform_submit_date($component, $value) {
   // Convert the date to an ISO 8601 format.
@@ -306,7 +306,7 @@ function _webform_submit_date($component, $value) {
 }
 
 /**
- * Implementation of _webform_display_component().
+ * Implements _webform_display_component().
  */
 function _webform_display_date($component, $value, $format = 'html') {
   $value = webform_date_array(isset($value[0]) ? $value[0] : '', 'date');
@@ -338,7 +338,7 @@ function theme_webform_display_date($variables) {
 }
 
 /**
- * Implementation of _webform_analysis_component().
+ * Implements _webform_analysis_component().
  */
 function _webform_analysis_date($component, $sids = array()) {
   $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
@@ -370,7 +370,7 @@ function _webform_analysis_date($component, $sids = array()) {
 }
 
 /**
- * Implementation of _webform_table_component().
+ * Implements _webform_table_component().
  */
 function _webform_table_date($component, $value) {
   if ($value[0]) {
@@ -384,7 +384,7 @@ function _webform_table_date($component, $value) {
 }
 
 /**
- * Implementation of _webform_csv_headers_component().
+ * Implements _webform_csv_headers_component().
  */
 function _webform_csv_headers_date($component, $export_options) {
   $header = array();
@@ -395,7 +395,7 @@ function _webform_csv_headers_date($component, $export_options) {
 }
 
 /**
- * Implementation of _webform_csv_data_component().
+ * Implements _webform_csv_data_component().
  */
 function _webform_csv_data_date($component, $export_options, $value) {
   if ($value[0]) {

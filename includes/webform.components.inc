@@ -134,7 +134,7 @@ function webform_components_form($form, $form_state, $node) {
 
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Submit'),
+    '#value' => t('Save'),
     '#weight' => 45,
     '#access' => count($node->webform['components']) > 0,
   );
@@ -550,7 +550,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
   // Add the submit button.
   $form['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Submit'),
+    '#value' => t('Save component'),
     '#weight' => 50,
   );
 

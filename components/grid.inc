@@ -9,7 +9,7 @@
 webform_component_include('select');
 
 /**
- * Implementation of _webform_defaults_component().
+ * Implements _webform_defaults_component().
  */
 function _webform_defaults_grid() {
   return array(
@@ -33,7 +33,7 @@ function _webform_defaults_grid() {
 
 
 /**
- * Implementation of _webform_theme_component().
+ * Implements _webform_theme_component().
  */
 function _webform_theme_grid() {
   return array(
@@ -47,7 +47,7 @@ function _webform_theme_grid() {
 }
 
 /**
- * Implementation of _webform_edit_component().
+ * Implements _webform_edit_component().
  */
 function _webform_edit_grid($component) {
   $form = array();
@@ -136,7 +136,7 @@ function _webform_edit_grid($component) {
 }
 
 /**
- * Implementation of _webform_render_component().
+ * Implements _webform_render_component().
  */
 function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
   $element = array(
@@ -208,7 +208,7 @@ function webform_expand_grid($element) {
 }
 
 /**
- * Implementation of _webform_display_component().
+ * Implements _webform_display_component().
  */
 function _webform_display_grid($component, $value, $format = 'html') {
   $questions = _webform_select_options_from_text($component['extra']['questions'], TRUE);
@@ -282,7 +282,7 @@ function theme_webform_display_grid($variables) {
 }
 
 /**
- * Implementation of _webform_analysis_component().
+ * Implements _webform_analysis_component().
  */
 function _webform_analysis_grid($component, $sids = array()) {
   // Generate the list of options and questions.
@@ -333,7 +333,7 @@ function _webform_analysis_grid($component, $sids = array()) {
 }
 
 /**
- * Implementation of _webform_table_component().
+ * Implements _webform_table_component().
  */
 function _webform_table_grid($component, $value) {
   $questions = _webform_select_options_from_text($component['extra']['questions'], TRUE);
@@ -353,7 +353,7 @@ function _webform_table_grid($component, $value) {
 }
 
 /**
- * Implementation of _webform_csv_headers_component().
+ * Implements _webform_csv_headers_component().
  */
 function _webform_csv_headers_grid($component, $export_options) {
   $header = array();
@@ -376,7 +376,7 @@ function _webform_csv_headers_grid($component, $export_options) {
 }
 
 /**
- * Implementation of _webform_csv_data_component().
+ * Implements _webform_csv_data_component().
  */
 function _webform_csv_data_grid($component, $export_options, $value) {
   $questions = _webform_select_options_from_text($component['extra']['questions'], TRUE);

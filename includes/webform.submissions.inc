@@ -56,15 +56,15 @@ function webform_submission_update($node, $submission) {
   }
 
   // Update the main submission info.
-   db_update('webform_submissions')
-     ->fields(array(
-       'uid' => $submission->uid,
-       'submitted' => $submission->submitted,
-       'remote_addr' => $submission->remote_addr,
-       'is_draft' => $submission->is_draft,
-     ))
-     ->condition('sid', $submission->sid)
-     ->execute();
+  db_update('webform_submissions')
+    ->fields(array(
+      'uid' => $submission->uid,
+      'submitted' => $submission->submitted,
+      'remote_addr' => $submission->remote_addr,
+      'is_draft' => $submission->is_draft,
+    ))
+    ->condition('sid', $submission->sid)
+    ->execute();
 
   // If is draft, only delete data for components submitted, to
   // preserve any data from form pages not visited in this submission.
@@ -524,7 +524,7 @@ function webform_submission_resend_submit($form, &$form_state) {
 function theme_webform_submission_resend($variables) {
   $form = $variables['form'];
 
-  $header = array('',t('E-mail to'), t('Subject'));
+  $header = array('', t('E-mail to'), t('Subject'));
   $rows = array();
   if (!empty($form['emails'])) {
     foreach (element_children($form['emails']) as $eid) {
@@ -663,7 +663,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     ->fields('s')
     ->fields('sd', array('cid', 'no', 'data'))
     ->fields('u', array('name'))
-     ->condition('s.sid', $sids, 'IN')
+    ->condition('s.sid', $sids, 'IN')
     ->orderBy('sd.sid', 'ASC')
     ->orderBy('sd.cid', 'ASC')
     ->orderBy('sd.no', 'ASC');

@@ -1,9 +1,9 @@
 <?php
 
 /**
-* @file
-* Views hooks implemented for the Webform module.
-*/
+ * @file
+ * Views hooks implemented for the Webform module.
+ */
 
 function webform_views_data() {
   /**
@@ -141,7 +141,7 @@ function webform_views_data() {
 }
 
 /**
- * Implementation of hook_views_data_alter().
+ * Implements hook_views_data_alter().
  */
 function webform_views_data_alter(&$data) {
   // Submission count (node).
@@ -193,7 +193,7 @@ function webform_views_data_alter(&$data) {
 }
 
 /**
- * Implementation of hook_views_handlers().
+ * Implements hook_views_handlers().
  */
 function webform_views_handlers() {
   return array(

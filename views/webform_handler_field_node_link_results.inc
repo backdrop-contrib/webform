@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @file
+ * Views handler to display a results link for Webform submissions.
+ */
+
 /**
  * Field handler to present a link node edit.
  */

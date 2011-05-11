@@ -1,9 +1,9 @@
 <?php
 
 /**
-* @file
-* Views handler to display the content of a webform form.
-*/
+ * @file
+ * Views handler to display the content of a webform form.
+ */
 
 /**
  * Field handler to present the Webform form body to the user.

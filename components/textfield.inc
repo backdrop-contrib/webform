@@ -6,7 +6,7 @@
  */
 
 /**
- * Implementation of _webform_defaults_component().
+ * Implements _webform_defaults_component().
  */
 function _webform_defaults_textfield() {
   return array(
@@ -31,7 +31,7 @@ function _webform_defaults_textfield() {
 }
 
 /**
- * Implementation of _webform_theme_component().
+ * Implements _webform_theme_component().
  */
 function _webform_theme_textfield() {
   return array(
@@ -42,7 +42,7 @@ function _webform_theme_textfield() {
 }
 
 /**
- * Implementation of _webform_edit_component().
+ * Implements _webform_edit_component().
  */
 function _webform_edit_textfield($component) {
   $form = array();
@@ -117,7 +117,7 @@ function _webform_edit_textfield($component) {
 }
 
 /**
- * Implementation of _webform_render_component().
+ * Implements _webform_render_component().
  */
 function _webform_render_textfield($component, $value = NULL, $filter = TRUE) {
   $element = array(
@@ -160,7 +160,7 @@ function _webform_render_textfield($component, $value = NULL, $filter = TRUE) {
 }
 
 /**
- * Implementation of _webform_display_component().
+ * Implements _webform_display_component().
  */
 function _webform_display_textfield($component, $value, $format = 'html') {
   return array(
@@ -188,7 +188,7 @@ function theme_webform_display_textfield($variables) {
 }
 
 /**
- * Implementation of _webform_analysis_component().
+ * Implements _webform_analysis_component().
  */
 function _webform_analysis_textfield($component, $sids = array()) {
   $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
@@ -220,14 +220,14 @@ function _webform_analysis_textfield($component, $sids = array()) {
 }
 
 /**
- * Implementation of _webform_table_component().
+ * Implements _webform_table_component().
  */
 function _webform_table_textfield($component, $value) {
   return check_plain(empty($value[0]) ? '' : $value[0]);
 }
 
 /**
- * Implementation of _webform_csv_headers_component().
+ * Implements _webform_csv_headers_component().
  */
 function _webform_csv_headers_textfield($component, $export_options) {
   $header = array();
@@ -238,7 +238,7 @@ function _webform_csv_headers_textfield($component, $export_options) {
 }
 
 /**
- * Implementation of _webform_csv_data_component().
+ * Implements _webform_csv_data_component().
  */
 function _webform_csv_data_textfield($component, $export_options, $value) {
   return !isset($value[0]) ? '' : $value[0];

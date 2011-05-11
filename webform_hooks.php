@@ -294,7 +294,7 @@ function hook_webform_component_delete($component) {
  * See the sample component implementation for details on each one of these
  * callbacks.
  *
- * @see webform_component
+ * @see webform_components()
  */
 function hook_webform_component_info() {
   $components = array();
@@ -319,7 +319,7 @@ function hook_webform_component_info() {
       // always be displayed conditionally, regardless of this setting.
       // Defaults to TRUE.
       'conditional' => TRUE,
-      // If this field allows other fields to be grouped within it (like a 
+      // If this field allows other fields to be grouped within it (like a
       // fieldset or tabs). Defaults to FALSE.
       'group' => FALSE,
       // If this field saves a file that can be used as an e-mail attachment.
@@ -438,7 +438,7 @@ function _webform_render_component($component, $value = NULL) {
     '#weight' => $component['weight'],
     '#description'   => _webform_filter_descriptions($component['extra']['description']),
     '#default_value' => $component['value'],
-    '#prefix' => '<div class="webform-component-'. $component['type'] .'" id="webform-component-'. $component['form_key'] .'">',
+    '#prefix' => '<div class="webform-component-textfield" id="webform-component-' . $component['form_key'] . '">',
     '#suffix' => '</div>',
   );
 
@@ -451,7 +451,7 @@ function _webform_render_component($component, $value = NULL) {
 
 /**
  * Display the result of a submission for a component.
- * 
+ *
  * The output of this function will be displayed under the "Results" tab then
  * "Submissions". This should output the saved data in some reasonable manner.
  *
@@ -569,7 +569,7 @@ function _webform_theme_component() {
 
 /**
  * Calculate and returns statistics about results for this component.
- * 
+ *
  * This takes into account all submissions to this webform. The output of this
  * function will be displayed under the "Results" tab then "Analysis".
  *
@@ -655,7 +655,7 @@ function _webform_table_component($component, $value) {
   if (is_array($value)) {
     foreach ($value as $item => $value) {
       if ($value !== '') {
-        $output .= $questions[$item] .': '. check_plain($value) .'<br />';
+        $output .= $questions[$item] . ': ' . check_plain($value) . '<br />';
       }
     }
   }

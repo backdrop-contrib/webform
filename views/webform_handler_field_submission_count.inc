@@ -1,9 +1,9 @@
 <?php
 
 /**
-* @file
-* Views handler to display the number of submissions in a webform.
-*/
+ * @file
+ * Views handler to display the number of submissions in a webform.
+ */
 
 /**
  * Field handler to present the submission count of a node to the user.

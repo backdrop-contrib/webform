@@ -6,7 +6,7 @@
  */
 
 /**
- * Implementation of _webform_defaults_component().
+ * Implements _webform_defaults_component().
  */
 function _webform_defaults_fieldset() {
   return array(
@@ -24,7 +24,7 @@ function _webform_defaults_fieldset() {
 }
 
 /**
- * Implementation of _webform_edit_component().
+ * Implements _webform_edit_component().
  */
 function _webform_edit_fieldset($component) {
   $form = array();
@@ -48,7 +48,7 @@ function _webform_edit_fieldset($component) {
 }
 
 /**
- * Implementation of _webform_render_component().
+ * Implements _webform_render_component().
  */
 function _webform_render_fieldset($component, $value = NULL, $filter = TRUE) {
   $element = array(
@@ -75,7 +75,7 @@ function webform_fieldset_prerender($element) {
 }
 
 /**
- * Implementation of _webform_display_component().
+ * Implements _webform_display_component().
  */
 function _webform_display_fieldset($component, $value, $format = 'html') {
   if ($format == 'text') {

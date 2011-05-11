@@ -9,7 +9,7 @@
 webform_component_include('date');
 
 /**
- * Implementation of _webform_defaults_component().
+ * Implements _webform_defaults_component().
  */
 function _webform_defaults_time() {
   return array(
@@ -29,7 +29,7 @@ function _webform_defaults_time() {
 }
 
 /**
- * Implementation of _webform_theme_component().
+ * Implements _webform_theme_component().
  */
 function _webform_theme_time() {
   return array(
@@ -43,7 +43,7 @@ function _webform_theme_time() {
 }
 
 /**
- * Implementation of _webform_edit_component().
+ * Implements _webform_edit_component().
  */
 function _webform_edit_time($component) {
   $form = array();
@@ -78,7 +78,7 @@ function _webform_edit_time($component) {
 }
 
 /**
- * Implementation of _webform_render_component().
+ * Implements _webform_render_component().
  */
 function _webform_render_time($component, $value = NULL, $filter = TRUE) {
   $element = array(
@@ -215,7 +215,7 @@ function webform_validate_time($element, $form_state) {
 }
 
 /**
- * Implementation of _webform_submit_component().
+ * Implements _webform_submit_component().
  */
 function _webform_submit_time($component, $value) {
   // Convert to 24-hour time before string conversion.
@@ -228,7 +228,7 @@ function _webform_submit_time($component, $value) {
 }
 
 /**
- * Implementation of _webform_display_component().
+ * Implements _webform_display_component().
  */
 function _webform_display_time($component, $value, $format = 'html') {
   $value = webform_date_array(isset($value[0]) ? $value[0] : '', 'time');
@@ -266,7 +266,7 @@ function theme_webform_display_time($variables) {
 }
 
 /**
- * Implementation of _webform_analysis_component().
+ * Implements _webform_analysis_component().
  */
 function _webform_analysis_time($component, $sids = array()) {
   $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
@@ -298,7 +298,7 @@ function _webform_analysis_time($component, $sids = array()) {
 }
 
 /**
- * Implementation of _webform_table_component().
+ * Implements _webform_table_component().
  */
 function _webform_table_time($component, $value) {
   if ($value[0]) {
@@ -317,7 +317,7 @@ function _webform_table_time($component, $value) {
 }
 
 /**
- * Implementation of _webform_csv_headers_component().
+ * Implements _webform_csv_headers_component().
  */
 function _webform_csv_headers_time($component, $export_options) {
   $header = array();
@@ -328,7 +328,7 @@ function _webform_csv_headers_time($component, $export_options) {
 }
 
 /**
- * Implementation of _webform_csv_data_component().
+ * Implements _webform_csv_data_component().
  */
 function _webform_csv_data_time($component, $export_options, $value) {
   if ($value[0]) {

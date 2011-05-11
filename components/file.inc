@@ -6,7 +6,7 @@
  */
 
 /**
- * Implementation of _webform_defaults_component().
+ * Implements _webform_defaults_component().
  */
 function _webform_defaults_file() {
   return array(
@@ -31,7 +31,7 @@ function _webform_defaults_file() {
 }
 
 /**
- * Implementation of _webform_theme_component().
+ * Implements _webform_theme_component().
  */
 function _webform_theme_file() {
   return array(
@@ -48,7 +48,7 @@ function _webform_theme_file() {
 }
 
 /**
- * Implementation of _webform_edit_component().
+ * Implements _webform_edit_component().
  */
 function _webform_edit_file($component) {
     $form = array();
@@ -288,7 +288,7 @@ function theme_webform_edit_file($variables) {
 }
 
 /**
- * Implementation of _webform_render_component().
+ * Implements _webform_render_component().
  */
 function _webform_render_file($component, $value = NULL, $filter = TRUE) {
   // Normally every file component is given a unique ID based on its key.
@@ -363,7 +363,7 @@ function theme_webform_render_file($variables) {
   if ($value && ($file = webform_get_file($value))) {
     $firstchild = array_shift(array_keys($element));
     $element[$firstchild]['#suffix'] = ' ' . l(t('Download !filename', array('!filename' => webform_file_name($file->uri))), webform_file_url($file->uri)) . (isset($element['#suffix']) ? $element['#suffix'] : '');
-    $element[$firstchild]['#description'] = '<div class="webform-newfile-message">'. t('Uploading a new file will replace the current file.') . '</div>' . (isset($element[$firstchild]['#description']) ? $element[$firstchild]['#description'] : '');
+    $element[$firstchild]['#description'] = '<div class="webform-newfile-message">' . t('Uploading a new file will replace the current file.') . '</div>' . (isset($element[$firstchild]['#description']) ? $element[$firstchild]['#description'] : '');
   }
 
   return drupal_render_children($element);
@@ -438,7 +438,7 @@ function _webform_validate_file($element, &$form_state) {
   }
 
   $dot = strrpos($_FILES['files']['name'][$form_key], '.');
-  $extension = drupal_strtolower(substr($_FILES['files']['name'][$form_key], $dot+1));
+  $extension = drupal_strtolower(drupal_substr($_FILES['files']['name'][$form_key], $dot+1));
   $file_error = FALSE;
   if (!empty($extensions) && !in_array($extension, $extensions)) {
     form_error($element, t("Files with the '%ext' extension are not allowed, please upload a file with a %exts extension.", array('%ext' => $extension, '%exts' => $extension_list)));
@@ -477,7 +477,7 @@ function _webform_validate_file($element, &$form_state) {
 }
 
 /**
- * Implementation of _webform_submit_component().
+ * Implements _webform_submit_component().
  */
 function _webform_submit_file($component, $value) {
 
@@ -502,7 +502,7 @@ function _webform_submit_file($component, $value) {
 }
 
 /**
- * Implementation of _webform_display_component().
+ * Implements _webform_display_component().
  */
 function _webform_display_file($component, $value, $format = 'html') {
   $fid = isset($value[0]) ? $value[0] : NULL;
@@ -529,7 +529,7 @@ function theme_webform_display_file($variables) {
 }
 
 /**
- * Implementation of _webform_delete_component().
+ * Implements _webform_delete_component().
  */
 function _webform_delete_file($component, $value) {
   // Delete an individual submission file.
@@ -539,7 +539,7 @@ function _webform_delete_file($component, $value) {
 }
 
 /**
- * Implementation of _webform_analysis_component().
+ * Implements _webform_analysis_component().
  */
 function _webform_analysis_file($component, $sids = array()) {
   $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
@@ -572,7 +572,7 @@ function _webform_analysis_file($component, $sids = array()) {
 }
 
 /**
- * Implementation of _webform_table_component().
+ * Implements _webform_table_component().
  */
 function _webform_table_file($component, $value) {
   $output = '';
@@ -585,7 +585,7 @@ function _webform_table_file($component, $value) {
 }
 
 /**
- * Implementation of _webform_csv_headers_component().
+ * Implements _webform_csv_headers_component().
  */
 function _webform_csv_headers_file($component, $export_options) {
   $header = array();
@@ -597,7 +597,7 @@ function _webform_csv_headers_file($component, $export_options) {
 }
 
 /**
- * Implementation of _webform_csv_data_component().
+ * Implements _webform_csv_data_component().
  */
 function _webform_csv_data_file($component, $export_options, $value) {
   $file = webform_get_file($value[0]);

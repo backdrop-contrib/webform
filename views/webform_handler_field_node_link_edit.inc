@@ -1,4 +1,10 @@
 <?php
+
+/**
+ * @file
+ * Views handler to display an edit link for Webform configuration.
+ */
+
 /**
  * Field handler to present a link node edit.
  */
