@@ -1398,9 +1398,7 @@ function webform_node_view($node, $view_mode) {
     '#page' => $page,
     '#form' => $form,
     '#enabled' => $enabled,
-    // TODO: field_extra_field_weight() was removed in Drupal 7 Alpha 6. Remove
-    // this conditional after D7 core stabalizes.
-    '#weight' => function_exists('field_extra_field_weight') ? field_extra_field_weight('node', $node->type, 'webform') : 10,
+    '#weight' => 10,
   );
 }
 
@@ -3461,7 +3459,7 @@ function webform_views_api() {
 function webform_field_extra_fields() {
   $extra = array();
   foreach (webform_variable_get('webform_node_types') as $type) {
-    $extra['node'][$type]['webform'] = array(
+    $extra['node'][$type]['display']['webform'] = array(
       'label' => t('Webform'),
       'description' => t('Webform client form.'),
       'weight' => 10,
