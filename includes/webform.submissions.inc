@@ -428,6 +428,7 @@ function webform_submission_page($node, $submission, $format) {
     '#submission_content' => $output,
     '#submission_navigation' => $navigation,
     '#submission_information' => $information,
+    '#submission_actions' => $actions,
   );
   $page['#attached']['library'][] = array('webform', 'admin');
   return $page;
