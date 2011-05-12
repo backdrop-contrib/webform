@@ -3419,9 +3419,16 @@ function webform_strtodate($format, $string, $timezone_name = NULL) {
   }
 
   if (!empty($timezone_name) && class_exists('DateTimeZone')) {
-    $timezone = new DateTimeZone($timezone_name);
-    $datetime = new DateTime($string, $timezone);
-    return $datetime->format($format);
+    // Surpress errors if encountered during string conversion. Exceptions are
+    // only supported for DateTime in PHP 5.3 and higher.
+    try {
+      @$timezone = new DateTimeZone($timezone_name);
+      @$datetime = new DateTime($string, $timezone);
+      return $datetime->format($format);
+    }
+    catch (Exception $e) {
+      return '';
+    }
   }
   else {
     return date($format, strtotime($string));
