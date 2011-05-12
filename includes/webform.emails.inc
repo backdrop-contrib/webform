@@ -14,7 +14,6 @@ function webform_emails_form($form, $form_state, $node) {
   module_load_include('inc', 'webform', 'includes/webform.components');
 
   $form['#attached']['library'][] = array('webform', 'admin');
-  $form['#attached']['js'][] = array(array('webform' => array('revertConfirm' => t('Are you sure you want to revert any changes to your template back to the default?'))), 'type' => 'setting');
 
   $form['#tree'] = TRUE;
   $form['#node'] = $node;
@@ -167,6 +166,7 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
   module_load_include('inc', 'webform', 'includes/webform.components');
 
   $form['#attached']['library'][] = array('webform', 'admin');
+  $form['#attached']['js'][] = array('data' => array('webform' => array('revertConfirm' => t('Are you sure you want to revert any changes to your template back to the default?'))), 'type' => 'setting');
 
   $form['#tree'] = TRUE;
   $form['node'] = array(
@@ -284,7 +284,7 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
   );
 
   $form['template']['tokens'] = array(
-    '#value' => theme('webform_token_help'),
+    '#markup' => theme('webform_token_help', array('groups' => 'all')),
   );
 
   $form['template']['components'] = array(

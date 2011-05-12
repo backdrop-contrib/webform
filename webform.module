@@ -554,7 +554,7 @@ function webform_theme() {
       'pattern' => 'webform_mail_headers_[0-9]+',
     ),
     'webform_token_help' => array(
-      'variables' => array(),
+      'variables' => array('groups' => array()),
     ),
     // webform.admin.inc.
     'webform_admin_settings' => array(
@@ -2638,7 +2638,8 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
   }
 
   // Node replacements.
-  if (isset($node) && !array_key_exists('%title', $replacements)) {
+  if (isset($node) && !array_key_exists('%nid', $replacements['safe'])) {
+    $replacements['safe']['%nid'] = $node->nid;
     $replacements['safe']['%title'] = $node->title;
   }
 
@@ -2648,6 +2649,9 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
   // Submission replacements.
   if (isset($submission) && !isset($replacements['email'][$format])) {
     module_load_include('inc', 'webform', 'includes/webform.components.inc');
+
+    // Set the submission ID.
+    $replacements['unsafe']['%sid'] = $submission->sid;
 
     // E-mails may be sent in two formats, keep tokens separate for each one.
     $replacements['email'][$format] = array();
@@ -2715,7 +2719,8 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
     }
 
     // User replacements.
-    if (!array_key_exists('%username', $replacements['unsafe'])) {
+    if (!array_key_exists('%uid', $replacements['unsafe'])) {
+      $replacements['unsafe']['%uid'] = !empty($user->uid) ? $user->uid : '';
       $replacements['unsafe']['%username'] = isset($user->name) ? $user->name : '';
       $replacements['unsafe']['%useremail'] = isset($user->mail) ? $user->mail : '';
       $replacements['unsafe']['%ip_address'] = ip_address();
@@ -2890,44 +2895,70 @@ function webform_variable_get($variable) {
 }
 
 function theme_webform_token_help($variables) {
-  $basic_tokens = array(
-    '%username',
-    '%useremail',
-    '%ip_address',
-    '%site',
-    '%date',
-  );
+  $groups = $variables['groups'];
+  $groups = empty($groups) ? array('basic', 'node', 'special') : $groups;
 
-  $special_tokens = array(
-    '%profile[' . t('key') . ']',
-    '%server[' . t('key') . ']',
-    '%session[' . t('key') . ']',
-    '%get[' . t('key') . ']',
-    '%post[' . t('key') . ']',
-    '%request[' . t('key') . ']',
-  );
+  static $tokens = array();
 
-  if (isset($node)) {
-    $submission_tokens = array(
-      t('@submission_url - The URL for viewing the completed submission.', array('@submission_url' => '%submission_url')),
-      t('@email_values - All included components in a hierarchical structure.', array('@email_values' => '%email_values')),
-      t('@email_key - A formatted value and field label. Elements may be accessed such as <em>%email[fieldset_a][key_b]</em>. Do not include quotes.', array('@email_key' => '%email[key]')),
-      t('@value_key - A value without additional formatting. Elements may be accessed such as <em>%value[fieldset_a][key_b]</em>. Do not include quotes.', array('@value_key' => '%value[key]')),
+  if (empty($tokens)) {
+    $tokens['basic'] = array(
+      'title' => t('Basic tokens'),
+      'tokens' => array(
+        '%username' => t('The name of the user if logged in. Blank for anonymous users.'),
+        '%useremail' => t('The e-mail address of the user if logged in. Blank for anonymous users.'),
+        '%ip_address' => t('The IP address of the user.'),
+        '%site' => t('The name of the site (i.e. %site_name)', array('%site_name' => variable_get('site_name', ''))),
+        '%date' => t('The current date, formatted according to the site settings.'),
+      ),
+    );
+
+    $tokens['node'] = array(
+      'title' => t('Node tokens'),
+      'tokens' => array(
+        '%nid' => t('The node ID.'),
+        '%title' => t('The node title.'),
+      ),
+    );
+
+    $tokens['special'] = array(
+      'title' => t('Special tokens'),
+      'tokens' => array(
+        '%profile[' . t('key') . ']' => t('Any user profile field or value, such as %profile[name] or %profile[profile_first_name]'),
+        '%get[' . t('key') . ']' => t('Tokens may be populated from the URL by creating URLs of the form http://example.com/my-form?foo=bar. Using the token %get[foo] would print "bar".'),
+      ),
+      'description' => t('In addition to %get, the following super tokens may be used, though only with logged-in users: %server, %cookie, %request and %post. For example %server[HTTP_USER_AGENT] or %session[id].'),
+    );
+
+    $tokens['email'] = array(
+      'title' => t('E-mail tokens'),
+      'tokens' => array(
+        '%email_values' => t('All included components in a hierarchical structure.'),
+        '%email[' . t('key') . '] ' => t('A formatted value and field label. Elements may be accessed such as <em>%email[fieldset_a][key_b]</em>. Do not include quotes.'),
+        '%submission_url' => t('The URL for viewing the completed submission.'),
+      ),
+    );
+
+    $tokens['submission'] = array(
+      'title' => t('Submission tokens'),
+      'tokens' => array(
+        '%sid' => t('The unique submission ID.'),
+        '%value[key]' => t('A value without additional formatting. Elements may be accessed such as <em>%value[fieldset_a][key_b]</em>. Do not include quotes.'),
+      ),
     );
   }
 
   $output = '';
   $output .= '<p>' . t('You may use special tokens in this field that will be replaced with dynamic values.') . '</p>';
 
-  if (!empty($submission_tokens)) {
-    $output .= theme('item_list', array('items' => $submission_tokens, 'title' => t('Component variables')));
-  }
-
-  $output .= theme('item_list', array('items' => $basic_tokens, 'title' => t('Basic variables')));
-  $output .= theme('item_list', array('items' => $special_tokens, 'title' => t('Special variables')));
-  $output .= '<p>' . t('You can use %server[key] to add any of the special PHP <a href="http://www.php.net/reserved.variables#reserved.variables.server">$_SERVER</a> variables, %session[key] to add any of the special PHP <a href="http://www.php.net/reserved.variables#reserved.variables.session">$_SESSION</a> variables and %get[key] to create prefilled forms from the <a href="http://www.php.net/reserved.variables#reserved.variables.get">URL</a>. %cookie, %request and %post also work with their respective PHP variables. For example %server[HTTP_USER_AGENT], %session[id], or %get[q].') . '</p>';
-  if (module_exists('profile')) {
-    $output .= '<p>' . t('If you are using the Profile module, you can also access all profile data using the syntax %profile[form_name]. If you for example have a profile value named profile_city, add the variable %profile[profile_city].') . '</p>';
+  foreach ($tokens as $group_name => $group) {
+    if (!is_array($groups) || in_array($group_name, $groups)) {
+      $items = array();
+      foreach ($group['tokens'] as $token => $token_description) {
+        $items[] = $token . ' - ' . $token_description;
+      }
+      $output .= theme('item_list', array('items' => $items, 'title' => $group['title']));
+      $output .= isset($group['description']) ? '<p>' . $group['description']  . '</p>' : '';
+    }
   }
 
   $fieldset = array(
