@@ -266,6 +266,7 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
     '#type' => 'textarea',
     '#rows' => max(10, min(20, count(explode("\n", $template)))),
     '#default_value' => $template,
+    '#wysiwyg' => webform_email_html_capable() ? NULL : FALSE,
   );
 
   $form['template']['html'] = array(
@@ -304,6 +305,7 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
     '#value' => $default_template,
     '#resizable' => FALSE,
     '#weight' => 19,
+    '#wysiwyg' => FALSE,
   );
 
   // Add the submit button.
