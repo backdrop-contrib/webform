@@ -197,7 +197,7 @@ function webform_expand_grid($element) {
   $value = isset($element['#default_value']) ? $element['#default_value'] : array();
   foreach (element_children($element) as $key) {
     if (isset($value[$key])) {
-      $element[$key]['#default_value'] = $value[$key];
+      $element[$key]['#default_value'] = ($value[$key] !== '') ? $value[$key] : FALSE;
     }
     else {
       $element[$key]['#default_value'] = FALSE;
