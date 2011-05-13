@@ -488,8 +488,7 @@ function _webform_submit_file($component, $value) {
 
     // Delete any previous files.
     if ($value['_old'] && ($existing = webform_get_file($value['_old']))) {
-      file_delete($existing->filepath);
-      db_query("DELETE FROM {files} WHERE fid = %d", $existing->fid);
+      file_delete($existing);
     }
 
     $value = $file->fid;
