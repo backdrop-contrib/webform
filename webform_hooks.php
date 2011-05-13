@@ -307,23 +307,39 @@ function hook_webform_component_info() {
     'features' => array(
       // Add content to CSV downloads. Defaults to TRUE.
       'csv' => TRUE,
+
       // Show this field in e-mailed submissions. Defaults to TRUE.
       'email' => TRUE,
+
       // Allow this field to be used as an e-mail FROM or TO address. Defaults
       // to FALSE.
       'email_address' => FALSE,
+
       // Allow this field to be used as an e-mail SUBJECT or FROM name. Defaults
       // to FALSE.
       'email_name' => TRUE,
+
       // This field may be toggled as required or not. Defaults to TRUE.
       'required' => TRUE,
+
+      // This field has a title that can be toggled as displayed or not.
+      'title_display' => TRUE,
+
+      // This field has a title that can be displayed inline.
+      'title_inline' => TRUE,
+
       // If this field can be used as a conditional SOURCE. All fields may
       // always be displayed conditionally, regardless of this setting.
       // Defaults to TRUE.
       'conditional' => TRUE,
+
       // If this field allows other fields to be grouped within it (like a
       // fieldset or tabs). Defaults to FALSE.
       'group' => FALSE,
+
+      // If this field can be used for SPAM analysis, usually with Mollom.
+      'spam_analysis' => FALSE,
+
       // If this field saves a file that can be used as an e-mail attachment.
       // Defaults to FALSE.
       'attachment' => FALSE,

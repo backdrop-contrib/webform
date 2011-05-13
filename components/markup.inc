@@ -38,7 +38,6 @@ function _webform_edit_markup($component) {
 
   $form['extra']['description'] = array(); // No description for markup.
   $form['display'] = array('#type' => 'markup'); // Hide the display options.
-  $form['display']['title_display'] = array();
 
   return $form;
 }

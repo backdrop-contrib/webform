@@ -737,6 +737,7 @@ function webform_webform_component_info() {
         'required' => FALSE,
         'conditional' => FALSE,
         'group' => TRUE,
+        'title_inline' => FALSE,
       ),
       'file' => 'components/fieldset.inc',
     ),
@@ -754,6 +755,7 @@ function webform_webform_component_info() {
       'description' => t('Allows creation of grid questions, denoted by radio buttons.'),
       'features' => array(
         'conditional' => FALSE,
+        'title_inline' => FALSE,
       ),
       'file' => 'components/grid.inc',
     ),
@@ -765,6 +767,7 @@ function webform_webform_component_info() {
         'required' => FALSE,
         'email_address' => TRUE,
         'email_name' => TRUE,
+        'title_display' => FALSE,
       ),
     ),
     'markup' => array(
@@ -775,6 +778,7 @@ function webform_webform_component_info() {
         'email' => FALSE,
         'required' => FALSE,
         'conditional' => FALSE,
+        'title_display' => FALSE,
       ),
       'file' => 'components/markup.inc',
     ),
@@ -784,6 +788,7 @@ function webform_webform_component_info() {
       'features' => array(
         'csv' => FALSE,
         'required' => FALSE,
+        'title_display' => FALSE,
       ),
       'file' => 'components/pagebreak.inc',
     ),
@@ -802,6 +807,7 @@ function webform_webform_component_info() {
       'file' => 'components/textarea.inc',
       'features' => array(
         'spam_analysis' => TRUE,
+        'title_inline' => FALSE,
       ),
     ),
     'textfield' => array(
@@ -2426,6 +2432,9 @@ function theme_webform_element($variables) {
    'webform-component',
    'webform-component-' . $type,
   );
+  if (isset($element['#title_display']) && $element['#title_display'] == 'inline') {
+    $wrapper_classes[] = 'webform-container-inline';
+  }
   $output = '<div class="' . implode(' ', $wrapper_classes) . '" id="webform-component-' . $parents . '">' . "\n";
   $required = !empty($element['#required']) ? '<span class="form-required" title="' . t('This field is required.') . '">*</span>' : '';
 
@@ -2437,6 +2446,7 @@ function theme_webform_element($variables) {
   $suffix = isset($element['#field_suffix']) ? ' <span class="field-suffix">' . _webform_filter_xss($element['#field_suffix']) . '</span>' : '';
 
   switch ($element['#title_display']) {
+    case 'inline':
     case 'before':
     case 'invisible':
       $output .= ' ' . theme('form_element_label', $variables);

@@ -63,6 +63,11 @@ function _webform_render_fieldset($component, $value = NULL, $filter = TRUE) {
     '#webform_component' => $component,
   );
 
+  // Hide the fieldset title if #title_display is 'none'.
+  if (!empty($component['extra']['title_display']) && $component['extra']['title_display'] == 'none') {
+    $element['#title'] = NULL;
+  }
+
   return $element;
 }
 
