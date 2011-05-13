@@ -723,7 +723,7 @@ function webform_get_submission_count($nid, $uid = NULL, $reset = FALSE) {
       $query->condition('uid', $uid);
     }
     if ($uid === 0) {
-      $submissions = isset($_SESSION['webform_submission']) ? $_SESSION['webform_submission'] : array();
+      $submissions = isset($_SESSION['webform_submission']) ? $_SESSION['webform_submission'] : array(0);
       $query->condition('sid', $submissions, 'IN');
     }
 
