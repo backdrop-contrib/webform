@@ -335,6 +335,9 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
 function webform_submission_delete_form($form, $form_state, $node, $submission) {
   webform_set_breadcrumb($node, $submission);
 
+  // Set the correct page title.
+  drupal_set_title(webform_submission_title($node, $submission));
+
   // Keep the NID and SID in the same location as the webform_client_form().
   // This helps mollom identify the same fields when deleting a submission.
   $form['#tree'] = TRUE;
@@ -386,6 +389,9 @@ function webform_submission_page($node, $submission, $format) {
 
   // Render the admin UI breadcrumb.
   webform_set_breadcrumb($node, $submission);
+
+  // Set the correct page title.
+  drupal_set_title(webform_submission_title($node, $submission));
 
   if ($format == 'form') {
     $output = drupal_get_form('webform_client_form_' . $node->nid, $node, $submission);
