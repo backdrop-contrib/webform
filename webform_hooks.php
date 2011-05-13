@@ -149,6 +149,8 @@ function hook_webform_submission_actions($node, $submission) {
       'query' => drupal_get_destination(),
     );
   }
+
+  return $actions;
 }
 
 /**
