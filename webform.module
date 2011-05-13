@@ -3439,7 +3439,7 @@ function webform_strtodate($format, $string, $timezone_name = NULL) {
     try {
       @$timezone = new DateTimeZone($timezone_name);
       @$datetime = new DateTime($string, $timezone);
-      return $datetime->format($format);
+      return @$datetime->format($format);
     }
     catch (Exception $e) {
       return '';
