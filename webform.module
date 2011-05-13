@@ -2197,24 +2197,33 @@ function webform_client_form_submit($form, &$form_state) {
   }
 
   $node = $form['#node'];
+  $sid = $form_state['values']['details']['sid'] ? (int) $form_state['values']['details']['sid'] : NULL;
 
   // Check if user is submitting as a draft.
-  $is_draft = !empty($form_state['save_draft']);
+  $is_draft = (int) !empty($form_state['save_draft']);
 
-  // Create a submission object.
-  $submission = (object) array(
-    'nid' => $node->nid,
-    'uid' => $user->uid,
-    'submitted' => REQUEST_TIME,
-    'remote_addr' => ip_address(),
-    'is_draft' => (int) $is_draft,
-    'data' => webform_submission_data($node, $form_state['values']['submitted']),
-  );
+  if (!$sid) {
+    // Create a new submission object.
+    $submission = (object) array(
+      'nid' => $node->nid,
+      'uid' => $form_state['values']['details']['uid'],
+      'submitted' => REQUEST_TIME,
+      'remote_addr' => ip_address(),
+      'is_draft' => $is_draft,
+      'data' => webform_submission_data($node, $form_state['values']['submitted']),
+    );
+  }
+  else {
+    // To maintain time and user information, load the existing submission.
+    $submission = webform_get_submission($node->nid, $sid);
+    $submission->is_draft = $is_draft;
+    $submission->data = webform_submission_data($node, $form_state['values']['submitted']);
+  }
 
   // Save the submission to the database.
-  if (empty($form_state['values']['details']['sid'])) {
+  if (!$sid) {
     // No sid was found thus insert it in the dataabase.
-    $form_state['values']['details']['sid'] = webform_submission_insert($node, $submission);
+    $form_state['values']['details']['sid'] = $sid = webform_submission_insert($node, $submission);
     $form_state['values']['details']['is_new'] = TRUE;
 
     // Set a cookie including the server's submission time.
@@ -2233,12 +2242,9 @@ function webform_client_form_submit($form, &$form_state) {
   }
   else {
     // Sid was found thus update the existing sid in the database.
-    $submission->sid = $form_state['values']['details']['sid'];
     webform_submission_update($node, $submission);
     $form_state['values']['details']['is_new'] = FALSE;
   }
-
-  $sid = $form_state['values']['details']['sid'];
 
   // Check if this form is sending an email.
   if (!$is_draft && !$form_state['values']['details']['finished']) {
