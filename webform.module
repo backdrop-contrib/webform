@@ -2223,7 +2223,12 @@ function webform_client_form_submit($form, &$form_state) {
     // To maintain time and user information, load the existing submission.
     $submission = webform_get_submission($node->nid, $sid);
     $submission->is_draft = $is_draft;
-    $submission->data = webform_submission_data($node, $form_state['values']['submitted']);
+
+    // Merge with new submission data. The + operator maintains numeric keys.
+    // This maintains existing data with just-submitted data when a user resumes
+    // a submission previously saved as a draft.
+    $new_data = webform_submission_data($node, $form_state['values']['submitted']);
+    $submission->data = $new_data + $submission->data;
   }
 
   // Save the submission to the database.
