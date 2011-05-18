@@ -159,16 +159,27 @@ function _webform_edit_file_size_validate($element) {
 }
 
 /**
- * A Form API after build function.
+ * A Form API after build and validate function.
  *
  * Ensure that the destination directory exists and is writable.
  */
 function _webform_edit_file_check_directory($element) {
+  $base_dir = file_build_uri('webform');
   $destination_dir = file_build_uri('webform/' . $element['#value']);
-  $destination_success = file_prepare_directory($destination_dir, FILE_CREATE_DIRECTORY);
-  if (!$destination_success) {
-    form_set_error('savelocation', t('The save directory %directory could not be created. Check that the webform files directory is writtable.', array('%directory' => $destination_dir)));
+
+  // Sanity check input to prevent use parent (../) directories.
+  $real_base = drupal_realpath($base_dir);
+  $real_destination = drupal_realpath($destination_dir);
+  if (strpos($real_destination, $real_base) !== 0) {
+    form_error($element, t('The save directory %directory is not valid.', array('%directory' => $destination_dir)));
   }
+  else {
+    $destination_success = file_prepare_directory($destination_dir, FILE_CREATE_DIRECTORY);
+    if (!$destination_success) {
+      form_error($element, t('The save directory %directory could not be created. Check that the webform files directory is writtable.', array('%directory' => $destination_dir)));
+    }
+  }
+
   return $element;
 }
 
@@ -362,7 +373,7 @@ function theme_webform_render_file($variables) {
 
   if ($value && ($file = webform_get_file($value))) {
     $firstchild = array_shift(array_keys($element));
-    $element[$firstchild]['#suffix'] = ' ' . l(t('Download !filename', array('!filename' => webform_file_name($file->uri))), webform_file_url($file->uri)) . (isset($element['#suffix']) ? $element['#suffix'] : '');
+    $element[$firstchild]['#suffix'] = ' ' . l(t('Download @filename', array('@filename' => webform_file_name($file->uri))), webform_file_url($file->uri)) . (isset($element['#suffix']) ? $element['#suffix'] : '');
     $element[$firstchild]['#description'] = '<div class="webform-newfile-message">' . t('Uploading a new file will replace the current file.') . '</div>' . (isset($element[$firstchild]['#description']) ? $element[$firstchild]['#description'] : '');
   }
 
@@ -416,7 +427,7 @@ function _webform_validate_file($element, &$form_state) {
   $component = $element['#webform_component'];
   $form_key = implode('_', $element['#parents']);
 
-  if (empty($_FILES['files']['name'][$form_key])) {
+  if (empty($_FILES['files']['name'][$form_key]) || form_get_error($element)) {
     return;
   }
 
@@ -577,7 +588,7 @@ function _webform_table_file($component, $value) {
   $output = '';
   $file = webform_get_file($value[0]);
   if (!empty($file->fid)) {
-    $output = '<a href="' . webform_file_url($file->uri) . '">' . webform_file_name($file->uri) . '</a>';
+    $output = '<a href="' . webform_file_url($file->uri) . '">' . check_plain(webform_file_name($file->uri)) . '</a>';
     $output .= ' (' . (int) ($file->filesize/1024) . ' KB)';
   }
   return $output;

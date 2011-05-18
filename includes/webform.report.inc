@@ -241,7 +241,7 @@ function theme_webform_results_table($variables) {
       $data = isset($submission->data[$component['cid']]['value']) ? $submission->data[$component['cid']]['value'] : NULL;
       $submission_output = webform_component_invoke($component['type'], 'table', $component, $data);
       if ($submission_output !== NULL) {
-        $component_headers[] = $component['name'];
+        $component_headers[] = check_plain($component['name']);
         $cell[] = $submission_output;
       }
     }
