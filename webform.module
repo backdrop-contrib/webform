@@ -856,6 +856,8 @@ function webform_webform_select_options_info() {
  */
 function webform_webform_submission_actions($node, $submission) {
   $actions = array();
+  $destination = drupal_get_destination();
+
   if (module_exists('print_pdf') && user_access('access PDF version')) {
     $actions['printpdf'] = array(
       'title' => t('Download PDF'),
