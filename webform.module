@@ -2375,10 +2375,8 @@ function _webform_client_form_submit_flatten($node, $fieldset, $parent = 0) {
 function _webform_confirmation($node) {
   drupal_set_title(check_plain($node->title));
   webform_set_breadcrumb($node);
-  if (empty($output)) {
-    $output = theme(array('webform_confirmation_' . $node->nid, 'webform_confirmation'), array('node' => $node, 'sid' => $_GET['sid']));
-  }
-  return $output;
+  $sid = isset($_GET['sid']) ? $_GET['sid'] : NULL;
+  return theme(array('webform_confirmation_' . $node->nid, 'webform_confirmation'), array('node' => $node, 'sid' => $sid));
 }
 
 /**
