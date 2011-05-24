@@ -13,7 +13,7 @@ function webform_views_data() {
   $data['webform_submissions']['table']['base'] = array(
     'field' => 'sid',
     'title' => t('Webform submissions'),
-    'help' => t('Submissions grenerated from Webform forms.'),
+    'help' => t('Submissions generated from Webform forms.'),
   );
 
   // sid
