@@ -279,6 +279,12 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
     _webform_shuffle_options($options);
   }
 
+  // Add default options if using a select list with no default. This trigger's
+  // Drupal 7's adding of the option for us. See @form_process_select().
+  if ($component['extra']['aslist'] && !$component['extra']['multiple'] && $default_value === '') {
+    $element['#empty_value'] = '';
+  }
+
   // Set the component options.
   $element['#options'] = $options;
 
