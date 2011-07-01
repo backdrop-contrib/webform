@@ -1325,7 +1325,7 @@ function webform_node_view($node, $view_mode) {
   $closed = FALSE;
   $allowed_roles = array();
 
-  // When logging in using a form on the same page as a webform node, surpress
+  // When logging in using a form on the same page as a webform node, suppress
   // output messages so that they don't show up after the user has logged in.
   // See http://drupal.org/node/239343.
   if (isset($_POST['op']) && isset($_POST['name']) && isset($_POST['pass'])) {
@@ -3321,7 +3321,7 @@ function webform_set_breadcrumb($node, $submission = NULL) {
 /**
  * Convert an ISO 8601 date or time into an array.
  *
- * This converst full format dates or times. Either a date or time may be
+ * This converts full format dates or times. Either a date or time may be
  * provided, in which case only those portions will be returned. Dashes and
  * colons must be used, never implied.
  *
@@ -3439,7 +3439,7 @@ function webform_strtodate($format, $string, $timezone_name = NULL) {
   }
 
   if (!empty($timezone_name) && class_exists('DateTimeZone')) {
-    // Surpress errors if encountered during string conversion. Exceptions are
+    // Suppress errors if encountered during string conversion. Exceptions are
     // only supported for DateTime in PHP 5.3 and higher.
     try {
       @$timezone = new DateTimeZone($timezone_name);
