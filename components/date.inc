@@ -35,9 +35,11 @@ function _webform_theme_date() {
   return array(
     'webform_date' => array(
       'render element' => 'element',
+      'file' => 'components/date.inc',
     ),
     'webform_display_date' => array(
       'render element' => 'element',
+      'file' => 'components/date.inc',
     ),
     'webform_calendar' => array(
       'variables' => array('component' => NULL, 'calendar_classes' => NULL),

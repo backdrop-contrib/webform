@@ -39,9 +39,11 @@ function _webform_theme_grid() {
   return array(
     'webform_grid' => array(
       'render element' => 'element',
+      'file' => 'components/grid.inc',
     ),
     'webform_display_grid' => array(
       'render element' => 'element',
+      'file' => 'components/grid.inc',
     ),
   );
 }

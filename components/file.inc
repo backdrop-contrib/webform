@@ -37,12 +37,15 @@ function _webform_theme_file() {
   return array(
     'webform_edit_file' => array(
       'render element' => 'form',
+      'file' => 'components/file.inc',
     ),
     'webform_render_file' => array(
       'render element' => 'element',
+      'file' => 'components/file.inc',
     ),
     'webform_display_file' => array(
       'render element' => 'element',
+      'file' => 'components/file.inc',
     ),
   );
 }

@@ -35,9 +35,11 @@ function _webform_theme_time() {
   return array(
     'webform_time' => array(
       'render element' => 'element',
+      'file' => 'components/time.inc',
     ),
     'webform_display_time' => array(
       'render element' => 'element',
+      'file' => 'components/time.inc',
     ),
   );
 }

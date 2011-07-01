@@ -36,6 +36,7 @@ function _webform_theme_textarea() {
   return array(
     'webform_display_textarea' => array(
       'render element' => 'element',
+      'file' => 'components/textarea.inc',
     ),
   );
 }

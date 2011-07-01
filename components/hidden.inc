@@ -27,6 +27,7 @@ function _webform_theme_hidden() {
   return array(
     'webform_display_hidden' => array(
       'render element' => 'element',
+      'file' => 'components/hidden.inc',
     ),
   );
 }
