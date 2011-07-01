@@ -1168,13 +1168,13 @@ function webform_node_prepare_translation(&$node) {
  * Implements hook_node_load().
  */
 function webform_node_load($nodes, $types) {
-  module_load_include('inc', 'webform', 'includes/webform.components');
-
   // Quick check to see if we need to do anything at all for these nodes.
   $webform_types = webform_variable_get('webform_node_types');
   if (count(array_intersect($types, $webform_types)) == 0) {
     return;
   }
+
+  module_load_include('inc', 'webform', 'includes/webform.components');
 
   // Select all webforms that match these node IDs.
   $result = db_select('webform')
