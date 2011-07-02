@@ -450,7 +450,9 @@ function _webform_edit_component($component) {
  * @param $filter
  *   Whether or not to filter the contents of descriptions and values when
  *   rendering the component. Values need to be unfiltered to be editable by
- *   Form Builder. @see _webform_client_form_add_component()
+ *   Form Builder.
+ *
+ * @see _webform_client_form_add_component()
  */
 function _webform_render_component($component, $value = NULL, $filter = TRUE) {
   $form_item = array(
