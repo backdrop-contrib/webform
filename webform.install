@@ -576,7 +576,7 @@ function webform_update_7311() {
 /**
  * Remove unused Webform variables.
  */
-function webform_update_6327() {
+function webform_update_7312() {
   variable_del('node_types');
   variable_del('components');
 }
