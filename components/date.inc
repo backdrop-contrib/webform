@@ -18,8 +18,8 @@ function _webform_defaults_date() {
     'mandatory' => 0,
     'extra' => array(
       'timezone' => 'user',
-      'year_start' => '-2',
-      'year_end' => '+2',
+      'start_date' => '-2 years',
+      'end_date' => '+2 years',
       'year_textfield' => 0,
       'datepicker' => 1,
       'title_display' => 0,
@@ -90,25 +90,23 @@ function _webform_edit_date($component) {
     '#parents' => array('extra', 'year_textfield'),
   );
 
-  $form['validation']['year_start'] = array(
+  $form['validation']['start_date'] = array(
     '#type' => 'textfield',
-    '#title' => t('Start year'),
-    '#default_value' => $component['extra']['year_start'],
-    '#description' => t('The first year that is allowed to be entered. May be relative (i.e. -2 or +2) or simply the year (i.e. 1950).'),
-    '#size' => 10,
-    '#maxlength' => 4,
+    '#title' => t('Start date'),
+    '#default_value' => $component['extra']['start_date'],
+    '#description' => t('The earliest date that may be entered into the field.') . ' ' . t('Accepts any date in any <a href="http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html">GNU Date Input Format</a>.'),
+    '#size' => 30,
     '#weight' => 3,
-    '#parents' => array('extra', 'year_start'),
+    '#parents' => array('extra', 'start_date'),
   );
-  $form['validation']['year_end'] = array(
+  $form['validation']['end_date'] = array(
     '#type' => 'textfield',
-    '#title' => t('End year'),
-    '#default_value' => $component['extra']['year_end'],
-    '#description' => t('The last year that is allowed to be entered.  May be relative (i.e. -2 or +2) or simply the year (i.e. 1950).'),
-    '#size' => 10,
-    '#maxlength' => 4,
+    '#title' => t('End date'),
+    '#default_value' => $component['extra']['end_date'],
+    '#description' => t('The latest date that may be entered into the field.') . ' ' . t('Accepts any date in any <a href="http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html">GNU Date Input Format</a>.'),
+    '#size' => 30,
     '#weight' => 4,
-    '#parents' => array('extra', 'year_end'),
+    '#parents' => array('extra', 'end_date'),
   );
 
   return $form;
@@ -125,8 +123,8 @@ function _webform_render_date($component, $value = NULL, $filter = TRUE) {
     '#weight' => $component['weight'],
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#required' => $component['mandatory'],
-    '#year_start' => $component['extra']['year_start'],
-    '#year_end' => $component['extra']['year_end'],
+    '#start_date' => trim($component['extra']['start_date']),
+    '#end_date' => trim($component['extra']['end_date']),
     '#year_textfield' => $component['extra']['year_textfield'],
     '#default_value' => $filter ? _webform_filter_values($component['value'], NULL, NULL, NULL, FALSE) : $component['value'],
     '#timezone' => $component['extra']['timezone'],
@@ -204,12 +202,10 @@ function webform_expand_date($element) {
   }
 
   // Convert relative dates to absolute ones.
-  foreach (array('year_start', 'year_end') as $start_end) {
-    $year = $element['#' . $start_end];
-    if (strpos($year, '-') === 0 || strpos($year, '+') === 0) {
-      $timezone = $element['#timezone'] != 'user' ? NULL : 'user';
-      $element['#' . $start_end] = webform_strtodate('Y', $year . ' years', $timezone);
-    }
+  foreach (array('start_date', 'end_date') as $start_end) {
+    $timezone = $element['#timezone'] != 'user' ? NULL : 'user';
+    $date = webform_strtodate('Y-m-d', $element['#' . $start_end], $timezone);
+    $element['#' . $start_end] = $date ? $date : '';
   }
 
   // Tweak the year field.
@@ -219,8 +215,10 @@ function webform_expand_date($element) {
     $element['year']['#maxlength'] = 4;
     unset($element['year']['#options']);
   }
-  elseif (is_numeric($element['#year_start']) && is_numeric($element['#year_end'])) {
-    $element['year']['#options'] = array('' => t('Year')) + drupal_map_assoc(range($element['#year_start'], $element['#year_end']));
+  elseif ($element['#start_date'] || $element['#end_date']) {
+    $start_year = $element['#start_date'] ? webform_strtodate('Y', $element['#start_date']) : webform_strtodate('Y', '-2 years');
+    $end_year = $element['#end_date'] ? webform_strtodate('Y', $element['#end_date']) : webform_strtodate('Y', '+2 years');
+    $element['year']['#options'] = array('' => t('Year')) + drupal_map_assoc(range($start_year, $end_year));
   }
 
   return $element;
@@ -249,11 +247,11 @@ function theme_webform_date($variables) {
   if (!empty($element['#datepicker'])) {
     $class[] = 'webform-datepicker';
     $calendar_class = array('webform-calendar');
-    if ($element['#year_start'] && is_numeric($element['#year_start'])) {
-      $calendar_class[] = 'webform-calendar-start-' . $element['#year_start'];
+    if ($element['#start_date']) {
+      $calendar_class[] = 'webform-calendar-start-' . $element['#start_date'];
     }
-    if ($element['#year_start'] && is_numeric($element['#year_end'])) {
-      $calendar_class[] = 'webform-calendar-end-' . $element['#year_end'];
+    if ($element['#end_date']) {
+      $calendar_class[] = 'webform-calendar-end-' . $element['#end_date'];
     }
     $calendar_class[] ='webform-calendar-day-' . variable_get('date_first_day', 0);
 
@@ -280,21 +278,30 @@ function webform_validate_date($element, $form_state) {
       return;
     }
   }
-  // Check for a valid date.
+
   if ($element['month']['#value'] !== '' || $element['day']['#value'] !== '' || $element['year']['#value'] !== '') {
-    if (!checkdate((int)$element['month']['#value'], (int)$element['day']['#value'], (int)$element['year']['#value'])) {
+    // Check for a valid date.
+    if (!checkdate((int) $element['month']['#value'], (int) $element['day']['#value'], (int) $element['year']['#value'])) {
       form_error($element, t('Entered !name is not a valid date.', array('!name' => $element['#title'])));
       return;
     }
-  }
-  // Check the date is between allowed years.
-  if ($element['year']['#value'] !== '' && is_numeric($element['#year_start']) && is_numeric($element['#year_end'])) {
-    // Allow years to be in reverse order.
-    $start = $element['#year_start'] < $element['#year_end'] ? $element['#year_start'] : $element['#year_end'];
-    $end   = $element['#year_start'] > $element['#year_end'] ? $element['#year_start'] : $element['#year_end'];
-    if ($element['year']['#value'] < $start || $element['year']['#value'] > $end) {
-      form_error($element['year'], t('The entered date needs to be between the years @start and @end.', array('@start' => $start, '@end' => $end)));
-      return;
+
+    // Create a timestamp of the entered value for comparison.
+    $timestamp = strtotime($element['year']['#value'] . '-' . $element['month']['#value'] . '-' . $element['day']['#value']);
+    $format = webform_date_format('short');
+
+    // Check that the date is after the start date.
+    if ($element['#start_date'] !== '' && (($start_date = strtotime($element['#start_date'])) || $start_date !== FALSE)) {
+      if ($timestamp < $start_date) {
+        form_error($element, t('The entered date must be @start_date or later.', array('@start_date' => date($format, $start_date))));
+      }
+    }
+
+    // Check that the date is before the end date.
+    if ($element['#end_date'] !== '' && (($end_date = strtotime($element['#end_date'])) || $end_date !== FALSE)) {
+      if ($timestamp > $end_date) {
+        form_error($element, t('The entered date must be @end_date or earlier.', array('@end_date' => date($format, $end_date))));
+      }
     }
   }
 }

@@ -580,3 +580,32 @@ function webform_update_7312() {
   variable_del('node_types');
   variable_del('components');
 }
+
+/**
+ * Convert the Date component start and end year options to start and end date.
+ */
+function webform_update_7313() {
+  $result = db_select('webform_component', 'wc', array('fetch' => PDO::FETCH_ASSOC))
+    ->fields('wc')
+    ->condition('type', 'date')
+    ->execute();
+  foreach ($result as $component) {
+    $component['extra'] = unserialize($component['extra']);
+    if (!isset($component['extra']['start_date']) && !isset($component['end_date'])) {
+      foreach (array('year_start' => 'start_date', 'year_end' => 'end_date') as $key => $replacement) {
+        $value = isset($component['extra'][$key]) ? trim($component['extra'][$key]) : '';
+        // Relative years.
+        if (preg_match('/[-+][ ]*[0-9]+/', $value)) {
+          $component['extra'][$replacement] = ($value == 1) ? ($value . ' year') : ($value . ' years');
+        }
+        // Absolute years.
+        elseif (is_numeric($value)) {
+          $component['extra'][$replacement] = 'Dec 31 ' . $value;
+        }
+        unset($component['extra'][$key]);
+      }
+      $component['extra'] = serialize($component['extra']);
+      drupal_write_record('webform_component', $component, array('nid', 'cid'));
+    }
+  }
+}
