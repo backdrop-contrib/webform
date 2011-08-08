@@ -580,10 +580,13 @@ function webform_submission_render($node, $submission, $email, $format) {
 
   _webform_components_tree_build($components, $component_tree, 0, $page_count);
 
-  // Recursively add components to the form.
-  foreach ($component_tree['children'] as $cid => $component) {
-    if (_webform_client_form_rule_check($node, $component, $component['page_num'], NULL, $submission)) {
-      _webform_client_form_add_component($node, $component, NULL, $renderable, $renderable, NULL, $submission, $format);
+  // Make sure at least one field is available
+  if (isset($component_tree['children'])) {
+    // Recursively add components to the form.
+    foreach ($component_tree['children'] as $cid => $component) {
+      if (_webform_client_form_rule_check($node, $component, $component['page_num'], NULL, $submission)) {
+        _webform_client_form_add_component($node, $component, NULL, $renderable, $renderable, NULL, $submission, $format);
+      }
     }
   }
 
