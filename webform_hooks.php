@@ -284,11 +284,13 @@ function hook_webform_component_delete($component) {
  *   any of the following:
  *
  *     - defaults
- *     - theme
  *     - edit
- *     - delete
  *     - render
  *     - display
+ *     - submit
+ *     - delete
+ *     - help
+ *     - theme
  *     - analysis
  *     - table
  *     - csv_headers
