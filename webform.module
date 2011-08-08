@@ -642,7 +642,7 @@ function webform_theme() {
       'file' => 'includes/webform.submissions.inc',
     ),
     'webform_submission_page' => array(
-      'variables' => array('node' => NULL, 'submission' => NULL, 'submission_content' => NULL, 'submission_navigation' => NULL, 'submission_information' => NULL, 'submission_actions' => NULL),
+      'variables' => array('node' => NULL, 'submission' => NULL, 'submission_content' => NULL, 'submission_navigation' => NULL, 'submission_information' => NULL, 'submission_actions' => NULL, 'mode' => NULL),
       'template' => 'templates/webform-submission-page',
       'file' => 'includes/webform.submissions.inc',
     ),
