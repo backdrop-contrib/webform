@@ -1561,6 +1561,7 @@ function webform_block_view($delta = '') {
   $settings = isset($webform_blocks[$delta]) ? $webform_blocks[$delta] : array();
   $settings += array(
     'display' => 'form',
+    'pages_block' => 0,
   );
 
   // Get the node ID from delta.
@@ -1615,6 +1616,7 @@ function webform_block_configure($delta = '') {
   $settings = isset($webform_blocks[$delta]) ? $webform_blocks[$delta] : array();
   $settings += array(
     'display' => 'form',
+    'pages_block' => 0,
   );
 
   $form = array();
@@ -1629,6 +1631,14 @@ function webform_block_configure($delta = '') {
     ),
     '#description' => t('The display mode determines how much of the webform to show within the block.'),
   );
+
+  $form['pages_block'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show all webform pages in block'),
+    '#default_value' => $settings['pages_block'],
+    '#description' => t('By default multi-page webforms redirect to the node page for all pages after the first one. If checked, all pages will be shown in the block instead.'),
+  );
+
   return $form;
 }
 
@@ -1641,6 +1651,7 @@ function webform_block_save($delta = '', $edit = array()) {
   // Build the settings array.
   $new_settings[$delta] = array(
     'display' => $edit['display'],
+    'pages_block' => $edit['pages_block'],
   );
   // We store settings for multiple blocks in just one variable
   // so we merge the existing settings with the new ones before save.
@@ -1701,9 +1712,18 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
   // Set the encoding type (necessary for file uploads).
   $form['#attributes']['enctype'] = 'multipart/form-data';
 
+  // If this is a webform block, load the block-specific configuration settings.
+  $pages_in_node = TRUE;
+  if (isset($node->webform_block)) {
+    $webform_blocks = variable_get('webform_blocks', array());
+    $delta = 'client-block-' . $node->nid;
+    $block_settings = isset($webform_blocks[$delta]) ? $webform_blocks[$delta] : array();
+    $pages_in_node = empty($block_settings['pages_block']);
+  }
+
   // Set the form action to the node ID in case this is being displayed on the
-  // teaser, subsequent pages should be on the node page directly.
-  if (!isset($node->webform_block) && empty($submission)) {
+  // teaser or in a block, subsequent pages should be on the node page directly.
+  if ($pages_in_node && empty($submission)) {
     $query = $_GET;
     unset($query['q']);
     $form['#action'] = url('node/' . $node->nid, array('query' => $query));
