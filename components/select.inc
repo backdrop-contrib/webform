@@ -334,7 +334,7 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
     $element['#other'] = !empty($component['extra']['other_text']) ? check_plain($component['extra']['other_text']) : t('Other...');
     $element['#other_unknown_defaults'] = 'other';
     $element['#other_delimiter'] = ', ';
-    $element['#process'] = array('select_or_other_process', 'webform_expand_select_or_other');
+    $element['#process'] = array('select_or_other_element_process', 'webform_expand_select_or_other');
     if ($component['extra']['multiple']) {
       $element['#multiple'] = TRUE;
       $element['#select_type'] = 'checkboxes';
