@@ -267,11 +267,12 @@ function hook_webform_component_delete($component) {
  *     - spam_analysis
  *     - group
  *
- *   Note that these features do not indicate the default state, but determine
- *   if the component can have this property at all. Setting "required" to TRUE
- *   does not mean that a field will always be required, but instead give the
- *   option to the administrator to choose the requiredness. See the example
- *   implementation for details on how these features may be set.
+ *   Note that most of these features do not indicate the default state, but 
+ *   determine if the component can have this property at all. Setting
+ *   "required" to TRUE does not mean that a component's fields will always be 
+ *   required, but instead give the option to the administrator to choose the
+ *   requiredness. See the example implementation for details on how these
+ *   features may be set.
  *
  *   An optional "file" may be specified to be loaded when the component is
  *   needed. A set of callbacks will be established based on the name of the
@@ -308,40 +309,40 @@ function hook_webform_component_info() {
       // Add content to CSV downloads. Defaults to TRUE.
       'csv' => TRUE,
 
-      // Show this field in e-mailed submissions. Defaults to TRUE.
+      // Show this component in e-mailed submissions. Defaults to TRUE.
       'email' => TRUE,
 
-      // Allow this field to be used as an e-mail FROM or TO address. Defaults
-      // to FALSE.
+      // Allow this component to be used as an e-mail FROM or TO address.
+      // Defaults to FALSE.
       'email_address' => FALSE,
 
-      // Allow this field to be used as an e-mail SUBJECT or FROM name. Defaults
-      // to FALSE.
+      // Allow this component to be used as an e-mail SUBJECT or FROM name.
+      // Defaults to FALSE.
       'email_name' => TRUE,
 
-      // This field may be toggled as required or not. Defaults to TRUE.
+      // This component may be toggled as required or not. Defaults to TRUE.
       'required' => TRUE,
 
-      // This field has a title that can be toggled as displayed or not.
+      // This component has a title that can be toggled as displayed or not.
       'title_display' => TRUE,
 
-      // This field has a title that can be displayed inline.
+      // This component has a title that can be displayed inline.
       'title_inline' => TRUE,
 
-      // If this field can be used as a conditional SOURCE. All fields may
-      // always be displayed conditionally, regardless of this setting.
+      // If this component can be used as a conditional SOURCE. All components
+      // may always be displayed conditionally, regardless of this setting.
       // Defaults to TRUE.
       'conditional' => TRUE,
 
-      // If this field allows other fields to be grouped within it (like a
-      // fieldset or tabs). Defaults to FALSE.
+      // If this component allows other components to be grouped within it 
+      // (like a fieldset or tabs). Defaults to FALSE.
       'group' => FALSE,
 
-      // If this field can be used for SPAM analysis, usually with Mollom.
+      // If this component can be used for SPAM analysis, usually with Mollom.
       'spam_analysis' => FALSE,
 
-      // If this field saves a file that can be used as an e-mail attachment.
-      // Defaults to FALSE.
+      // If this component saves a file that can be used as an e-mail
+      // attachment. Defaults to FALSE.
       'attachment' => FALSE,
     ),
     'file' => 'components/textfield.inc',
@@ -516,6 +517,12 @@ function _webform_display_component($component, $value, $format = 'html') {
 
 /**
  * A hook for changing the input values before saving to the database.
+ *
+ * Webform expects a component to consist of a single field, or a single array 
+ * of fields. If you have a component that requires a deeper form tree
+ * you must flatten the data into a single array using this callback 
+ * or by setting #parents on each field to avoid data loss and/or unexpected
+ * behavior. 
  *
  * Note that Webform will save the result of this function directly into the
  * database.
