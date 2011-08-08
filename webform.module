@@ -2965,8 +2965,9 @@ function theme_webform_token_help($variables) {
       'tokens' => array(
         '%profile[' . t('key') . ']' => t('Any user profile field or value, such as %profile[name] or %profile[profile_first_name]'),
         '%get[' . t('key') . ']' => t('Tokens may be populated from the URL by creating URLs of the form http://example.com/my-form?foo=bar. Using the token %get[foo] would print "bar".'),
+        '%post[' . t('key') . ']' => t('Tokens may also be populated from POST values that are submitted by forms.'),
       ),
-      'description' => t('In addition to %get, the following super tokens may be used, though only with logged-in users: %server, %cookie, %request and %post. For example %server[HTTP_USER_AGENT] or %session[id].'),
+      'description' => t('In addition to %get and %post, the following super tokens may be used, though only with logged-in users: %server, %cookie, and %request. For example %server[HTTP_USER_AGENT] or %session[id].'),
     );
 
     $tokens['email'] = array(
