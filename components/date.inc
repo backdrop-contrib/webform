@@ -158,7 +158,7 @@ function _webform_render_date($component, $value = NULL, $filter = TRUE) {
  */
 function webform_expand_date($element) {
   // Accept a string or array value for #default_value.
-  if (isset($element['#default_value']) && is_string($element['#default_value'])) {
+  if (!empty($element['#default_value']) && is_string($element['#default_value'])) {
     $timezone = $element['#timezone'] != 'user' ? NULL : 'user';
     $timestring = webform_strtodate('c', $element['#default_value'], $timezone);
     $element['#default_value'] = webform_date_array($timestring, 'date');
