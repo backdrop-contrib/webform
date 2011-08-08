@@ -2375,7 +2375,7 @@ function _webform_client_form_submit_flatten($node, $fieldset, $parent = 0) {
  * Prints the confirmation message after a successful submission.
  */
 function _webform_confirmation($node) {
-  drupal_set_title(check_plain($node->title));
+  drupal_set_title($node->title);
   webform_set_breadcrumb($node);
   $sid = isset($_GET['sid']) ? $_GET['sid'] : NULL;
   return theme(array('webform_confirmation_' . $node->nid, 'webform_confirmation'), array('node' => $node, 'sid' => $sid));
