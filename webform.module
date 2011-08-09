@@ -87,7 +87,7 @@ function webform_menu() {
     'access arguments' => array('access all webform results'),
     'description' => 'View and edit all the available webforms on your site.',
     'file' => 'includes/webform.admin.inc',
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_LOCAL_TASK,
   );
 
   // Admin Settings.
