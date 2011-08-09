@@ -1316,6 +1316,11 @@ function webform_node_view($node, $view_mode) {
     return;
   }
 
+  // Do not include the form in the search index if indexing is disabled.
+  if (module_exists('search') && $view_mode == 'search_index' && !variable_get('webform_search_index', 1)) {
+    return;
+  }
+
   $info = array();
   $submission = array();
   $submission_count = 0;
