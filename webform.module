@@ -1042,7 +1042,7 @@ function webform_node_update($node) {
     $original_cids = array_keys($original->webform['components']);
     $current_cids = array_keys($node->webform['components']);
 
-    $all_cids = $original_cids + $current_cids;
+    $all_cids = array_unique(array_merge($original_cids, $current_cids));
     $deleted_cids = array_diff($original_cids, $current_cids);
     $inserted_cids = array_diff($current_cids, $original_cids);
 
@@ -1067,7 +1067,7 @@ function webform_node_update($node) {
     $original_eids = array_keys($original->webform['emails']);
     $current_eids = array_keys($node->webform['emails']);
 
-    $all_eids = $original_eids + $current_eids;
+    $all_eids = array_unique(array_merge($original_eids, $current_eids));
     $deleted_eids = array_diff($original_eids, $current_eids);
     $inserted_eids = array_diff($current_eids, $original_eids);
 
