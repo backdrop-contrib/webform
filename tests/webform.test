@@ -114,8 +114,8 @@ class WebformTestCase extends DrupalWebTestCase {
           'value' => '19 Nov 1978',
           'extra' => array(
             'timezone' => 'site',
-            'year_start' => '1950',
-            'year_end' => '2020',
+            'start_date' => '-100 years',
+            'end_date' => '+2 years',
           ),
           'mandatory' => '0',
           'email' => '1',
@@ -278,7 +278,7 @@ class WebformTestCase extends DrupalWebTestCase {
       'select_zero' => array(
         'component' => array(
           'form_key' => 'select_zero',
-          'name' => 'Select',
+          'name' => 'Select zero',
           'type' => 'select',
           'value' => '0',
           'extra' => array(
@@ -296,6 +296,50 @@ class WebformTestCase extends DrupalWebTestCase {
         'sample values' => '0',
         'database values' => array('0'),
         'database default values' => array('0'),
+      ),
+      'select_no_default' => array(
+        'component' => array(
+          'form_key' => 'select_no_default',
+          'name' => 'Select no default',
+          'type' => 'select',
+          'value' => '',
+          'extra' => array(
+            'description' => '<p>Description here</p>',
+            'items' => "one|one\ntwo|two\nthree|three\nfour|four\nfive|five\nsix|six",
+            'aslist' => 1,
+            'email' => 0,
+          ),
+          'mandatory' => '0',
+          'email' => '1',
+          'pid' => '0',
+          'weight' => '-15',
+          'page_num' => 1,
+        ),
+        'sample values' => 'two',
+        'database values' => array('two'),
+        'database default values' => array(''),
+      ),
+      'select_no_default_zero' => array(
+        'component' => array(
+          'form_key' => 'select_no_default_zero',
+          'name' => 'Select no default zero',
+          'type' => 'select',
+          'value' => '',
+          'extra' => array(
+            'description' => '<p>Tests saving zero as a value.</p>',
+            'items' => "0|zero\n1|one\n2|two",
+            'aslist' => 1,
+            'email' => 0,
+          ),
+          'mandatory' => '0',
+          'email' => '1',
+          'pid' => '0',
+          'weight' => '-15',
+          'page_num' => 1,
+        ),
+        'sample values' => '0',
+        'database values' => array('0'),
+        'database default values' => array(''),
       ),
       'select_optgroup' => array(
         'component' => array(
@@ -372,8 +416,8 @@ class WebformTestCase extends DrupalWebTestCase {
           'value' => 'Nov 19 1978',
           'extra' => array(
             'timezone' => 'site',
-            'year_start' => '1900',
-            'year_end' => '2050',
+            'start_date' => '-100 years',
+            'end_date' => '+2 years',
             'year_textfield' => 1,
           ),
           'mandatory' => '1',
@@ -606,7 +650,7 @@ class WebformTestCase extends DrupalWebTestCase {
    * Utility function to print out the current page being tested.
    */
   function webformPrintPage() {
-    exit($this->_browser->_page->getRaw());
+    $this->verbose($this->drupalGetContent());
   }
 }
 
