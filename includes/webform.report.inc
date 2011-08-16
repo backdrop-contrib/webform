@@ -688,8 +688,9 @@ function theme_webform_results_analysis($variables) {
     if (is_array($row_data)) {
       $row = array();
       if (!$single) {
-        $row[] = array('data' => '<strong>' . $question_number . '</strong>', 'rowspan' => count($row_data) + 1, 'valign' => 'top');
-        $row[] = array('data' => '<strong>' . check_plain($node->webform['components'][$cid]['name']) . '</strong>', 'colspan' => '10');
+        $row['data'][] = array('data' => '<strong>' . $question_number . '</strong>', 'rowspan' => count($row_data) + 1, 'valign' => 'top');
+        $row['data'][] = array('data' => '<strong>' . check_plain($node->webform['components'][$cid]['name']) . '</strong>', 'colspan' => '10');
+        $row['class'][] = 'webform-results-question';
       }
       $rows = array_merge($rows, array_merge(array($row), $row_data));
     }
@@ -699,5 +700,5 @@ function theme_webform_results_analysis($variables) {
     $rows[] = array(array('data' => t('There are no submissions for this form. <a href="!url">View this form</a>.', array('!url' => url('node/' . $node->nid))), 'colspan' => 20));
   }
 
-  return theme('table', array('header' => $header, 'rows' => $rows));
+  return theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('webform-results-analysis'))));
 }
