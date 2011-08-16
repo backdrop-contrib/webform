@@ -468,13 +468,15 @@ function webform_results_clear_access($node, $account = NULL) {
  * Implements hook_admin_paths().
  */
 function webform_admin_paths() {
-  return array(
-    'node/*/webform' => TRUE,
-    'node/*/webform/*' => TRUE,
-    'node/*/webform-results' => TRUE,
-    'node/*/webform-results/*' => TRUE,
-    'node/*/submission/*' => TRUE,
-  );
+  if (variable_get('node_admin_theme')) {
+    return array(
+      'node/*/webform' => TRUE,
+      'node/*/webform/*' => TRUE,
+      'node/*/webform-results' => TRUE,
+      'node/*/webform-results/*' => TRUE,
+      'node/*/submission/*' => TRUE,
+    );
+  }
 }
 
 /**
