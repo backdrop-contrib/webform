@@ -161,7 +161,7 @@ function theme_webform_components_form($variables) {
 
   $node = $form['#node'];
 
-  $header = array(t('Name'), t('Type'), t('Value'), t('Mandatory'), t('Weight'), array('data' => t('Operations'), 'colspan' => 3));
+  $header = array(t('Label'), t('Type'), t('Value'), t('Mandatory'), t('Weight'), array('data' => t('Operations'), 'colspan' => 3));
   $rows = array();
 
   // Add a row containing form elements for a new item.
