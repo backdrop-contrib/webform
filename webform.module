@@ -1469,7 +1469,7 @@ function theme_webform_view_messages($variables) {
   $closed = $variables['closed'];
   $cached = $variables['cached'];
 
-  $type = 'notice';
+  $type = 'status';
 
   if ($closed) {
     $message = t('Submissions for this form are closed.');
