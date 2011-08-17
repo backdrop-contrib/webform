@@ -451,7 +451,8 @@ function _webform_validate_file($element, &$form_state) {
     $extensions[] = 'jpeg';
   }
 
-  $dot = strrpos($_FILES['files']['name'][$form_key], '.');
+  $strrpos = function_exists('mb_strrpos') ? 'mb_strrpos' : 'strrpos';
+  $dot = $strrpos($_FILES['files']['name'][$form_key], '.');
   $extension = drupal_strtolower(drupal_substr($_FILES['files']['name'][$form_key], $dot+1));
   $file_error = FALSE;
   if (!empty($extensions) && !in_array($extension, $extensions)) {
