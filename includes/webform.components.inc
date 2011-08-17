@@ -83,6 +83,7 @@ function webform_components_form($form, $form_state, $node) {
   $form['add']['name'] = array(
     '#type' => 'textfield',
     '#size' => 24,
+    '#maxlength' => 255,
   );
 
   $form['add']['type'] = array(
