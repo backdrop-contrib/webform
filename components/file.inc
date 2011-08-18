@@ -26,6 +26,7 @@ function _webform_defaults_file() {
       'title_display' => 0,
       'description' => '',
       'attributes' => array(),
+      'private' => FALSE,
     ),
   );
 }

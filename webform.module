@@ -1913,6 +1913,11 @@ function _webform_client_form_rule_check($node, $component, $page_num, $form_sta
     }
   }
 
+  // Private component?
+  if ($component['extra']['private']) {
+    $show_component = webform_results_access($node);
+  }
+
   return $show_component;
 }
 

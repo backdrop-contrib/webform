@@ -17,6 +17,7 @@ function _webform_defaults_markup() {
     'value' => '',
     'extra' => array(
       'format' => NULL,
+      'private' => FALSE,
     ),
   );
 }

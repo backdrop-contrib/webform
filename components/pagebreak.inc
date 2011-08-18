@@ -14,7 +14,9 @@ function _webform_defaults_pagebreak() {
     'form_key' => NULL,
     'pid' => 0,
     'weight' => 0,
-    'extra' => array(),
+    'extra' => array(
+      'private' => FALSE,
+    ),
   );
 }
 
