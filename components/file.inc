@@ -502,7 +502,7 @@ function _webform_submit_file($component, $value) {
     file_save($file);
 
     // Delete any previous files.
-    if ($value['_old'] && ($existing = webform_get_file($value['_old']))) {
+    if ($value['_old'] && $value['_old'] != $value['_fid'] && ($existing = webform_get_file($value['_old']))) {
       file_delete($existing);
     }
 
