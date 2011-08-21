@@ -758,6 +758,7 @@ function webform_results_download($node, $format = 'delimited', $options = array
         'nid' => $node->nid,
         'uid' => $user->uid,
         'sid' => $sid,
+        'requested' => time(),
       ))
       ->execute();
   }
@@ -855,7 +856,7 @@ function webform_download_sids($form_state) {
     break;
     case 1:
       // All Since Last Download
-      $last = webform_download_last_downloaded_sid($form_state['values']['node']->nid);
+      $last = webform_download_last_downloaded_sid($form_state['values']['node']->nid, 'sid');
       $query->condition('sid', $last, '>')
         ->orderBy('sid', 'ASC');
     break;
@@ -896,22 +897,42 @@ function webform_download_sids($form_state) {
 }
 
 // Get this user's last downloaded sid.
-function webform_download_last_downloaded_sid($nid) {
+function webform_download_last_downloaded_sid($nid, $field = 'sid') {
   global $user;
 
   // Last downloaded sid.
-  $last = db_select('webform_last_download', 'wld')
-    ->fields('wld', array('sid'))
-    ->condition('nid', $nid)
-    ->condition('uid', $user->uid)
-    ->execute()
-    ->fetchField();
+  if ($field == 'sid') {
+    $last = db_select('webform_last_download', 'wld')
+      ->fields('wld', array('sid'))
+      ->condition('nid', $nid)
+      ->condition('uid', $user->uid)
+      ->execute()
+      ->fetchField();
 
-  if (!$last) {
-    $last = 0;
+    if (!$last) {
+      $last = 0;
+    }
+    return $last;
   }
 
-  return $last;
+  if ($field == 'requested') {
+    $last = db_select('webform_last_download', 'wld')
+      ->fields('wld', array('requested'))
+      ->condition('nid', $nid)
+      ->condition('uid', $user->uid)
+      ->execute()
+      ->fetchField();
+    if (!$last) {
+      // Use node creation timestamp instead.
+      $last = db_select('node', 'wld')
+      ->fields('wld', array('created'))
+      ->condition('nid', $nid)
+      ->execute()
+      ->fetchField();
+    }
+    return $last;
+  }
+
 }
 
 function webform_download_get_totals($element, &$form_state) {
@@ -920,9 +941,15 @@ function webform_download_get_totals($element, &$form_state) {
   $element['0']['#description'] = t('(' . $count . ' total)');
 
   // Since last download.
+  // Requested timestamp.
+  $format = webform_date_format('short');
+  $requested = webform_download_last_downloaded_sid($form_state['values']['node']->nid, 'requested');
+  $requested = format_date($requested, 'user', $format, 'UTC');
+  // Number of new submissions.
   $sids = webform_download_sids(array('values' => array('node' => $form_state['values']['node'], 'type' => 1)));
   $count = count($sids);
-  $element['1']['#description'] = t('(' . $count . ' new)');
+  // Set description.
+  $element['1']['#description'] = t('(') . $count . t(' new since ') . $requested . t(')');
   if(!$count) {
     // Disable 'Only new submissions since...' if there are no new submissions.
     $element['1']['#attributes']['disabled'] = NULL;
