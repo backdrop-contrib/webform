@@ -642,9 +642,9 @@ function webform_file_url($uri) {
 
 /**
  * Helper function to load a file from the database.
- *
- * @todo We can remove this entirely now the Drupal 7 has native file loading.
  */
 function webform_get_file($fid) {
-  return file_load($fid);
+  // Simple check to prevent loading of NULL values, which throws an entity
+  // system error.
+  return $fid ? file_load($fid) : FALSE;
 }
