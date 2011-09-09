@@ -422,6 +422,19 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     }
     $form['display']['title_display']['#weight'] = 8;
     $form['display']['title_display']['#parents'] = array('extra', 'title_display');
+
+    if (webform_component_feature($component['type'], 'private')) {
+    // May user mark fields as Private?
+      $form['display']['private'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Private'),
+      '#default_value' => ($component['extra']['private'] == '1' ? TRUE : FALSE),
+      '#description' => t('Private fields are shown only to users with results access.'),
+      '#weight' => 45,
+      '#parents' => array('extra', 'private'),
+      '#disabled' => !webform_results_access($node),
+      );
+    }
   }
 
   // Validation settings.
@@ -710,6 +723,7 @@ function webform_component_insert(&$component) {
 
   $component['value'] = isset($component['value']) ? $component['value'] : NULL;
   $component['mandatory'] = isset($component['mandatory']) ? $component['mandatory'] : 0;
+  $component['extra']['private'] = isset($component['extra']['private']) ? $component['extra']['private'] : 0;
 
   if (!isset($component['cid'])) {
     if (lock_acquire('webform_component_insert_' . $component['nid'], 5)) {
@@ -764,6 +778,7 @@ function webform_component_update($component) {
 
   $component['value'] = isset($component['value']) ? $component['value'] : NULL;
   $component['mandatory'] = isset($component['mandatory']) ? $component['mandatory'] : 0;
+  $component['extra']['private'] = isset($component['extra']['private']) ? $component['extra']['private'] : 0;
   db_update('webform_component')
     ->fields(array(
       'pid' => $component['pid'],
@@ -865,6 +880,7 @@ function webform_component_feature($type, $feature) {
     'spam_analysis' => FALSE,
     'group' => FALSE,
     'attachment' => FALSE,
+    'private' => TRUE,
   );
   return isset($components[$type]['features'][$feature]) ? $components[$type]['features'][$feature] : !empty($defaults[$feature]);
 }

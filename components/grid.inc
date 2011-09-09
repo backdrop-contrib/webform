@@ -27,6 +27,7 @@ function _webform_defaults_grid() {
       'custom_option_keys' => 0,
       'custom_question_keys' => 0,
       'description' => '',
+      'private' => FALSE,
     ),
   );
 }

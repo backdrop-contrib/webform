@@ -16,6 +16,7 @@ function _webform_defaults_hidden() {
     'weight' => 0,
     'value' => '',
     'extra' => array(
+      'private' => FALSE,
     ),
   );
 }

@@ -24,6 +24,7 @@ function _webform_defaults_date() {
       'datepicker' => 1,
       'title_display' => 0,
       'description' => '',
+      'private' => FALSE,
     ),
   );
 }

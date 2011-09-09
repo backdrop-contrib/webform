@@ -24,6 +24,7 @@ function _webform_defaults_time() {
       'hourformat' => '12-hour',
       'title_display' => 0,
       'description' => '',
+      'private' => FALSE,
     ),
   );
 }
