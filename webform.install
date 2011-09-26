@@ -649,6 +649,11 @@ function webform_update_7313() {
  * Add webform_last_download table to store last downloaded sid per user.
  */
 function webform_update_7314() {
+  // Safety check to prevent recreating the webform_last_download table.
+  if (db_table_exists('webform_last_download')) {
+    return;
+  }
+
   $schema['webform_last_download'] = array(
     'description' => 'Stores last submission number per user download.',
     'fields' => array(
