@@ -36,24 +36,24 @@ function webform_views_data() {
   // nid
   $data['webform_submissions']['nid'] = array(
     'title' => t('Node'),
-    'help' => t('The node these submissions were generated from.'),
+    'help' => t('The webform node this submission was generated from.'),
     'relationship' => array(
       'base' => 'node',
+      'field' => 'nid',
       'handler' => 'views_handler_relationship',
-      'label' => t('Node'),
-      'skip base' => array('node', 'node_revisions'),
+      'label' => t('Webform Node'),
     ),
   );
 
   // uid
   $data['webform_submissions']['uid'] = array(
     'title' => t('User'),
-    'help' => t('The users who submitted these submissions.'),
+    'help' => t('The user who sent the webform submission.'),
     'relationship' => array(
       'base' => 'users',
+      'field' => 'uid',
       'handler' => 'views_handler_relationship',
-      'label' => t('User'),
-      'skip base' => array('users', 'node', 'node_revisions'),
+      'label' => t('Webform Submission User'),
     ),
   );
 
@@ -144,6 +144,18 @@ function webform_views_data() {
  * Implements hook_views_data_alter().
  */
 function webform_views_data_alter(&$data) {
+  // Webform submission from node.
+  $data['node']['webform_submission'] = array(
+    'title' => t('Webform submission'),
+    'help' => t('Webform submissions of the given Webform node.'),
+    'real field' => 'nid',
+    'relationship' => array(
+      'base' => 'webform_submissions',
+      'base field' => 'nid',
+      'handler' => 'views_handler_relationship',
+      'label' => t('Webform Submission'),
+    ),
+  );
   // Submission count (node).
   $data['node']['webform_submission_count_node'] = array(
     'field' => array(
@@ -154,6 +166,19 @@ function webform_views_data_alter(&$data) {
     ),
   );
 
+
+  // Webform submission of user.
+  $data['users']['webform_submission'] = array(
+    'title' => t('Webform submission'),
+    'help' => t('Webform submissions of the given user.'),
+    'real field' => 'uid',
+    'relationship' => array(
+      'base' => 'webform_submissions',
+      'base field' => 'uid',
+      'handler' => 'views_handler_relationship',
+      'label' => t('Webform Submission'),
+    ),
+  );
   // Submission count (user).
   $data['users']['webform_submission_count_user'] = array(
     'field' => array(
