@@ -733,8 +733,15 @@ function webform_get_submission_count($nid, $uid = NULL, $reset = FALSE) {
       $query->condition('uid', $uid);
     }
     if ($uid === 0) {
-      $submissions = isset($_SESSION['webform_submission']) ? $_SESSION['webform_submission'] : array(0);
-      $query->condition('sid', $submissions, 'IN');
+      $submissions = isset($_SESSION['webform_submission']) ? $_SESSION['webform_submission'] : NULL;
+      if ($submissions) {
+        $query->condition('sid', $submissions, 'IN');
+      }
+      else {
+        // Intentionally never match anything if the anonymous user has no
+        // submissions.
+        $query->condition('sid', 0);
+      }
     }
 
     $counts[$nid][$uid] = $query->countQuery()->execute()->fetchField();
