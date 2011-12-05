@@ -502,15 +502,12 @@ function webform_permission() {
     ),
     'access own webform submissions' => array(
       'title' => t('Access own webform submissions'),
-      'description' => t('This permission has no effect for anonymous users.'),
     ),
     'edit own webform submissions' => array(
       'title' => t('Edit own webform submissions'),
-      'description' => t('This permission has no effect for anonymous users.'),
     ),
     'delete own webform submissions' => array(
       'title' => t('Delete own webform submissions'),
-      'description' => t('This permission has no effect for anonymous users.'),
     ),
   );
 }
