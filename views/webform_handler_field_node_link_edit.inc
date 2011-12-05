@@ -21,7 +21,6 @@ class webform_handler_field_node_link_edit extends views_handler_field_node_link
 
     $this->options['alter']['make_link'] = TRUE;
     $this->options['alter']['path'] = "node/$node->nid/webform";
-    $this->options['alter']['query'] = drupal_get_destination();
 
     $text = !empty($this->options['text']) ? $this->options['text'] : t('edit webform');
     return $text;
