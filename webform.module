@@ -2587,8 +2587,8 @@ function theme_webform_inline_radio($variables) {
 
   // Add container-inline to all elements.
   $class[] = 'webform-container-inline';
-  if (isset($element['#inline_element'])) {
-    $variables['element']['#title'] = $variables['element']['#title'] . ': ';
+  if (isset($element['#inline_element']) && isset($variables['element']['#title'])) {
+    $variables['element']['#title'] .= ': ';
   }
 
   $output = '<div class="' . implode(' ', $class) . '">' . "\n";
