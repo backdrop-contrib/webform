@@ -548,7 +548,7 @@ function theme_webform_display_file($variables) {
  */
 function _webform_delete_file($component, $value) {
   // Delete an individual submission file.
-  if (isset($value[0]) && ($file = webform_get_file($value[0]))) {
+  if (!empty($value[0]) && ($file = webform_get_file($value[0]))) {
     file_delete($file);
   }
 }
