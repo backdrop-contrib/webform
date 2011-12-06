@@ -621,8 +621,8 @@ function webform_theme() {
       'variables' => array('node' => NULL, 'components' => NULL, 'submissions' => NULL, 'node' => NULL, 'total_count' => NULL, 'pager_count' => NULL),
       'file' => 'includes/webform.report.inc',
     ),
-    'webform_results_download_form' => array(
-      'render element' => 'form',
+    'webform_results_download_range' => array(
+      'render element' => 'element',
       'file' => 'includes/webform.report.inc',
     ),
     'webform_results_download_select_format' => array(
