@@ -897,7 +897,7 @@ function webform_file_download($uri) {
 
   // Determine whether this file was a webform upload. If it was, retrieve file
   // information, plus the user id of the uploader.
-  $file = db_query("SELECT ws.uid, f.* FROM {file_managed} f INNER JOIN {webform_submitted_data} wsd ON f.fid = wsd.data INNER JOIN {webform_submissions} ws ON ws.sid = wsd.sid WHERE f.uri = :uri", array('uri' => $uri))->fetchObject();
+  $file = db_query("SELECT ws.uid, f.* FROM {file_managed} f INNER JOIN {webform_submitted_data} wsd ON f.fid = wsd.data INNER JOIN {webform_submissions} ws ON ws.sid = wsd.sid INNER JOIN {webform_component} wc ON wc.cid = wsd.cid  WHERE f.uri = :uri AND wc.type = :file", array('uri' => $uri, ':file' => 'file'))->fetchObject();
   if ($file) {
     // Allow file access for admins, or for users who are viewing their own
     // submissions.
