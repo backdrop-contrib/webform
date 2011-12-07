@@ -795,7 +795,7 @@ function _webform_submission_spam_check($to, $subject, $from, $headers = array()
  * @return
  *   Boolean TRUE if the user has exceeded their limit. FALSE otherwise.
  */
-function _webform_submission_limit_check($node) {
+function _webform_submission_user_limit_check($node) {
   global $user;
 
   // Check if submission limiting is enabled.
@@ -859,7 +859,7 @@ function _webform_submission_limit_check($node) {
  * @return
  *   Boolean TRUE if the form has exceeded it's limit. FALSE otherwise.
  */
-function _webform_total_submission_limit_check($node) {
+function _webform_submission_total_limit_check($node) {
 
   // Check if submission limiting is enabled.
   if ($node->webform['total_submit_limit'] == '-1') {

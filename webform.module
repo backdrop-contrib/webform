@@ -522,7 +522,7 @@ function webform_theme() {
       'render element' => 'webform',
     ),
     'webform_view_messages' => array(
-      'variables' => array('node' => NULL, 'teaser' => NULL, 'page' => NULL, 'submission_count' => NULL, 'limit_exceeded' => NULL, 'total_limit_exceeded' => NULL, 'allowed_roles' => NULL, 'closed' => NULL, 'cached' => NULL),
+      'variables' => array('node' => NULL, 'teaser' => NULL, 'page' => NULL, 'submission_count' => NULL, 'user_limit_exceeded' => NULL, 'total_limit_exceeded' => NULL, 'allowed_roles' => NULL, 'closed' => NULL, 'cached' => NULL),
     ),
     'webform_form' => array(
       'render element' => 'form',
@@ -1333,7 +1333,7 @@ function webform_node_view($node, $view_mode) {
   $enabled = TRUE;
   $logging_in = FALSE;
   $total_limit_exceeded = FALSE;
-  $limit_exceeded = FALSE;
+  $user_limit_exceeded = FALSE;
   $closed = FALSE;
   $allowed_roles = array();
 
@@ -1380,7 +1380,7 @@ function webform_node_view($node, $view_mode) {
     module_load_include('inc', 'webform', 'includes/webform.submissions');
 
     // Disable the form if the limit is exceeded and page cache is not active.
-    if (($limit_exceeded = _webform_submission_limit_check($node)) && !$cached) {
+    if (($user_limit_exceeded = _webform_submission_user_limit_check($node)) && !$cached) {
       $enabled = FALSE;
     }
   }
@@ -1391,7 +1391,7 @@ function webform_node_view($node, $view_mode) {
     module_load_include('inc', 'webform', 'includes/webform.submissions');
 
     // Disable the form if the limit is exceeded and page cache is not active.
-    if (($total_limit_exceeded = _webform_total_submission_limit_check($node)) && !$cached) {
+    if (($total_limit_exceeded = _webform_submission_total_limit_check($node)) && !$cached) {
       $enabled = FALSE;
     }
   }
@@ -1418,7 +1418,7 @@ function webform_node_view($node, $view_mode) {
 
   // Print out messages for the webform.
   if (empty($node->in_preview) && !isset($node->webform_block) && !$logging_in) {
-    theme('webform_view_messages', array('node' => $node, 'teaser' => $teaser, 'page' => $page, 'submission_count' => $submission_count, 'limit_exceeded' => $limit_exceeded, 'total_limit_exceeded' => $total_limit_exceeded, 'allowed_roles' => $allowed_roles, 'closed' => $closed, 'cached' => $cached));
+    theme('webform_view_messages', array('node' => $node, 'teaser' => $teaser, 'page' => $page, 'submission_count' => $submission_count, 'user_limit_exceeded' => $user_limit_exceeded, 'total_limit_exceeded' => $total_limit_exceeded, 'allowed_roles' => $allowed_roles, 'closed' => $closed, 'cached' => $cached));
   }
 
   // Add the output to the node.
@@ -1466,7 +1466,7 @@ function theme_webform_view($variables) {
  * @param $submission_count
  *   The number of submissions this user has already submitted. Not calculated
  *   for anonymous users.
- * @param $limit_exceeded
+ * @param $user_limit_exceeded
  *   Boolean value if the submission limit for this user has been exceeded.
  * @param $total_limit_exceeded
  *   Boolean value if the total submission limit has been exceeded.
@@ -1482,7 +1482,7 @@ function theme_webform_view_messages($variables) {
   $teaser = $variables['teaser'];
   $page = $variables['page'];
   $submission_count = $variables['submission_count'];
-  $limit_exceeded = $variables['limit_exceeded'];
+  $user_limit_exceeded = $variables['user_limit_exceeded'];
   $total_limit_exceeded = $variables['total_limit_exceeded'];
   $allowed_roles = $variables['allowed_roles'];
   $closed = $variables['closed'];
@@ -1517,7 +1517,7 @@ function theme_webform_view_messages($variables) {
   }
 
   // If the user has exceeded the limit of submissions, explain the limit.
-  elseif ($limit_exceeded && !$cached) {
+  elseif ($user_limit_exceeded && !$cached) {
     if ($node->webform['submit_interval'] == -1 && $node->webform['submit_limit'] > 1) {
       $message = t('You have submitted this form the maximum number of times (@count).', array('@count' => $node->webform['submit_limit']));
     }
@@ -2048,7 +2048,7 @@ function webform_client_form_validate($form, &$form_state) {
     module_load_include('inc', 'webform', 'includes/webform.submissions');
     // Check if the total number of entries was reached before the user submitted
     // the form.
-    if (!$finished && $total_limit_exceeded = _webform_total_submission_limit_check($node)) {
+    if (!$finished && $total_limit_exceeded = _webform_submission_total_limit_check($node)) {
       // Show the user the limit has exceeded.
       theme('webform_view_messages', array('node' => $node, 'teaser' => 0, 'page' => 1, 'submission_count' => 0, 'total_limit_exceeded' => $total_limit_exceeded, 'allowed_roles' => array_keys(user_roles()), 'closed' => FALSE, 'cached' => FALSE));
       form_set_error('', NULL);
@@ -2062,10 +2062,10 @@ function webform_client_form_validate($form, &$form_state) {
   if ($node->webform['submit_limit'] != -1) { // -1: Submissions are never throttled.
     module_load_include('inc', 'webform', 'includes/webform.submissions');
 
-    if (!$finished && $limit_exceeded = _webform_submission_limit_check($node)) {
+    if (!$finished && $user_limit_exceeded = _webform_submission_user_limit_check($node)) {
       // Assume that webform_view_messages will print out the necessary message,
       // then stop the processing of the form with an empty form error.
-      theme('webform_view_messages', array('node' => $node, 'teaser' => 0, 'page' => 1, 'submission_count' => 0, 'limit_exceeded' => $limit_exceeded, 'allowed_roles' => array_keys(user_roles()), 'closed' => FALSE, 'cached' => FALSE));
+      theme('webform_view_messages', array('node' => $node, 'teaser' => 0, 'page' => 1, 'submission_count' => 0, 'user_limit_exceeded' => $user_limit_exceeded, 'allowed_roles' => array_keys(user_roles()), 'closed' => FALSE, 'cached' => FALSE));
       form_set_error('', NULL);
       return;
     }
