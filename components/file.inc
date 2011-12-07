@@ -172,9 +172,7 @@ function _webform_edit_file_check_directory($element) {
   $destination_dir = file_build_uri('webform/' . $element['#value']);
 
   // Sanity check input to prevent use parent (../) directories.
-  $real_base = drupal_realpath($base_dir);
-  $real_destination = drupal_realpath($destination_dir);
-  if (strpos($real_destination, $real_base) !== 0) {
+  if (preg_match('/\.\.[\/\\\]/', $destination_dir . '/')) {
     form_error($element, t('The save directory %directory is not valid.', array('%directory' => $destination_dir)));
   }
   else {
