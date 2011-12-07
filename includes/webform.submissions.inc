@@ -700,8 +700,12 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
       $submissions[$row->sid]->uid = $row->uid;
       $submissions[$row->sid]->name = $row->name;
       $submissions[$row->sid]->is_draft = $row->is_draft;
+      $submissions[$row->sid]->data = array();
     }
-    $submissions[$row->sid]->data[$row->cid]['value'][$row->no] = $row->data;
+    // CID may be NULL if this submission does not actually contain any data.
+    if ($row->cid) {
+      $submissions[$row->sid]->data[$row->cid]['value'][$row->no] = $row->data;
+    }
     $previous = $row->sid;
   }
 
