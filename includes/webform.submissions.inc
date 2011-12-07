@@ -852,6 +852,42 @@ function _webform_submission_limit_check($node) {
 }
 
 /**
+ * Check if the total number of submissions has exceeded the limit on this form.
+ *
+ * @param $node
+ *   The webform node to be checked.
+ * @return
+ *   Boolean TRUE if the form has exceeded it's limit. FALSE otherwise.
+ */
+function _webform_total_submission_limit_check($node) {
+
+  // Check if submission limiting is enabled.
+  if ($node->webform['total_submit_limit'] == '-1') {
+    return FALSE; // No check enabled.
+  }
+
+  // Retrieve submission data from the database.
+  $query = db_select('webform_submissions')
+    ->condition('nid', $node->nid)
+    ->condition('is_draft', 0);
+
+  if ($node->webform['total_submit_interval'] != -1) {
+    $query->condition('submitted', REQUEST_TIME - $node->webform['total_submit_interval'], '>');
+  }
+
+  // Fetch all the entries from the database within the submit interval.
+  $num_submissions_database = $query->countQuery()->execute()->fetchField();
+
+  if ($num_submissions_database >= $node->webform['total_submit_limit']) {
+    // Limit exceeded.
+    return TRUE;
+  }
+
+  // Limit not exceeded.
+  return FALSE;
+}
+
+/**
  * Preprocess function for webform-submission.tpl.php.
  */
 function template_preprocess_webform_submission(&$vars) {
