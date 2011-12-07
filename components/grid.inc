@@ -340,18 +340,16 @@ function _webform_analysis_grid($component, $sids = array()) {
  */
 function _webform_table_grid($component, $value) {
   $questions = _webform_select_options_from_text($component['extra']['questions'], TRUE);
+  $options = _webform_select_options_from_text($component['extra']['options'], TRUE);
+
   $output = '';
   // Set the value as a single string.
-  if (is_array($value)) {
-    foreach ($value as $item => $value) {
-      if ($value !== '') {
-        $output .= _webform_filter_xss($questions[$item]) . ': ' . _webform_filter_xss($value) . '<br />';
-      }
+  foreach ($questions as $key => $label) {
+    if (isset($value[$key]) && isset($options[$value[$key]])) {
+      $output .= _webform_filter_xss($label) . ': ' . _webform_filter_xss($options[$value[$key]]) . '<br />';
     }
   }
-  else {
-    $output = !isset($value[0]) ? '' : _webform_filter_xss($value[0]);
-  }
+
   return $output;
 }
 
