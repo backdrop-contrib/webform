@@ -770,7 +770,7 @@ function webform_results_download($node, $format = 'delimited', $options = array
             $row = array_merge($row, array_values($data));
           }
           else {
-            $row[] = empty($data) ? '' : $data;
+            $row[] = isset($data) ? $data : '';
           }
         }
       }
