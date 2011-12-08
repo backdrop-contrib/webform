@@ -1693,6 +1693,24 @@ function webform_block_save($delta = '', $edit = array()) {
 }
 
 /**
+ * Implements hook_contextual_links_view_alter().
+ */
+function webform_contextual_links_view_alter(&$element, &$items) {
+  // Add Webform and Results links to webform-enabled nodes. This code affects
+  // both node teasers and nodes exposed as blocks through Webform.
+  if (isset($element['#element']['#node']) && in_array($element['#element']['#node']->type, webform_variable_get('webform_node_types'))) {
+    $element['#links']['webform'] = array(
+      'title' => t('Webform'),
+      'href' => 'node/' . $element['#element']['#node']->nid . '/webform',
+    );
+    $element['#links']['webform-results'] = array(
+      'title' => t('Results'),
+      'href' => 'node/' . $element['#element']['#node']->nid . '/webform-results',
+    );
+  }
+}
+
+/**
  * Client form generation function. If this is displaying an existing
  * submission, pass in the $submission variable with the contents of the
  * submission to be displayed.
