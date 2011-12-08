@@ -474,9 +474,9 @@ function _webform_submit_select($component, $value) {
     foreach ($value as $key => $option_value) {
       // Handle options that are specified options.
       if ($option_value !== '' && isset($options[$option_value])) {
-        // Checkboxes submit a value of FALSE when unchecked. A checkbox with
-        // a value of '0' is valid, so we can't use empty() here.
-        if ($option_value === FALSE && !$component['extra']['aslist'] && $component['extra']['multiple']) {
+        // Checkboxes submit an integer value of 0 when unchecked. A checkbox
+        // with a value of '0' is valid, so we can't use empty() here.
+        if ($option_value === 0 && !$component['extra']['aslist'] && $component['extra']['multiple']) {
           unset($value[$option_value]);
         }
         else {
