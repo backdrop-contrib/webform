@@ -1742,6 +1742,10 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
   module_load_include('inc', 'webform', 'includes/webform.components');
   module_load_include('inc', 'webform', 'includes/webform.submissions');
 
+  $form['#process'] = array(
+    'webform_client_form_includes',
+  );
+
   // If in a multi-step form, a submission ID may be specified in form state.
   // Load this submission. This allows anonymous users to use auto-save.
   if (empty($submission) && !empty($form_state['values']['details']['sid'])) {
@@ -1899,6 +1903,19 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
     }
   }
 
+  return $form;
+}
+
+/**
+ * Process function for webform_client_form().
+ *
+ * Include all the enabled components for this form to ensure availability.
+ */
+function webform_client_form_includes($form, $form_state) {
+  $components = webform_components();
+  foreach ($components as $component_type => $component) {
+    webform_component_include($component_type);
+  }
   return $form;
 }
 
