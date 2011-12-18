@@ -729,3 +729,95 @@ function webform_update_7317() {
     db_add_index('webform_submissions', 'nid_sid', array('nid', 'sid'));
   }
 }
+
+/**
+ * Upgrade file components to support the new AJAX-upload element.
+ */
+function webform_update_7318() {
+  $result = db_select('webform_component', 'wc', array('fetch' => PDO::FETCH_ASSOC))
+    ->fields('wc')
+    ->condition('type', 'file')
+    ->execute();
+  foreach ($result as $component) {
+    $component['extra'] = unserialize($component['extra']);
+    if (!isset($component['extra']['directory'])) {
+      $component['extra']['directory'] = $component['extra']['savelocation'];
+      $component['extra']['scheme'] = file_default_scheme();
+      $component['extra']['filtering']['size'] = $component['extra']['filtering']['size'] . ' KB';
+      unset($component['extra']['savelocation']);
+      $component['extra'] = serialize($component['extra']);
+      drupal_write_record('webform_component', $component, array('nid', 'cid'));
+    }
+  }
+
+  return t('File components updated to support AJAX uploading.');
+}
+
+/**
+ * Add file usage entries for all files uploaded through Webform.
+ */
+function webform_update_7319(&$sandbox) {
+  if (!isset($sandbox['progress'])) {
+    // Initialize batch update information.
+    $sandbox['progress'] = 0;
+    $sandbox['last_fid_processed'] = -1;
+    $sandbox['max'] = db_select('file_managed')
+      ->condition('uri', '%' . db_like('://webform/') . '%', 'LIKE')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+  }
+
+  // Process all files attached to a given revision during the same batch.
+  $limit = variable_get('webform_update_batch_size', 100);
+  $files = db_select('file_managed', 'f')
+    ->fields('f')
+    ->condition('uri', '%' . db_like('://webform/') . '%', 'LIKE')
+    ->condition('fid', $sandbox['last_fid_processed'], '>')
+    ->orderBy('fid', 'ASC')
+    ->range(0, $limit)
+    ->execute()
+    ->fetchAllAssoc('fid', PDO::FETCH_ASSOC);
+
+  // Determine each submission with which a file is associated.
+  if (!empty($files)) {
+    foreach ($files as $fid => $file) {
+      $file = (object) $file;
+      $sids = db_query('SELECT wsd.sid FROM {webform_component} wc INNER JOIN {webform_submitted_data} wsd ON wc.nid = wsd.nid AND wc.type = :file WHERE data = :fid', array(':file' => 'file', ':fid' => $file->fid))->fetchAllAssoc('sid', PDO::FETCH_ASSOC);
+      foreach ($sids as $sid => $row) {
+        // We use a db_merge() instead of file_usage_add() to prevent problems
+        // in the event this update was run twice. No file provided by Webform
+        // should ever be in use more than once at this point.
+        db_merge('file_usage')
+          ->key(array(
+            'fid' => $file->fid,
+            'type' => 'submission',
+            'module' => 'webform',
+            'id' => $sid,
+          ))
+          ->fields(array(
+            'count' => 1,
+          ))
+          ->execute();
+      }
+
+      // Update our progress information for the batch update.
+      $sandbox['progress']++;
+      $sandbox['last_fid_processed'] = $file->fid;
+    }
+  }
+
+  // If less than limit was processed, the update process is finished.
+  if (count($files) < $limit || $sandbox['progress'] == $sandbox['max']) {
+    $finished = TRUE;
+  }
+
+  // If there's no max value then there's nothing to update and we're finished.
+  if (empty($sandbox['max']) || isset($finished)) {
+    return t('Webform file entries created in the file_usage table.');
+  }
+  else {
+    // Indicate our current progress to the batch update system.
+    $sandbox['#finished'] = $sandbox['progress'] / $sandbox['max'];
+  }
+}

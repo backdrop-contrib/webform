@@ -888,46 +888,102 @@ function webform_webform_submission_actions($node, $submission) {
 }
 
 /**
+ * Implements hook_webform_submission_update().
+ *
+ * We implement our own hook here to facilitate the File component, which needs
+ * to clean up manage file usage records and delete files from submissions that
+ * have been edited if necessary.
+ */
+function webform_webform_submission_presave($node, &$submission) {
+  // Check if there are any file components in this submission and if any of
+  // them currently contain files.
+  $has_file_components = FALSE;
+  $new_fids = array();
+  $old_fids = array();
+
+  foreach ($node->webform['components'] as $cid => $component) {
+    if ($component['type'] == 'file') {
+      $has_file_components = TRUE;
+      if (!empty($submission->data[$cid]['value'])) {
+        $new_fids = array_merge($new_fids, $submission->data[$cid]['value']);
+      }
+    }
+  }
+
+  if ($has_file_components) {
+    // If we're updating a submission, build a list of previous files.
+    if (isset($submission->sid)) {
+      $old_submission = webform_get_submission($node->nid, $submission->sid, TRUE);
+
+      foreach ($node->webform['components'] as $cid => $component) {
+        if ($component['type'] == 'file') {
+          if (!empty($old_submission->data[$cid]['value'])) {
+            $old_fids = array_merge($old_fids, $old_submission->data[$cid]['value']);
+          }
+        }
+      }
+    }
+
+    // Save the list of added or removed files so we can add usage in
+    // hook_webform_submission_insert() or _update().
+    $submission->file_usage = array(
+      // Diff the old against new to determine what files were deleted.
+      'deleted_fids' => array_diff($old_fids, $new_fids),
+      // Diff the new files against old to determine new uploads.
+      'added_fids' => array_diff($new_fids, $old_fids)
+    );
+  }
+}
+
+/**
+ * Implements hook_webform_submission_insert().
+ */
+function webform_webform_submission_insert($node, $submission) {
+  if (isset($submission->file_usage)) {
+    webform_component_include('file');
+    webform_file_usage_adjust($submission);
+  }
+}
+
+/**
+ * Implements hook_webform_submission_update().
+ */
+function webform_webform_submission_update($node, $submission) {
+  if (isset($submission->file_usage)) {
+    webform_component_include('file');
+    webform_file_usage_adjust($submission);
+  }
+}
+
+/**
  * Implements hook_file_download().
  *
  * Only allow users with view webform submissions to download files.
  */
 function webform_file_download($uri) {
-  global $user;
+  module_load_include('inc', 'webform', 'includes/webform.submissions');
 
-  // Determine whether this file was a webform upload. If it was, retrieve file
-  // information, plus the user id of the uploader.
-  $file = db_query("SELECT ws.uid, f.* FROM {file_managed} f INNER JOIN {webform_submitted_data} wsd ON f.fid = wsd.data INNER JOIN {webform_submissions} ws ON ws.sid = wsd.sid INNER JOIN {webform_component} wc ON wc.cid = wsd.cid  WHERE f.uri = :uri AND wc.type = :file", array('uri' => $uri, ':file' => 'file'))->fetchObject();
-  if ($file) {
-    // Allow file access for admins, or for users who are viewing their own
-    // submissions.
-    if (user_access('access all webform results') || ($user->uid == $file->uid && user_access('access own webform results'))) {
-      // TODO: This is a copy/paste from file_file_download. Switch to using
-      // file_get_content_headers() instead if http://drupal.org/node/943112
-      // gets committed.
-      $name = mime_header_encode($file->filename);
-      $type = mime_header_encode($file->filemime);
-      // Serve images, text, and flash content for display rather than download.
-      $inline_types = variable_get('file_inline_types', array('^text/', '^image/', 'flash$'));
-      $disposition = 'attachment';
-      foreach ($inline_types as $inline_type) {
-        // Exclamation marks are used as delimiters to avoid escaping slashes.
-        if (preg_match('!' . $inline_type . '!', $file->filemime)) {
-          $disposition = 'inline';
-        }
-      }
-      return array(
-        'Content-Type' => $type . '; name="' . $name . '"',
-        'Content-Length' => $file->filesize,
-        'Content-Disposition' => $disposition . '; filename="' . $name . '"',
-        'Cache-Control' => 'private',
-      );
-    }
-    // This is a webform-controlled file, but the user doesn't have access.
-    return -1;
+  // Determine whether this file was a webform upload.
+  $row = db_query("SELECT fu.id as sid, f.fid FROM {file_managed} f LEFT JOIN {file_usage} fu ON f.fid = fu.fid AND fu.module = :webform AND fu.type = :submission WHERE f.uri = :uri", array('uri' => $uri, ':webform' => 'webform', ':submission' => 'submission'))->fetchObject();
+  if ($row) {
+    $file = file_load($row->fid);
   }
-  // This is not a webform-controlled file.
-  return NULL;
+  if (!empty($file->sid)) {
+    $submissions = webform_get_submissions(array('sid' => $row->sid));
+    $submission = reset($submissions);
+  }
+
+  // Grant access based on access to the submission.
+  if (!empty($submission)) {
+    $node = node_load($submission->nid);
+    if (webform_submission_access($node, $submission)) {
+      return file_get_content_headers($file);
+    }
+  }
+  // Grant access to files uploaded by a user before the submission is saved.
+  elseif (!empty($file) && !empty($_SESSION['webform_files'][$file->fid])) {
+    return file_get_content_headers($file);
+  }
 }
 
 /**
