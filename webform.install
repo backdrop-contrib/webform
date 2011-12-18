@@ -322,6 +322,7 @@ function webform_schema() {
     ),
     'indexes' => array(
       'nid_uid_sid' => array('nid', 'uid', 'sid'),
+      'nid_sid' => array('nid', 'sid'),
     ),
   );
 
@@ -612,7 +613,7 @@ function webform_update_7310() {
 }
 
 /**
- * Add an index for sid_nid_uid to webform_submissions.
+ * Add an index for nid_uid_sid to webform_submissions.
  */
 function webform_update_7311() {
   if (!db_index_exists('webform_submissions', 'nid_uid_sid')) {
@@ -715,5 +716,16 @@ function webform_update_7316() {
 
   if (!db_field_exists('webform', 'total_submit_interval')) {
     db_add_field('webform', 'total_submit_interval', array('type' => 'int', 'not null' => TRUE, 'default' => -1));
+  }
+}
+
+/**
+ * Add an index for 'nid_sid' to webform_submissions.
+ */
+function webform_update_7317() {
+  // Even though we already have an index 'nid_uid_sid', adding the index for
+  // 'nid_sid' saves us a tablesort on the node/x/webform-results page.
+  if (!db_index_exists('webform_submissions', 'nid_sid')) {
+    db_add_index('webform_submissions', 'nid_sid', array('nid', 'sid'));
   }
 }

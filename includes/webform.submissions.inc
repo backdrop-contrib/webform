@@ -675,17 +675,24 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
   }
 
   // Query the required submission data.
-  $query = db_select('webform_submissions', 's');
-  $query->leftJoin('webform_submitted_data', 'sd', 'sd.sid = s.sid');
+  $query = db_select('webform_submitted_data', 'sd');
+  $query->leftJoin('webform_submissions', 's', 's.sid = sd.sid');
   $query->leftJoin('users', 'u', 'u.uid = s.uid');
   $query
     ->fields('s')
     ->fields('sd', array('cid', 'no', 'data'))
     ->fields('u', array('name'))
-    ->condition('s.sid', $sids, 'IN')
+    ->condition('sd.sid', $sids, 'IN')
     ->orderBy('sd.sid', 'ASC')
     ->orderBy('sd.cid', 'ASC')
     ->orderBy('sd.no', 'ASC');
+
+  // By adding the NID to this query we allow MySQL to use the primary key on
+  // in webform_submitted_data for sorting (nid_sid_cid_no).
+  if (isset($filters['nid'])) {
+    $query->condition('sd.nid', $filters['nid']);
+  }
+
   $result = $query->execute();
 
   // Convert the queried rows into submissions.
@@ -770,7 +777,7 @@ function webform_get_submission($nid, $sid, $reset = FALSE) {
 
   // Load the submission if needed.
   if (!isset($submissions[$sid])) {
-    $new_submissions = webform_get_submissions(array('sid' => $sid));
+    $new_submissions = webform_get_submissions(array('nid' => $nid, 'sid' => $sid));
     $submissions[$sid] = $new_submissions[$sid];
   }
 
