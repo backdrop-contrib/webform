@@ -512,6 +512,132 @@ class WebformTestCase extends DrupalWebTestCase {
         'database values' => array('05:00:00'),
         'database default values' => array('22:30:00'),
       ),
+
+      // Test number components.
+      'integer' => array(
+        'component' => array(
+          'form_key' => 'integer',
+          'name' => 'Integer',
+          'type' => 'number',
+          'value' => '1',
+          'extra' => array(
+            'type' => 'textfield',
+            'integer' => 1,
+            'max' => '100',
+            // SimpleTest does not support type="number" input fields.
+            'attributes' => array('type' => 'text'),
+          ),
+          'mandatory' => '0',
+          'pid' => '0',
+          'weight' => '18',
+        ),
+        'sample values' => '2',
+        'database values' => array('2'),
+        'database default values' => array('1'),
+        'error values' => array(
+          '1.5' => t('%name field value of @value must be an integer.', array('%name' => 'Integer', '@value' => '1.5')),
+          '101' => t('%name field value must be less than @max.', array('%name' => 'Integer', '@max' => '100')),
+        ),
+      ),
+      'integer_range' => array(
+        'component' => array(
+          'form_key' => 'integer_range',
+          'name' => 'Integer Range',
+          'type' => 'number',
+          'value' => '50',
+          'extra' => array(
+            'type' => 'select',
+            'min' => '10',
+            'max' => '50',
+            'step' => 5,
+            'integer' => 1,
+          ),
+          'mandatory' => '0',
+          'pid' => '0',
+          'weight' => '19',
+        ),
+        'sample values' => '10',
+        'database values' => array('10'),
+        'database default values' => array('50'),
+      ),
+      'decimal_positive' => array(
+        'component' => array(
+          'form_key' => 'decimal_positive',
+          'name' => 'Decimal positive',
+          'type' => 'number',
+          'value' => '1',
+          'extra' => array(
+            'type' => 'textfield',
+            'field_prefix' => '$',
+            'field_suffix' => 'lbs',
+            'min' => '0',
+            'decimals' => '2',
+            'point' => '.',
+            'separator' => ',',
+            // SimpleTest does not support type="number" input fields.
+            'attributes' => array('type' => 'text'),
+          ),
+          'mandatory' => '0',
+          'pid' => '0',
+          'weight' => '20',
+        ),
+        'sample values' => '2.00',
+        'database values' => array('2.00'),
+        'database default values' => array('1'),
+        'error values' => array(
+          '-1' => t('%name field value must be greater than @min.', array('%name' => 'Decimal positive', '@min' => '0')),
+        ),
+      ),
+      'decimal_range' => array(
+        'component' => array(
+          'form_key' => 'decimal_range',
+          'name' => 'Decimal range',
+          'type' => 'number',
+          'value' => '1',
+          'extra' => array(
+            'type' => 'textfield',
+            'field_prefix' => '$',
+            'field_suffix' => 'lbs',
+            'min' => '1',
+            'max' => '12',
+            'step' => '1.5',
+            // SimpleTest does not support type="number" input fields.
+            'attributes' => array('type' => 'text'),
+          ),
+          'mandatory' => '0',
+          'pid' => '0',
+          'weight' => '21',
+        ),
+        'sample values' => '11.5',
+        'database values' => array('11.5'),
+        'database default values' => array('1'),
+        'error values' => array(
+          '2' => t('%name field value must be @start plus a multiple of @step.', array('%name' => 'Decimal range', '@start' => '1', '@step' => '1.5')),
+          '13' => t('%name field value of @value should be in the range @min to @max.', array('%name' => 'Decimal range', '@value' => '13', '@min' => '1', '@max' => '12')),
+        ),
+      ),
+      'decimal_range_select' => array(
+        'component' => array(
+          'form_key' => 'decimal_range_select',
+          'name' => 'Decimal range select',
+          'type' => 'number',
+          'value' => '1',
+          'extra' => array(
+            'type' => 'select',
+            'field_prefix' => '$',
+            'field_suffix' => 'lbs',
+            'min' => '1',
+            'max' => '12',
+            'step' => '1.5',
+          ),
+          'mandatory' => '0',
+          'pid' => '0',
+          'weight' => '21',
+        ),
+        'sample values' => '11.5',
+        'database values' => array('11.5'),
+        'database default values' => array('1'),
+      ),
     );
 
     return $this->_webform_components;
@@ -566,7 +692,9 @@ class WebformTestCase extends DrupalWebTestCase {
     return $this->_webform_node;
   }
 
-
+  /**
+   * Generate a list of all values that would result in a valid submission.
+   */
   function testWebformPost() {
     $edit = array();
     foreach ($this->testWebformComponents() as $key => $component_info) {
