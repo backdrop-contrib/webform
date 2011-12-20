@@ -398,6 +398,10 @@ class WebformTestCase extends DrupalWebTestCase {
           'type' => 'email',
           'value' => '%useremail',
           'mandatory' => '0',
+          'extra' => array(
+            // SimpleTest does not support type="email" input fields.
+            'attributes' => array('type' => 'text'),
+          ),
           'pid' => '0',
           'weight' => '-5',
         ),

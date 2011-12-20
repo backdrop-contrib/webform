@@ -33,6 +33,10 @@ function _webform_defaults_email() {
  */
 function _webform_theme_email() {
   return array(
+    'webform_email' => array(
+      'render element' => 'element',
+      'file' => 'components/email.inc',
+    ),
     'webform_display_email' => array(
       'render element' => 'element',
       'file' => 'components/email.inc',
@@ -109,7 +113,7 @@ function _webform_edit_email_validate($element, &$form_state) {
 function _webform_render_email($component, $value = NULL, $filter = TRUE) {
   global $user;
   $element = array(
-    '#type' => 'textfield',
+    '#type' => 'webform_email',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#default_value' => _webform_filter_values($component['value']),
@@ -144,6 +148,29 @@ function _webform_render_email($component, $value = NULL, $filter = TRUE) {
   }
 
   return $element;
+}
+
+/**
+ * Theme function to render an email component.
+ */
+function theme_webform_email($variables) {
+  $element = $variables['element'];
+
+  // This IF statement is mostly in place to allow our tests to set type="text"
+  // because SimpleTest does not support type="email".
+  if (!isset($element['#attributes']['type'])) {
+    $element['#attributes']['type'] = 'email';
+  }
+
+  // Convert properties to attributes on the element if set.
+  foreach (array('id', 'name', 'value', 'size') as $property) {
+    if (isset($element['#' . $property]) && $element['#' . $property] !== '') {
+      $element['#attributes'][$property] = $element['#' . $property];
+    }
+  }
+  _form_set_class($element, array('form-text', 'form-email'));
+
+  return '<input' . drupal_attributes($element['#attributes']) . ' />';
 }
 
 /**

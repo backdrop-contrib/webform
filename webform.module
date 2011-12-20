@@ -708,10 +708,14 @@ function webform_element_info() {
   $elements['webform_time'] = array('#input' => 'TRUE');
   $elements['webform_grid'] = array('#input' => 'TRUE');
 
+  $elements['webform_email'] = array(
+    '#input' => TRUE,
+    '#theme' => 'webform_email',
+    '#size' => 60,
+  );
   $elements['webform_number'] = array(
     '#input' => TRUE,
     '#theme' => 'webform_number',
-    '#theme_wrappers' => array('webform_element'),
     '#min' => NULL,
     '#max' => NULL,
     '#step' => NULL,

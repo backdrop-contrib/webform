@@ -251,6 +251,7 @@ function _webform_render_number($component, $value = NULL, $filter = TRUE) {
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#attributes' => $component['extra']['attributes'],
     '#element_validate' => array('_webform_validate_number'),
+    '#theme_wrappers' => array('webform_element'),
     '#min' => $component['extra']['min'],
     '#max' => $component['extra']['max'],
     '#step' => abs($component['extra']['step']),
