@@ -420,17 +420,13 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
       $stddev = sqrt($stddev);
     }
 
-    // Build distribution table.
+    // Build normal distribution table rows.
     $count = array();
     $percent = array();
     $limit = array();
+    $index = 0;
 
-    $count[] = t('Count');
-    $percent[] = t('% of !description', array('!description' => $description));
-    $limit[] = '';
-
-    $index = 1;
-    $count[$index] = 0;
+    $count[] = 0;
     $limit[] = $average - ($stddev * 4);
     foreach($population as $value) {
       while ($value >= $limit[$index]) {
@@ -446,19 +442,7 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
     }
     $percent[] = number_format($count[$index] / $population_count * 100, 2, '.', '');
 
-    $header = array(
-      t('Normal Distribution'),
-      '-4' . $sigma,
-      '-3' . $sigma,
-      '-2' . $sigma,
-      '-1' . $sigma,
-      '+1' . $sigma,
-      '+2' . $sigma,
-      '+3' . $sigma,
-      '+4' . $sigma,
-    );
-
-    // Output distribution table.
+    // Format normal distribution table output.
     if ($component['extra']['decimals'] != '') {
       $stddev = _webform_number_format($component, $stddev);
       $low = _webform_number_format($component, $population[0]);
@@ -472,12 +456,24 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
         $limit[$key] = number_format($value, 2, '.', '');
       }
     }
-    $limit[0] = t('Boundary');
 
-    $distrows = array();
-    $distrows[] = $limit;
-    $distrows[] = $count;
-    $distrows[] = $percent;
+    // Column headings (override potential theme uppercase, e.g. Seven in D7).
+    $header = array(
+      t('Normal Distribution'),
+      array('data' => '-4' . $sigma, 'style' => 'text-transform: lowercase;',),
+      array('data' => '-3' . $sigma, 'style' => 'text-transform: lowercase;',),
+      array('data' => '-2' . $sigma, 'style' => 'text-transform: lowercase;',),
+      array('data' => '-1' . $sigma, 'style' => 'text-transform: lowercase;',),
+      array('data' => '+1' . $sigma, 'style' => 'text-transform: lowercase;',),
+      array('data' => '+2' . $sigma, 'style' => 'text-transform: lowercase;',),
+      array('data' => '+3' . $sigma, 'style' => 'text-transform: lowercase;',),
+      array('data' => '+4' . $sigma, 'style' => 'text-transform: lowercase;',),
+    );
+
+    // Insert row labels.
+    array_unshift($limit, t('Boundary'));
+    array_unshift($count, t('Count'));
+    array_unshift($percent, t('% of !description', array('!description' => $description)));
 
     $output = theme('table', array('header' => $header, 'rows' => array($limit, $count, $percent)));
 
