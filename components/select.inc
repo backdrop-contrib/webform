@@ -270,7 +270,6 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#theme_wrappers' => array('webform_element'),
     '#pre_render' => array(), // Needed to disable double-wrapping of radios and checkboxes.
-    '#webform_component' => $component,
   );
 
   // Convert the user-entered options list into an array.
@@ -455,7 +454,6 @@ function _webform_display_select($component, $value, $format = 'html') {
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
     '#format' => $format,
     '#value' => (array) $value,
-    '#webform_component' => $component,
   );
 }
 

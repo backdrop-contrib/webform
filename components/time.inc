@@ -98,7 +98,6 @@ function _webform_render_time($component, $value = NULL, $filter = TRUE) {
     '#process' => array('webform_expand_time'),
     '#theme' => 'webform_time',
     '#theme_wrappers' => array('webform_element'),
-    '#webform_component' => $component,
   );
 
   // Set the value from Webform if available.
@@ -245,7 +244,6 @@ function _webform_display_time($component, $value, $format = 'html') {
     '#format' => $format,
     '#hourformat' => $component['extra']['hourformat'],
     '#value' => $value,
-    '#webform_component' => $component,
   );
 }
 

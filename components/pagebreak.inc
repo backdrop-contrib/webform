@@ -70,7 +70,6 @@ function _webform_display_pagebreak($component, $value = NULL, $format = 'html')
     '#title' => $component['name'],
     '#weight' => $component['weight'],
     '#format' => $format,
-    '#webform_component' => $component,
   );
   return $element;
 }

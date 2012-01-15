@@ -2098,6 +2098,9 @@ function _webform_client_form_add_component($node, $component, $component_value,
     // This component is display only.
     $data = empty($submission->data[$cid]['value']) ? NULL : $submission->data[$cid]['value'];
     if ($display_element = webform_component_invoke($component['type'], 'display', $component, $data, $format)) {
+      // Ensure the component is added as a property.
+      $display_element['#webform_component'] = $component;
+
       // The form_builder() function usually adds #parents and #id for us, but
       // because these are not marked for #input, we need to add them manually.
       if (!isset($display_element['#parents'])) {
@@ -2115,6 +2118,9 @@ function _webform_client_form_add_component($node, $component, $component_value,
     // Add this user-defined field to the form (with all the values that are always available).
     $data = isset($submission->data[$cid]['value']) ? $submission->data[$cid]['value'] : NULL;
     if ($element = webform_component_invoke($component['type'], 'render', $component, $data, $filter)) {
+      // Ensure the component is added as a property.
+      $element['#webform_component'] = $component;
+
       $parent_fieldset[$component['form_key']] = $element;
 
       // Override the value if one already exists in the form state.
@@ -2868,6 +2874,10 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
       $parents = webform_component_parent_keys($node, $component);
       $form_key = implode('][', $parents);
       $display_element = webform_component_invoke($component['type'], 'display', $component, $value['value'], $format);
+
+      // Ensure the component is added as a property.
+      $display_element['#webform_component'] = $component;
+
       if (empty($display_element['#parents'])) {
         $display_element['#parents'] = array_merge(array('submitted'), $parents);
       }

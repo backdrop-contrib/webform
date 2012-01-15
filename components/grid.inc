@@ -156,7 +156,6 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
     '#theme' => 'webform_grid',
     '#theme_wrappers' => array('webform_element'),
     '#process' => array('webform_expand_grid'),
-    '#webform_component' => $component,
   );
 
   if ($value) {
@@ -226,7 +225,6 @@ function _webform_display_grid($component, $value, $format = 'html') {
     '#theme' => 'webform_display_grid',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
     '#sorted' => TRUE,
-    '#webform_component' => $component,
   );
 
   foreach ($questions as $key => $question) {

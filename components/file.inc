@@ -366,7 +366,6 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE) {
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#weight' => $component['weight'],
     '#theme_wrappers' => array('webform_element'),
-    '#webform_component' => $component,
   );
 
   return $element;
@@ -402,7 +401,6 @@ function _webform_display_file($component, $value, $format = 'html') {
      '#weight' => $component['weight'],
      '#theme' => 'webform_display_file',
      '#theme_wrappers' => $format == 'text' ? array('webform_element_text') : array('webform_element'),
-     '#webform_component' => $component,
      '#format' => $format,
   );
 }
