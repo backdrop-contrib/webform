@@ -311,6 +311,12 @@ function hook_webform_component_info() {
       // Add content to CSV downloads. Defaults to TRUE.
       'csv' => TRUE,
 
+      // This component supports default values. Defaults to TRUE.
+      'default_value' => FALSE,
+
+      // This component supports a description field. Defaults to TRUE.
+      'description' => FALSE,
+
       // Show this component in e-mailed submissions. Defaults to TRUE.
       'email' => TRUE,
 
@@ -324,6 +330,9 @@ function hook_webform_component_info() {
 
       // This component may be toggled as required or not. Defaults to TRUE.
       'required' => TRUE,
+
+      // This component supports a title attribute. Defaults to TRUE.
+      'title' => FALSE,
 
       // This component has a title that can be toggled as displayed or not.
       'title_display' => TRUE,

@@ -116,7 +116,7 @@ function _webform_render_email($component, $value = NULL, $filter = TRUE) {
     '#type' => 'webform_email',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
-    '#default_value' => _webform_filter_values($component['value']),
+    '#default_value' => $filter ? _webform_filter_values($component['value']) : $component['value'],
     '#required' => $component['mandatory'],
     '#weight' => $component['weight'],
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
@@ -138,7 +138,12 @@ function _webform_render_email($component, $value = NULL, $filter = TRUE) {
   }
 
   if ($component['extra']['disabled']) {
-    $element['#attributes']['readonly'] = 'readonly';
+    if ($filter) {
+      $element['#attributes']['readonly'] = 'readonly';
+    }
+    else {
+      $element['#disabled'] = TRUE;
+    }
   }
 
   // Change the 'width' option to the correct 'size' option.

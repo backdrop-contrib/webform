@@ -37,9 +37,6 @@ function _webform_edit_markup($component) {
     '#element_validate' => array('_webform_edit_markup_validate'),
   );
 
-  $form['extra']['description'] = array(); // No description for markup.
-  $form['display'] = array('#type' => 'markup'); // Hide the display options.
-
   return $form;
 }
 

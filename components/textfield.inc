@@ -137,7 +137,12 @@ function _webform_render_textfield($component, $value = NULL, $filter = TRUE) {
   );
 
   if ($component['extra']['disabled']) {
-    $element['#attributes']['readonly'] = 'readonly';
+    if ($filter) {
+      $element['#attributes']['readonly'] = 'readonly';
+    }
+    else {
+      $element['#disabled'] = TRUE;
+    }
   }
 
   // Enforce uniqueness.

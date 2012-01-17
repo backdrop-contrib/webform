@@ -751,6 +751,7 @@ function webform_webform_component_info() {
       'description' => t('Fieldsets allow you to organize multiple fields into groups.'),
       'features' => array(
         'csv' => FALSE,
+        'default_value' => FALSE,
         'required' => FALSE,
         'conditional' => FALSE,
         'group' => TRUE,
@@ -763,6 +764,7 @@ function webform_webform_component_info() {
       'description' => t('Allow users to upload files of configurable types.'),
       'features' => array(
         'conditional' => FALSE,
+        'default_value' => FALSE,
         'attachment' => TRUE,
       ),
       'file' => 'components/file.inc',
@@ -772,6 +774,7 @@ function webform_webform_component_info() {
       'description' => t('Allows creation of grid questions, denoted by radio buttons.'),
       'features' => array(
         'conditional' => FALSE,
+        'default_value' => FALSE,
         'title_inline' => FALSE,
       ),
       'file' => 'components/grid.inc',
@@ -782,9 +785,11 @@ function webform_webform_component_info() {
       'file' => 'components/hidden.inc',
       'features' => array(
         'required' => FALSE,
+        'description' => FALSE,
         'email_address' => TRUE,
         'email_name' => TRUE,
         'title_display' => FALSE,
+        'private' => FALSE,
       ),
     ),
     'markup' => array(
@@ -792,10 +797,13 @@ function webform_webform_component_info() {
       'description' => t('Displays text as HTML in the form; does not render a field.'),
       'features' => array(
         'csv' => FALSE,
+        'default_value' => FALSE,
+        'description' => FALSE,
         'email' => FALSE,
         'required' => FALSE,
         'conditional' => FALSE,
         'title_display' => FALSE,
+        'private' => FALSE,
       ),
       'file' => 'components/markup.inc',
     ),
@@ -811,6 +819,7 @@ function webform_webform_component_info() {
       'description' => t('Organize forms into multiple pages.'),
       'features' => array(
         'csv' => FALSE,
+        'default_value' => FALSE,
         'required' => FALSE,
         'title_display' => FALSE,
       ),
@@ -821,6 +830,7 @@ function webform_webform_component_info() {
       'description' => t('Allows creation of checkboxes, radio buttons, or select menus.'),
       'file' => 'components/select.inc',
       'features' => array(
+        'default_value' => FALSE,
         'email_address' => TRUE,
         'email_name' => TRUE,
       ),

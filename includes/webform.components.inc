@@ -364,15 +364,19 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     '#type' => 'value',
     '#value' => $clone,
   );
-  $form['name'] = array(
-    '#type' => 'textfield',
-    '#default_value' => $component['name'],
-    '#title' => t('Label'),
-    '#description' => t('This is used as a descriptive label when displaying this form element.'),
-    '#required' => TRUE,
-    '#weight' => -10,
-    '#maxlength' => 255,
-  );
+
+  if (webform_component_feature($component['type'], 'title')) {
+    $form['name'] = array(
+      '#type' => 'textfield',
+      '#default_value' => $component['name'],
+      '#title' => t('Label'),
+      '#description' => t('This is used as a descriptive label when displaying this form element.'),
+      '#required' => TRUE,
+      '#weight' => -10,
+      '#maxlength' => 255,
+    );
+  }
+
   $form['form_key'] = array(
     '#type' => 'textfield',
     '#default_value' => empty($component['form_key']) ? _webform_safe_name($component['name']) : $component['form_key'],
@@ -381,13 +385,16 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     '#required' => TRUE,
     '#weight' => -9,
   );
-  $form['extra']['description'] = array(
-    '#type' => 'textarea',
-    '#default_value' => isset($component['extra']['description']) ? $component['extra']['description'] : '',
-    '#title' => t('Description'),
-    '#description' => t('A short description of the field used as help for the user when he/she uses the form.') . theme('webform_token_help'),
-    '#weight' => -1,
-  );
+
+  if (webform_component_feature($component['type'], 'description')) {
+    $form['extra']['description'] = array(
+      '#type' => 'textarea',
+      '#default_value' => isset($component['extra']['description']) ? $component['extra']['description'] : '',
+      '#title' => t('Description'),
+      '#description' => t('A short description of the field used as help for the user when he/she uses the form.') . theme('webform_token_help'),
+      '#weight' => -1,
+    );
+  }
 
   // Display settings.
   $form['display'] = array(
@@ -870,10 +877,13 @@ function webform_component_feature($type, $feature) {
   $components = webform_components();
   $defaults = array(
     'csv' => TRUE,
+    'default_value' => TRUE,
+    'description' => TRUE,
     'email' => TRUE,
     'email_address' => FALSE,
     'email_name' => FALSE,
     'required' => TRUE,
+    'title' => TRUE,
     'title_display' => TRUE,
     'title_inline' => TRUE,
     'conditional' => TRUE,
