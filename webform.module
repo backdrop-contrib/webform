@@ -2434,6 +2434,13 @@ function webform_client_form_submit($form, &$form_state) {
     $submission->data = $new_data + $submission->data;
   }
 
+  // If there is no data to be saved (such as on a multipage form with no fields
+  // on the first page), process no further. Submissions with no data cannot
+  // be loaded from the database as efficiently, so we don't save them at all.
+  if (empty($submission->data)) {
+    return;
+  }
+
   // Save the submission to the database.
   if (!$sid) {
     // No sid was found thus insert it in the dataabase.
