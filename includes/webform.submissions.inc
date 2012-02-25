@@ -282,6 +282,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
         'headers' => $email['headers'],
         'node' => $node,
         'submission' => $submission,
+        'email' => $email,
       );
 
       if (webform_email_html_capable()) {
