@@ -422,7 +422,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
       $form['display']['title_display'] = array(
         '#type' => 'checkbox',
         '#title' => t('Hide label'),
-        '#default_value' => !empty($component['extra']['title_display']),
+        '#default_value' => strcmp($component['extra']['title_display'], 'none') === 0,
         '#return_value' => 'none',
         '#description' => t('Do not display the label of this component.'),
       );

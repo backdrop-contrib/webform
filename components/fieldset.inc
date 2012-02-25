@@ -55,19 +55,15 @@ function _webform_render_fieldset($component, $value = NULL, $filter = TRUE) {
   $element = array(
     '#type' => 'fieldset',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : NULL,
     '#weight' => $component['weight'],
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#collapsible' => $component['extra']['collapsible'],
     '#collapsed' => $component['extra']['collapsed'],
     '#attributes' => array('class' => array('webform-component-fieldset'), 'id' => 'webform-component-' . $component['form_key']),
-    '#pre_render' => array('webform_fieldset_prerender'),
+    '#pre_render' => array('webform_fieldset_prerender', 'webform_element_title_display'),
     '#translatable' => array('title', 'description'),
   );
-
-  // Hide the fieldset title if #title_display is 'none'.
-  if (!empty($component['extra']['title_display']) && $component['extra']['title_display'] == 'none') {
-    $element['#title'] = NULL;
-  }
 
   return $element;
 }
