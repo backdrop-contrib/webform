@@ -1246,16 +1246,6 @@ function webform_node_prepare($node) {
   }
 }
 
-/**
- * Implements hook_node_prepare_translation().
- */
-function webform_node_prepare_translation(&$node) {
-  // Copy all Webform settings over to translated versions of this node.
-  if (isset($node->translation_source)) {
-    $source_node = node_load($node->translation_source->nid);
-    $node->webform = $source_node->webform;
-  }
-}
 
 /**
  * Implements hook_node_load().
@@ -2111,6 +2101,9 @@ function _webform_client_form_add_component($node, $component, $component_value,
       // Ensure the component is added as a property.
       $display_element['#webform_component'] = $component;
 
+      // Allow modules to modify a "display only" webform component.
+      drupal_alter('webform_component_display', $display_element, $component);
+
       // The form_builder() function usually adds #parents and #id for us, but
       // because these are not marked for #input, we need to add them manually.
       if (!isset($display_element['#parents'])) {
@@ -2121,6 +2114,8 @@ function _webform_client_form_add_component($node, $component, $component_value,
       if (!isset($display_element['#id'])) {
         $display_element['#id'] = drupal_clean_css_identifier('edit-' . implode('-', $display_element['#parents']));
       }
+
+      // Add the element into the proper parent in the display.
       $parent_fieldset[$component['form_key']] = $display_element;
     }
   }
@@ -2131,6 +2126,10 @@ function _webform_client_form_add_component($node, $component, $component_value,
       // Ensure the component is added as a property.
       $element['#webform_component'] = $component;
 
+      // Allow modules to modify a webform component that is going to be render in a form.
+      drupal_alter('webform_component_render', $element, $component);
+
+      // Add the element into the proper parent in the form.
       $parent_fieldset[$component['form_key']] = $element;
 
       // Override the value if one already exists in the form state.
@@ -2423,7 +2422,7 @@ function webform_client_form_submit($form, &$form_state) {
   }
   else {
     // To maintain time and user information, load the existing submission.
-    $submission = webform_get_submission($node->nid, $sid);
+    $submission = webform_get_submission($node->webform['nid'], $sid);
     $submission->is_draft = $is_draft;
 
     // Merge with new submission data. The + operator maintains numeric keys.
@@ -2461,7 +2460,7 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Check if this form is sending an email.
   if (!$is_draft && !$form_state['values']['details']['finished']) {
-    $submission = webform_get_submission($node->nid, $sid, TRUE);
+    $submission = webform_get_submission($node->webform['nid'], $sid, TRUE);
     webform_submission_send_mail($node, $submission);
   }
 
@@ -3676,11 +3675,15 @@ function webform_strtotime($date) {
 }
 
 /**
- * Wrapper function for tt() if i18nstrings enabled.
+ * Wrapper function for i18n_string() if i18nstrings enabled.
  */
 function webform_tt($name, $string, $langcode = NULL, $update = FALSE) {
-  if (function_exists('tt')) {
-    return tt($name, $string, $langcode, $update);
+  if (function_exists('i18n_string')) {
+    $options = array(
+      'langcode' => $langcode,
+      'update' => $update,
+    );
+    return i18n_string($name, $string, $options);
   }
   else {
     return $string;

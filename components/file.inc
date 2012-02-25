@@ -366,6 +366,7 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE) {
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#weight' => $component['weight'],
     '#theme_wrappers' => array('webform_element'),
+    '#translatable' => array('title', 'description'),
   );
 
   return $element;
@@ -396,12 +397,13 @@ function webform_file_allow_access($element) {
 function _webform_display_file($component, $value, $format = 'html') {
   $fid = isset($value[0]) ? $value[0] : NULL;
   return array(
-     '#title' => $component['name'],
-     '#value' => $fid ? webform_get_file($fid) : NULL,
-     '#weight' => $component['weight'],
-     '#theme' => 'webform_display_file',
-     '#theme_wrappers' => $format == 'text' ? array('webform_element_text') : array('webform_element'),
-     '#format' => $format,
+    '#title' => $component['name'],
+    '#value' => $fid ? webform_get_file($fid) : NULL,
+    '#weight' => $component['weight'],
+    '#theme' => 'webform_display_file',
+    '#theme_wrappers' => $format == 'text' ? array('webform_element_text') : array('webform_element'),
+    '#format' => $format,
+    '#translatable' => array('title'),
   );
 }
 

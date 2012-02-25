@@ -61,6 +61,7 @@ function _webform_render_markup($component, $value = NULL, $filter = TRUE) {
     '#markup' => $filter ? _webform_filter_values(check_markup($component['value'], $component['extra']['format'], '', TRUE), NULL, NULL, NULL, FALSE) : $component['value'],
     '#format' => $component['extra']['format'],
     '#theme_wrappers' => array('webform_element'),
+    '#translatable' => array('title', 'markup'),
   );
 
   // TODO: Remove when #markup becomes available in D7.

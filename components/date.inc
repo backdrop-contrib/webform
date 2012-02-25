@@ -133,6 +133,7 @@ function _webform_render_date($component, $value = NULL, $filter = TRUE) {
     '#theme' => 'webform_date',
     '#theme_wrappers' => array('webform_element'),
     '#element_validate' => array('webform_validate_date'),
+    '#translatable' => array('title', 'description'),
   );
 
   if ($component['extra']['datepicker']) {
@@ -339,6 +340,7 @@ function _webform_display_date($component, $value, $format = 'html') {
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
     '#format' => $format,
     '#value' => $value,
+    '#translatable' => array('title'),
   );
 }
 

@@ -111,6 +111,7 @@ function _webform_render_textarea($component, $value = NULL, $filter = TRUE) {
     '#attributes' => $component['extra']['attributes'],
     '#resizable' => (bool) $component['extra']['resizable'], // MUST be FALSE to disable.
     '#theme_wrappers' => array('webform_element'),
+    '#translatable' => array('title', 'description'),
   );
 
   if ($component['extra']['disabled']) {
@@ -140,6 +141,7 @@ function _webform_display_textarea($component, $value, $format = 'html') {
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
     '#format' => $format,
     '#value' => isset($value[0]) ? $value[0] : '',
+    '#translatable' => array('title'),
   );
 }
 

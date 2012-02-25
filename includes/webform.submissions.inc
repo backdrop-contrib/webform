@@ -110,7 +110,7 @@ function webform_submission_insert($node, $submission) {
 
     $submission->sid = db_insert('webform_submissions')
       ->fields(array(
-        'nid' => $node->nid,
+        'nid' => $node->webform['nid'],
         'uid' => $submission->uid,
         'submitted' => $submission->submitted,
         'remote_addr' => $submission->remote_addr,
@@ -124,7 +124,7 @@ function webform_submission_insert($node, $submission) {
     foreach ($values['value'] as $delta => $value) {
       db_insert('webform_submitted_data')
         ->fields(array(
-          'nid' => $node->nid,
+          'nid' => $node->webform['nid'],
           'sid' => $submission->sid,
           'cid' => $cid,
           'no' => $delta,
