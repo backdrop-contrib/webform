@@ -2664,7 +2664,6 @@ function theme_webform_element($variables) {
     $wrapper_classes[] = 'webform-container-inline';
   }
   $output = '<div class="' . implode(' ', $wrapper_classes) . '" id="webform-component-' . $parents . '">' . "\n";
-  $required = !empty($element['#required']) ? '<span class="form-required" title="' . t('This field is required.') . '">*</span>' : '';
 
   // If #title is not set, we don't display any label or required marker.
   if (!isset($element['#title'])) {
