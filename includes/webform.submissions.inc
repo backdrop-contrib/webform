@@ -744,22 +744,23 @@ function webform_get_submission_count($nid, $uid = NULL, $reset = FALSE) {
   static $counts;
 
   if (!isset($counts[$nid][$uid]) || $reset) {
-    $query = db_select('webform_submissions')
-      ->condition('nid', $nid)
-      ->condition('is_draft', 0);
+    $query = db_select('webform_submissions', 'ws')
+      ->addTag('webform_get_submission_count')
+      ->condition('ws.nid', $nid)
+      ->condition('ws.is_draft', 0);
     $arguments = array($nid);
     if ($uid !== NULL) {
-      $query->condition('uid', $uid);
+      $query->condition('ws.uid', $uid);
     }
     if ($uid === 0) {
       $submissions = isset($_SESSION['webform_submission']) ? $_SESSION['webform_submission'] : NULL;
       if ($submissions) {
-        $query->condition('sid', $submissions, 'IN');
+        $query->condition('ws.sid', $submissions, 'IN');
       }
       else {
         // Intentionally never match anything if the anonymous user has no
         // submissions.
-        $query->condition('sid', 0);
+        $query->condition('ws.sid', 0);
       }
     }
 
