@@ -69,10 +69,13 @@ function webform_submission_update($node, $submission) {
   // If is draft, only delete data for components submitted, to
   // preserve any data from form pages not visited in this submission.
   if ($submission->is_draft) {
-    db_delete('webform_submitted_data')
-      ->condition('sid', $submission->sid)
-      ->condition('cid', array_keys($submission->data), 'IN')
-      ->execute();
+    $submitted_cids = array_keys($submission->data);
+    if ($submitted_cids) {
+      db_delete('webform_submitted_data')
+        ->condition('sid', $submission->sid)
+        ->condition('cid', $submitted_cids, 'IN')
+        ->execute();
+    }
   }
   else {
     db_delete('webform_submitted_data')
