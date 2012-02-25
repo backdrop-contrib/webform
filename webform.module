@@ -120,6 +120,7 @@ function webform_menu() {
     'file' => 'includes/webform.components.inc',
     'weight' => 1,
     'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
   );
   $items['node/%webform_menu/webform/components'] = array(
     'title' => 'Form components',
@@ -217,6 +218,7 @@ function webform_menu() {
     'file' => 'includes/webform.report.inc',
     'weight' => 2,
     'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
   );
   $items['node/%webform_menu/webform-results/submissions'] = array(
     'title' => 'Submissions',
@@ -1712,6 +1714,11 @@ function webform_block_view($delta = '') {
     $content = node_view($node, $teaser);
   }
 
+  // Add contextual links for the webform node if they aren't already there.
+  if (!isset($content['#contextual_links']['node'])) {
+    $content['#contextual_links']['node'] = array('node', array($node->nid));
+  }
+
   // Create the block.
   // Note that we render the content immediately here rather than passing back
   // a renderable so that if the block is empty it is hidden.
@@ -1771,24 +1778,6 @@ function webform_block_save($delta = '', $edit = array()) {
   // We store settings for multiple blocks in just one variable
   // so we merge the existing settings with the new ones before save.
   variable_set('webform_blocks', array_merge($settings, $new_settings));
-}
-
-/**
- * Implements hook_contextual_links_view_alter().
- */
-function webform_contextual_links_view_alter(&$element, &$items) {
-  // Add Webform and Results links to webform-enabled nodes. This code affects
-  // both node teasers and nodes exposed as blocks through Webform.
-  if (isset($element['#element']['#node']) && in_array($element['#element']['#node']->type, webform_variable_get('webform_node_types'))) {
-    $element['#links']['webform'] = array(
-      'title' => t('Webform'),
-      'href' => 'node/' . $element['#element']['#node']->nid . '/webform',
-    );
-    $element['#links']['webform-results'] = array(
-      'title' => t('Results'),
-      'href' => 'node/' . $element['#element']['#node']->nid . '/webform-results',
-    );
-  }
 }
 
 /**
