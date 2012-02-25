@@ -1812,7 +1812,7 @@ function webform_contextual_links_view_alter(&$element, &$items) {
  *   building the form. Values need to be unfiltered to be editable by
  *   Form Builder.
  */
-function webform_client_form($form, $form_state, $node, $submission, $is_draft = FALSE, $filter = TRUE) {
+function webform_client_form($form, &$form_state, $node, $submission, $is_draft = FALSE, $filter = TRUE) {
   global $user;
 
   // Attach necessary JavaScript and CSS.
@@ -1820,8 +1820,8 @@ function webform_client_form($form, $form_state, $node, $submission, $is_draft =
     'css' => array(drupal_get_path('module', 'webform') . '/css/webform.css'),
     'js' => array(drupal_get_path('module', 'webform') . '/js/webform.js'),
   );
-  module_load_include('inc', 'webform', 'includes/webform.components');
-  module_load_include('inc', 'webform', 'includes/webform.submissions');
+  form_load_include($form_state, 'inc', 'webform', 'includes/webform.components');
+  form_load_include($form_state, 'inc', 'webform', 'includes/webform.submissions');
 
   $form['#process'] = array(
     'webform_client_form_includes',
