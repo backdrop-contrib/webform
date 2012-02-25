@@ -479,10 +479,42 @@ function webform_update_last_removed() {
 }
 
 /**
- * Ensure that the confirmation format column is correctly using size = 'tiny'.
+ * Allow the confirmation format column to have a NULL value.
  */
 function webform_update_7301() {
-  db_change_field('webform', 'confirmation_format', 'confirmation_format', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
+  // These changes are modeled after user_update_7010().
+  db_change_field('webform', 'confirmation_format', 'confirmation_format', array(
+    'description' => 'The {filter_format}.format of the confirmation message.',
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => FALSE,
+  ));
+  db_update('webform')
+    ->fields(array('confirmation_format' => NULL))
+    ->condition('confirmation', '')
+    ->condition('confirmation_format', 0)
+    ->execute();
+  $existing_formats = db_query("SELECT format FROM {filter_format}")->fetchCol();
+  $default_format = variable_get('filter_default_format', 1);
+
+  // Since Webform may be updated separately from Drupal core, not all format
+  // names may be numbers when running this update.
+  $numeric_formats = array();
+  foreach ($existing_formats as $format_name) {
+    if (is_numeric($format_name)) {
+      $numeric_formats[] = (int) $format_name;
+    }
+  }
+
+  $query = db_update('webform')
+    ->fields(array('confirmation_format' => $default_format))
+    ->isNotNull('confirmation_format');
+
+  if (!empty($numeric_formats)) {
+    $query->condition('confirmation_format', $numeric_formats, 'NOT IN');
+  }
+
+  $query->execute();
 }
 
 /**
@@ -539,39 +571,8 @@ function webform_update_7306() {
  * Update the confirmation_format column for default text format changes.
  */
 function webform_update_7307() {
-  // These changes are modeled after user_update_7010().
-  db_change_field('webform', 'confirmation_format', 'confirmation_format', array(
-    'description' => 'The {filter_format}.format of the confirmation message.',
-    'type' => 'int',
-    'unsigned' => TRUE,
-    'not null' => FALSE,
-  ));
-  db_update('webform')
-    ->fields(array('confirmation_format' => NULL))
-    ->condition('confirmation', '')
-    ->condition('confirmation_format', 0)
-    ->execute();
-  $existing_formats = db_query("SELECT format FROM {filter_format}")->fetchCol();
-  $default_format = variable_get('filter_default_format', 1);
-
-  // Since Webform may be updated separately from Drupal core, not all format
-  // names may be numbers when running this update.
-  $numeric_formats = array();
-  foreach ($existing_formats as $format_name) {
-    if (is_numeric($format_name)) {
-      $numeric_formats[] = (int) $format_name;
-    }
-  }
-
-  $query = db_update('webform')
-    ->fields(array('confirmation_format' => $default_format))
-    ->isNotNull('confirmation_format');
-
-  if (!empty($numeric_formats)) {
-    $query->condition('confirmation_format', $numeric_formats, 'NOT IN');
-  }
-
-  $query->execute();
+  // Update removed and moved to webform_update_7301().
+  // See http://drupal.org/node/976102.
 }
 
 /**
