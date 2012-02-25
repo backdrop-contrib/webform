@@ -1711,9 +1711,11 @@ function webform_block_view($delta = '') {
   }
 
   // Create the block.
+  // Note that we render the content immediately here rather than passing back
+  // a renderable so that if the block is empty it is hidden.
   $block = array(
     'subject' => $subject,
-    'content' => $content,
+    'content' => drupal_render($content),
   );
   return $block;
 }
