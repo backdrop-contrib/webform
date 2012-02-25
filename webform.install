@@ -421,19 +421,21 @@ function webform_install() {
     ->fields(array('weight' => -1))
     ->execute();
 
-  // Create the default webform type.
-  $webform_type = array(
-    'type' => 'webform',
-    'name' => st('Webform'),
-    'base' => 'node_content',
-    'description' => st('Create a new form or questionnaire accessible to users. Submission results and statistics are recorded and accessible to privileged users.'),
-    'custom' => TRUE,
-    'modified' => TRUE,
-    'locked' => FALSE,
-  );
-  $webform_type = node_type_set_defaults($webform_type);
-  node_type_save($webform_type);
-  node_add_body_field($webform_type);
+  // Optionally create the default webform type.
+  if (variable_get('webform_install_create_content_type', TRUE)) {
+    $webform_type = array(
+      'type' => 'webform',
+      'name' => st('Webform'),
+      'base' => 'node_content',
+      'description' => st('Create a new form or questionnaire accessible to users. Submission results and statistics are recorded and accessible to privileged users.'),
+      'custom' => TRUE,
+      'modified' => TRUE,
+      'locked' => FALSE,
+    );
+    $webform_type = node_type_set_defaults($webform_type);
+    node_type_save($webform_type);
+    node_add_body_field($webform_type);
+  }
 }
 
 /**
