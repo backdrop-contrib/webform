@@ -429,6 +429,16 @@ function _webform_delete_file($component, $value) {
 }
 
 /**
+ * Implements _webform_attachments_component().
+ */
+function _webform_attachments_file($component, $value) {
+  $file = (array) webform_get_file($value[0]);
+  //This is necessary until the next release of mimemail is out, see [#1388786]
+  $file['filepath'] = $file['uri'];
+  $files = array($file);
+  return $files;
+}
+/**
  * Implements _webform_analysis_component().
  */
 function _webform_analysis_file($component, $sids = array()) {

@@ -292,9 +292,11 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
           webform_component_include('file');
           foreach ($node->webform['components'] as $component) {
             if (webform_component_feature($component['type'], 'attachment') && !empty($submission->data[$component['cid']]['value'][0])) {
-              $file = webform_get_file($submission->data[$component['cid']]['value'][0]);
-              if ($file && ($file->filepath = drupal_realpath($file->uri))) {
-                $attachments[] = $file;
+              if (webform_component_implements($component['type'], 'attachments')) {
+                $files = webform_component_invoke($component['type'], 'attachments', $component, $submission->data[$component['cid']]['value']);
+                if ($files) {
+                  $attachments = array_merge($attachments, $files);
+                }
               }
             }
           }

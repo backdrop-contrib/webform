@@ -379,6 +379,36 @@ function hook_webform_component_info_alter(&$components) {
 }
 
 /**
+ * Return an array of files associated with the component.
+ *
+ * The output of this function will be used to attach files to e-mail messages.
+ *
+ * @param $component
+ *   A Webform component array.
+ * @param $value
+ *   An array of information containing the submission result, directly
+ *   correlating to the webform_submitted_data database schema.
+ * @return
+ *   An array of files, each file is an array with following keys:
+ *     - filepath: The relative path to the file.
+ *     - filename: The name of the file including the extension.
+ *     - filemime: The mimetype of the file.
+ *   This will result in an array looking something like this:
+ *   @code
+ *   array[0] => array(
+ *     'filepath' => '/sites/default/files/attachment.txt',
+ *     'filename' => 'attachment.txt',
+ *     'filemime' => 'text/plain',
+ *   );
+ *   @endcode
+ */
+function _webform_attachments_component($component, $value) {
+  $files = array();
+  $files[] = (array) file_load($value[0]);
+  return $files;
+}
+
+/**
  * @}
  */
 
