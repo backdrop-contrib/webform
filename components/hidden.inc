@@ -17,6 +17,7 @@ function _webform_defaults_hidden() {
     'value' => '',
     'extra' => array(
       'private' => FALSE,
+      'hidden_type' => 'value',
     ),
   );
 }
@@ -48,6 +49,18 @@ function _webform_edit_hidden($component) {
     '#weight' => 0,
   );
 
+  $form['display']['hidden_type'] = array(
+    '#type' => 'radios',
+    '#options' => array(
+      'value' => t('Secure value (allows use of all tokens)'),
+      'hidden' => t('Hidden element (less secure, changeable via JavaScript)'),
+    ),
+    '#title' => t('Hidden type'),
+    '#description' => t('Both types of hidden fields are not shown to end-users. Using a <em>Secure value</em> allows the use of <em>all tokens</em>, even for anonymous users.'),
+    '#default_value' => $component['extra']['hidden_type'],
+    '#parents' => array('extra', 'hidden_type'),
+  );
+
   return $form;
 }
 
@@ -55,16 +68,28 @@ function _webform_edit_hidden($component) {
  * Implements _webform_render_component().
  */
 function _webform_render_hidden($component, $value = NULL, $filter = TRUE) {
+  // Set filtering options for "value" types, which are not displayed to the
+  // end user so they do not need to be sanitized.
+  $strict = $component['extra']['hidden_type'] != 'value';
+  $allow_anonymous = $component['extra']['hidden_type'] == 'value';
+  $default_value = $filter ? _webform_filter_values($component['value'], NULL, NULL, NULL, $strict, $allow_anonymous) : $component['value'];
+  if (isset($value[0])) {
+    $default_value = $value[0];
+  }
+
   $element = array(
-    '#type' => 'hidden',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
-    '#default_value' => $filter ? _webform_filter_values($component['value']) : $component['value'],
     '#weight' => $component['weight'],
     '#translatable' => array('title'),
   );
 
-  if (isset($value[0])) {
-    $element['#default_value'] = $value[0];
+  if ($component['extra']['hidden_type'] == 'value') {
+    $element['#type'] = 'value';
+    $element['#value'] = $default_value;
+  }
+  else {
+    $element['#type'] = 'hidden';
+    $element['#default_value'] = $default_value;
   }
 
   return $element;
