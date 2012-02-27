@@ -312,15 +312,16 @@ function _webform_render_number($component, $value = NULL, $filter = TRUE) {
  * Implements _webform_display_component().
  */
 function _webform_display_number($component, $value, $format = 'html') {
+  $empty = !isset($value[0]) || $value[0] === '';
   return array(
     '#title' => $component['name'],
     '#weight' => $component['weight'],
     '#theme' => 'webform_display_number',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
-    '#field_prefix' => $component['extra']['field_prefix'],
-    '#field_suffix' => $component['extra']['field_suffix'],
+    '#field_prefix' => $empty ? '' : $component['extra']['field_prefix'],
+    '#field_suffix' => $empty ? '' : $component['extra']['field_suffix'],
     '#format' => $format,
-    '#value' => isset($value[0]) ? _webform_number_format($component, $value[0]) : '',
+    '#value' => $empty ? '' : _webform_number_format($component, $value[0]),
     '#translatable' => array('title'),
   );
 }
@@ -367,8 +368,8 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
     }
 
     if ($number > 0) {
-        $nonzero++;
-        $sum += $number;
+      $nonzero++;
+      $sum += $number;
     }
     $population[] = $number;
     $submissions++;
