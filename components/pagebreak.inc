@@ -43,7 +43,6 @@ function _webform_edit_pagebreak($component) {
     '#value' => '0',
   );
 
-  $form['extra']['description'] = array();  // No description.
   $form['display'] = array('#type' => 'markup'); // Hide the display options.
 
   return $form;
