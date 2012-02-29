@@ -1008,7 +1008,7 @@ function webform_file_download($uri) {
   if ($row) {
     $file = file_load($row->fid);
   }
-  if (!empty($file->sid)) {
+  if (!empty($row->sid)) {
     $submissions = webform_get_submissions(array('sid' => $row->sid));
     $submission = reset($submissions);
   }
