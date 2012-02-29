@@ -730,7 +730,7 @@ function webform_element_info() {
  * Implements hook_webform_component_info().
  */
 function webform_webform_component_info() {
-  return array(
+  $component_info = array(
     'date' => array(
       'label' => t('Date'),
       'description' => t('Presents month, day, and year fields.'),
@@ -760,16 +760,6 @@ function webform_webform_component_info() {
         'title_inline' => FALSE,
       ),
       'file' => 'components/fieldset.inc',
-    ),
-    'file' => array(
-      'label' => t('File'),
-      'description' => t('Allow users to upload files of configurable types.'),
-      'features' => array(
-        'conditional' => FALSE,
-        'default_value' => FALSE,
-        'attachment' => TRUE,
-      ),
-      'file' => 'components/file.inc',
     ),
     'grid' => array(
       'label' => t('Grid'),
@@ -866,6 +856,21 @@ function webform_webform_component_info() {
       'file' => 'components/time.inc',
     ),
   );
+
+  if (module_exists('file')) {
+    $component_info['file'] = array(
+      'label' => t('File'),
+      'description' => t('Allow users to upload files of configurable types.'),
+      'features' => array(
+        'conditional' => FALSE,
+        'default_value' => FALSE,
+        'attachment' => TRUE,
+      ),
+      'file' => 'components/file.inc',
+    );
+  }
+
+  return $component_info;
 }
 
 /**
