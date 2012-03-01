@@ -16,6 +16,14 @@
 /**
  * Define callbacks that can be used as select list options.
  *
+ * When users create a select component, they may select a pre-built list of
+ * certain options. Webform core provides a few of these lists such as the
+ * United States, countries of the world, and days of the week. This hook
+ * provides additional lists that may be utilized.
+ *
+ * @see webform_options_example()
+ * @see hook_webform_select_options_info_alter()
+ *
  * @return
  *   An array of callbacks that can be used for select list options. This array
  *   should be keyed by the "name" of the pre-defined list. The values should
@@ -36,6 +44,51 @@ function hook_webform_select_options_info() {
   );
 
   return $items;
+}
+
+/**
+ * Alter the list of select list options provided by Webform and other modules.
+ *
+ * @see hook_webform_select_options_info().
+ */
+function hook_webform_select_options_info_alter(&$items) {
+  // Remove the days of the week options.
+  unset($items['days']);
+}
+
+/**
+ * This is an example function to demonstrate a webform options callback.
+ *
+ * This function returns a list of options that Webform may use in a select
+ * component. In order to be called, the function name
+ * ("webform_options_example" in this case), needs to be specified as a callback
+ * in hook_webform_select_options_info().
+ *
+ * @param $component
+ *   The Webform component array for the select component being displayed.
+ * @param $flat
+ *   Boolean value indicating whether the returned list needs to be a flat array
+ *   of key => value pairs. Select components support up to one level of
+ *   nesting, but when results are displayed, the list needs to be returned
+ *   without the nesting.
+ * @param $filter
+ *   Boolean value indicating whether the included options should be passed
+ *   through the _webform_filter_values() function for token replacement (only)
+ *   needed if your list contains tokens).
+ * @param $arguments
+ *   The "options arguments" specified in hook_webform_select_options_info().
+ * @return
+ *   An array of key => value pairs suitable for a select list's #options
+ *   FormAPI property.
+ */
+function webform_options_example($component, $flat, $filter, $arguments) {
+  $options = array(
+    'one' => t('Pre-built option one'),
+    'two' => t('Pre-built option two'),
+    'three' => t('Pre-built option three'),
+  );
+
+  return $options;
 }
 
 /**
