@@ -2649,7 +2649,10 @@ function theme_webform_element($variables) {
   else {
     $type = (isset($element['#type']) && !in_array($element['#type'], array('markup', 'textfield'))) ? $element['#type'] : $element['#webform_component']['type'];
   }
-  $parents = str_replace('_', '-', implode('--', array_slice($element['#parents'], 1)));
+
+  // Convert the parents array into a string, excluding the "submitted" wrapper.
+  $nested_level = $element['#parents'][0] == 'submitted' ? 1 : 0;
+  $parents = str_replace('_', '-', implode('--', array_slice($element['#parents'], $nested_level)));
 
   $wrapper_classes = array(
    'form-item',
