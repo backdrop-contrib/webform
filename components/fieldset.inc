@@ -52,12 +52,14 @@ function _webform_edit_fieldset($component) {
  * Implements _webform_render_component().
  */
 function _webform_render_fieldset($component, $value = NULL, $filter = TRUE) {
+  $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
+
   $element = array(
     '#type' => 'fieldset',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : NULL,
     '#weight' => $component['weight'],
-    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#collapsible' => $component['extra']['collapsible'],
     '#collapsed' => $component['extra']['collapsed'],
     '#attributes' => array('class' => array('webform-component-fieldset'), 'id' => 'webform-component-' . $component['form_key']),

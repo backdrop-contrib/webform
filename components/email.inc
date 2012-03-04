@@ -112,14 +112,16 @@ function _webform_edit_email_validate($element, &$form_state) {
  */
 function _webform_render_email($component, $value = NULL, $filter = TRUE) {
   global $user;
+  $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
+
   $element = array(
     '#type' => 'webform_email',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
-    '#default_value' => $filter ? _webform_filter_values($component['value']) : $component['value'],
+    '#default_value' => $filter ? _webform_filter_values($component['value'], $node) : $component['value'],
     '#required' => $component['mandatory'],
     '#weight' => $component['weight'],
-    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#attributes' => $component['extra']['attributes'],
     '#element_validate'  => array('_webform_validate_email'),
     '#theme_wrappers' => array('webform_element'),

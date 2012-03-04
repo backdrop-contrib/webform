@@ -117,17 +117,19 @@ function _webform_edit_date($component) {
  * Implements _webform_render_component().
  */
 function _webform_render_date($component, $value = NULL, $filter = TRUE) {
+  $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
+
   $element = array(
     '#type' => 'date',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#weight' => $component['weight'],
-    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#required' => $component['mandatory'],
     '#start_date' => trim($component['extra']['start_date']),
     '#end_date' => trim($component['extra']['end_date']),
     '#year_textfield' => $component['extra']['year_textfield'],
-    '#default_value' => $filter ? _webform_filter_values($component['value'], NULL, NULL, NULL, FALSE) : $component['value'],
+    '#default_value' => $filter ? _webform_filter_values($component['value'], $node, NULL, NULL, FALSE) : $component['value'],
     '#timezone' => $component['extra']['timezone'],
     '#process' => array('webform_expand_date'),
     '#theme' => 'webform_date',

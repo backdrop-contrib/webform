@@ -263,19 +263,21 @@ function _webform_edit_validate_options($element, &$form_state) {
  * Implements _webform_render_component().
  */
 function _webform_render_select($component, $value = NULL, $filter = TRUE) {
+  $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
+
   $element = array(
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#required' => $component['mandatory'],
     '#weight' => $component['weight'],
-    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#theme_wrappers' => array('webform_element'),
     '#pre_render' => array(), // Needed to disable double-wrapping of radios and checkboxes.
     '#translatable' => array('title', 'description', 'options'),
   );
 
   // Convert the user-entered options list into an array.
-  $default_value = $filter ? _webform_filter_values($component['value'], NULL, NULL, NULL, FALSE) : $component['value'];
+  $default_value = $filter ? _webform_filter_values($component['value'], $node, NULL, NULL, FALSE) : $component['value'];
   $options = _webform_select_options($component, !$component['extra']['aslist'], $filter);
 
   if ($component['extra']['optrand']) {

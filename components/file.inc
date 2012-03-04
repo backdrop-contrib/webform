@@ -303,6 +303,8 @@ function theme_webform_edit_file_extensions($variables) {
  * Implements _webform_render_component().
  */
 function _webform_render_file($component, $value = NULL, $filter = TRUE) {
+  $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
+
   // Cap the upload size according to the PHP limit.
   $max_filesize = parse_size(file_upload_max_size());
   $set_filesize = $component['extra']['filtering']['size'];
@@ -324,7 +326,7 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE) {
     '#pre_render' => array_merge(element_info_property('managed_file', '#pre_render'), array('webform_file_allow_access')),
     '#upload_location' => $component['extra']['scheme'] . '://webform/' . $component['extra']['directory'],
     '#progress_indicator' => $component['extra']['progress_indicator'],
-    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#weight' => $component['weight'],
     '#theme_wrappers' => array('webform_element'),
     '#translatable' => array('title', 'description'),
