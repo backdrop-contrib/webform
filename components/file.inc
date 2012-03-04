@@ -37,8 +37,8 @@ function _webform_defaults_file() {
  */
 function _webform_theme_file() {
   return array(
-    'webform_edit_file' => array(
-      'render element' => 'form',
+    'webform_edit_file_extensions' => array(
+      'render element' => 'element',
       'file' => 'components/file.inc',
     ),
     'webform_display_file' => array(
@@ -53,36 +53,54 @@ function _webform_theme_file() {
  */
 function _webform_edit_file($component) {
     $form = array();
-    $form['#theme'] = 'webform_edit_file';
     $form['#element_validate'] = array('_webform_edit_file_check_directory');
     $form['#after_build'] = array('_webform_edit_file_check_directory');
 
-    $form['validation']['filtering'] = array(
-      '#element_validate' => array('_webform_edit_file_filtering_validate'),
+    $form['validation']['size'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Max upload size'),
+      '#default_value' => $component['extra']['filtering']['size'],
+      '#description' => t('Enter the max file size a user may upload such as 2 MB or 800 KB. Your server has a max upload size of @size.', array('@size' => format_size(file_upload_max_size()))),
+      '#size' => 10,
+      '#parents' => array('extra', 'filtering', 'size'),
+      '#element_validate' => array('_webform_edit_file_size_validate'),
+      '#weight' => 1,
+    );
+
+    $form['validation']['extensions'] = array(
+      '#element_validate' => array('_webform_edit_file_extensions_validate'),
       '#parents' => array('extra', 'filtering'),
+      '#theme' => 'webform_edit_file_extensions',
+      '#theme_wrappers' => array('form_element'),
+      '#title' => t('Allowed file extensions'),
+      '#attached' => array(
+        'js' => array(drupal_get_path('module', 'webform') . '/js/webform-admin.js'),
+        'css' => array(drupal_get_path('module', 'webform') . '/css/webform-admin.css'),
+      ),
+      '#weight' => 2,
     );
 
     // Find the list of all currently valid extensions.
     $current_types = isset($component['extra']['filtering']['types']) ? $component['extra']['filtering']['types'] : array();
 
     $types = array('gif', 'jpg', 'png');
-    $form['validation']['filtering']['types']['webimages'] = array(
+    $form['validation']['extensions']['types']['webimages'] = array(
       '#type' => 'checkboxes',
-      '#title' => t('Web Images'),
+      '#title' => t('Web images'),
       '#options' => drupal_map_assoc($types),
       '#default_value' => array_intersect($current_types, $types),
     );
 
     $types = array('bmp', 'eps', 'tif', 'pict', 'psd');
-    $form['validation']['filtering']['types']['desktopimages'] = array(
+    $form['validation']['extensions']['types']['desktopimages'] = array(
       '#type' => 'checkboxes',
-      '#title' => t('Desktop Images'),
+      '#title' => t('Desktop images'),
       '#options' => drupal_map_assoc($types),
       '#default_value' => array_intersect($current_types, $types),
     );
 
     $types = array('txt', 'rtf', 'html', 'odf', 'pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'xml');
-    $form['validation']['filtering']['types']['documents'] = array(
+    $form['validation']['extensions']['types']['documents'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Documents'),
       '#options' => drupal_map_assoc($types),
@@ -90,7 +108,7 @@ function _webform_edit_file($component) {
     );
 
     $types = array('avi', 'mov', 'mp3', 'ogg', 'wav');
-    $form['validation']['filtering']['types']['media'] = array(
+    $form['validation']['extensions']['types']['media'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Media'),
       '#options' => drupal_map_assoc($types),
@@ -98,33 +116,20 @@ function _webform_edit_file($component) {
     );
 
     $types = array('bz2', 'dmg', 'gz', 'jar', 'rar', 'sit', 'tar', 'zip');
-    $form['validation']['filtering']['types']['archives'] = array(
+    $form['validation']['extensions']['types']['archives'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Archives'),
       '#options' => drupal_map_assoc($types),
       '#default_value' => array_intersect($current_types, $types),
     );
 
-    $form['validation']['filtering']['addextensions'] = array(
+    $form['validation']['extensions']['addextensions'] = array(
       '#type' => 'textfield',
-      '#title' => t('Additional Extensions'),
+      '#title' => t('Additional extensions'),
       '#default_value' => $component['extra']['filtering']['addextensions'],
       '#description' => t('Enter a list of additional file extensions for this upload field, seperated by commas.<br /> Entered extensions will be appended to checked items above.'),
-      '#size' => 60,
+      '#size' => 20,
       '#weight' => 3,
-      '#default_value' => $component['extra']['filtering']['addextensions'],
-    );
-
-    $form['validation']['filtering']['size'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Max Upload Size'),
-      '#default_value' => $component['extra']['filtering']['size'],
-      '#description' => t('Enter the max file size a user may upload such as 2 MB or 800 KB. Your server has a max upload size of @size.', array('@size' => format_size(file_upload_max_size()))),
-      '#size' => 10,
-      '#weight' => 3,
-      '#default_value' => $component['extra']['filtering']['size'],
-      '#parents' => array('extra', 'filtering', 'size'),
-      '#element_validate' => array('_webform_edit_file_size_validate'),
     );
 
     $scheme_options = array();
@@ -229,7 +234,7 @@ function _webform_edit_file_check_directory($element) {
  * Change the submitted values of the component so that all filtering extensions
  * are saved as a single array.
  */
-function _webform_edit_file_filtering_validate($element, &$form_state) {
+function _webform_edit_file_extensions_validate($element, &$form_state) {
   // Predefined types.
   $extensions = array();
   foreach (element_children($element['types']) as $category) {
@@ -252,90 +257,46 @@ function _webform_edit_file_filtering_validate($element, &$form_state) {
   form_set_value($element['types'], $extensions, $form_state);
 }
 
-function theme_webform_edit_file($variables) {
-  $form = $variables['form'];
-
-  // Add a little JavaScript to check all the items in one type.
-  $javascript = '
-    function check_category_boxes() {
-      var checkValue = !document.getElementById("edit-extra-filtering-types-"+arguments[0]+"-"+arguments[1]).checked;
-      for(var i=1; i < arguments.length; i++) {
-        document.getElementById("edit-extra-filtering-types-"+arguments[0]+"-"+arguments[i]).checked = checkValue;
-      }
-    }
- ';
-  drupal_add_js($javascript, 'inline');
+/**
+ * Output the list of allowed extensions as checkboxes.
+ */
+function theme_webform_edit_file_extensions($variables) {
+  $element = $variables['element'];
 
   // Format the components into a table.
-  $per_row = 6;
   $rows = array();
-  foreach (element_children($form['validation']['filtering']['types']) as $key => $filtergroup) {
+  foreach (element_children($element['types']) as $filtergroup) {
     $row = array();
     $first_row = count($rows);
-    if ($form['validation']['filtering']['types'][$filtergroup]['#type'] == 'checkboxes') {
-      // Add the title.
-      $row[] = $form['validation']['filtering']['types'][$filtergroup]['#title'];
-      $row[] = '&nbsp;';
-      // Convert the checkboxes into individual form-items.
-      $checkboxes = form_process_checkboxes($form['validation']['filtering']['types'][$filtergroup]);
-      // Render the checkboxes in two rows.
-      $checkcount = 0;
-      $jsboxes = '';
-      foreach (element_children($checkboxes) as $key) {
-        $checkbox = $checkboxes[$key];
-        if ($checkbox['#type'] == 'checkbox') {
-          $checkcount++;
-          $jsboxes .= "'" . $checkbox['#return_value'] . "',";
-          if ($checkcount <= $per_row) {
-            $row[] = array('data' => drupal_render($checkbox));
-          }
-          elseif ($checkcount == $per_row + 1) {
-            $rows[] = array('data' => $row, 'style' => 'border-bottom: none;');
-            $row = array(array('data' => '&nbsp;'), array('data' => '&nbsp;'));
-            $row[] = array('data' => drupal_render($checkbox));
-          }
-          else {
-            $row[] = array('data' => drupal_render($checkbox));
-          }
-        }
-      }
-      // Pretty up the table a little bit.
-      $current_cell = $checkcount % $per_row;
-      if ($current_cell > 0) {
-        $colspan = $per_row - $current_cell   + 1;
-        $row[$current_cell + 1]['colspan'] = $colspan;
-      }
-      // Add the javascript links.
-      $jsboxes = drupal_substr($jsboxes, 0, drupal_strlen($jsboxes) - 1);
+    if ($element['types'][$filtergroup]['#type'] == 'checkboxes') {
+      $select_link = ' <a href="#" class="webform-select-link webform-select-link-' . $filtergroup . '">(' . t('select') . ')</a>';
+      $row[] = $element['types'][$filtergroup]['#title'];
+      $row[] = array('data' => $select_link, 'width' => 40);
+      $row[] = array('data' => drupal_render_children($element['types'][$filtergroup]), 'class' => array('webform-file-extensions', 'webform-select-group-' . $filtergroup));
       $rows[] = array('data' => $row);
-      $select_link = ' <a href="javascript:check_category_boxes(\'' . $filtergroup . '\',' . $jsboxes . ')">(select)</a>';
-      $rows[$first_row]['data'][1] = array('data' => $select_link, 'width' => 40);
-      unset($form['validation']['filtering']['types'][$filtergroup]);
-    }
-    elseif ($filtergroup != 'size') {
-      // Add other fields to the table (ie. additional extensions).
-      $row[] = $form['validation']['filtering']['types'][$filtergroup]['#title'];
-      unset($form['validation']['filtering']['types'][$filtergroup]['#title']);
-      $row[] = array(
-        'data' => drupal_render($form['validation']['filtering']['types'][$filtergroup]),
-        'colspan' => $per_row + 1,
-      );
-      unset($form['validation']['filtering']['types'][$filtergroup]);
-      $rows[] = array('data' => $row);
+      unset($element['types'][$filtergroup]);
     }
   }
-  $header = array(array('data' => t('Category'), 'colspan' => '2'), array('data' => t('Types'), 'colspan' => $per_row));
+
+  // Add the row for additional types.
+  $row = array();
+  $title = $element['addextensions']['#title'];
+  $element['addextensions']['#title'] = NULL;
+  $row[] = array('data' => $title, 'colspan' => 2);
+  $row[] = drupal_render($element['addextensions']);
+  $rows[] = $row;
+
+  $header = array(array('data' => t('Category'), 'colspan' => '2'), array('data' => t('Types')));
 
   // Create the table inside the form.
-  $form['validation']['filtering']['types']['table'] = array(
+  $element['types']['table'] = array(
     '#theme' => 'table',
     '#header' => $header,
-    '#rows' => $rows
+    '#rows' => $rows,
+    '#attributes' => array('class' => array('webform-file-extensions')),
   );
 
-  $output = drupal_render_children($form);
-
-  return $output;
+  return drupal_render_children($element);
 }
 
 /**
