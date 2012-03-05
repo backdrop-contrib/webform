@@ -89,12 +89,11 @@ Drupal.webform.selectCheckboxesLink = function(context) {
   function selectCheckboxes() {
     var group = this.className.replace(/.*?webform-select-link-([^ ]*).*/, '$1');
     var $checkboxes = $('.webform-select-group-' + group + ' input[type=checkbox]');
-    if ($checkboxes.attr('checked')) {
-      $checkboxes.removeAttr('checked');
-    }
-    else {
-      $checkboxes.attr('checked', 'checked');
-    }
+    var reverseCheck = !$checkboxes[0].checked;
+    $checkboxes.each(function() {
+      this.checked = reverseCheck;
+    });
+    $checkboxes.trigger('change');
     return false;
   }
   $('a.webform-select-link', context).click(selectCheckboxes);
