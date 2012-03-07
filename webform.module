@@ -2449,8 +2449,9 @@ function webform_client_form_submit($form, &$form_state) {
     // The cookie expires in the length of the interval plus a day to compensate for different timezones.
     if (variable_get('webform_use_cookies', 0)) {
       $cookie_name = 'webform-' . $node->nid;
-      $time = time();
-      setcookie($cookie_name . '[' . $time . ']', $time, $time + $node->webform['submit_interval'] + 86400);
+      $time = REQUEST_TIME;
+      $params = session_get_cookie_params();
+      setcookie($cookie_name . '[' . $time . ']', $time, $time + $node->webform['submit_interval'] + 86400, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
     }
 
     // Save session information about this submission for anonymous users,

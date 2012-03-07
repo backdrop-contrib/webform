@@ -827,7 +827,8 @@ function _webform_submission_user_limit_check($node) {
       foreach ($_COOKIE[$cookie_name] as $key => $timestamp) {
         if ($node->webform['submit_interval'] != -1 && $timestamp <= REQUEST_TIME - $node->webform['submit_interval']) {
           // Remove the cookie if past the required time interval.
-          setcookie($cookie_name . '[' . $key . ']', '', 0);
+          $params = session_get_cookie_params();
+          setcookie($cookie_name . '[' . $key . ']', '', 0, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
         }
       }
       // Count the number of submissions recorded in cookies.
