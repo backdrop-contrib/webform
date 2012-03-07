@@ -404,6 +404,11 @@ function webform_expand_select_or_other($element) {
     $element['other']['#default_value'] = implode(', ', $element['#default_value']);
   }
 
+  // Sanitize the options in Select or other check boxes and radio buttons.
+  if ($element['#select_type'] == 'checkboxes' || $element['#select_type'] == 'radios') {
+    $element['select']['#process'] = array_merge(element_info_property($element['#select_type'], '#process'), array('webform_expand_select_ids'));
+  }
+
   return $element;
 }
 
