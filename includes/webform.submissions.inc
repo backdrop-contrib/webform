@@ -408,10 +408,10 @@ function webform_submission_page($node, $submission, $format) {
 
   // Determine the mode in which we're displaying this submission.
   $mode = ($format != 'form') ? 'display' : 'form';
-  if (strpos($_SERVER['REQUEST_URI'], 'print/') !== FALSE) {
+  if (strpos(request_uri(), 'print/') !== FALSE) {
     $mode = 'print';
   }
-  if (strpos($_SERVER['REQUEST_URI'], 'printpdf/') !== FALSE) {
+  if (strpos(request_uri(), 'printpdf/') !== FALSE) {
     $mode = 'pdf';
   }
 
