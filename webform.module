@@ -916,7 +916,7 @@ function webform_webform_submission_actions($node, $submission) {
     );
   }
 
-  if (webform_results_access($node)) {
+  if (webform_results_access($node) && count($node->webform['emails'])) {
     $actions['resend'] = array(
       'title' => t('Resend e-mails'),
       'href' => 'node/' . $node->nid . '/submission/' . $submission->sid . '/resend',
