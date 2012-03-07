@@ -56,15 +56,7 @@ function webform_submission_update($node, $submission) {
   }
 
   // Update the main submission info.
-  db_update('webform_submissions')
-    ->fields(array(
-      'uid' => $submission->uid,
-      'submitted' => $submission->submitted,
-      'remote_addr' => $submission->remote_addr,
-      'is_draft' => $submission->is_draft,
-    ))
-    ->condition('sid', $submission->sid)
-    ->execute();
+  drupal_write_record('webform_submissions', $submission, 'sid');
 
   // If is draft, only delete data for components submitted, to
   // preserve any data from form pages not visited in this submission.
@@ -110,30 +102,21 @@ function webform_submission_insert($node, $submission) {
       $function = $module . '_webform_submission_presave';
       $function($node, $submission);
     }
-
-    $submission->sid = db_insert('webform_submissions')
-      ->fields(array(
-        'nid' => $node->webform['nid'],
-        'uid' => $submission->uid,
-        'submitted' => $submission->submitted,
-        'remote_addr' => $submission->remote_addr,
-        'is_draft' => $submission->is_draft,
-      ))
-      ->execute();
+    $submission->nid = $node->webform['nid'];
+    drupal_write_record('webform_submissions', $submission);
     $is_new = TRUE;
   }
 
   foreach ($submission->data as $cid => $values) {
     foreach ($values['value'] as $delta => $value) {
-      db_insert('webform_submitted_data')
-        ->fields(array(
-          'nid' => $node->webform['nid'],
-          'sid' => $submission->sid,
-          'cid' => $cid,
-          'no' => $delta,
-          'data' => is_null($value) ? '' : $value,
-        ))
-        ->execute();
+      $data = array(
+        'nid' => $node->webform['nid'],
+        'sid' => $submission->sid,
+        'cid' => $cid,
+        'no' => $delta,
+        'data' => is_null($value) ? '' : $value,
+      );
+      drupal_write_record('webform_submitted_data', $data);
     }
   }
 
