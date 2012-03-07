@@ -824,3 +824,10 @@ function webform_update_7319(&$sandbox) {
     $sandbox['#finished'] = $sandbox['progress'] / $sandbox['max'];
   }
 }
+
+/**
+ * Mark files uploaded through Webform that report active usage permanent.
+ */
+function webform_update_7320() {
+  db_query("UPDATE {file_managed} SET status = 1 WHERE fid IN (SELECT fid FROM {file_usage} WHERE module = :module_name)", array(':module_name' => 'webform'));
+}

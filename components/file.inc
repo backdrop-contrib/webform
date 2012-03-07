@@ -504,6 +504,8 @@ function webform_file_usage_adjust($submission) {
   if (isset($submission->file_usage)) {
     $files = file_load_multiple($submission->file_usage['added_fids']);
     foreach ($files as $file) {
+      $file->status = 1;
+      file_save($file);
       file_usage_add($file, 'webform', 'submission', $submission->sid);
     }
 
