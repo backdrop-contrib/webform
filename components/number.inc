@@ -402,19 +402,20 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
   }
 
   // Formatting.
-  if ($component['extra']['decimals'] != '') {
-    $average = _webform_number_format($component, $average);
-    $sum = _webform_number_format($component, $sum);
-  }
+  $average = _webform_number_format($component, $average);
+  $sum = _webform_number_format($component, $sum);
 
   $rows[0] = array(t('Zero/blank'), ($submissions - $nonzero));
   $rows[1] = array(t('User entered value'), $not_empty);
   $rows[2] = array(t('Sum') . ($advanced_stats ? ' (&Sigma;)' : ''), $sum);
   $rows[3] = array($average_title, $average);
-  $rows[4] = array('', l(t('More stats »'), 'node/' . $component['nid'] . '/webform-results/analysis/' . $component['cid']));
+
+  if (!$advanced_stats && $sum != 0) {
+    $rows[4] = array('', l(t('More stats »'), 'node/' . $component['nid'] . '/webform-results/analysis/' . $component['cid']));
+  }
 
   // Normal distribution information.
-  if ($advanced_stats && $population_count) {
+  if ($advanced_stats && $population_count && $sum != 0) {
     // Standard deviation.
     $stddev = 0;
     foreach($population as $value) {
@@ -436,7 +437,7 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
 
     $count[] = 0;
     $limit[] = $average - ($stddev * 4);
-    foreach($population as $value) {
+    foreach ($population as $value) {
       while ($value >= $limit[$index]) {
         $percent[] = number_format($count[$index] / $population_count * 100, 2, '.', '');
         $limit[] = $limit[$index] + $stddev;
@@ -451,18 +452,11 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
     $percent[] = number_format($count[$index] / $population_count * 100, 2, '.', '');
 
     // Format normal distribution table output.
-    if ($component['extra']['decimals'] != '') {
-      $stddev = _webform_number_format($component, $stddev);
-      $low = _webform_number_format($component, $population[0]);
-      $high = _webform_number_format($component, end($population));
-      foreach($limit as $key => $value) {
-        $limit[$key] = _webform_number_format($component, $value);
-      }
-    }
-    else {
-      foreach($limit as $key => $value) {
-        $limit[$key] = number_format($value, 2, '.', '');
-      }
+    $stddev = _webform_number_format($component, $stddev);
+    $low = _webform_number_format($component, $population[0]);
+    $high = _webform_number_format($component, end($population));
+    foreach($limit as $key => $value) {
+      $limit[$key] = _webform_number_format($component, $value);
     }
 
     // Column headings (override potential theme uppercase, e.g. Seven in D7).
