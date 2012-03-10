@@ -357,6 +357,7 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
   $population = array();
   $submissions = 0;
   $nonzero = 0;
+  $not_empty = 0;
   $sum = 0;
 
   $result = $query->execute();
@@ -369,6 +370,10 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
       $number = $value * 1.0;
     }
 
+    if ($value !== '') {
+      $not_empty++;
+    }
+
     if ($number > 0) {
       $nonzero++;
       $sum += $number;
@@ -378,24 +383,22 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
   }
   sort($population, SORT_NUMERIC);
 
-  // Average and population count (if we have values).
-  if ($sum) {
-    if ($component['extra']['excludezero']) {
-      $average = $sum / $nonzero;
-      $average_title = t('Average !mu excluding zeros/blanks', array('!mu' => $advanced_stats ? '(&mu;)' : ''));
-      // Sample (sub-set of total population).
-      $population_count = $nonzero - 1;
-      $sigma = 'sd';
-      $description = t('sample');
-    }
-    else {
-      $average = $sum / $submissions;
-      $average_title = t('Average !mu including zeros/blanks', array('!mu' => $advanced_stats ? '(&mu;)' : ''));
-      // Population.
-      $population_count = $submissions;
-      $sigma = '&sigma;';
-      $description = t('population');
-    }
+  // Average and population count.
+  if ($component['extra']['excludezero']) {
+    $average = $nonzero ? ($sum / $nonzero) : 0;
+    $average_title = t('Average !mu excluding zeros/blanks', array('!mu' => $advanced_stats ? '(&mu;)' : ''));
+    // Sample (sub-set of total population).
+    $population_count = $nonzero - 1;
+    $sigma = 'sd';
+    $description = t('sample');
+  }
+  else {
+    $average = $submissions ? ($sum / $submissions) : 0;
+    $average_title = t('Average !mu including zeros/blanks', array('!mu' => $advanced_stats ? '(&mu;)' : ''));
+    // Population.
+    $population_count = $submissions;
+    $sigma = '&sigma;';
+    $description = t('population');
   }
 
   // Formatting.
@@ -405,7 +408,7 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
   }
 
   $rows[0] = array(t('Zero/blank'), ($submissions - $nonzero));
-  $rows[1] = array(t('User entered value'), $submissions);
+  $rows[1] = array(t('User entered value'), $not_empty);
   $rows[2] = array(t('Sum') . ($advanced_stats ? ' (&Sigma;)' : ''), $sum);
   $rows[3] = array($average_title, $average);
   $rows[4] = array('', l(t('More stats »'), 'node/' . $component['nid'] . '/webform-results/analysis/' . $component['cid']));
