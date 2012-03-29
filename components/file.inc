@@ -336,6 +336,18 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE) {
 }
 
 /**
+ * Implements _webform_submit_component().
+ */
+function _webform_submit_file($component, $value) {
+  if (is_array($value)) {
+    return !empty($value['fid']) ? $value['fid'] : '';
+  }
+  else {
+    return !empty($value) ? $value : '';
+  }
+}
+
+/**
  * Pre-render callback to allow access to uploaded files.
  *
  * Files that have not yet been saved into a submission must be accessible to
