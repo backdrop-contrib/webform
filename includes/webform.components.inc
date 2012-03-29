@@ -625,7 +625,7 @@ function webform_component_edit_form_submit($form, &$form_state) {
   // Remove empty extra values.
   if (isset($form_state['values']['extra'])) {
     foreach ($form_state['values']['extra'] as $key => $value) {
-      if ($value  === '') {
+      if ($value  === '' && !isset($form['display'][$key]['#options'][''])) {
         unset($form_state['values']['extra'][$key]);
       }
     }
