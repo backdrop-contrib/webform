@@ -179,6 +179,7 @@ function webform_menu() {
     'page arguments' => array('webform_component_edit_form', 1, 4, FALSE),
     'access callback' => 'node_access',
     'access arguments' => array('update', 1),
+    'file' => 'includes/webform.components.inc',
     'type' => MENU_LOCAL_TASK,
   );
   $items['node/%webform_menu/webform/components/%webform_menu_component/clone'] = array(
@@ -187,6 +188,7 @@ function webform_menu() {
     'page arguments' => array('webform_component_edit_form', 1, 4, TRUE),
     'access callback' => 'node_access',
     'access arguments' => array('update', 1),
+    'file' => 'includes/webform.components.inc',
     'type' => MENU_LOCAL_TASK,
   );
   $items['node/%webform_menu/webform/components/%webform_menu_component/delete'] = array(
@@ -195,6 +197,7 @@ function webform_menu() {
     'page arguments' => array('webform_component_delete_form', 1, 4),
     'access callback' => 'node_access',
     'access arguments' => array('update', 1),
+    'file' => 'includes/webform.components.inc',
     'type' => MENU_LOCAL_TASK,
   );
 
