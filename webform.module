@@ -999,6 +999,32 @@ function webform_webform_submission_update($node, $submission) {
 }
 
 /**
+ * Implements hook_webform_submission_render_alter().
+ */
+function webform_webform_submission_render_alter(&$renderable) {
+  // If displaying a submission to end-users who are viewing their own
+  // submissions (and not through an e-mail), do not show hidden values.
+  // This needs to be implemented at the level of the entire submission, since
+  // individual components do not get contextual information about where they
+  // are being displayed.
+  $node = $renderable['#node'];
+  $is_admin = webform_results_access($node);
+  if (empty($renderable['#email']) && !$is_admin) {
+    // Find and hide the display of all hidden components.
+    foreach ($node->webform['components'] as $cid => $component) {
+      if ($component['type'] == 'hidden') {
+        $parents = webform_component_parent_keys($node, $component);
+        $element = &$renderable;
+        foreach ($parents as $pid) {
+          $element = &$element[$pid];
+        }
+        $element['#access'] = FALSE;
+      }
+    }
+  }
+}
+
+/**
  * Implements hook_file_download().
  *
  * Only allow users with view webform submissions to download files.
