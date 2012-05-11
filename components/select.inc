@@ -115,11 +115,11 @@ function _webform_edit_select($component) {
       '#multiple_toggle' => t('Multiple'),
       '#default_value' => $component['value'],
       '#options' => $options,
+      '#options_readonly' => !empty($component['extra']['options_source']),
       '#key_type' => 'mixed',
       '#key_type_toggle' => t('Customize keys (Advanced)'),
       '#key_type_toggled' => $component['extra']['custom_keys'],
       '#default_value_pattern' => '^%.+\[.+\]$',
-      '#disabled' => !empty($component['extra']['options_source']),
       '#weight' => 1,
     );
 
