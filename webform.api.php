@@ -684,10 +684,12 @@ function _webform_help_component($section) {
 function _webform_theme_component() {
   return array(
     'webform_grid' => array(
-      'arguments' => array('grid_element' => NULL),
+      'render element' => 'element',
+      'file' => 'components/grid.inc',
     ),
-    'webform_mail_grid' => array(
-      'arguments' => array('component' => NULL, 'value' => NULL),
+    'webform_display_grid' => array(
+      'render element' => 'element',
+      'file' => 'components/grid.inc',
     ),
   );
 }
