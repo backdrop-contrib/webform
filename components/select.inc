@@ -397,6 +397,10 @@ function webform_expand_select_or_other($element) {
   $element['other']['#validated'] = TRUE;
   $element['other']['#webform_validated'] = FALSE;
 
+  // The Drupal FAPI does not support #title_display inline so we need to move
+  // to a supported value here to be compatible with select_or_other.
+  $element['select']['#title_display'] = $element['#title_display'] === 'inline' ? 'before' : $element['#title_display'];
+
   // If the default value contains "select_or_other" (the key of the select
   // element for the "other..." choice), discard it and set the "other" value.
   if (is_array($element['#default_value']) && in_array('select_or_other', $element['#default_value'])) {
