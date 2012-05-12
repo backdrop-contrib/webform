@@ -1923,11 +1923,20 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
     $page_count = $form_state['webform']['page_count'];
     $page_num = $form_state['webform']['page_num'];
 
+    if ($page_count > 1) {
+      $next_page_labels = array();
+      $prev_page_labels = array();
+    }
+
     // Recursively add components to the form. The unfiltered version of the
     // form (typically used in Form Builder), includes all components.
     foreach ($component_tree['children'] as $cid => $component) {
       $component_value = isset($form_state['values']['submitted'][$cid]) ? $form_state['values']['submitted'][$cid] : NULL;
       if ($filter == FALSE || _webform_client_form_rule_check($node, $component, $page_num, $form_state)) {
+        if ($component['type'] == 'pagebreak') {
+          $next_page_labels[$component['page_num'] - 1] = !empty($component['extra']['next_page_label']) ? $component['extra']['next_page_label'] : t('Next Page >');
+          $prev_page_labels[$component['page_num']] = !empty($component['extra']['prev_page_label']) ? $component['extra']['prev_page_label'] : t('< Previous Page');
+        }
         _webform_client_form_add_component($node, $component, $component_value, $form['submitted'], $form, $form_state, $submission, 'form', $page_num, $filter);
       }
     }
@@ -1976,14 +1985,11 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
     }
 
     if ($page_count > 1) {
-      $next_page = t('Next Page >');
-      $prev_page = t('< Previous Page');
-
       // Add the submit button(s).
       if ($page_num > 1) {
         $form['actions']['previous'] = array(
           '#type' => 'submit',
-          '#value' => $prev_page,
+          '#value' => $prev_page_labels[$page_num],
           '#weight' => 5,
           '#validate' => array(),
           '#attributes' => array('formnovalidate' => 'formnovalidate'),
@@ -1999,7 +2005,7 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
       elseif ($page_num < $page_count) {
         $form['actions']['next'] = array(
           '#type' => 'submit',
-          '#value' => $next_page,
+          '#value' => $next_page_labels[$page_num],
           '#weight' => 10,
         );
       }

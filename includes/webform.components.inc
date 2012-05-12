@@ -389,6 +389,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     '#weight' => -9,
   );
 
+  $form['extra'] = array();
   if (webform_component_feature($component['type'], 'description')) {
     $form['extra']['description'] = array(
       '#type' => 'textarea',
