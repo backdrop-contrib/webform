@@ -2337,9 +2337,6 @@ function webform_client_form_pages($form, &$form_state) {
   $submit_op = !empty($form['actions']['submit']['#value']) ? $form['actions']['submit']['#value'] : t('Submit');
   $draft_op = !empty($form['actions']['draft']['#value']) ? $form['actions']['draft']['#value'] : t('Save Draft');
   if (!in_array($form_state['values']['op'], array($submit_op, $draft_op))) {
-    // Checkboxes need post-processing to maintain their values.
-    _webform_client_form_submit_process($node, $form_state['values']['submitted'], array('select', 'grid'));
-
     // Store values from the current page in the form state storage.
     if (is_array($form_state['values']['submitted'])) {
       foreach ($form_state['values']['submitted'] as $key => $val) {
