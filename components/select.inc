@@ -233,7 +233,10 @@ function _webform_edit_validate_select($element, &$form_state) {
     }
 
     // Set the listbox option if needed.
-    _webform_edit_validate_set_aslist($existing_keys, $form_state);
+    if (empty($missing_keys) && empty($long_keys) && empty($duplicate_keys)) {
+      $options = _webform_select_options_from_text($element['#value']);
+      _webform_edit_validate_set_aslist($options, $form_state);
+    }
   }
 
   return TRUE;
