@@ -45,7 +45,7 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
   foreach ($submissions as $sid => $submission) {
     $row = array(
       $submission->is_draft ? t('@sid (draft)', array('@sid' => $sid)) : $sid,
-      format_date($submission->submitted, 'small'),
+      format_date($submission->submitted, 'short'),
     );
     if (webform_results_access($node, $user)) {
       $row[] = theme('username', array('account' => $submission));
@@ -231,7 +231,7 @@ function theme_webform_results_table($variables) {
   // Generate a row for each submission.
   foreach ($submissions as $sid => $submission) {
     $cell[] = l($sid, 'node/' . $node->nid . '/submission/' . $sid);
-    $cell[] = format_date($submission->submitted, 'small');
+    $cell[] = format_date($submission->submitted, 'short');
     $cell[] = theme('username', array('account' => $submission));
     $cell[] = $submission->remote_addr;
     $component_headers = array();
@@ -761,7 +761,7 @@ function webform_results_export($node, $format = 'delimited', $options = array()
       $row[] = $sid;
     }
     if (isset($submission_information['time'])) {
-      $row[] = format_date($submission->submitted, 'small');
+      $row[] = format_date($submission->submitted, 'short');
     }
     if (isset($submission_information['draft'])) {
       $row[] = $submission->is_draft;
