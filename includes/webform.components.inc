@@ -216,7 +216,7 @@ function theme_webform_components_form($variables) {
       // Add each component to a table row.
       $row_data = array(
         $indents . filter_xss($component['name']),
-        t($component['type']),
+        $form['add']['type']['#options'][$component['type']],
         ($component['value'] == '') ? '-' : $component['value'],
         drupal_render($form['components'][$cid]['mandatory']),
         drupal_render($form['components'][$cid]['cid']) . drupal_render($form['components'][$cid]['pid']) . drupal_render($form['components'][$cid]['weight']),
