@@ -517,8 +517,8 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     }
     if (webform_component_feature($test_component['type'], 'conditional')) {
       $conditional_components[$cid] = $test_component;
+      $counter++;
     }
-    $counter++;
   }
   if ($component['type'] != 'pagebreak') {
     $fieldset_description = t('Create a rule to control whether or not to skip this page.');
