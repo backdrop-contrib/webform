@@ -196,7 +196,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
     }
 
     // Replace tokens in the message.
-    $email['message'] = _webform_filter_values($email['message'], $node, $submission, $email, FALSE, TRUE);
+    $email['message'] = _webform_filter_values($email['message'], $node, $submission, $email, FALSE);
 
     // Build the e-mail headers.
     $email['headers'] = theme(array('webform_mail_headers_' . $node->nid, 'webform_mail_headers'), array('node' => $node, 'submission' => $submission, 'email' => $email));
@@ -386,7 +386,8 @@ function webform_submission_page($node, $submission, $format) {
     $output = drupal_get_form('webform_client_form_' . $node->nid, $node, $submission);
   }
   else {
-    $output = webform_submission_render($node, $submission, NULL, $format);
+    $renderable = webform_submission_render($node, $submission, NULL, $format);
+    $output = drupal_render($renderable);
   }
 
   // Determine the mode in which we're displaying this submission.
@@ -580,7 +581,7 @@ function webform_submission_render($node, $submission, $email, $format) {
   }
 
   drupal_alter('webform_submission_render', $renderable);
-  return drupal_render($renderable);
+  return $renderable;
 }
 
 /**

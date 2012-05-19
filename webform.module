@@ -558,7 +558,7 @@ function webform_theme() {
       'pattern' => 'webform_mail_headers_[0-9]+',
     ),
     'webform_token_help' => array(
-      'variables' => array('groups' => array()),
+      'variables' => array('groups' => array('node')),
     ),
     // webform.admin.inc.
     'webform_admin_settings' => array(
@@ -2516,7 +2516,7 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Clean up the redirect URL and filter it for webform tokens.
   $redirect_url = trim($node->webform['redirect_url']);
-  $redirect_url = _webform_filter_values($redirect_url, $node, $submission, NULL, FALSE, TRUE);
+  $redirect_url = _webform_filter_values($redirect_url, $node, $submission, NULL, FALSE);
 
 
   // Remove the domain name from the redirect.
@@ -2554,11 +2554,11 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Show a message if manually set.
   if (isset($message)) {
-    drupal_set_message($message);
+    drupal_set_message(_webform_filter_values($message, $node));
   }
   // If redirecting and we have a confirmation message, show it as a message.
   elseif (!$is_draft && !$external_url && (!empty($redirect_url) && $redirect_url != '<confirmation>') && !empty($confirmation)) {
-    drupal_set_message(check_markup($confirmation, $node->webform['confirmation_format'], '', TRUE));
+    drupal_set_message(check_markup(_webform_filter_values($confirmation, $node), $node->webform['confirmation_format'], '', TRUE));
   }
 
   $form_state['redirect'] = $redirect;
@@ -2895,176 +2895,24 @@ function _webform_fetch_draft_sid($nid, $uid) {
  *   Boolean value indicating if the results should be run through check_plain.
  *   This is used any time the values will be output as HTML, but not in
  *   default values or e-mails.
- * @param $allow_anonymous
- *   Boolean value indicating if all tokens should be replaced for anonymous
- *   users, even if they contain sensitive user information such as %session or
- *   %ip_address. This is disabled by default to prevent user data from being
- *   preserved in the anonymous page cache and should only be used in
- *   non-cached situations, such as e-mails.
  */
-function _webform_filter_values($string, $node = NULL, $submission = NULL, $email = NULL, $strict = TRUE, $allow_anonymous = FALSE) {
-  global $user;
-  static $replacements;
-
+function _webform_filter_values($string, $node = NULL, $submission = NULL, $email = NULL, $strict = TRUE) {
   // Don't do any filtering if the string is empty.
   if (strlen(trim($string)) == 0) {
     return $string;
   }
 
-  // Setup default token replacements.
-  if (!isset($replacements)) {
-    $replacements['unsafe'] = array();
-    $replacements['safe']['%site'] = variable_get('site_name', 'drupal');
-    $replacements['safe']['%date'] = format_date(REQUEST_TIME, 'large');
+  $token_data = array();
+  if ($node) {
+    $token_data['node'] = $node;
   }
-
-  // Node replacements.
-  if (isset($node) && !array_key_exists('%nid', $replacements['safe'])) {
-    $replacements['safe']['%nid'] = $node->nid;
-    $replacements['safe']['%title'] = $node->title;
+  if ($submission) {
+    $token_data['webform-submission'] = $submission;
   }
-
-  // Determine the display format.
-  $format = isset($email['html']) && $email['html'] ? 'html' : 'text';
-
-  // Submission replacements.
-  if (isset($submission) && !isset($replacements['email'][$format])) {
-    module_load_include('inc', 'webform', 'includes/webform.components');
-
-    // Set the submission ID.
-    $replacements['unsafe']['%sid'] = $submission->sid;
-
-    // E-mails may be sent in two formats, keep tokens separate for each one.
-    $replacements['email'][$format] = array();
-
-    // Populate token values for each component.
-    foreach ($submission->data as $cid => $value) {
-      $component = $node->webform['components'][$cid];
-
-      // Find by form key.
-      $parents = webform_component_parent_keys($node, $component);
-      $form_key = implode('][', $parents);
-      $display_element = webform_component_invoke($component['type'], 'display', $component, $value['value'], $format);
-
-      // Ensure the component is added as a property.
-      $display_element['#webform_component'] = $component;
-
-      if (empty($display_element['#parents'])) {
-        $display_element['#parents'] = array_merge(array('submitted'), $parents);
-      }
-      if (empty($display_element['#id'])) {
-        $display_element['#id'] = drupal_html_id('edit-' . implode('-', $display_element['#parents']));
-      }
-      $replacements['email'][$format]['%email[' . $form_key . ']'] = render($display_element);
-      $display_element['#theme_wrappers'] = array(); // Remove label and wrappers.
-      $replacements['email'][$format]['%value[' . $form_key . ']'] = render($display_element);
-    }
-
-    // Provide blanks for components in the webform but not in the submission.
-    $missing_components = array_diff_key($node->webform['components'], $submission->data);
-    foreach ($missing_components as $component) {
-      $parents = webform_component_parent_keys($node, $component);
-      $form_key = implode('][', $parents);
-      $replacements['email'][$format]['%email[' . $form_key . ']'] = '';
-      $replacements['email'][$format]['%value[' . $form_key . ']'] = '';
-    }
-
-    // Submission edit URL.
-    $replacements['unsafe']['%submission_url'] = url('node/' . $node->nid . '/submission/' . $submission->sid, array('absolute' => TRUE));
+  if ($email) {
+    $token_data['webform-email'] = $email;
   }
-
-  // Token for the entire form tree for e-mails.
-  if (isset($submission) && isset($email)) {
-    $replacements['email'][$format]['%email_values'] = webform_submission_render($node, $submission, $email, $format);
-  }
-
-  // Provide a list of candidates for token replacement.
-  $special_tokens = array(
-    'safe' => array(
-      '%get' => $_GET,
-      '%post' => $_POST,
-    ),
-    'unsafe' => array(
-      '%cookie' => $_COOKIE,
-      '%session' => isset($_SESSION) ? $_SESSION : array(),
-      '%request' => $_REQUEST,
-      '%server' => $_SERVER,
-      '%profile' => (array) $user,
-    ),
-  );
-
-  // Replacements of global variable tokens.
-  if (!isset($replacements['specials_set'])) {
-    $replacements['specials_set'] = TRUE;
-
-    // Load profile information if available.
-    if ($user->uid) {
-      $account = user_load($user->uid);
-      $special_tokens['unsafe']['%profile'] = (array) $account;
-    }
-
-    // User replacements.
-    if (!array_key_exists('%uid', $replacements['unsafe'])) {
-      $replacements['unsafe']['%uid'] = !empty($user->uid) ? $user->uid : '';
-      $replacements['unsafe']['%username'] = isset($user->name) ? $user->name : '';
-      $replacements['unsafe']['%useremail'] = isset($user->mail) ? $user->mail : '';
-      $replacements['unsafe']['%ip_address'] = ip_address();
-    }
-
-    // Populate the replacements array with special variables.
-    foreach ($special_tokens as $safe_state => $tokens) {
-      foreach ($tokens as $token => $variable) {
-        // Safety check in case $_POST or some other global has been removed
-        // by a naughty module, in which case $variable may be NULL.
-        if (!is_array($variable)) {
-          continue;
-        }
-
-        foreach ($variable as $key => $value) {
-          // This special case for profile module dates.
-          if ($token == '%profile' && is_array($value) && isset($value['year'])) {
-            $replacement = webform_strtodate(webform_date_format(), $value['month'] . '/' . $value['day'] . '/' . $value['year'], 'UTC');
-          }
-          else {
-            // Checking for complex types (arrays and objects) fails here with
-            // incomplete objects (see http://php.net/is_object), so we check
-            // for simple types instead.
-            $replacement = (is_string($value) || is_bool($value) || is_numeric($value)) ? $value : '';
-          }
-          $replacements[$safe_state][$token . '[' . $key . ']'] = $replacement;
-        }
-      }
-    }
-  }
-
-  // Make a copy of the replacements so we don't affect the static version.
-  $safe_replacements = $replacements['safe'];
-
-  // Restrict replacements for anonymous users. Not all tokens can be used
-  // because they may expose session or other private data to other users when
-  // anonymous page caching is enabled.
-  if ($user->uid || $allow_anonymous) {
-    $safe_replacements += $replacements['unsafe'];
-    if (isset($replacements['email'][$format])) {
-      $safe_replacements += $replacements['email'][$format];
-    }
-  }
-  else {
-    foreach ($replacements['unsafe'] as $key => $value) {
-      $safe_replacements[$key] = '';
-    }
-  }
-
-  $find = array_keys($safe_replacements);
-  $replace = array_values($safe_replacements);
-  $string = str_replace($find, $replace, $string);
-
-  // Clean up any unused tokens.
-  foreach ($special_tokens as $safe_state => $tokens) {
-    foreach (array_keys($tokens) as $token) {
-      $string = preg_replace('/\\' . $token . '\[\w+\]/', '', $string);
-    }
-  }
+  $string = token_replace($string, $token_data, array('clear' => true));
 
   return $strict ? _webform_filter_xss($string) : $string;
 }
@@ -3170,7 +3018,7 @@ function webform_variable_get($variable) {
       $result = variable_get('webform_default_from_address', variable_get('site_mail', ini_get('sendmail_from')));
       break;
     case 'webform_default_subject':
-      $result = variable_get('webform_default_subject', t('Form submission from: %title'));
+      $result = variable_get('webform_default_subject', t('Form submission from: [node:title]'));
       break;
     case 'webform_node_types':
       $result = variable_get('webform_node_types', array('webform'));
@@ -3184,81 +3032,29 @@ function webform_variable_get($variable) {
 
 function theme_webform_token_help($variables) {
   $groups = $variables['groups'];
-  $groups = empty($groups) ? array('basic', 'node', 'special') : $groups;
-
-  static $tokens = array();
-
-  if (empty($tokens)) {
-    $tokens['basic'] = array(
-      'title' => t('Basic tokens'),
-      'tokens' => array(
-        '%username' => t('The name of the user if logged in. Blank for anonymous users.'),
-        '%useremail' => t('The e-mail address of the user if logged in. Blank for anonymous users.'),
-        '%ip_address' => t('The IP address of the user.'),
-        '%site' => t('The name of the site (i.e. %site_name)', array('%site_name' => variable_get('site_name', ''))),
-        '%date' => t('The current date, formatted according to the site settings.'),
-      ),
-    );
-
-    $tokens['node'] = array(
-      'title' => t('Node tokens'),
-      'tokens' => array(
-        '%nid' => t('The node ID.'),
-        '%title' => t('The node title.'),
-      ),
-    );
-
-    $tokens['special'] = array(
-      'title' => t('Special tokens'),
-      'tokens' => array(
-        '%profile[' . t('key') . ']' => t('Any user profile field or value, such as %profile[name] or %profile[profile_first_name]'),
-        '%get[' . t('key') . ']' => t('Tokens may be populated from the URL by creating URLs of the form http://example.com/my-form?foo=bar. Using the token %get[foo] would print "bar".'),
-        '%post[' . t('key') . ']' => t('Tokens may also be populated from POST values that are submitted by forms.'),
-      ),
-      'description' => t('In addition to %get and %post, the following super tokens may be used, though only with logged-in users: %server, %cookie, and %request. For example %server[HTTP_USER_AGENT] or %session[id].'),
-    );
-
-    $tokens['email'] = array(
-      'title' => t('E-mail tokens'),
-      'tokens' => array(
-        '%email_values' => t('All included components in a hierarchical structure.'),
-        '%email[' . t('key') . '] ' => t('A formatted value and field label. Elements may be accessed such as <em>%email[fieldset_a][key_b]</em>. Do not include quotes.'),
-        '%submission_url' => t('The URL for viewing the completed submission.'),
-      ),
-    );
-
-    $tokens['submission'] = array(
-      'title' => t('Submission tokens'),
-      'tokens' => array(
-        '%sid' => t('The unique submission ID.'),
-        '%value[key]' => t('A value without additional formatting. Elements may be accessed such as <em>%value[fieldset_a][key_b]</em>. Do not include quotes.'),
-      ),
-    );
-  }
-
-  $output = '';
-  $output .= '<p>' . t('You may use special tokens in this field that will be replaced with dynamic values.') . '</p>';
-
-  foreach ($tokens as $group_name => $group) {
-    if (!is_array($groups) || in_array($group_name, $groups)) {
-      $items = array();
-      foreach ($group['tokens'] as $token => $token_description) {
-        $items[] = $token . ' - ' . $token_description;
-      }
-      $output .= theme('item_list', array('items' => $items, 'title' => $group['title']));
-      $output .= isset($group['description']) ? '<p>' . $group['description']  . '</p>' : '';
-    }
-  }
 
   $fieldset = array(
     '#title' => t('Token values'),
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#children' => '<div>' . $output . '</div>',
     '#attributes' => array('class' => array('collapsible', 'collapsed')),
   );
-  return theme('fieldset', array('element' => $fieldset));
+
+  $help = '<p>' . t('This field supports dynamic token values. Common values might be [current-user:mail] or [node:title].') . '</p>';
+  if (!module_exists('token')) {
+    $help .= '<p>' . t('A full listing of tokens may be listed here by installing the <a href="http://drupal.org/project/token">Token module</a>.') . '</p>';
+  }
+  $fieldset['help'] = array(
+    '#markup' => $help,
+  );
+
+  $fieldset['token_tree'] = array(
+    '#theme' => 'token_tree',
+    '#token_types' => $groups,
+  );
+
+  return render($fieldset);
 }
 
 function _webform_safe_name($name) {
@@ -3344,15 +3140,15 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
   // Address may be an array if a component value was used on checkboxes.
   if (is_array($address)) {
     foreach ($address as $key => $individual_address) {
-      $address[$key] = _webform_filter_values($individual_address, $node, $submission, NULL, FALSE, TRUE);
+      $address[$key] = _webform_filter_values($individual_address, $node, $submission, NULL, FALSE);
     }
   }
   else {
-    $address = _webform_filter_values($address, $node, $submission, NULL, FALSE, TRUE);
+    $address = _webform_filter_values($address, $node, $submission, NULL, FALSE);
   }
 
   if ($format == 'long' && !empty($name)) {
-    $name = _webform_filter_values($name, $node, $submission, NULL, FALSE, TRUE);
+    $name = _webform_filter_values($name, $node, $submission, NULL, FALSE);
     if ($encode) {
       $name = mime_header_encode($name);
     }

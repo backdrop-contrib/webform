@@ -64,7 +64,7 @@ function webform_configure_form($form, &$form_state, $node) {
     '#type' => 'item',
     '#title' => t('Redirection location'),
     '#theme' => 'webform_advanced_redirection_form',
-    '#description' => t('Choose where to redirect the user upon successful submission.') . ' ' . t('The <em>Custom URL</em> option supports Webform token replacements.') . theme('webform_token_help', array('groups' => array('basic', 'node', 'special', 'submission'))),
+    '#description' => t('Choose where to redirect the user upon successful submission.') . ' ' . t('The <em>Custom URL</em> option supports Webform token replacements.') . theme('webform_token_help', array('groups' => array('node', 'webform-submission'))),
   );
   $form['submission']['redirection']['redirect']= array(
     '#type' => 'radios',
@@ -264,7 +264,7 @@ function webform_configure_form_validate($form, &$form_state) {
     if (empty($redirect_url)) {
       form_error($form['submission']['redirection']['redirect_url'], t('A valid URL is required for custom redirection.'));
     }
-    elseif (strpos($redirect_url, 'http') === 0 && !valid_url($redirect_url, TRUE)) {
+    elseif (strpos($redirect_url, 'http') === 0 && !valid_url(_webform_filter_values($redirect_url, $form['#node']), TRUE)) {
       form_error($form['submission']['redirection']['redirect_url'], t('The entered URL is not a valid address.'));
     }
     else {

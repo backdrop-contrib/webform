@@ -229,7 +229,7 @@ function webform_schema() {
         'not null' => FALSE,
       ),
       'excluded_components' => array(
-        'description' => 'A list of components that will not be included in the %email_values token. A list of CIDs separated by commas.',
+        'description' => 'A list of components that will not be included in the [submission:values] token. A list of CIDs separated by commas.',
         'type' => 'text',
         'not null' => TRUE,
       ),
@@ -830,4 +830,162 @@ function webform_update_7319(&$sandbox) {
  */
 function webform_update_7320() {
   db_query("UPDATE {file_managed} SET status = 1 WHERE fid IN (SELECT fid FROM {file_usage} WHERE module = :module_name)", array(':module_name' => 'webform'));
+}
+
+/**
+ * Rewrite token replacement system to use D7 tokens.
+ *
+ * If needed, please download and install the Token module from drupal.org.
+ * Otherwise some tokens will not be rendered. 
+ */
+function webform_update_7401(&$sandbox) {
+  // Define replacements.
+  $patterns = array(
+    '%username',
+    '%useremail',
+    '%uid',
+    '%date',
+    '%ip_address',
+    '%site',
+    '%nid',
+    '%title',
+    '%email_values',
+    '%submission_url',
+    '%sid',
+    '%server[REQUEST_URI]',
+    '][', // Used to convert nested arrays of %value and %email.
+  );
+  $replacements = array(
+    '[current-user:name]',
+    '[current-user:mail]',
+    '[current-user:uid]',
+    '[submission:date:long]',
+    '[current-user:ip-address]',
+    '[site:name]',
+    '[node:nid]',
+    '[node:title]',
+    '[submission:values]',
+    '[submission:url]',
+    '[submission:sid]',
+    '[current-page:url]',
+    ':', // Replace "][" with ":" for %value and %email.
+  );
+  $dpatterns = array(
+    '/%get\[([^\]]+)\]/m',
+    '/%email\[([^% \n\r\t]+)?\]/m',
+    '/%value\[([^% \n\r\t]+)?\]/m',
+    '/%profile\[([^\]]+)\]/m',
+  );
+  $dreplacements = array(
+    '[current-page:query:$1]',
+    '[submission:values:$1]',
+    '[submission:values:$1:nolabel]',
+    '[current-user:$1]',
+  );
+
+  // Set up the initial batch process.
+  if (!isset($sandbox['progress'])) {
+    $sandbox['progress'] = 0;
+    $sandbox['last_nid_processed'] = -1;
+    $sandbox['max'] = db_select('webform')
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+
+    // Update tokens in variables.
+    $variables = array(
+      'webform_default_subject',
+      'webform_default_from_name',
+      'webform_default_from_address',
+    );
+    foreach ($variables as $variable) {
+      $value = variable_get($variable, NULL);
+      if ($value !== NULL) {
+        $value = str_replace($patterns, $replacements, $value);
+        $value = preg_replace($dpatterns, $dreplacements, $value);
+        variable_set($variable, $value);
+      }
+    }
+  }
+
+  $limit = variable_get('webform_update_batch_size', 100);
+  $webforms = db_select('webform', 'w')
+    ->fields('w')
+    ->condition('nid', $sandbox['last_nid_processed'], '>')
+    ->orderBy('nid', 'ASC')
+    ->range(0, $limit)
+    ->execute()
+    ->fetchAllAssoc('nid', PDO::FETCH_ASSOC);
+
+  foreach ($webforms as $nid => $webform) {
+    // Update the webform record itself.
+    $original = $webform;
+    $parts = array(
+      'confirmation',
+      'redirect_url',
+    );
+    foreach ($parts as $part) {
+      $webform[$part] = str_replace($patterns, $replacements, $webform[$part]);
+      $webform[$part] = preg_replace($dpatterns, $dreplacements, $webform[$part]);
+    }
+    if ($webform != $original) {
+      drupal_write_record('webform', $webform, array('nid'));
+    }
+
+    // Update tokens in component configurations.
+    $result = db_select('webform_component', 'wc', array('fetch' => PDO::FETCH_ASSOC))
+      ->fields('wc')
+      ->condition('wc.nid', $nid)
+      ->execute();
+    foreach ($result as $component) {
+      $original_extra = $component['extra'];
+      $original_value = $component['value'];
+      $component['extra'] = unserialize($component['extra']);
+      if (isset($component['extra']['description'])) {
+        $description = str_replace($patterns, $replacements, $component['extra']['description']);
+        $description = preg_replace($dpatterns, $dreplacements, $description);
+        $component['extra']['description'] = $description;
+      }
+      $component['extra'] = serialize($component['extra']);
+      $value = str_replace($patterns, $replacements, $component['value']);
+      $value = preg_replace($dpatterns, $dreplacements, $value);
+      $component['value'] = $value;
+      if ($component['extra'] != $original_extra || $component['value'] != $original_value) {
+        drupal_write_record('webform_component', $component, array('nid', 'cid'));
+      }
+    }
+
+    // Update tokens in e-mail configurations.
+    $result = db_select('webform_emails', 'we', array('fetch' => PDO::FETCH_ASSOC))
+      ->fields('we')
+      ->condition('we.nid', $nid)
+      ->execute();
+    foreach ($result as $email) {
+      $original = $email['template'];
+      $template = str_replace($patterns, $replacements, $email['template']);
+      $template = preg_replace($dpatterns, $dreplacements, $template);
+      if ($template != $original) {
+        $email['template'] = $template;
+        drupal_write_record('webform_emails', $email, array('nid', 'eid'));
+      }
+    }
+  }
+
+  // If less than limit was processed, the update process is finished.
+  if (count($webforms) < $limit || $sandbox['progress'] == $sandbox['max']) {
+    $finished = TRUE;
+  }
+
+  // If there's no max value then there's nothing to update and we're finished.
+  if (empty($sandbox['max']) || isset($finished)) {
+    $message = t('Your existing webforms have been upgraded to use the global Drupal 7 token system.');
+    if (!module_exists('token')) {
+      $message .= ' <strong>' . t('Please download and install the <a href="http://drupal.org/project/token" target="_blank">Token module</a>. Otherwise some tokens will not be rendered.') . '</strong>';
+    }
+    return $message;
+  }
+  else {
+    // Indicate our current progress to the batch update system.
+    $sandbox['#finished'] = $sandbox['progress'] / $sandbox['max'];
+  }
 }

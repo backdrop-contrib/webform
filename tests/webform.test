@@ -15,10 +15,26 @@ class WebformTestCase extends DrupalWebTestCase {
    */
   function setUp() {
     // Enable Webform.
-    parent::setUp('webform', 'profile');
+    parent::setUp('webform', 'token');
 
-    // Create a profile field to test %profile tokens.
-    db_query("INSERT INTO {profile_field} (title, name, explanation, category, type, weight, required, register, visibility, autocomplete, options, page) VALUES ('Gender', 'profile_gender', '', 'Profile', 'textfield', 0, 0, 0, 2, 0, '', '')");
+    // Create a profile field to test [user:?] tokens.
+    $field = array(
+      'field_name' => 'gender',
+      'type' => 'text',
+      'cardinality' => 1,
+    );
+    $instance = array(
+      'field_name' => 'gender',
+      'entity_type' => 'user',
+      'bundle' => 'user',
+      'label' => 'Gender',
+      'widget' => array(
+        'type' => 'text_textfield',
+        'label' => 'Gender',
+      ),
+    );
+    field_create_field($field);
+    field_create_instance($instance);
 
     // Create a normal user that can view their own submissions.
     $permissions['userAccess'] = array(
@@ -53,9 +69,8 @@ class WebformTestCase extends DrupalWebTestCase {
 
     foreach ($permissions as $user_key => $role_permissions) {
       $this->webform_users[$user_key] = $this->drupalCreateUser($role_permissions);
-      $profile = array('profile_gender' => 'Female');
-      $this->webform_users[$user_key]->profile_gender = 'Female';
-      profile_save_profile($profile, $this->webform_users[$user_key], 'Profile');
+      $this->webform_users[$user_key]->gender = array(LANGUAGE_NONE => array(array('value' => 'Female')));
+      user_save($this->webform_users[$user_key]);
     }
   }
 
@@ -396,7 +411,7 @@ class WebformTestCase extends DrupalWebTestCase {
           'form_key' => 'email',
           'name' => 'E-mail',
           'type' => 'email',
-          'value' => '%useremail',
+          'value' => '[current-user:mail]',
           'mandatory' => '0',
           'extra' => array(
             // SimpleTest does not support type="email" input fields.
@@ -449,7 +464,7 @@ class WebformTestCase extends DrupalWebTestCase {
           'form_key' => 'textfield_disabled',
           'name' => 'Textfield Disabled',
           'type' => 'textfield',
-          'value' => '%get[foo]',
+          'value' => '[current-page:query:foo]',
           'extra' => array(
             'disabled' => 1,
           ),
@@ -457,7 +472,9 @@ class WebformTestCase extends DrupalWebTestCase {
           'pid' => '0',
           'weight' => '-15',
         ),
-        'sample values' => NULL,
+        // Manually hard-code the input if token is not available.
+        // TODO: Update after http://drupal.org/node/1347790 is finished.
+        'sample values' => module_exists('token') ? NULL : 'bar',
         'database values' => array('bar'),
         'database default values' => array('bar'),
       ),
@@ -466,7 +483,7 @@ class WebformTestCase extends DrupalWebTestCase {
           'form_key' => 'textfield_profile',
           'name' => 'Textfield Profile',
           'type' => 'textfield',
-          'value' => '%profile[profile_gender]',
+          'value' => '[current-user:gender]',
           'extra' => array(
             'width' => '20',
           ),
@@ -476,7 +493,9 @@ class WebformTestCase extends DrupalWebTestCase {
         ),
         'sample values' => 'Female',
         'database values' => array('Female'),
-        'database default values' => array($this->webform_users['admin']->profile_gender),
+        // The default value will be blank if token does not exist.
+        // TODO: Update after http://drupal.org/node/1347790 is finished.
+        'database default values' => module_exists('token') ? array($this->webform_users['admin']->gender[LANGUAGE_NONE][0]['value']) : '',
       ),
 
       // Test time components.
