@@ -829,7 +829,7 @@ function webform_component_delete($node, $component) {
     $submissions = webform_get_submissions($node->nid);
     foreach ($submissions as $submission) {
       if (isset($submission->data[$component['cid']])) {
-        webform_component_invoke($component['type'], 'delete', $component, $submission->data[$component['cid']]['value']);
+        webform_component_invoke($component['type'], 'delete', $component, $submission->data[$component['cid']]);
       }
     }
   }
@@ -908,6 +908,19 @@ function webform_component_feature($type, $feature) {
     'private' => TRUE,
   );
   return isset($components[$type]['features'][$feature]) ? $components[$type]['features'][$feature] : !empty($defaults[$feature]);
+}
+
+/**
+ * Get a component property from the component definition.
+ *
+ * @see hook_webform_component_info()
+ */
+function webform_component_property($type, $property) {
+  $components = webform_components();
+  $defaults = array(
+    'conditional_type' => 'string',
+  );
+  return isset($components[$type][$property]) ? $components[$type][$property] : $defaults[$property];
 }
 
 /**

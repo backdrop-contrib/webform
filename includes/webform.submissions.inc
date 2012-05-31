@@ -28,10 +28,10 @@ function webform_submission_data($node, $submitted) {
     }
 
     if (is_array($values)) {
-      $data[$cid]['value'] = $values;
+      $data[$cid] = $values;
     }
     else {
-      $data[$cid]['value'][0] = $values;
+      $data[$cid][0] = $values;
     }
   }
 
@@ -108,7 +108,7 @@ function webform_submission_insert($node, $submission) {
   }
 
   foreach ($submission->data as $cid => $values) {
-    foreach ($values['value'] as $delta => $value) {
+    foreach ($values as $delta => $value) {
       $data = array(
         'nid' => $node->webform['nid'],
         'sid' => $submission->sid,
@@ -140,7 +140,7 @@ function webform_submission_delete($node, $submission) {
   // Iterate through all components and let each do cleanup if necessary.
   foreach ($node->webform['components'] as $cid => $component) {
     if (isset($submission->data[$cid])) {
-      webform_component_invoke($component['type'], 'delete', $component, $submission->data[$cid]['value']);
+      webform_component_invoke($component['type'], 'delete', $component, $submission->data[$cid]);
     }
   }
 
@@ -274,9 +274,9 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
         if ($email['attachments']) {
           webform_component_include('file');
           foreach ($node->webform['components'] as $component) {
-            if (webform_component_feature($component['type'], 'attachment') && !empty($submission->data[$component['cid']]['value'][0])) {
+            if (webform_component_feature($component['type'], 'attachment') && !empty($submission->data[$component['cid']][0])) {
               if (webform_component_implements($component['type'], 'attachments')) {
-                $files = webform_component_invoke($component['type'], 'attachments', $component, $submission->data[$component['cid']]['value']);
+                $files = webform_component_invoke($component['type'], 'attachments', $component, $submission->data[$component['cid']]);
                 if ($files) {
                   $attachments = array_merge($attachments, $files);
                 }
@@ -573,9 +573,10 @@ function webform_submission_render($node, $submission, $email, $format) {
   // Make sure at least one field is available
   if (isset($component_tree['children'])) {
     // Recursively add components to the form.
+    $input_values = $submission->data;
     foreach ($component_tree['children'] as $cid => $component) {
-      if (_webform_client_form_rule_check($node, $component, $component['page_num'], NULL, $submission)) {
-        _webform_client_form_add_component($node, $component, NULL, $renderable, $renderable, NULL, $submission, $format);
+      if (_webform_client_form_rule_check($node, $component, $component['page_num'], $input_values)) {
+        _webform_client_form_add_component($node, $component, NULL, $renderable, $renderable, $input_values, $format);
       }
     }
   }
@@ -701,7 +702,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     }
     // CID may be NULL if this submission does not actually contain any data.
     if ($row->cid) {
-      $submissions[$row->sid]->data[$row->cid]['value'][$row->no] = $row->data;
+      $submissions[$row->sid]->data[$row->cid][$row->no] = $row->data;
     }
     $previous = $row->sid;
   }

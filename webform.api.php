@@ -115,7 +115,7 @@ function hook_webform_submission_load(&$submissions) {
 function hook_webform_submission_presave($node, &$submission) {
   // Update some component's value before it is saved.
   $component_id = 4;
-  $submission->data[$component_id]['value'][0] = 'foo';
+  $submission->data[$component_id][0] = 'foo';
 }
 
 /**

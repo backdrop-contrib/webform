@@ -20,6 +20,7 @@ files[] = views/webform_handler_filter_webform_status.inc
 files[] = views/webform.views.inc
 
 files[] = tests/components.test
+files[] = tests/conditionals.test
 files[] = tests/permissions.test
 files[] = tests/submission.test
 files[] = tests/webform.test
