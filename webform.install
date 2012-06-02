@@ -1199,7 +1199,9 @@ function webform_update_7402() {
   db_create_table('webform_conditional', $schema['webform_conditional']);
   db_create_table('webform_conditional_rules', $schema['webform_conditional_rules']);
   // Rebuild schema so that webform_update_7403() can use drupal_write_record().
-  drupal_get_schema(NULL, TRUE);
+  if (db_table_exists('system') && db_field_exists('system', 'status')) {
+    drupal_get_schema(NULL, TRUE);
+  }
 }
 
 /**
