@@ -119,11 +119,10 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
             // Check if this matches the key plus a modifier.
             else {
               $modifier = substr($name, strrpos($name, ':') + 1);
-              $parent_token = substr($name, 0, strrpos($name, ':'));
               // TODO: Allow components to provide additional modifiers per
               // type, i.e. key, day, hour, minute, etc.
               $available_modifiers = array('nolabel');
-              if (strcmp($name, $parent_token === 0) && in_array($modifier, $available_modifiers)) {
+              if (strcmp($name, $parent_token . ':' . $modifier) === 0 && in_array($modifier, $available_modifiers)) {
                 $match = TRUE;
               }
               else {
