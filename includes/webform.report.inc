@@ -442,7 +442,8 @@ function webform_results_download_form($form, &$form_state, $node) {
     '#default_value' => TRUE
   );
 
-  $form['submit'] = array(
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Download'),
   );

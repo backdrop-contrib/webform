@@ -84,7 +84,7 @@ function webform_conditionals_form($form, &$form_state, $node) {
     ),
   );
 
-  $form['actions'] = array('#type' => 'markup');
+  $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save conditions'),
