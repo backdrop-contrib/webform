@@ -1155,6 +1155,7 @@ function webform_node_insert($node) {
   }
 
   module_load_include('inc', 'webform', 'includes/webform.components');
+  module_load_include('inc', 'webform', 'includes/webform.conditionals');
   module_load_include('inc', 'webform', 'includes/webform.emails');
 
   // Insert the webform.
