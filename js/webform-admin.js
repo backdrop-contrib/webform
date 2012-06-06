@@ -196,22 +196,26 @@ Drupal.webform.conditionalOperatorChange = function() {
   var operator = $(this).val();
   var $value = $(this).parents('.webform-conditional-rule:first').find('.webform-conditional-value');
   var name = $value.find('input, select, textarea').attr('name');
-
+  var originalValue = false;
 
   // Given the dataType and operator, we can determine the form key.
   var formKey = Drupal.settings.webform.conditionalValues.operators[dataType][operator]['form'];
 
-  // Save the default field as printed on the original page.
+  // On initial request, save the default field as printed on the original page.
   if (!$value[0]['webformConditionalOriginal']) {
     $value[0]['webformConditionalOriginal'] = $value[0].innerHTML;
+    originalValue = $value.find('input:first').val();
   }
 
+  // If using the default (a textfield), restore the original field.
   if (formKey === 'default') {
     $value[0].innerHTML = $value[0]['webformConditionalOriginal'];
   }
+  // If the operator does not need a source value (i.e. is empty), hide it.
   else if (formKey === false) {
     $value[0].innerHTML = '&nbsp;';
   }
+  // Lastly check if there is a specialized form for this source and operator.
   else {
     // If there is a per-source form for this operator (e.g. option lists), use
     // the specialized value form.
@@ -225,7 +229,12 @@ Drupal.webform.conditionalOperatorChange = function() {
   }
 
   // Set the name attribute to match the original placeholder field.
-  $value.find('input, select, textarea').filter(':first').attr('name', name);
+  var $firstElement = $value.find('input, select, textarea').filter(':first');
+  $firstElement.attr('name', name);
+
+  if (originalValue) {
+    $firstElement.val(originalValue);
+  }
 }
 
 /**
