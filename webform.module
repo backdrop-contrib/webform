@@ -3704,8 +3704,10 @@ function webform_date_format($size = 'medium') {
  * Return a date in the desired format taking into consideration user timezones.
  */
 function webform_strtodate($format, $string, $timezone_name = NULL) {
+  global $user;
+
   // Adjust the time based on the user or site timezone.
-  if (variable_get('configurable_timezones', 1) && $timezone_name == 'user') {
+  if (variable_get('configurable_timezones', 1) && $timezone_name == 'user' && $user->uid) {
     $timezone_name = isset($GLOBALS['user']->timezone) ? $GLOBALS['user']->timezone : 'UTC';
   }
   // If the timezone is still empty or not set, use the site timezone.
