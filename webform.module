@@ -2156,15 +2156,22 @@ function webform_client_form_includes($form, $form_state) {
  * @param $input_values
  *   An array of all the values in the form used for comparison. Values from
  *   $form_state['values']['submitted'] or $submission->data may be used.
+ * @param $format
+ *   The format the component will be displayed in. May be one of the following:
+ *   - form: Show in an editable form.
+ *   - html: Show in HTML results.
+ *   - text: Show in plain text.
+ *
  * @return
  *   A Webform constant of one of the following:
  *   - WEBFORM_CONDITIONAL_EXCLUDE (0): The component should be hidden.
  *   - WEBFORM_CONDITIONAL_INCLUDE (1): The component should be shown.
- *   - WEBFORM_CONDITIONAL_SAME_PAGE (2): The component should be hidden, but needs
- *       to be rendered on the page because at least one source component is on
- *       the same page. The field will be hidden with JavaScript.
+ *   - WEBFORM_CONDITIONAL_SAME_PAGE (2): The component should be hidden, but
+ *       needs to be rendered on the page because at least one source component
+ *       is on the same page. The field will be hidden with JavaScript. This
+ *       constant is only used if the $format parameter is "form".
  */
-function _webform_client_form_rule_check($node, $component, $page_num, $input_values) {
+function _webform_client_form_rule_check($node, $component, $page_num, $input_values, $format = 'form') {
   // Hold a static map of target CID to conditionals for lookup efficiency.
   static $target_maps = array();
   $show_component = TRUE;
@@ -2198,7 +2205,7 @@ function _webform_client_form_rule_check($node, $component, $page_num, $input_va
   if ($component['page_num'] > 1 && $component['type'] != 'pagebreak') {
     foreach ($node->webform['components'] as $cid => $page_component) {
       if ($page_component['type'] == 'pagebreak' && $page_component['page_num'] == $page_num) {
-        $show_page = _webform_client_form_rule_check($node, $page_component, $page_num, $input_values);
+        $show_page = _webform_client_form_rule_check($node, $page_component, $page_num, $input_values, $format);
         break;
       }
     }
@@ -2208,7 +2215,7 @@ function _webform_client_form_rule_check($node, $component, $page_num, $input_va
   $show_parent = $show_page;
   if ($show_parent && $component['pid'] && isset($node->webform['components'][$component['pid']])) {
     $parent_component = $node->webform['components'][$component['pid']];
-    $show_parent = _webform_client_form_rule_check($node, $parent_component, $page_num, $input_values);
+    $show_parent = _webform_client_form_rule_check($node, $parent_component, $page_num, $input_values, $format);
   }
 
   // Check the individual component rules.
@@ -2230,10 +2237,11 @@ function _webform_client_form_rule_check($node, $component, $page_num, $input_va
         $source_component = $node->webform['components'][$rule['source']];
         $source_cid = $source_component['cid'];
 
-        // If a source component is on the same page as the current page, we
-        // are unable to tell if the target component is needed, so we return
-        // the same page constant, which evaluates to TRUE (a value of 2).
-        if ($source_component['page_num'] == $page_num) {
+        // If destined for form output, and a source component is on the same
+        // page as the current page, we are unable to tell if the target
+        // component is needed, so we return the same page constant, which
+        // evaluates to TRUE (a value of 2).
+        if ($format === 'form' && $source_component['page_num'] == $page_num) {
           $show_component = WEBFORM_CONDITIONAL_SAME_PAGE;
           break 2;
         }
@@ -2271,7 +2279,12 @@ function _webform_client_form_rule_check($node, $component, $page_num, $input_va
     }
   }
 
-  return $show_component ? WEBFORM_CONDITIONAL_INCLUDE : WEBFORM_CONDITIONAL_EXCLUDE;
+  // Convert the result to our defined constants.
+  if (is_bool($show_component)) {
+    $show_component = $show_component ? WEBFORM_CONDITIONAL_INCLUDE : WEBFORM_CONDITIONAL_EXCLUDE;
+  }
+
+  return $show_component;
 }
 
 /**
@@ -2376,7 +2389,7 @@ function _webform_client_form_add_component($node, $component, $component_value,
   if (isset($component['children']) && is_array($component['children'])) {
     foreach ($component['children'] as $scid => $subcomponent) {
       $subcomponent_value = isset($input_values[$scid]) ? $input_values[$scid] : NULL;
-      if (_webform_client_form_rule_check($node, $subcomponent, $page_num, $input_values)) {
+      if (_webform_client_form_rule_check($node, $subcomponent, $page_num, $input_values, $format)) {
         _webform_client_form_add_component($node, $subcomponent, $subcomponent_value, $parent_fieldset[$component['form_key']], $form, $input_values, $format, $page_num, $filter);
       }
     }
