@@ -25,7 +25,7 @@ Drupal.webform.datepicker = function(context) {
     var $calendar = $webformDatepicker.find('input.webform-calendar');
 
     // Ensure the page we're on actually contains a datepicker.
-    if ($calendar.length == 0) { 
+    if ($calendar.length == 0) {
       return;
     }
 
@@ -153,10 +153,10 @@ Drupal.webform.conditionalCheck = function(e) {
       }
 
       if (showComponent) {
-        $('#' + ruleGroup['target']).show();
+        $('#' + ruleGroup['target']).find('input.webform-conditional-disabled').removeAttr('disabled').removeClass('webform-conditional-disabled').end().show();
       }
       else {
-        $('#' + ruleGroup['target']).find('input').val('').end().hide();
+        $('#' + ruleGroup['target']).find('input:not(:disabled)').attr('disabled', true).addClass('webform-conditional-disabled').end().hide();
       }
 
     });
