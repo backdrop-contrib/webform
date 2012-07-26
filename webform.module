@@ -2188,7 +2188,7 @@ function _webform_client_form_rule_check($node, $component, $page_num, $input_va
   }
 
   // Short cut the rest of this function if no conditionals are defined.
-  if (empty($target_map)) {
+  if (empty($target_map) || $component['extra']['private']) {
     return $show_component ? WEBFORM_CONDITIONAL_INCLUDE : WEBFORM_CONDITIONAL_EXCLUDE;
   }
 
