@@ -518,7 +518,7 @@ function _webform_csv_headers_number($component, $export_options) {
  * Implements _webform_csv_data_component().
  */
 function _webform_csv_data_number($component, $export_options, $value) {
-  if (isset($value[0]) && $component['extra']['decimals'] !== '') {
+  if (isset($value[0]) && is_numeric($value[0]) && $component['extra']['decimals'] !== '') {
     $value[0] = number_format($value[0], $component['extra']['decimals'], '.', '');
   }
   return isset($value[0]) ? $value[0] : '';
