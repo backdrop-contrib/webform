@@ -601,6 +601,13 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     '#weight' => 50,
   );
 
+  // Remove fieldsets without any child form controls.
+  foreach ($form as $group_key => $group) {
+    if (isset($group['#type']) && $group['#type'] === 'fieldset' && !element_children($group)) {
+      unset($form[$group_key]);
+    }
+  }
+
   return $form;
 }
 
