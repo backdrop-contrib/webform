@@ -699,6 +699,9 @@ function _webform_number_select_options($component) {
  * Apply number format.
  */
 function _webform_number_format($component, $value) {
+  if (!is_numeric($value)) {
+    return '';
+  }
   // If no decimal places are specified, do a best guess length of decimals.
   $decimals = $component['extra']['decimals'];
   if ($decimals === '') {
