@@ -286,7 +286,7 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
     '#default_value' => array_diff(array_keys($node->webform['components']), $email['excluded_components']),
     '#multiple' => TRUE,
     '#size' => 10,
-    '#description' => t('The selected components will be included in the [submission:values] token. Individual values may still be printed if explicitly specified as a [submision:values:?] in the template.'),
+    '#description' => t('The selected components will be included in the [submission:values] token. Individual values may still be printed if explicitly specified as a [submission:values:?] in the template.'),
     '#process' => array('webform_component_select'),
   );
 
