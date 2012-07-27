@@ -42,11 +42,16 @@ function webform_conditionals_form($form, &$form_state, $node) {
   $form['conditionals']['#prefix'] = '<div id="webform-conditionals-ajax">';
   $form['conditionals']['#suffix'] = '</div>';
 
+  // Keep track of the max conditional count to use as the range for weights.
+  $form_state['conditional_count'] = isset($form_state['conditional_count']) ? $form_state['conditional_count'] : 1;
+  $form_state['conditional_count'] = count($conditionals) > $form_state['conditional_count'] ? count($conditionals) : $form_state['conditional_count'];
+
   $source_list = webform_component_list($node, 'conditional', TRUE, TRUE);
   $target_list = webform_component_list($node, TRUE);
-  $weight = 0;
+  $delta = $form_state['conditional_count'];
+  $weight = -$delta - 1;
   foreach ($conditionals as $rgid => $conditional_group) {
-    $weight++;
+    $weight = $conditional_group['weight'];
     $form['conditionals'][$rgid] = array(
       '#type' => 'webform_conditional',
       '#default_value' => $conditional_group,
@@ -60,17 +65,21 @@ function webform_conditionals_form($form, &$form_state, $node) {
       '#weight' => $weight,
     );
     $form['conditionals'][$rgid]['weight'] = array(
-      '#type' => 'hidden',
-      '#size' => 4,
-      '#default_value' => $conditional_group['weight'],
+      '#type' => 'weight',
+      '#title' => t('Weight for rule group !rgid', array('!rgid' => $rgid)),
+      '#title_display' => 'invisible',
+      '#default_value' => $weight,
+      '#delta' => $delta,
     );
   }
 
   $form['conditionals']['new']['#weight'] = $weight + 1;
   $form['conditionals']['new']['weight'] = array(
-    '#type' => 'hidden',
-    '#size' => 4,
+    '#type' => 'weight',
+    '#title' => t('Weight for new rule group'),
+    '#title_display' => 'invisible',
     '#default_value' => $weight + 1,
+    '#delta' => $delta,
   );
   $form['conditionals']['new']['new'] = array(
     '#type' => 'submit',
@@ -102,12 +111,13 @@ function webform_conditionals_form($form, &$form_state, $node) {
  */
 function webform_conditionals_form_add($form, &$form_state) {
   // Build a default new conditional.
-  $weight = 0;
+  unset($form_state['values']['conditionals']['new']);
+  $weight = count($form_state['values']['conditionals']) > 10 ? -count($form_state['values']['conditionals']) : -10;
   foreach ($form_state['values']['conditionals'] as $key => $conditional) {
     $weight = max($weight, $conditional['weight']);
   }
 
-  $conditional['weight'] = count($form_state['values']['conditionals']);
+  $conditional['weight'] = $weight + 1;
   $conditional['rules'][0] = array(
     'source' => NULL,
     'operator' => NULL,
@@ -165,7 +175,7 @@ function webform_conditionals_ajax($form, $form_state) {
  */
 function theme_webform_conditional_groups($variables) {
   $element = $variables['element'];
-  drupal_add_tabledrag('webform-conditionals-table', 'order', 'sibling', 'webform-conditional-weight', NULL, NULL, FALSE);
+  drupal_add_tabledrag('webform-conditionals-table', 'order', 'sibling', 'webform-conditional-weight');
   drupal_add_js('Drupal.theme.prototype.tableDragChangedMarker = function() { return ""; }', 'inline');
   drupal_add_js('Drupal.theme.prototype.tableDragChangedWarning = function() { return "<span>&nbsp;</span>"; }', 'inline');
 
@@ -176,23 +186,22 @@ function theme_webform_conditional_groups($variables) {
   $element_count = count($element_children);
   foreach ($element_children as $key) {
     $row = array();
-    $element[$key]['weight']['#attributes']['class'] = array('webform-conditional-weight');
-    $row[] = array(
-      'width' => 1,
-      'data' => drupal_render($element[$key]['weight']),
-    );
     if ($key === 'new') {
       $data = '';
       if ($element_count === 1) {
         $data = t('There are conditional actions on this form.') . ' ';
       }
-      $data = '<div class="webform-conditional-new">' . $data . t('Add a new condition: ') . drupal_render($element[$key]) . '</div>';
+      $data = '<div class="webform-conditional-new">' . $data . t('Add a new condition: ') . drupal_render($element[$key]['new']) . '</div>';
     }
     else {
       $data = drupal_render($element[$key]);
     }
     $row[] = array(
       'data' => $data,
+    );
+    $element[$key]['weight']['#attributes']['class'] = array('webform-conditional-weight');
+    $row[] = array(
+      'data' => drupal_render($element[$key]['weight']),
     );
     $classes = ($key === 'new') ? array() : array('draggable');
     if (!empty($element[$key]['#ajax_added'])) {

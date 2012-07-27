@@ -125,6 +125,7 @@ tr.webform-add-form .tabledrag-changed {
   position: relative;
   padding-left: 1em;
   padding-right: 8em;
+  margin-left: 3em;
   max-width: 500px;
 }
 

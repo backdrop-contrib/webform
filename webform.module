@@ -1449,7 +1449,7 @@ function webform_node_load($nodes, $types) {
     $nodes[$nid]->webform['conditionals'] = db_select('webform_conditional')
       ->fields('webform_conditional')
       ->condition('nid', $nid)
-      ->orderBy('rgid')
+      ->orderBy('weight')
       ->execute()
       ->fetchAllAssoc('rgid', PDO::FETCH_ASSOC);
     if ($nodes[$nid]->webform['conditionals']) {
