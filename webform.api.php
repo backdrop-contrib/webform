@@ -320,9 +320,9 @@ function hook_webform_component_delete($component) {
  *     - spam_analysis
  *     - group
  *
- *   Note that most of these features do not indicate the default state, but 
+ *   Note that most of these features do not indicate the default state, but
  *   determine if the component can have this property at all. Setting
- *   "required" to TRUE does not mean that a component's fields will always be 
+ *   "required" to TRUE does not mean that a component's fields will always be
  *   required, but instead give the option to the administrator to choose the
  *   requiredness. See the example implementation for details on how these
  *   features may be set.
@@ -398,7 +398,7 @@ function hook_webform_component_info() {
       // Defaults to TRUE.
       'conditional' => TRUE,
 
-      // If this component allows other components to be grouped within it 
+      // If this component allows other components to be grouped within it
       // (like a fieldset or tabs). Defaults to FALSE.
       'group' => FALSE,
 
@@ -429,6 +429,42 @@ function hook_webform_component_info_alter(&$components) {
 
   // Change the name of a component.
   $components['textarea']['label'] = t('Text box');
+}
+
+/**
+ * Alter access to a Webform submission.
+ *
+ * @param $node
+ *   The Webform node on which this submission was made.
+ * @param $submission
+ *   The Webform submission.
+ * @param $op
+ *   The operation to be performed on the submission. Possible values are:
+ *   - "view"
+ *   - "edit"
+ *   - "delete"
+ *   - "list"
+ * @param $account
+ *   A user account object.
+ * @return
+ *   TRUE if the current user has access to submission,
+ *   or FALSE otherwise.
+ */
+function hook_webform_submission_access($node, $submission, $op = 'view', $account = NULL) {
+  switch ($op) {
+    case 'view':
+      return TRUE;
+      break;
+    case 'edit':
+      return FALSE;
+      break;
+    case 'delete':
+      return TRUE;
+      break;
+    case 'list':
+      return TRUE;
+      break;
+  }
 }
 
 /**
@@ -612,11 +648,11 @@ function _webform_display_component($component, $value, $format = 'html') {
 /**
  * A hook for changing the input values before saving to the database.
  *
- * Webform expects a component to consist of a single field, or a single array 
+ * Webform expects a component to consist of a single field, or a single array
  * of fields. If you have a component that requires a deeper form tree
- * you must flatten the data into a single array using this callback 
+ * you must flatten the data into a single array using this callback
  * or by setting #parents on each field to avoid data loss and/or unexpected
- * behavior. 
+ * behavior.
  *
  * Note that Webform will save the result of this function directly into the
  * database.
