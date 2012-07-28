@@ -3594,7 +3594,12 @@ function webform_set_breadcrumb($node, $submission = NULL) {
     $webform_breadcrumb[] = l($node->title, 'node/' . $node->nid);
     if (isset($submission)) {
       $last_link = array_shift($breadcrumb);
-      $webform_breadcrumb[] = l(t('Submissions'), 'node/' . $node->nid . '/submissions');
+      if (webform_results_access($node)) {
+        $webform_breadcrumb[] = l(t('Webform results'), 'node/' . $node->nid . '/webform-results');
+      }
+      elseif (user_access('access own webform results', $account)) {
+        $webform_breadcrumb[] = l(t('Submissions'), 'node/' . $node->nid . '/submissions');
+      }
       if (isset($last_link)) {
         $webform_breadcrumb[] = $last_link;
       }
