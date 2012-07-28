@@ -790,11 +790,25 @@ function _webform_submission_spam_check($to, $subject, $from, $headers = array()
  *
  * @param $node
  *   The webform node to be checked.
+ * @param $account
+ *   Optional parameter. Specify the account you want to check the limit
+ *   against.
+ *
  * @return
  *   Boolean TRUE if the user has exceeded their limit. FALSE otherwise.
  */
-function _webform_submission_user_limit_check($node) {
+function webform_submission_user_limit_check($node, $account = NULL) {
   global $user;
+
+  if (!isset($account)) {
+    $account = $user;
+  }
+
+  // We can only check access for anonymous users through their cookies.
+  if ($user->uid !== 0 && $account->uid === 0) {
+    watchdog('webform', 'Unable to check anonymous user submission limit when logged in as user @uid.', array('@uid' => $user->uid), WATCHDOG_WARNING);
+    return FALSE;
+  }
 
   // Check if submission limiting is enabled.
   if ($node->webform['submit_limit'] == '-1') {
@@ -810,8 +824,8 @@ function _webform_submission_user_limit_check($node) {
     $query->condition('submitted', REQUEST_TIME - $node->webform['submit_interval'], '>');
   }
 
-  if ($user->uid) {
-    $query->condition('uid', $user->uid);
+  if ($account->uid) {
+    $query->condition('uid', $account->uid);
   }
   else {
     $query->condition('remote_addr', ip_address());
@@ -822,7 +836,7 @@ function _webform_submission_user_limit_check($node) {
 
   // Double check the submission history from the users machine using cookies.
   $num_submissions_cookie = 0;
-  if ($user->uid == 0 && variable_get('webform_use_cookies', 0)) {
+  if ($account->uid === 0 && variable_get('webform_use_cookies', 0)) {
     $cookie_name = 'webform-' . $node->nid;
 
     if (isset($_COOKIE[$cookie_name]) && is_array($_COOKIE[$cookie_name])) {
@@ -858,7 +872,7 @@ function _webform_submission_user_limit_check($node) {
  * @return
  *   Boolean TRUE if the form has exceeded it's limit. FALSE otherwise.
  */
-function _webform_submission_total_limit_check($node) {
+function webform_submission_total_limit_check($node) {
 
   // Check if submission limiting is enabled.
   if ($node->webform['total_submit_limit'] == '-1') {

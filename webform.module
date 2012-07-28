@@ -1598,7 +1598,7 @@ function webform_node_view($node, $view_mode) {
     module_load_include('inc', 'webform', 'includes/webform.submissions');
 
     // Disable the form if the limit is exceeded and page cache is not active.
-    if (($user_limit_exceeded = _webform_submission_user_limit_check($node)) && !$cached) {
+    if (($user_limit_exceeded = webform_submission_user_limit_check($node)) && !$cached) {
       $enabled = FALSE;
     }
   }
@@ -1609,7 +1609,7 @@ function webform_node_view($node, $view_mode) {
     module_load_include('inc', 'webform', 'includes/webform.submissions');
 
     // Disable the form if the limit is exceeded and page cache is not active.
-    if (($total_limit_exceeded = _webform_submission_total_limit_check($node)) && !$cached) {
+    if (($total_limit_exceeded = webform_submission_total_limit_check($node)) && !$cached) {
       $enabled = FALSE;
     }
   }
@@ -2408,7 +2408,7 @@ function webform_client_form_validate($form, &$form_state) {
     module_load_include('inc', 'webform', 'includes/webform.submissions');
     // Check if the total number of entries was reached before the user submitted
     // the form.
-    if (!$finished && $total_limit_exceeded = _webform_submission_total_limit_check($node)) {
+    if (!$finished && $total_limit_exceeded = webform_submission_total_limit_check($node)) {
       // Show the user the limit has exceeded.
       theme('webform_view_messages', array('node' => $node, 'teaser' => 0, 'page' => 1, 'submission_count' => 0, 'total_limit_exceeded' => $total_limit_exceeded, 'allowed_roles' => array_keys(user_roles()), 'closed' => FALSE, 'cached' => FALSE));
       form_set_error('', NULL);
@@ -2422,7 +2422,7 @@ function webform_client_form_validate($form, &$form_state) {
   if ($node->webform['submit_limit'] != -1) { // -1: Submissions are never throttled.
     module_load_include('inc', 'webform', 'includes/webform.submissions');
 
-    if (!$finished && $user_limit_exceeded = _webform_submission_user_limit_check($node)) {
+    if (!$finished && $user_limit_exceeded = webform_submission_user_limit_check($node)) {
       // Assume that webform_view_messages will print out the necessary message,
       // then stop the processing of the form with an empty form error.
       theme('webform_view_messages', array('node' => $node, 'teaser' => 0, 'page' => 1, 'submission_count' => 0, 'user_limit_exceeded' => $user_limit_exceeded, 'allowed_roles' => array_keys(user_roles()), 'closed' => FALSE, 'cached' => FALSE));
