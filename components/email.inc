@@ -136,7 +136,7 @@ function _webform_render_email($component, $value = NULL, $filter = TRUE) {
     $element['#element_validate'][] = 'webform_validate_unique';
   }
 
-  if (isset($value)) {
+  if (isset($value[0])) {
     $element['#default_value'] = $value[0];
   }
 
