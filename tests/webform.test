@@ -14,8 +14,9 @@ class WebformTestCase extends DrupalWebTestCase {
    * Implements setUp().
    */
   function setUp() {
-    // Enable Webform.
-    parent::setUp('webform', 'token');
+    // Enable Webform and Token module if available.
+    //parent::setUp('webform', 'token');
+    parent::setUp('webform');
 
     // Create a profile field to test [user:?] tokens.
     $field = array(
