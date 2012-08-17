@@ -2359,6 +2359,12 @@ function _webform_client_form_add_component($node, $component, $component_value,
       // Ensure the component is added as a property.
       $element['#webform_component'] = $component;
 
+      // The 'private' option is in most components, but it's not a real
+      // property. Add it for Form Builder compatibility.
+      if (webform_component_feature($component['type'], 'private')) {
+        $element['#webform_private'] = $component['extra']['private'];
+      }
+
       // Allow modules to modify a webform component that is going to be render in a form.
       drupal_alter('webform_component_render', $element, $component);
 
