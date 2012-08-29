@@ -468,6 +468,31 @@ function hook_webform_submission_access($node, $submission, $op = 'view', $accou
 }
 
 /**
+ * Determine if a user has access to see the results of a webform.
+ *
+ * Note in addition to the view access to the results granted here, the $account
+ * must also have view access to the Webform node in order to see results.
+ *
+ * @see webform_results_access().
+ *
+ * @param $node
+ *   The Webform node to check access on.
+ * @param $account
+ *   The user account to check access on.
+ * @return
+ *   TRUE or FALSE if the user can access the webform results.
+ */
+function hook_webform_results_access($node, $account) {
+  // Let editors view results of unpublished webforms.
+  if ($node->status == 0 && in_array('editor', $account->roles)) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+/**
  * Return an array of files associated with the component.
  *
  * The output of this function will be used to attach files to e-mail messages.
@@ -715,17 +740,21 @@ function _webform_help_component($section) {
 /**
  * Module specific instance of hook_theme().
  *
- * This allows each Webform component to add information into hook_theme().
+ * This allows each Webform component to add information into hook_theme(). If
+ * you specify a file to include, you must define the path to the module that
+ * this file belongs to.
  */
 function _webform_theme_component() {
   return array(
     'webform_grid' => array(
       'render element' => 'element',
       'file' => 'components/grid.inc',
+      'path' => drupal_get_path('module', 'webform'),
     ),
     'webform_display_grid' => array(
       'render element' => 'element',
       'file' => 'components/grid.inc',
+      'path' => drupal_get_path('module', 'webform'),
     ),
   );
 }
