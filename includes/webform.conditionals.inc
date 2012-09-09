@@ -189,7 +189,7 @@ function theme_webform_conditional_groups($variables) {
     if ($key === 'new') {
       $data = '';
       if ($element_count === 1) {
-        $data = t('There are conditional actions on this form.') . ' ';
+        $data = t('There are no conditional actions on this form.') . ' ';
       }
       $data = '<div class="webform-conditional-new">' . $data . t('Add a new condition: ') . drupal_render($element[$key]['new']) . '</div>';
     }
