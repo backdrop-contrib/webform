@@ -117,8 +117,8 @@ function webform_menu() {
     'title' => 'Webform confirmation',
     'page callback' => '_webform_confirmation',
     'page arguments' => array(1),
-    'access callback' => 'node_access',
-    'access arguments' => array('view', 1),
+    'access callback' => 'webform_confirmation_page_access',
+    'access arguments' => array(1),
     'type' => MENU_CALLBACK,
   );
   $items['node/%webform_menu/webform'] = array(
@@ -438,6 +438,70 @@ function webform_menu_email_load($eid, $nid) {
   return $email;
 }
 
+/**
+ * Access function for confirmation pages.
+ *
+ * @param $node
+ *   The webform node object.
+ *
+ * @return
+ *  Boolean whether the user has access to the confirmation page.
+ */
+function webform_confirmation_page_access($node) {
+  global $user;
+
+  // Make sure SID is a positive integer.
+  $sid = (!empty($_GET['sid']) && (int) $_GET['sid'] > 0) ? (int) $_GET['sid'] : NULL;
+
+  if ($sid) {
+    module_load_include('inc', 'webform', 'includes/webform.submissions');
+    $submission = webform_get_submission($node->nid, $sid);
+  }
+  else {
+    $submission = NULL;
+  }
+
+  if ($submission) {
+    // Logged-in users.
+    if ($user->uid) {
+      // User's own submission.
+      if ($submission->uid === $user->uid && node_access('view', $node)) {
+        return TRUE;
+      }
+      // User has results access to this submission.
+      elseif (webform_submission_access($node, $submission)) {
+        return TRUE;
+      }
+    }
+    // Anonymous user for their own submission. Hash of submission data must
+    // match the hash in the query string.
+    elseif ((int) $user->uid === 0 && (int) $submission->uid === 0) {
+      $hash_query = !empty($_GET['token']) ? $_GET['token'] : NULL;
+      $hash = md5($submission->submitted . $submission->sid . drupal_get_private_key());
+      if ($hash_query === $hash) {
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Access function for Webform submissions.
+ *
+ * @param $node
+ *   The webform node object.
+ * @param $submission
+ *   The webform submission object.
+ * @param $op
+ *   The operation to perform. Must be one of view, edit, delete, list.
+ * @param $account
+ *   Optional. A user object or NULL to use the currently logged-in user.
+ *
+ * @return
+ *   Boolean whether the user has access to a webform submission.
+ */
 function webform_submission_access($node, $submission, $op = 'view', $account = NULL) {
   global $user;
   $account = isset($account) ? $account : $user;
@@ -2728,6 +2792,7 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Strip out empty tags added by WYSIWYG editors if needed.
   $confirmation = strlen(trim(strip_tags($node->webform['confirmation']))) ? $node->webform['confirmation'] : '';
+  $confirmation = _webform_filter_values($confirmation, $node, $submission, NULL, FALSE, TRUE);
 
   // Clean up the redirect URL and filter it for webform tokens.
   $redirect_url = trim($node->webform['redirect_url']);
@@ -2754,17 +2819,18 @@ function webform_client_form_submit($form, &$form_state) {
     $redirect = NULL;
   }
   elseif ($redirect_url == '<confirmation>') {
-    $redirect = array('node/' . $node->nid . '/done', array('query' => array('sid' => $sid)));
+    $query = array('sid' => $sid);
+    if ((int) $user->uid === 0) {
+      $query['token'] = md5($submission->submitted . $submission->sid . drupal_get_private_key());
+    }
+    $redirect = array('node/' . $node->nid . '/done', array('query' => $query));
   }
   elseif (valid_url($redirect_url, TRUE)) {
     $redirect = $redirect_url;
     $external_url = TRUE;
   }
   elseif ($redirect_url && strpos($redirect_url, 'http') !== 0) {
-    $parts = drupal_parse_url($redirect_url);
-    $parts['query'] ? ($parts['query']['sid'] = $sid) : ($parts['query'] = array('sid' => $sid));
-    $query = $parts['query'];
-    $redirect = array($parts['path'], array('query' => $query, 'fragment' => $parts['fragment']));
+    $redirect = $redirect_url;
   }
 
   // Show a message if manually set.
@@ -2860,6 +2926,12 @@ function template_preprocess_webform_form(&$vars) {
  */
 function template_preprocess_webform_confirmation(&$vars) {
   $confirmation = check_markup($vars['node']->webform['confirmation'], $vars['node']->webform['confirmation_format'], '', TRUE);
+
+  // Replace tokens.
+  module_load_include('inc', 'webform', 'includes/webform.submissions');
+  $submission = webform_get_submission($vars['node']->nid, $vars['sid']);
+  $confirmation = _webform_filter_values($confirmation, $vars['node'], $submission, NULL, FALSE, TRUE);
+
   // Strip out empty tags added by WYSIWYG editors if needed.
   $vars['confirmation_message'] = strlen(trim(strip_tags($confirmation))) ? $confirmation : '';
 }

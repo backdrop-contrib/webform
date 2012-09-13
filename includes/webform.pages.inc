@@ -36,7 +36,7 @@ function webform_configure_form($form, &$form_state, $node) {
   $form['submission']['confirmation'] = array(
     '#type' => 'text_format',
     '#title' => t('Confirmation message'),
-    '#description' => t('Message to be shown upon successful submission. If the redirection location is set to <em>Confirmation page</em> it will be shown on its own page, otherwise this displays as a message.'),
+    '#description' => t('Message to be shown upon successful submission. If the redirection location is set to <em>Confirmation page</em> it will be shown on its own page, otherwise this displays as a message. Supports Webform token replacements.'),
     '#default_value' => $node->webform['confirmation'],
     '#cols' => 40,
     '#rows' => 10,
@@ -64,7 +64,10 @@ function webform_configure_form($form, &$form_state, $node) {
     '#type' => 'item',
     '#title' => t('Redirection location'),
     '#theme' => 'webform_advanced_redirection_form',
-    '#description' => t('Choose where to redirect the user upon successful submission.') . ' ' . t('The <em>Custom URL</em> option supports Webform token replacements.') . theme('webform_token_help', array('groups' => array('node', 'webform-submission'))),
+    '#description' => t('Choose where to redirect the user upon successful submission.') . ' ' . t('The <em>Custom URL</em> option supports Webform token replacements.'),
+  );
+  $form['submission']['tokens'] = array(
+    '#markup' => theme('webform_token_help', array('groups' => array('node', 'submission'))),
   );
   $form['submission']['redirection']['redirect']= array(
     '#type' => 'radios',
