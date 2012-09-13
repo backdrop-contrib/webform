@@ -2533,6 +2533,11 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
 function webform_client_form_pages($form, &$form_state) {
   $node = node_load($form_state['values']['details']['nid']);
 
+  // Multistep forms may not have any components on the first page.
+  if (!isset($form_state['values']['submitted'])) {
+    $form_state['values']['submitted'] = array();
+  }
+
   // Move special settings to storage.
   if (isset($form_state['webform']['component_tree'])) {
     $form_state['storage']['component_tree'] = $form_state['webform']['component_tree'];
