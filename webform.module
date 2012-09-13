@@ -3464,6 +3464,7 @@ function webform_format_email_subject($subject, $node = NULL, $submission = NULL
       if (function_exists($display_function)) {
         $display = $display_function($component, $value, 'text');
         $display['#theme_wrappers'] = array();
+        $display['#webform_component'] = $component;
         $subject = str_replace("\n", ' ', drupal_render($display));
       }
       else {
