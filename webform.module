@@ -112,6 +112,15 @@ function webform_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
+  // Autocomplete used in Views integration.
+  $items['webform/autocomplete'] = array(
+    'title' => 'Webforms',
+    'page callback' => 'webform_views_autocomplete',
+    'access arguments' => 'administer views',
+    'file' => 'views/webform.views.inc',
+    'type' => MENU_CALLBACK,
+  );
+
   // Node page tabs.
   $items['node/%webform_menu/done'] = array(
     'title' => 'Webform confirmation',
@@ -838,6 +847,7 @@ function webform_webform_component_info() {
       'label' => t('Date'),
       'description' => t('Presents month, day, and year fields.'),
       'features' => array(
+        'views_range' => TRUE,
       ),
       'file' => 'components/date.inc',
       'conditional_type' => 'date',
@@ -957,6 +967,7 @@ function webform_webform_component_info() {
       'label' => t('Time'),
       'description' => t('Presents the user with hour and minute fields. Optional am/pm fields.'),
       'features' => array(
+        'views_range' => TRUE,
       ),
       'file' => 'components/time.inc',
       'conditional_type' => 'time',

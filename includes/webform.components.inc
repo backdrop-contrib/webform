@@ -854,6 +854,7 @@ function webform_component_feature($type, $feature) {
     'group' => FALSE,
     'attachment' => FALSE,
     'private' => TRUE,
+    'views_range' => FALSE,
   );
   return isset($components[$type]['features'][$feature]) ? $components[$type]['features'][$feature] : !empty($defaults[$feature]);
 }

@@ -13,10 +13,13 @@ files[] = views/webform_handler_field_is_draft.inc
 files[] = views/webform_handler_field_node_link_edit.inc
 files[] = views/webform_handler_field_node_link_results.inc
 files[] = views/webform_handler_field_submission_count.inc
+files[] = views/webform_handler_field_submission_data.inc
 files[] = views/webform_handler_field_submission_link.inc
 files[] = views/webform_handler_field_webform_status.inc
 files[] = views/webform_handler_filter_is_draft.inc
+files[] = views/webform_handler_filter_submission_data.inc
 files[] = views/webform_handler_filter_webform_status.inc
+files[] = views/webform_handler_relationship_submission_data.inc
 files[] = views/webform.views.inc
 
 files[] = tests/components.test

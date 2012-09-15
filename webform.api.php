@@ -408,6 +408,10 @@ function hook_webform_component_info() {
       // If this component saves a file that can be used as an e-mail
       // attachment. Defaults to FALSE.
       'attachment' => FALSE,
+
+      // If this component reflects a time range and should use labels such as
+      // "Before" and "After" when exposed as filters in Views module.
+      'views_range' => FALSE,
     ),
     'file' => 'components/textfield.inc',
   );
