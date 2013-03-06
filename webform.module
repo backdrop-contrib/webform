@@ -1792,8 +1792,8 @@ function theme_webform_view_messages($variables) {
       // No roles are allowed to submit the form.
       $message = t('Submissions for this form are closed.');
     }
-    elseif (isset($allowed_roles[2])) {
-      // The "authenticated user" role is allowed to submit and the user is currently logged-out.
+    elseif ($user->uid == 0) {
+      // The user is anonymous, so (at least) needs to log in to view the form.
       $login = url('user/login', array('query' => drupal_get_destination()));
       $register = url('user/register', array('query' => drupal_get_destination()));
       if (variable_get('user_register', 1) == 0) {
