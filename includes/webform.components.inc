@@ -1019,6 +1019,9 @@ function webform_component_parent_keys($node, $component) {
  * Populate a component with the defaults for that type.
  */
 function webform_component_defaults(&$component) {
+  if (empty($component['extra']['attributes']['title'])) {
+    $component['extra']['attributes']['title'] = check_plain($component['name']);
+  }
   if ($defaults = webform_component_invoke($component['type'], 'defaults')) {
     foreach ($defaults as $key => $default) {
       if (!isset($component[$key])) {
