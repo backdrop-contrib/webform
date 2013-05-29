@@ -127,7 +127,7 @@ function _webform_edit_file($component) {
       '#type' => 'textfield',
       '#title' => t('Additional extensions'),
       '#default_value' => $component['extra']['filtering']['addextensions'],
-      '#description' => t('Enter a list of additional file extensions for this upload field, seperated by commas.<br /> Entered extensions will be appended to checked items above.'),
+      '#description' => t('Enter a list of additional file extensions for this upload field, separated by commas.<br /> Entered extensions will be appended to checked items above.'),
       '#size' => 20,
       '#weight' => 3,
     );

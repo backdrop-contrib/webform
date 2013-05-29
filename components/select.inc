@@ -873,7 +873,7 @@ function _webform_select_options_callback($name, $component, $flat = FALSE, $fil
 }
 
 /**
- * Utility function to split user-entered values from new-line seperated
+ * Utility function to split user-entered values from new-line separated
  * text into an array of options.
  *
  * @param $text
