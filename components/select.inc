@@ -781,6 +781,24 @@ function _webform_csv_data_select($component, $export_options, $value) {
   return $return;
 }
 
+
+/**
+ * Implements _webform_options_component().
+ *
+ * This function is confusingly an alias of _webform_select_options(). However
+ * this version is intended to be accessed publicly via
+ * webform_component_invoke(), since it is a Webform "hook", rather than an
+ * internal, private function. To get the list of select list options for
+ * a component, use:
+ *
+ * @code
+ * $options = webform_component_invoke($component['type'], 'options', $component);
+ * @endcode
+ */
+function _webform_options_select($component, $flat = FALSE, $filter = TRUE) {
+  return _webform_select_options($component, $flat, $filter);
+}
+
 /**
  * Menu callback; Return a predefined list of select options as JSON.
  */

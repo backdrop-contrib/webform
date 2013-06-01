@@ -161,6 +161,13 @@ function webform_admin_settings() {
     '#default_value' => variable_get('webform_submission_access_control', 1),
     '#description' => t('By default, the configuration form for each webform allows the administrator to choose which roles may submit the form. You may want to allow users to always submit the form if you are using a separate node access module to control access to webform nodes themselves.'),
   );
+ 
+  $form['advanced']['webform_email_select_max'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Select email mapping limit"),
+    '#default_value' => variable_get('webform_email_select_max', 50),
+    '#description' => t('When mapping emails addresses to a select component, limit the choice to components with less than the amount of options indicated. This is to avoid flooding the email settings form. '),
+  );
 
   $form = system_settings_form($form);
   $form['#theme'] = 'webform_admin_settings';

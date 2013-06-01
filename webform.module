@@ -667,6 +667,10 @@ function webform_theme() {
       'render element' => 'form',
       'file' => 'includes/webform.emails.inc',
     ),
+    'webform_email_component_mapping' => array(
+      'render element' => 'element',
+      'file' => 'includes/webform.emails.inc',
+    ),
     'webform_email_add_form' => array(
       'render element' => 'form',
       'file' => 'includes/webform.emails.inc',
@@ -1488,9 +1492,10 @@ function webform_node_load($nodes, $types) {
       ->execute()
       ->fetchAllAssoc('eid', PDO::FETCH_ASSOC);
 
-    // Unserialize the exclude component list for e-mails.
+    // Unserialize the mappings and excluded component list for e-mails.
     foreach ($nodes[$nid]->webform['emails'] as $eid => $email) {
       $nodes[$nid]->webform['emails'][$eid]['excluded_components'] = array_filter(explode(',', $email['excluded_components']));
+      $nodes[$nid]->webform['emails'][$eid]['extra'] = unserialize($email['extra']);
       if (variable_get('webform_format_override', 0)) {
         $nodes[$nid]->webform['emails'][$eid]['html'] = variable_get('webform_default_format', 0);
       }

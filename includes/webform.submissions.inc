@@ -208,6 +208,16 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
       unset($email['headers']['From']);
     }
     else {
+      // Replace "from_address" field content with chosen email mapping. For the
+      // from address, only a single address is supported, so we use the first.
+      if (isset($email['extra']['from_address_mapping'])) {
+        if (isset($submission->data[$email['from_address']][0])) {
+          $selected = $submission->data[$email['from_address']][0];
+          if (isset($email['extra']['from_address_mapping'][$selected])) {
+            $email['from_address'] = $email['extra']['from_address_mapping'][$selected];
+          }
+        }
+      }
       $email['from'] = webform_format_email_address($email['from_address'], $email['from_name'], $node, $submission);
     }
 
@@ -218,6 +228,17 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
     }
     else {
       $email['subject'] = webform_format_email_subject($email['subject'], $node, $submission);
+    }
+
+    // Replace the "email" field content with chosen email mapping.
+    if (isset($email['extra']['email_mapping'])) {
+      $component_emails = array();
+      foreach ($submission->data[$email['email']] as $email_value) {
+        if (isset($email['extra']['email_mapping'][$email_value])) {
+          $component_emails[] = $email['extra']['email_mapping'][$email_value];
+        }
+      }
+      $email['email'] = implode(',', $component_emails);
     }
 
     // Update the to e-mail if set in the themed headers.

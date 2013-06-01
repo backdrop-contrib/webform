@@ -118,6 +118,14 @@ tr.webform-add-form .tabledrag-changed {
   background-color: inherit;
 }
 
+/* E-mail configuration */
+html.js .webform-email-mapping {
+  display: none;
+}
+td.webform-email-option {
+  text-align: right;
+}
+
 /* Conditionals */
 .webform-conditional,
 .webform-conditional-new {

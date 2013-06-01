@@ -350,6 +350,11 @@ function webform_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'extra' => array(
+        'description' => 'A serialized array of additional options for the e-mail configuration, including excluded components and value mapping for the TO and FROM addresses for select lists.',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
     ),
     'primary key' => array('nid', 'eid'),
   );
@@ -1328,5 +1333,20 @@ function webform_update_7404() {
   $fids = db_query('SELECT fid FROM {file_usage} WHERE module = \'webform\' AND type = \'submission\' AND NOT id IN(SELECT sid FROM {webform_submissions})')->fetchCol();
   foreach ($fids as $fid) {
     _webform_delete_file(NULL, array($fid));
+  }
+}
+
+/**
+ * Add an "extra" column to the e-mail table for for non-queryable options.
+ */
+function webform_update_7405() {
+  $schema = array(
+    'description' => 'A serialized array of additional options for the e-mail configuration, including excluded components and value mapping for the TO and FROM addresses for select lists.',
+    'type' => 'text',
+    'not null' => FALSE,
+    'initial' => '',
+  );
+  if (!db_field_exists('webform_emails', 'extra')) {
+    db_add_field('webform_emails', 'extra', $schema);
   }
 }
