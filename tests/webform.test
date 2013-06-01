@@ -15,8 +15,12 @@ class WebformTestCase extends DrupalWebTestCase {
    */
   function setUp() {
     // Enable Webform and Token module if available.
-    //parent::setUp('webform', 'token');
-    parent::setUp('webform');
+    if (module_exists('token')) {
+      parent::setUp('webform', 'token');
+    }
+    else {
+      parent::setUp('webform');
+    }
 
     // Create a profile field to test [user:?] tokens.
     $field = array(
@@ -517,7 +521,7 @@ class WebformTestCase extends DrupalWebTestCase {
         ),
         'sample values' => 'admin@localhost.localhost',
         'database values' => array('admin@localhost.localhost'),
-        'database default values' => array($this->webform_users['admin']->mail),
+        'database default values' => module_exists('token') ? array($this->webform_users['admin']->mail) : array(),
         // Conditionals match against the 'sample values'.
         'match conditional values' => array(
           'equal' => 'admin@localhost.localhost',
