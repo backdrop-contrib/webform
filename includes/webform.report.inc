@@ -504,6 +504,11 @@ function webform_results_download_range_validate($element, $form_state) {
           }
         }
       }
+      // Check that the range will return something at all.
+      $form_state['values']['sids'] = webform_download_sids($form_state['values']['node']->nid, array('range_type' => $element['range_type']['#value'], 'start' => $element['start']['#value'], 'end' => $element['end']['#value']));
+      if (empty($form_state['values']['sids'])) {
+        form_error($element['start'], t('The specified range will not return any results.'));
+      }
       break;
   }
 
@@ -522,8 +527,12 @@ function webform_results_download_form_submit(&$form, &$form_state) {
     'download' => $form_state['values']['download'],
   );
 
+  // Use a pre-built list of SIDs provided by validate handlers (if any).
+  if (isset($form_state['values']['sids'])) {
+    $options['sids'] = $form_state['values']['sids'];
+  }
   // Retrieve the list of required SIDs.
-  if ($options['range_type'] != 'all') {
+  elseif ($options['range_type'] != 'all') {
     $options['sids'] = webform_download_sids($form_state['values']['node']->nid, $form_state['values']['range']);
   }
 
