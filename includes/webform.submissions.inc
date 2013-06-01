@@ -22,8 +22,8 @@ function webform_submission_data($node, $submitted) {
   $data = array();
 
   foreach ($submitted as $cid => $values) {
-    // Don't save pagebreaks as submitted data.
-    if ($node->webform['components'][$cid]['type'] == 'pagebreak') {
+    // Don't save pseudo-fields or pagebreaks as submitted data.
+    if (!isset($node->webform['components'][$cid]) || $node->webform['components'][$cid]['type'] == 'pagebreak') {
       continue;
     }
 
