@@ -181,7 +181,7 @@ Drupal.webform.conditionalSourceChange = function() {
   // Reference the original list to create a new list matching the data type.
   var $originalList = $($operator[0]['webformConditionalOriginal']);
   var $newList = $originalList.filter('optgroup[label=' + dataType + ']');
-  $operator[0].innerHTML = $newList[0].innerHTML;
+  $operator.html($newList[0].innerHTML);
 
   // Fire the change event handler on the list to update the value field.
   $operator.triggerHandler('change');
