@@ -22,6 +22,7 @@ function _webform_defaults_email() {
       'disabled' => 0,
       'title_display' => 0,
       'description' => '',
+      'placeholder' => '',
       'attributes' => array(),
       'private' => FALSE,
     ),
@@ -76,6 +77,13 @@ function _webform_edit_email($component) {
     '#size' => 5,
     '#maxlength' => 10,
     '#parents' => array('extra', 'width'),
+  );
+  $form['display']['placeholder'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Placeholder'),
+    '#default_value' => $component['extra']['placeholder'],
+    '#description' => t('The placeholder will be shown in the field until the user starts entering a value.') . ' ' . t('Often used for example values, such as "john@example.com".'),
+    '#parents' => array('extra', 'placeholder'),
   );
   $form['display']['disabled'] = array(
     '#type' => 'checkbox',
@@ -138,6 +146,10 @@ function _webform_render_email($component, $value = NULL, $filter = TRUE) {
 
   if (isset($value[0])) {
     $element['#default_value'] = $value[0];
+  }
+
+  if ($component['extra']['placeholder']) {
+    $element['#attributes']['placeholder'] = $component['extra']['placeholder'];
   }
 
   if ($component['extra']['disabled']) {

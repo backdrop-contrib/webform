@@ -23,6 +23,7 @@ function _webform_defaults_textarea() {
       'resizable' => 1,
       'disabled' => 0,
       'description' => '',
+      'placeholder' => '',
       'attributes' => array(),
       'private' => FALSE,
     ),
@@ -82,6 +83,13 @@ function _webform_edit_textarea($component) {
     '#default_value' => $component['extra']['resizable'],
     '#parents' => array('extra', 'resizable'),
   );
+  $form['display']['placeholder'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Placeholder'),
+    '#default_value' => $component['extra']['placeholder'],
+    '#description' => t('The placeholder will be shown in the field until the user starts entering a value.'),
+    '#parents' => array('extra', 'placeholder'),
+  );
   $form['display']['disabled'] = array(
     '#type' => 'checkbox',
     '#title' => t('Disabled'),
@@ -115,6 +123,10 @@ function _webform_render_textarea($component, $value = NULL, $filter = TRUE) {
     '#theme_wrappers' => array('webform_element'),
     '#translatable' => array('title', 'description'),
   );
+
+  if ($component['extra']['placeholder']) {
+    $element['#attributes']['placeholder'] = $component['extra']['placeholder'];
+  }
 
   if ($component['extra']['disabled']) {
     if ($filter) {
