@@ -751,6 +751,7 @@ function webform_results_export($node, $format = 'delimited', $options = array()
 
   // Generate a row for each submission.
   $row_count = 0;
+  $sid = 0;
   foreach ($submissions as $sid => $submission) {
     $row_count++;
 
