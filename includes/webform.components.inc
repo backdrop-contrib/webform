@@ -453,22 +453,26 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     );
   }
 
-  $form['display']['wrapper_classes'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Wrapper CSS classes'),
-    '#default_value' => isset($component['extra']['wrapper_classes']) ? $component['extra']['wrapper_classes'] : '',
-    '#description' => t('Apply a class to the wrapper around both the field and its label. Separate multiple by spaces.'),
-    '#weight' => 50,
-    '#parents' => array('extra', 'wrapper_classes'),
-  );
-  $form['display']['css_classes'] = array(
-    '#type' => 'textfield',
-    '#title' => t('CSS classes'),
-    '#default_value' => isset($component['extra']['css_classes']) ? $component['extra']['css_classes'] : '',
-    '#description' => t('Apply a class to the field. Separate multiple by spaces.'),
-    '#weight' => 51,
-    '#parents' => array('extra', 'css_classes'),
-  );
+  if (webform_component_feature($component['type'], 'wrapper_classes')) {
+    $form['display']['wrapper_classes'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Wrapper CSS classes'),
+      '#default_value' => isset($component['extra']['wrapper_classes']) ? $component['extra']['wrapper_classes'] : '',
+      '#description' => t('Apply a class to the wrapper around both the field and its label. Separate multiple by spaces.'),
+      '#weight' => 50,
+      '#parents' => array('extra', 'wrapper_classes'),
+    );
+  }
+  if (webform_component_feature($component['type'], 'css_classes')) {
+    $form['display']['css_classes'] = array(
+      '#type' => 'textfield',
+      '#title' => t('CSS classes'),
+      '#default_value' => isset($component['extra']['css_classes']) ? $component['extra']['css_classes'] : '',
+      '#description' => t('Apply a class to the field. Separate multiple by spaces.'),
+      '#weight' => 51,
+      '#parents' => array('extra', 'css_classes'),
+    );
+  }
 
   // Validation settings.
   $form['validation'] = array(
@@ -871,6 +875,8 @@ function webform_component_feature($type, $feature) {
     'group' => FALSE,
     'attachment' => FALSE,
     'private' => TRUE,
+    'wrapper_classes' => TRUE,
+    'css_classes' => TRUE,
     'views_range' => FALSE,
   );
   return isset($components[$type]['features'][$feature]) ? $components[$type]['features'][$feature] : !empty($defaults[$feature]);
