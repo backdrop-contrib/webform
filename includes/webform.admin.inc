@@ -227,17 +227,10 @@ function theme_webform_admin_settings($variables) {
  * Menu callback for admin/content/webform. Displays all webforms on the site.
  */
 function webform_admin_content() {
-  $webform_types = webform_variable_get('webform_node_types');
-
-  $nodes = array();
-  if ($webform_types) {
-    $nodes = db_select('node', 'n')
-      ->fields('n')
-      ->condition('n.type', $webform_types, 'IN')
-      ->execute()
-      ->fetchAllAssoc('nid');
-  }
-
+  $query = db_select('webform', 'w');
+  $query->join('node', 'n', 'w.nid = n.nid');
+  $query->fields('n');
+  $nodes = $query->execute()->fetchAllAssoc('nid');
   return theme('webform_admin_content', array('nodes' => $nodes));
 }
 
