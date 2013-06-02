@@ -2412,6 +2412,9 @@ function _webform_client_form_add_component($node, $component, $component_value,
       // Ensure the component is added as a property.
       $display_element['#webform_component'] = $component;
 
+      // Add custom CSS classes to the field and wrapper.
+      _webform_component_classes($element, $component);
+
       // Allow modules to modify a "display only" webform component.
       drupal_alter('webform_component_display', $display_element, $component);
 
@@ -2444,6 +2447,9 @@ function _webform_client_form_add_component($node, $component, $component_value,
       if (webform_component_feature($component['type'], 'private')) {
         $element['#webform_private'] = $component['extra']['private'];
       }
+
+      // Add custom CSS classes to the field and wrapper.
+      _webform_component_classes($element, $component);
 
       // Allow modules to modify a webform component that is going to be render in a form.
       drupal_alter('webform_component_render', $element, $component);
@@ -2998,6 +3004,7 @@ function theme_webform_element($variables) {
   $nested_level = $element['#parents'][0] == 'submitted' ? 1 : 0;
   $parents = str_replace('_', '-', implode('--', array_slice($element['#parents'], $nested_level)));
 
+  $wrapper_attributes = isset($element['#wrapper_attributes']) ? $element['#wrapper_attributes'] : array('class' => array());
   $wrapper_classes = array(
    'form-item',
    'webform-component',
@@ -3006,7 +3013,9 @@ function theme_webform_element($variables) {
   if (isset($element['#title_display']) && strcmp($element['#title_display'], 'inline') === 0) {
     $wrapper_classes[] = 'webform-container-inline';
   }
-  $output = '<div class="' . implode(' ', $wrapper_classes) . '" id="webform-component-' . $parents . '">' . "\n";
+  $wrapper_attributes['class'] = array_merge($wrapper_classes, $wrapper_attributes['class']);
+  $wrapper_attributes['id'] = 'webform-component-' . $parents;
+  $output = '<div ' . drupal_attributes($wrapper_attributes) . '>' . "\n";
 
   // If #title_display is none, set it to invisible instead - none only used if
   // we have no title at all to use.
@@ -3670,6 +3679,20 @@ function webform_component_implements($type, $callback) {
 function webform_conditional_expand($element) {
   module_load_include('inc', 'webform', 'includes/webform.conditionals');
   return _webform_conditional_expand($element);
+}
+
+/**
+ * Add class and wrapper class attributes to an element.
+ */
+function _webform_component_classes(&$element, $component) {
+  if (isset($component['extra']['css_classes']) && drupal_strlen($component['extra']['css_classes'])) {
+    $element['#attributes']['class'] = isset($element['#attributes']['class']) ? $element['#attributes']['class'] : array();
+    $element['#attributes']['class'] = array_merge($element['#attributes']['class'], explode(' ' , $component['extra']['css_classes']));
+  }
+  if (isset($component['extra']['wrapper_classes']) && drupal_strlen($component['extra']['wrapper_classes'])) {
+    $element['#wrapper_attributes']['class'] = isset($element['#wrapper_attributes']['class']) ? $element['#wrapper_attributes']['class'] : array();
+    $element['#wrapper_attributes']['class'] = array_merge($element['#wrapper_attributes']['class'], explode(' ' , $component['extra']['wrapper_classes']));
+  }
 }
 
 /**
