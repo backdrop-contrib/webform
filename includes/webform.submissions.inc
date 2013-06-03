@@ -820,6 +820,7 @@ function _webform_submission_spam_check($to, $subject, $from, $headers = array()
  */
 function webform_submission_user_limit_check($node, $account = NULL) {
   global $user;
+  $tracking_mode = variable_get('webform_tracking_mode', 'cookie');
 
   if (!isset($account)) {
     $account = $user;
@@ -853,11 +854,14 @@ function webform_submission_user_limit_check($node, $account = NULL) {
   }
 
   // Fetch all the entries from the database within the submit interval with this username and IP.
-  $num_submissions_database = $query->countQuery()->execute()->fetchField();
+  $num_submissions_database = 0;
+  if ($account->uid !== 0 || $tracking_mode === 'ip_address' || $tracking_mode === 'strict') {
+    $num_submissions_database = $query->countQuery()->execute()->fetchField();
+  }
 
   // Double check the submission history from the users machine using cookies.
   $num_submissions_cookie = 0;
-  if ($account->uid === 0 && variable_get('webform_use_cookies', 0)) {
+  if ($account->uid === 0 && ($tracking_mode === 'cookie' || $tracking_mode === 'strict')) {
     $cookie_name = 'webform-' . $node->nid;
 
     if (isset($_COOKIE[$cookie_name]) && is_array($_COOKIE[$cookie_name])) {

@@ -100,14 +100,6 @@ function webform_admin_settings() {
     '#collapsed' => TRUE,
   );
 
-  $form['advanced']['webform_use_cookies']  = array(
-    '#type' => 'checkbox',
-    '#checked_value' => 1,
-    '#title' => t('Allow cookies for tracking submissions'),
-    '#default_value' => variable_get('webform_use_cookies', 0),
-    '#description' => t('<a href="http://www.wikipedia.org/wiki/HTTP_cookie">Cookies</a> can be used to help prevent the same user from repeatedly submitting a webform. This feature is not needed for limiting submissions per user, though it can increase accuracy in some situations. Besides cookies, Webform also uses IP addresses and site usernames to prevent repeated submissions.'),
-  );
-
   $form['advanced']['webform_search_index']  = array(
     '#type' => 'checkbox',
     '#checked_value' => 1,
@@ -115,6 +107,18 @@ function webform_admin_settings() {
     '#default_value' => variable_get('webform_search_index', 1),
     '#description' => t('When selected, all Webform nodes will have their form components indexed by the search engine.'),
     '#access' => module_exists('search'),
+  );
+
+  $form['advanced']['webform_tracking_mode']  = array(
+    '#type' => 'radios',
+    '#title' => t('Track anonymous users by:'),
+    '#options' => array(
+      'cookie' => t('Cookie only (least strict)'),
+      'ip_address' => t('IP address only'),
+      'strict' => t('Both cookie and IP address (most strict)'),
+    ),
+    '#default_value' => variable_get('webform_tracking_mode', 'cookie'),
+    '#description' => t('<a href="http://www.wikipedia.org/wiki/HTTP_cookie">Cookies</a> can be used to help prevent the same user from repeatedly submitting a webform. Limiting by IP address is more effective against repeated submissions, but may result in unintentional blocking of users sharing the same address. Logged-in users are always tracked by their user ID and are not affected by this option.'),
   );
 
   $form['advanced']['webform_email_address_format'] = array(

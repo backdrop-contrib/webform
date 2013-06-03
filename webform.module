@@ -2795,9 +2795,10 @@ function webform_client_form_submit($form, &$form_state) {
     $form_state['values']['details']['sid'] = $sid = webform_submission_insert($node, $submission);
     $form_state['values']['details']['is_new'] = TRUE;
 
-    // Set a cookie including the server's submission time.
-    // The cookie expires in the length of the interval plus a day to compensate for different timezones.
-    if (variable_get('webform_use_cookies', 0)) {
+    // Set a cookie including the server's submission time. The cookie expires
+    // in the length of the interval plus a day to compensate for timezones.
+    $tracking_mode = variable_get('webform_tracking_mode', 'cookie');
+    if ($tracking_mode === 'cookie' || $tracking_mode === 'strict') {
       $cookie_name = 'webform-' . $node->nid;
       $time = REQUEST_TIME;
       $params = session_get_cookie_params();
