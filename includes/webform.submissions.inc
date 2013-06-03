@@ -589,6 +589,7 @@ function webform_submission_render($node, $submission, $email, $format) {
     unset($components[$cid]);
   }
 
+  module_load_include('inc', 'webform', 'includes/webform.components');
   _webform_components_tree_build($components, $component_tree, 0, $page_count);
 
   // Make sure at least one field is available
