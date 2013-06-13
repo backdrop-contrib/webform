@@ -438,6 +438,11 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
       $stddev = sqrt($stddev);
     }
 
+    // Skip the rest of the distribution rows if standard deviation is 0.
+    if (empty($stddev)) {
+      return $rows;
+    }
+
     // Build normal distribution table rows.
     $count = array();
     $percent = array();
