@@ -116,7 +116,7 @@ function webform_menu() {
   $items['webform/autocomplete'] = array(
     'title' => 'Webforms',
     'page callback' => 'webform_views_autocomplete',
-    'access arguments' => 'administer views',
+    'access arguments' => array('administer views'),
     'file' => 'views/webform.views.inc',
     'type' => MENU_CALLBACK,
   );
