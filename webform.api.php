@@ -302,6 +302,28 @@ function hook_webform_component_delete($component) {
 }
 
 /**
+ * Alter a Webform submission's header when exported.
+ */
+function hook_webform_csv_header_alter(&$header, $component) {
+  // Use the machine name for component headers, but only for the webform 
+  // with node 5 and components that are text fields.
+  if ($component['nid'] == 5 && $component['type'] == 'textfield') {
+    $header[2] = $component['form_key'];
+  }
+}
+
+/**
+ * Alter a Webform submission's data when exported.
+ */
+function hook_webform_csv_data_alter(&$data, $component, $submission) {
+  // If a value of a field was left blank, use the value from another
+  // field.
+  if ($component['cid'] == 1 && empty($data)) {
+    $data = $submission->data[2]['value'][0];
+  }
+}
+
+/**
  * Define components to Webform.
  *
  * @return
