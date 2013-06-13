@@ -1363,3 +1363,38 @@ function webform_update_7406() {
     variable_del('webform_use_cookies');
   }
 }
+
+/**
+ * Remove orphaned conditional rules.
+ */
+function webform_update_7407() {
+  // Delete entire conditions for deleted components that were the target.
+  $result = db_query("SELECT rg.* FROM {webform_conditional} rg LEFT JOIN {webform_component} c ON rg.nid = c.nid AND rg.target_type = 'component' AND rg.target = c.cid WHERE c.cid IS NULL");
+  foreach ($result as $row) {
+    db_delete('webform_conditional')
+      ->condition('nid', $row->nid)
+      ->condition('rgid', $row->rgid)
+      ->execute();
+    db_delete('webform_conditional_rules')
+      ->condition('nid', $row->nid)
+      ->condition('rgid', $row->rgid)
+      ->execute();
+  }
+  // Delete conditional rules for deleted components that were the source.
+  $result = db_query("SELECT r.* FROM {webform_conditional_rules} r LEFT JOIN {webform_component} c ON r.nid = c.nid AND r.source_type = 'component' AND r.source = c.cid WHERE c.cid IS NULL");
+  foreach ($result as $row) {
+    db_delete('webform_conditional_rules')
+      ->condition('nid', $row->nid)
+      ->condition('rgid', $row->rgid)
+      ->condition('rid', $row->rid)
+      ->execute();
+  }
+  // Delete any conditions that no longer have any rules left in them.
+  $result = db_query("SELECT rg.* FROM {webform_conditional} rg LEFT JOIN {webform_conditional_rules} r ON rg.nid = r.nid AND rg.rgid = r.rgid WHERE r.rgid IS NULL");
+  foreach ($result as $row) {
+    db_delete('webform_conditional')
+      ->condition('nid', $row->nid)
+      ->condition('rgid', $row->rgid)
+      ->execute();
+  }
+}

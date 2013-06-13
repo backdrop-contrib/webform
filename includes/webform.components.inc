@@ -790,7 +790,6 @@ function webform_component_update($component) {
 function webform_component_delete($node, $component) {
   // Check if a delete function is available for this component. If so,
   // load all submissions and allow the component to delete each one.
-
   webform_component_include($component['type']);
   $delete_function = '_webform_delete_' . $component['type'];
   if (function_exists($delete_function)) {
@@ -812,6 +811,33 @@ function webform_component_delete($node, $component) {
     ->condition('nid', $node->nid)
     ->condition('cid', $component['cid'])
     ->execute();
+
+  // Delete any conditionals dependent on this component.
+  module_load_include('inc', 'webform', 'includes/webform.conditionals');
+  foreach ($node->webform['conditionals'] as $rgid => $conditional) {
+    // Delete the whole conditional if this component is the target.
+    if ($conditional['target_type'] === 'component' && $conditional['target'] == $component['cid']) {
+      webform_conditional_delete($node, $conditional);
+    }
+    else {
+      foreach ($conditional['rules'] as $rid => $rule) {
+        if ($rule['source_type'] === 'component' && $rule['source'] == $component['cid']) {
+          // Delete the conditional if this component is the only source.
+          if (count($conditional['rules']) === 1) {
+            webform_conditional_delete($node, $conditional);
+          }
+          // Delete only one rule if this component is one of multiple rules.
+          else {
+            db_delete('webform_conditional_rules')
+              ->condition('nid', $node->nid)
+              ->condition('rgid', $rgid)
+              ->condition('rid', $rid)
+              ->execute();
+          }
+        }
+      }
+    }
+  }
 
   // Delete all elements under this element.
   $result = db_select('webform_component', 'c')
