@@ -1075,6 +1075,10 @@ function webform_update_7401(&$sandbox) {
         drupal_write_record('webform_emails', $email, array('nid', 'eid'));
       }
     }
+
+    // Update the last processed NID.
+    $sandbox['last_nid_processed'] = $nid;
+    $sandbox['progress']++;
   }
 
   // If less than limit was processed, the update process is finished.
@@ -1307,6 +1311,10 @@ function webform_update_7403(&$sandbox) {
         drupal_write_record('webform_component', $component, array('nid', 'cid'));
       }
     }
+
+    // Update the last processed NID.
+    $sandbox['last_nid_processed'] = $nid;
+    $sandbox['progress']++;
   }
 
   // If less than limit was processed, the update process is finished.
