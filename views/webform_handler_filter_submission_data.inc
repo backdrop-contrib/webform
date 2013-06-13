@@ -78,7 +78,7 @@ class webform_handler_filter_submission_data extends views_handler_filter_string
    */
   function value_form(&$form, &$form_state) {
     // TODO: Adjust the exposed filter form based on component form.
-    return parent::value_form(&$form, &$form_state);
+    return parent::value_form($form, $form_state);
   }
 
   function op_greater_than($field) {
