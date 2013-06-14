@@ -900,7 +900,7 @@ function _webform_table_component($component, $value) {
 function _webform_csv_headers_component($component, $export_options) {
   $header = array();
   $header[0] = array('');
-  $header[1] = array($component['name']);
+  $header[1] = array($export_options['header_keys'] ? $component['form_key'] : $component['name']);
   $items = _webform_component_options($component['extra']['questions']);
   $count = 0;
   foreach ($items as $key => $item) {

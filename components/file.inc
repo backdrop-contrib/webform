@@ -467,7 +467,7 @@ function _webform_csv_headers_file($component, $export_options) {
   $header = array();
   // Two columns in header.
   $header[0] = array('', '');
-  $header[1] = array($component['name'], '');
+  $header[1] = array($export_options['header_keys'] ? $component['form_key'] : $component['name'], '');
   $header[2] = array(t('Name'), t('Filesize (KB)'));
   return $header;
 }

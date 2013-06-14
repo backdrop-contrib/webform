@@ -705,10 +705,15 @@ function _webform_csv_headers_select($component, $export_options) {
 
   if ($component['extra']['multiple'] && $export_options['select_format'] == 'separate') {
     $headers[0][] = '';
-    $headers[1][] = $component['name'];
+    $headers[1][] = $export_options['header_keys'] ? $component['form_key'] : $component['name'];
     $items = _webform_select_options($component, TRUE, FALSE);
     if ($component['extra']['other_option']) {
-      $other_label = !empty($component['extra']['other_text']) ? check_plain($component['extra']['other_text']) : t('Other...');
+      if ($export_options['header_keys']) {
+        $other_label = $component['form_key'] . '_other';
+      }
+      else {
+        $other_label = !empty($component['extra']['other_text']) ? check_plain($component['extra']['other_text']) : t('Other...');
+      }
       $items[$other_label] = $other_label;
     }
     $count = 0;
@@ -730,7 +735,7 @@ function _webform_csv_headers_select($component, $export_options) {
   else {
     $headers[0][] = '';
     $headers[1][] = '';
-    $headers[2][] = $component['name'];
+    $headers[2][] = $export_options['header_keys'] ? $component['form_key'] : $component['name'];
   }
   return $headers;
 }

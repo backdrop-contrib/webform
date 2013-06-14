@@ -365,7 +365,7 @@ function _webform_table_grid($component, $value) {
 function _webform_csv_headers_grid($component, $export_options) {
   $header = array();
   $header[0] = array('');
-  $header[1] = array($component['name']);
+  $header[1] = array($export_options['header_keys'] ? $component['form_key'] : $component['name']);
   $items = _webform_select_options_from_text($component['extra']['questions'], TRUE);
   $count = 0;
   foreach ($items as $key => $item) {
@@ -375,7 +375,7 @@ function _webform_csv_headers_grid($component, $export_options) {
       $header[1][] = '';
     }
     // The value for this option.
-    $header[2][] = $item;
+    $header[2][] = $export_options['header_keys'] ? $key : $item;
     $count++;
   }
 
