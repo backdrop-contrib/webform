@@ -302,6 +302,7 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
     '#rows' => max(10, min(20, count(explode("\n", $template)))),
     '#default_value' => $template,
     '#wysiwyg' => webform_email_html_capable() ? NULL : FALSE,
+    '#description' => theme('webform_token_help', array('groups' => array('node', 'submission'))),
   );
 
   $form['template']['html'] = array(
@@ -316,10 +317,6 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
     '#title' => t('Include files as attachments'),
     '#default_value' => $email['attachments'],
     '#access' => webform_email_html_capable(),
-  );
-
-  $form['template']['tokens'] = array(
-    '#markup' => theme('webform_token_help', array('groups' => array('node', 'submission'))),
   );
 
   $form['template']['components'] = array(
