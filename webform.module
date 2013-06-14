@@ -3247,7 +3247,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
   if ($email) {
     $token_data['webform-email'] = $email;
   }
-  $string = token_replace($string, $token_data, array('clear' => true));
+  $string = token_replace($string, $token_data, array('clear' => true, 'sanitize' => $strict));
 
   return $strict ? _webform_filter_xss($string) : $string;
 }
