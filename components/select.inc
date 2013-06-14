@@ -110,7 +110,7 @@ function _webform_edit_select($component) {
     $form['items']['options'] = array(
       '#type' => 'options',
       '#limit' => 500,
-      '#optgroups' => $component['extra']['aslist'],
+      '#optgroups' => TRUE,
       '#multiple' => $component['extra']['multiple'],
       '#multiple_toggle' => t('Multiple'),
       '#default_value' => $component['value'],
