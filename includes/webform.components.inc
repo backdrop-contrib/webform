@@ -135,10 +135,13 @@ function webform_components_form($form, $form_state, $node) {
     '#submit' => array('webform_components_form_add_submit'),
   );
 
-  $form['submit'] = array(
+  $form['actions'] = array(
+    '#type' => 'actions',
+    '#weight' => 45,
+  );
+  $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
-    '#weight' => 45,
     '#access' => count($node->webform['components']) > 0,
   );
 
@@ -557,10 +560,13 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
   $form = array_merge($form, $additional_form_elements);
 
   // Add the submit button.
-  $form['submit'] = array(
+  $form['actions'] = array(
+    '#type' => 'actions',
+    '#weight' => 50,
+  );
+  $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save component'),
-    '#weight' => 50,
   );
 
   // Remove fieldsets without any child form controls.

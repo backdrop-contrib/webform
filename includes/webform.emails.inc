@@ -66,10 +66,13 @@ function webform_emails_form($form, $form_state, $node) {
     $form['add']['email_component']['#disabled'] = TRUE;
   }
 
-  $form['add_button'] = array(
+  $form['actions'] = array(
+    '#type' => 'actions',
+    '#weight' => 45,
+  );
+  $form['actions']['add_button'] = array(
     '#type' => 'submit',
     '#value' => t('Add'),
-    '#weight' => 45,
   );
 
   $form['#validate'] = array('webform_email_address_validate');
@@ -341,10 +344,13 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
   );
 
   // Add the submit button.
-  $form['submit'] = array(
+  $form['actions'] = array(
+    '#type' => 'actions',
+    '#weight' => 20,
+  );
+  $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save e-mail settings'),
-    '#weight' => 20,
   );
 
   $form['#validate'] = array('webform_email_address_validate', 'webform_email_edit_form_validate');
