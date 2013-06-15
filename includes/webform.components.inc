@@ -598,10 +598,12 @@ function webform_component_edit_form_submit($form, &$form_state) {
   $node = node_load($form_state['values']['nid']);
   webform_ensure_record($node);
 
-  // Remove empty extra values.
+  // Remove extra values that match the default.
   if (isset($form_state['values']['extra'])) {
+    $default = array('type' => $form_state['values']['type'], 'extra' => array());
+    webform_component_defaults($default);
     foreach ($form_state['values']['extra'] as $key => $value) {
-      if ($value  === '' && !isset($form['display'][$key]['#options'][''])) {
+      if (isset($default['extra'][$key]) && $default['extra'][$key] === $value) {
         unset($form_state['values']['extra'][$key]);
       }
     }
