@@ -190,7 +190,7 @@ function webform_menu() {
     'access callback' => 'node_access',
     'access arguments' => array('update', 1),
     'file' => 'includes/webform.emails.inc',
-    'type' => MENU_CALLBACK,
+    'type' => MENU_LOCAL_TASK,
   );
   $items['node/%webform_menu/webform/emails/%webform_menu_email/delete'] = array(
     'title' => 'Delete e-mail settings',
@@ -198,7 +198,7 @@ function webform_menu() {
     'page arguments' => array('webform_email_delete_form', 1, 4),
     'access callback' => 'node_access',
     'access arguments' => array('update', 1),
-    'type' => MENU_CALLBACK,
+    'type' => MENU_LOCAL_TASK,
   );
 
   // Node component forms.
