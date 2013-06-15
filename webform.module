@@ -1097,7 +1097,8 @@ function webform_webform_submission_presave($node, &$submission) {
   if ($has_file_components) {
     // If we're updating a submission, build a list of previous files.
     if (isset($submission->sid)) {
-      $old_submission = webform_get_submission($node->nid, $submission->sid, TRUE);
+      drupal_static_reset('webform_get_submission');
+      $old_submission = webform_get_submission($node->nid, $submission->sid);
 
       foreach ($node->webform['components'] as $cid => $component) {
         if ($component['type'] == 'file') {
@@ -2824,7 +2825,8 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Check if this form is sending an email.
   if (!$is_draft && !$form_state['values']['details']['finished']) {
-    $submission = webform_get_submission($node->webform['nid'], $sid, TRUE);
+    drupal_static_reset('webform_get_submission');
+    $submission = webform_get_submission($node->webform['nid'], $sid);
     webform_submission_send_mail($node, $submission);
   }
 

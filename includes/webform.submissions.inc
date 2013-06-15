@@ -747,10 +747,10 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
  * @return
  *   An integer value of the number of submissions.
  */
-function webform_get_submission_count($nid, $uid = NULL, $reset = FALSE) {
-  static $counts;
+function webform_get_submission_count($nid, $uid = NULL) {
+  $counts = &drupal_static(__FUNCTION__);
 
-  if (!isset($counts[$nid][$uid]) || $reset) {
+  if (!isset($counts[$nid][$uid])) {
     $query = db_select('webform_submissions', 'ws')
       ->addTag('webform_get_submission_count')
       ->condition('ws.nid', $nid)
@@ -779,15 +779,8 @@ function webform_get_submission_count($nid, $uid = NULL, $reset = FALSE) {
 /**
  * Fetch a specified submission for a webform node.
  */
-function webform_get_submission($nid, $sid, $reset = FALSE) {
-  static $submissions = array();
-
-  if ($reset) {
-    $submissions = array();
-    if (!isset($sid)) {
-      return;
-    }
-  }
+function webform_get_submission($nid, $sid) {
+  $submissions = &drupal_static(__FUNCTION__, array());
 
   // Load the submission if needed.
   if (!isset($submissions[$sid])) {

@@ -126,7 +126,8 @@ class WebformSubmissionTestCase extends WebformTestCase {
     $sid = $matches[1];
 
     // Pull in the database submission and check the values.
-    $actual_submission = webform_get_submission($node->nid, $sid, TRUE);
+    drupal_static_reset('webform_get_submission');
+    $actual_submission = webform_get_submission($node->nid, $sid);
 
     $component_info = $this->testWebformComponents();
     foreach ($node->webform['components'] as $cid => $component) {
