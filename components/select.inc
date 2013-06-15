@@ -83,6 +83,7 @@ function _webform_edit_select($component) {
       '#default_value' => $component['extra']['other_option'],
       '#description' => t('Check this option if you want to allow users to enter an option not on the list.'),
       '#parents' => array('extra', 'other_option'),
+      '#attributes' => array('class' => array('other-option-checkbox')),
       '#weight' => 2,
     );
     $other['other_text'] = array(
@@ -92,6 +93,11 @@ function _webform_edit_select($component) {
       '#description' => t('If allowing other options, enter text to be used for other-enabling option.'),
       '#parents' => array('extra', 'other_text'),
       '#weight' => 3,
+      '#states' => array(
+        'visible' => array(
+          ':input.other-option-checkbox' => array('checked' => TRUE),
+        ),
+      ),
     );
   }
 
