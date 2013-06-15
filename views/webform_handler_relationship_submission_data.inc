@@ -40,17 +40,15 @@ class webform_handler_relationship_submission_data extends views_handler_relatio
    * It respects the given component ids, provided via options form.
    */
   function query() {
-    $this->definition['extra'] = array(
-      array(
-        'table' => NULL,
-        'field' => "%alias.nid",
-        'value' => $this->options['webform_nid'],
-      ),
-      array(
-        'table' => NULL,
-        'field' => "%alias.cid",
-        'value' => $this->options['webform_cid'],
-      )
+    $this->definition['extra'][] = array(
+      'table' => NULL,
+      'field' => "%alias.nid",
+      'value' => $this->options['webform_nid'],
+    );
+    $this->definition['extra'][] = array(
+      'table' => NULL,
+      'field' => "%alias.cid",
+      'value' => $this->options['webform_cid'],
     );
 
     // The rest of building the join is performed by the parent.
