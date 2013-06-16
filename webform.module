@@ -3040,6 +3040,9 @@ function theme_webform_element($variables) {
   if ($element['#title_display'] == 'none') {
     $variables['element']['#title_display'] = 'invisible';
     $element['#title_display'] = 'invisible';
+    if (empty($element['#attributes']['title']) && !empty($element['#title'])) {
+      $element['#attributes']['title'] = $element['#title'];
+    }
   }
   // If #title is not set, we don't display any label or required marker.
   if (!isset($element['#title'])) {
