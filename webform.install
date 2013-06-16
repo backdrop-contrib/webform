@@ -164,7 +164,7 @@ function webform_schema() {
         'type' => 'text',
         'not null' => TRUE,
       ),
-      'mandatory' => array(
+      'required' => array(
         'description' => 'Boolean flag for if this component is required.',
         'type' => 'int',
         'size' => 'tiny',
@@ -1405,4 +1405,18 @@ function webform_update_7407() {
       ->condition('rgid', $row->rgid)
       ->execute();
   }
+}
+
+/**
+ * Rename the "mandatory" column to "required".
+ */
+function webform_update_7408() {
+  $spec = array(
+    'description' => 'Boolean flag for if this component is required.',
+    'type' => 'int',
+    'size' => 'tiny',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  db_change_field('webform_component', 'mandatory', 'required', $spec);
 }

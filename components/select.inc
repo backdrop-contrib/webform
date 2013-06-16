@@ -12,7 +12,7 @@ function _webform_defaults_select() {
   return array(
     'name' => '',
     'form_key' => NULL,
-    'mandatory' => 0,
+    'required' => 0,
     'pid' => 0,
     'weight' => 0,
     'value' => '',
@@ -297,7 +297,7 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
   $element = array(
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
-    '#required' => $component['mandatory'],
+    '#required' => $component['required'],
     '#weight' => $component['weight'],
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#theme_wrappers' => array('webform_element'),

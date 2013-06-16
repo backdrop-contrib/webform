@@ -15,7 +15,7 @@ function _webform_defaults_grid() {
   return array(
     'name' => '',
     'form_key' => NULL,
-    'mandatory' => 0,
+    'required' => 0,
     'pid' => 0,
     'weight' => 0,
     'extra' => array(
@@ -150,7 +150,7 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
     '#type' => 'webform_grid',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
-    '#required' => $component['mandatory'],
+    '#required' => $component['required'],
     '#weight' => $component['weight'],
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#grid_questions' => _webform_select_options_from_text($component['extra']['questions'], TRUE),

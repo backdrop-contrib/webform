@@ -18,7 +18,7 @@ function _webform_defaults_time() {
     'pid' => 0,
     'weight' => 0,
     'value' => '',
-    'mandatory' => 0,
+    'required' => 0,
     'extra' => array(
       'timezone' => 'user',
       'hourformat' => '12-hour',
@@ -104,7 +104,7 @@ function _webform_render_time($component, $value = NULL, $filter = TRUE) {
     '#type' => 'webform_time',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
-    '#required' => $component['mandatory'],
+    '#required' => $component['required'],
     '#weight' => $component['weight'],
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#element_validate' => array('webform_validate_time'),

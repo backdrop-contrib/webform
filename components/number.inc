@@ -15,7 +15,7 @@ function _webform_defaults_number() {
     'pid' => 0,
     'weight' => 0,
     'value' => '',
-    'mandatory' => 0,
+    'required' => 0,
     'extra' => array(
       'type' => 'textfield',
       'field_prefix' => '',
@@ -254,7 +254,7 @@ function _webform_render_number($component, $value = NULL, $filter = TRUE) {
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#default_value' => $filter ? _webform_filter_values($component['value'], $node, NULL, NULL, FALSE) : $component['value'],
-    '#required' => $component['mandatory'],
+    '#required' => $component['required'],
     '#weight' => $component['weight'],
     '#field_prefix' => empty($component['extra']['field_prefix']) ? NULL : ($filter ? _webform_filter_xss($component['extra']['field_prefix']) : $component['extra']['field_prefix']),
     '#field_suffix' => empty($component['extra']['field_suffix']) ? NULL : ($filter ? _webform_filter_xss($component['extra']['field_suffix']) : $component['extra']['field_suffix']),

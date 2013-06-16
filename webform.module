@@ -412,7 +412,7 @@ function webform_menu_component_load($cid, $nid, $type) {
   module_load_include('inc', 'webform', 'includes/webform.components');
   if ($cid == 'new') {
     $components = webform_components();
-    $component = in_array($type, array_keys($components)) ? array('type' => $type, 'nid' => $nid, 'name' => $_GET['name'], 'mandatory' => $_GET['mandatory'], 'pid' => $_GET['pid'], 'weight' => $_GET['weight']) : FALSE;
+    $component = in_array($type, array_keys($components)) ? array('type' => $type, 'nid' => $nid, 'name' => $_GET['name'], 'required' => $_GET['required'], 'pid' => $_GET['pid'], 'weight' => $_GET['weight']) : FALSE;
   }
   else {
     $node = node_load($nid);

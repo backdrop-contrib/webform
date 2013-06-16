@@ -571,7 +571,7 @@ function _webform_defaults_component() {
   return array(
     'name' => '',
     'form_key' => NULL,
-    'mandatory' => 0,
+    'required' => 0,
     'pid' => 0,
     'weight' => 0,
     'extra' => array(
@@ -640,7 +640,7 @@ function _webform_render_component($component, $value = NULL, $filter = TRUE) {
   $form_item = array(
     '#type' => 'textfield',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
-    '#required' => $component['mandatory'],
+    '#required' => $component['required'],
     '#weight' => $component['weight'],
     '#description'   => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
     '#default_value' => $filter ? _webform_filter_values($component['value']) : $component['value'],

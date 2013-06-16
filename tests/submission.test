@@ -70,19 +70,19 @@ class WebformSubmissionTestCase extends WebformTestCase {
     $this->drupalLogin($this->webform_users['admin']);
     $this->webformReset();
 
-    // Create the Webform test node, and set all components to be mandatory
+    // Create the Webform test node, and set all components to be required
     // with no default value.
     $node = $this->testWebformForm();
     $node = node_load($node->nid);
     foreach ($node->webform['components'] as &$component) {
       $component['value'] = '';
-      $component['mandatory'] = '1';
+      $component['required'] = '1';
     }
     node_save($node);
 
     // Submit the webform with no data. We should get a message that all the
     // components are required. (The exceptions are hidden fields, which can't
-    // be made mandatory, and date fields, which default to the current date
+    // be made required, and date fields, which default to the current date
     // when no default value is provided; therefore, we don't expect a message
     // for those.)
     $this->drupalPost('node/' . $node->nid, array(), 'Submit', array(), array(), 'webform-client-form-' . $node->nid);

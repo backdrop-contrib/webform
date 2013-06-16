@@ -12,7 +12,7 @@ function _webform_defaults_file() {
   return array(
     'name' => '',
     'form_key' => NULL,
-    'mandatory' => 0,
+    'required' => 0,
     'pid' => 0,
     'weight' => 0,
     'extra' => array(
@@ -316,7 +316,7 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE) {
     '#type' => 'managed_file',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
-    '#required' => $component['mandatory'],
+    '#required' => $component['required'],
     '#default_value' => isset($value[0]) ? $value[0] : NULL,
     '#attributes' => $component['extra']['attributes'],
     '#upload_validators' => array(

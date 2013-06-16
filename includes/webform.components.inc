@@ -69,10 +69,10 @@ function webform_components_form($form, $form_state, $node) {
       '#title' => t('Weight'),
       '#default_value' => $component['weight'],
     );
-    $form['components'][$cid]['mandatory'] = array(
+    $form['components'][$cid]['required'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Mandatory'),
-      '#default_value' => $component['mandatory'],
+      '#title' => t('Required'),
+      '#default_value' => $component['required'],
       '#access' => webform_component_feature($component['type'], 'required'),
     );
     if (!isset($max_weight) || $component['weight'] > $max_weight) {
@@ -92,7 +92,7 @@ function webform_components_form($form, $form_state, $node) {
     '#weight' => 3,
     '#default_value' => (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) ? $node->webform['components'][$_GET['cid']]['type'] : 'textfield',
   );
-  $form['add']['mandatory'] = array(
+  $form['add']['required'] = array(
     '#type' => 'checkbox',
   );
   $form['add']['cid'] = array(
@@ -167,7 +167,7 @@ function theme_webform_components_form($variables) {
 
   $node = $form['#node'];
 
-  $header = array(t('Label'), t('Type'), t('Value'), t('Mandatory'), t('Weight'), array('data' => t('Operations'), 'colspan' => 3));
+  $header = array(t('Label'), t('Type'), t('Value'), t('Required'), t('Weight'), array('data' => t('Operations'), 'colspan' => 3));
   $rows = array();
 
   // Add a row containing form elements for a new item.
@@ -181,7 +181,7 @@ function theme_webform_components_form($variables) {
     drupal_render($form['add']['name']),
     drupal_render($form['add']['type']),
     '',
-    drupal_render($form['add']['mandatory']),
+    drupal_render($form['add']['required']),
     drupal_render($form['add']['cid']) . drupal_render($form['add']['pid']) . drupal_render($form['add']['weight']),
     array('colspan' => 3, 'data' => drupal_render($form['add']['add'])),
   );
@@ -202,8 +202,8 @@ function theme_webform_components_form($variables) {
       }
       $component['value'] = check_plain($component['value']);
 
-      // Remove individual titles from the mandatory and weight fields.
-      unset($form['components'][$cid]['mandatory']['#title']);
+      // Remove individual titles from the required and weight fields.
+      unset($form['components'][$cid]['required']['#title']);
       unset($form['components'][$cid]['pid']['#title']);
       unset($form['components'][$cid]['weight']['#title']);
 
@@ -223,7 +223,7 @@ function theme_webform_components_form($variables) {
         $indents . filter_xss($component['name']),
         $form['add']['type']['#options'][$component['type']],
         ($component['value'] == '') ? '-' : $component['value'],
-        drupal_render($form['components'][$cid]['mandatory']),
+        drupal_render($form['components'][$cid]['required']),
         drupal_render($form['components'][$cid]['cid']) . drupal_render($form['components'][$cid]['pid']) . drupal_render($form['components'][$cid]['weight']),
         l(t('Edit'), 'node/' . $node->nid . '/webform/components/' . $cid, array('query' => drupal_get_destination())),
         l(t('Clone'), 'node/' . $node->nid . '/webform/components/' . $cid . '/clone', array('query' => drupal_get_destination())),
@@ -320,13 +320,13 @@ function webform_components_form_add_validate($form, &$form_state) {
 function webform_components_form_submit($form, &$form_state) {
   $node = node_load($form_state['values']['nid']);
 
-  // Update all mandatory and weight values.
+  // Update all required and weight values.
   $changes = FALSE;
   foreach ($node->webform['components'] as $cid => $component) {
-    if ($component['pid'] != $form_state['values']['components'][$cid]['pid'] || $component['weight'] != $form_state['values']['components'][$cid]['weight'] || $component['mandatory'] != $form_state['values']['components'][$cid]['mandatory']) {
+    if ($component['pid'] != $form_state['values']['components'][$cid]['pid'] || $component['weight'] != $form_state['values']['components'][$cid]['weight'] || $component['required'] != $form_state['values']['components'][$cid]['required']) {
       $changes = TRUE;
       $node->webform['components'][$cid]['weight'] = $form_state['values']['components'][$cid]['weight'];
-      $node->webform['components'][$cid]['mandatory'] = $form_state['values']['components'][$cid]['mandatory'];
+      $node->webform['components'][$cid]['required'] = $form_state['values']['components'][$cid]['required'];
       $node->webform['components'][$cid]['pid'] = $form_state['values']['components'][$cid]['pid'];
     }
   }
@@ -335,7 +335,7 @@ function webform_components_form_submit($form, &$form_state) {
     node_save($node);
   }
 
-  drupal_set_message(t('The component positions and mandatory values have been updated.'));
+  drupal_set_message(t('The component positions and required values have been updated.'));
 }
 
 /**
@@ -345,7 +345,7 @@ function webform_components_form_add_submit($form, &$form_state) {
   $node = node_load($form_state['values']['nid']);
 
   $component = $form_state['values']['add'];
-  $form_state['redirect'] = array('node/' . $node->nid . '/webform/components/new/' . $component['type'], array('query' => array('name' => $component['name'], 'mandatory' => $component['mandatory'], 'pid' => $component['pid'], 'weight' => $component['weight'])));
+  $form_state['redirect'] = array('node/' . $node->nid . '/webform/components/new/' . $component['type'], array('query' => array('name' => $component['name'], 'required' => $component['required'], 'pid' => $component['pid'], 'weight' => $component['weight'])));
 }
 
 /**
@@ -486,13 +486,13 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     '#weight' => 5,
   );
   if (webform_component_feature($component['type'], 'required')) {
-    $form['validation']['mandatory'] = array(
+    $form['validation']['required'] = array(
       '#type' => 'checkbox',
-      '#title' => t('Mandatory'),
-      '#default_value' => ($component['mandatory'] == '1' ? TRUE : FALSE),
+      '#title' => t('Required'),
+      '#default_value' => ($component['required'] == '1' ? TRUE : FALSE),
       '#description' => t('Check this option if the user must enter a value.'),
       '#weight' => -1,
-      '#parents' => array('mandatory'),
+      '#parents' => array('required'),
     );
   }
 
@@ -719,7 +719,7 @@ function webform_component_insert(&$component) {
   }
 
   $component['value'] = isset($component['value']) ? $component['value'] : NULL;
-  $component['mandatory'] = isset($component['mandatory']) ? $component['mandatory'] : 0;
+  $component['required'] = isset($component['required']) ? $component['required'] : 0;
   $component['extra']['private'] = isset($component['extra']['private']) ? $component['extra']['private'] : 0;
 
   if (!isset($component['cid'])) {
@@ -748,7 +748,7 @@ function webform_component_insert(&$component) {
       'type' => $component['type'],
       'value' => (string) $component['value'],
       'extra' => serialize($component['extra']),
-      'mandatory' => $component['mandatory'],
+      'required' => $component['required'],
       'weight' => $component['weight'],
     ))
     ->execute();
@@ -774,7 +774,7 @@ function webform_component_update($component) {
   }
 
   $component['value'] = isset($component['value']) ? $component['value'] : NULL;
-  $component['mandatory'] = isset($component['mandatory']) ? $component['mandatory'] : 0;
+  $component['required'] = isset($component['required']) ? $component['required'] : 0;
   $component['extra']['private'] = isset($component['extra']['private']) ? $component['extra']['private'] : 0;
   db_update('webform_component')
     ->fields(array(
@@ -784,7 +784,7 @@ function webform_component_update($component) {
       'type' => $component['type'],
       'value' => isset($component['value']) ? $component['value'] : '',
       'extra' => serialize($component['extra']),
-      'mandatory' => $component['mandatory'],
+      'required' => $component['required'],
       'weight' => $component['weight']
     ))
     ->condition('nid', $component['nid'])

@@ -100,7 +100,7 @@ class WebformConditionalsTestCase extends WebformTestCase {
     // Add a test textfield on the first page.
     $textfield['weight'] = '199';
     $textfield['form_key'] = $this->randomName();
-    $textfield['mandatory'] = '1';
+    $textfield['required'] = '1';
     $components[] = $textfield;
 
     // Then add a page break and another textfield on the second page.
@@ -161,7 +161,7 @@ class WebformConditionalsTestCase extends WebformTestCase {
     // Adjust the conditionals to make them separate-page conditionals.
     $conditional['target'] = 3; // The separate-page textfield test.
     $node->webform['conditionals'] = array($conditional);
-    $node->webform['components'][2]['mandatory'] = '0';
+    $node->webform['components'][2]['required'] = '0';
     node_save($node);
 
     // Re-submit the form again, this time checking for the field on the

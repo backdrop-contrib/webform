@@ -15,7 +15,7 @@ function _webform_defaults_email() {
     'pid' => 0,
     'weight' => 0,
     'value' => '',
-    'mandatory' => 0,
+    'required' => 0,
     'extra' => array(
       'width' => '',
       'unique' => 0,
@@ -127,7 +127,7 @@ function _webform_render_email($component, $value = NULL, $filter = TRUE) {
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#default_value' => $filter ? _webform_filter_values($component['value'], $node) : $component['value'],
-    '#required' => $component['mandatory'],
+    '#required' => $component['required'],
     '#weight' => $component['weight'],
     '#description' => $filter ? _webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#attributes' => $component['extra']['attributes'],
