@@ -403,7 +403,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
       '#type' => 'textarea',
       '#default_value' => isset($component['extra']['description']) ? $component['extra']['description'] : '',
       '#title' => t('Description'),
-      '#description' => t('A short description of the field used as help for the user when he/she uses the form.') . theme('webform_token_help'),
+      '#description' => t('A short description of the field used as help for the user when he/she uses the form.') . ' ' . theme('webform_token_help'),
       '#weight' => -1,
     );
   }

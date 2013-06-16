@@ -53,7 +53,7 @@ function _webform_edit_email($component) {
     '#type' => 'textfield',
     '#title' => t('Default value'),
     '#default_value' => $component['value'],
-    '#description' => t('The default value of the field.') . theme('webform_token_help'),
+    '#description' => t('The default value of the field.') . ' ' . theme('webform_token_help'),
     '#size' => 60,
     '#maxlength' => 127,
     '#weight' => 0,

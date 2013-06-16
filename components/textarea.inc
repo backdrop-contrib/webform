@@ -52,7 +52,7 @@ function _webform_edit_textarea($component) {
     '#type' => 'textarea',
     '#title' => t('Default value'),
     '#default_value' => $component['value'],
-    '#description' => t('The default value of the field.') . theme('webform_token_help'),
+    '#description' => t('The default value of the field.') . ' ' . theme('webform_token_help'),
     '#cols' => 60,
     '#rows' => 5,
     '#weight' => 0,

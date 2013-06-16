@@ -610,7 +610,7 @@ function _webform_edit_component($component) {
     '#type' => 'textarea',
     '#title' => t('Options'),
     '#default_value' => $component['extra']['options'],
-    '#description' => t('Key-value pairs may be entered separated by pipes. i.e. safe_key|Some readable option') . theme('webform_token_help'),
+    '#description' => t('Key-value pairs may be entered separated by pipes. i.e. safe_key|Some readable option') . ' ' . theme('webform_token_help'),
     '#cols' => 60,
     '#rows' => 5,
     '#weight' => -3,
