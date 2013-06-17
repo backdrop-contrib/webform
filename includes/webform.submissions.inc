@@ -478,7 +478,7 @@ function webform_submission_resend($form, $form_state, $node, $submission) {
       '#markup' => implode('<br />', $email_addresses),
     );
     if (!$valid_email) {
-      $form['emails'][$eid]['email']['#value'] .= ' (' . t('empty') . ')';
+      $form['emails'][$eid]['email']['#markup'] .= ' (' . t('empty') . ')';
     }
     $form['emails'][$eid]['subject'] = array(
       '#markup' => check_plain(webform_format_email_subject($email['subject'], $node, $submission)),
