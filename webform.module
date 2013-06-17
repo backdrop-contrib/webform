@@ -68,10 +68,6 @@ function webform_help($section = 'admin/help#webform', $arg = NULL) {
       <p>Help on adding and configuring the components will be shown after you add your first component.</p>
       ", array('!webform-types-message' => $types_message, '!create-content' => url('node/add'), '!types' => $types));
       break;
-    case 'node/%/webform/components':
-      $output .= '<p>' . t('This page displays all the components currently configured for this webform node. You may add any number of components to the form, even multiple of the same type. To add a new component, fill in a name and select a type from the fields at the bottom of the table. Submit the form to create the new component or update any changed form values.') . '</p>';
-      $output .= '<p>' . t('Click on any existing component\'s name to edit its settings.') . '</p>';
-      break;
     case 'node/%/webform/conditionals':
       $output .= '<p>' . t('Conditionals may be used to hide or show certain components (or entire pages!) based on the value of other components.') . '</p>';
       break;
