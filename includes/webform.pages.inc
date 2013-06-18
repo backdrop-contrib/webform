@@ -80,7 +80,7 @@ function webform_configure_form($form, &$form_state, $node) {
     '#title' => t('Redirect URL'),
     '#description' => t('URL to redirect the user to upon successful submission.'),
     '#default_value' => $redirect_url,
-    '#maxlength' => 255,
+    '#maxlength' => 2048,
   );
 
   // Submission limit settings for all submissions.
