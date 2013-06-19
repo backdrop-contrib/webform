@@ -1080,9 +1080,9 @@ function webform_webform_submission_presave($node, &$submission) {
     if ($component['type'] == 'file') {
       $has_file_components = TRUE;
       if (!empty($submission->data[$cid])) {
-        foreach ($submission->data[$cid]['value'] as $key => $value) {
+        foreach ($submission->data[$cid] as $key => $value) {
           if (empty($value)) {
-            unset($submission->data[$cid]['value'][$key]);
+            unset($submission->data[$cid][$key]);
           }
         }
         $new_fids = array_merge($new_fids, $submission->data[$cid]);
