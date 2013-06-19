@@ -342,8 +342,8 @@ function _webform_display_number($component, $value, $format = 'html') {
  */
 function theme_webform_display_number($variables) {
   $element = $variables['element'];
-  $prefix = $element['#format'] == 'html' ? filter_xss($element['#field_prefix']) : $element['#field_prefix'];
-  $suffix = $element['#format'] == 'html' ? filter_xss($element['#field_suffix']) : $element['#field_suffix'];
+  $prefix = $element['#format'] == 'html' ? '' : $element['#field_prefix'];
+  $suffix = $element['#format'] == 'html' ? '' : $element['#field_suffix'];
   $value = $element['#format'] == 'html' ? check_plain($element['#value']) : $element['#value'];
   return $value !== '' ? ($prefix . $value . $suffix) : ' ';
 }
