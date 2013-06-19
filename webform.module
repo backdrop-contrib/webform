@@ -2506,6 +2506,7 @@ function webform_client_form_validate($form, &$form_state) {
   // submission, otherwise a stale form in another window may be allowed.
   $allowed_role = TRUE;
   if (variable_get('webform_submission_access_control', 1) && !$finished) {
+    $allowed_roles = array();
     foreach ($node->webform['roles'] as $rid) {
       $allowed_roles[$rid] = isset($user->roles[$rid]) ? TRUE : FALSE;
     }
@@ -2529,8 +2530,8 @@ function webform_client_form_validate($form, &$form_state) {
   }
 
   // Prevent submission by throwing an error.
-  if (!$allowed_role || $total_limit_exceeded || $user_limit_exceeded) {
-    theme('webform_view_messages', array('node' => $node, 'teaser' => 0, 'page' => 1, 'submission_count' => 0, 'user_limit_exceeded' => $user_limit_exceeded, 'total_limit_exceeded' => $total_limit_exceeded, 'allowed_roles' => array_keys(user_roles()), 'closed' => FALSE, 'cached' => FALSE));
+  if ((!$allowed_role || $total_limit_exceeded || $user_limit_exceeded) && $GLOBALS['user']->uid != 1) {
+    theme('webform_view_messages', array('node' => $node, 'teaser' => 0, 'page' => 1, 'submission_count' => 0, 'user_limit_exceeded' => $user_limit_exceeded, 'total_limit_exceeded' => $total_limit_exceeded, 'allowed_roles' => $allowed_roles, 'closed' => FALSE, 'cached' => FALSE));
     form_set_error('', NULL);
     return;
   }
