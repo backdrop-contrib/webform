@@ -639,7 +639,9 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
   }
   // Build the list of SIDs that need to be retrieved.
   else {
-    $pager_query = db_select('webform_submissions', 'ws')->fields('ws', array('sid'));
+    $pager_query = db_select('webform_submissions', 'ws')
+      ->addTag('webform_get_submissions_sids')
+      ->fields('ws', array('sid'));
     foreach ($filters as $column => $value) {
       $pager_query->condition($column, $value);
     }
@@ -692,6 +694,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
   $query->leftJoin('webform_submissions', 's', 's.sid = sd.sid');
   $query->leftJoin('users', 'u', 'u.uid = s.uid');
   $query
+    ->addTag('webform_get_submissions_data')
     ->fields('s')
     ->fields('sd', array('cid', 'no', 'data'))
     ->fields('u', array('name'))
