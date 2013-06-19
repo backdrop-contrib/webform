@@ -149,14 +149,9 @@ function webform_components_form($form, $form_state, $node) {
 }
 
 /**
- * Theme the node components form. Use a table to organize the components.
- *
- * @param $form
- *   The form array.
- * @return
- *   Formatted HTML form, ready for display.
+ * Preprocess variables for theming the webform components form.
  */
-function theme_webform_components_form($variables) {
+function template_preprocess_webform_components_form(&$variables) {
   $form = $variables['form'];
 
   $form['components']['#attached']['library'][] = array('webform', 'admin');
@@ -265,9 +260,21 @@ function theme_webform_components_form($variables) {
     $rows[] = $add_form;
   }
 
+  $variables['rows'] = $rows;
+  $variables['header'] = $header;
+  $variables['form'] = $form;
+}
+
+/**
+ * Theme the node components form. Use a table to organize the components.
+ *
+ * @return
+ *   Formatted HTML form, ready for display.
+ */
+function theme_webform_components_form($variables) {
   $output = '';
-  $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'webform-components')));
-  $output .= drupal_render_children($form);
+  $output .= theme('table', array('header' => $variables['header'], 'rows' => $variables['rows'], 'attributes' => array('id' => 'webform-components')));
+  $output .= drupal_render_children($variables['form']);
   return $output;
 }
 
