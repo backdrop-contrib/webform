@@ -2496,6 +2496,8 @@ function _webform_client_form_add_component($node, $component, $component_value,
 function webform_client_form_validate($form, &$form_state) {
   module_load_include('inc', 'webform', 'includes/webform.submissions');
 
+  global $user;
+
   $node = $form['#node'];
   $finished = $form_state['values']['details']['finished'];
 
