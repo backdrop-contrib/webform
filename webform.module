@@ -1308,9 +1308,7 @@ function webform_node_update($node) {
   drupal_write_record('webform', $node->webform, array('nid'));
 
   // Compare the webform components and don't do anything if it's not needed.
-  // The internal cache needs to be reset here so that the cached node entity
-  // does not get loaded and invalidate the comparisons.
-  $original = node_load($node->nid, NULL, TRUE);
+  $original = $node->original;
 
   if ($original->webform['components'] != $node->webform['components']) {
     module_load_include('inc', 'webform', 'includes/webform.components');
