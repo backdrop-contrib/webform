@@ -131,15 +131,17 @@ function theme_webform_email_add_form($variables) {
   $form = $variables['form'];
 
   // Add a default value to the custom e-mail textfield.
-  $form['email_custom']['#attributes']['rel'] = t('email@example.com');
-  $form['email_custom']['#attributes']['class'] = array('webform-set-active', 'webform-default-value');
+  $form['email_custom']['#attributes']['placeholder'] = t('email@example.com');
+  $form['email_custom']['#attributes']['class'][] = 'webform-set-active';
+  $form['email_custom']['#theme_wrappers'] = array();
   $form['email_option']['custom']['#theme_wrappers'] = array('webform_inline_radio');
-  $form['email_option']['custom']['#inline_element'] = drupal_render($form['email_custom']);
+  $form['email_option']['custom']['#title'] = t('Address: !email', array('!email' => drupal_render($form['email_custom'])));
 
   // Render the component value.
-  $form['email_component']['#attributes']['class'] = array('webform-set-active');
+  $form['email_component']['#theme_wrappers'] = array();
+  $form['email_component']['#attributes']['class'][] = 'webform-set-active';
   $form['email_option']['component']['#theme_wrappers'] = array('webform_inline_radio');
-  $form['email_option']['component']['#inline_element'] = drupal_render($form['email_component']);
+  $form['email_option']['component']['#title'] = t('Component value: !component', array('!component' => drupal_render($form['email_component'])));
 
   return drupal_render_children($form);
 }
@@ -367,11 +369,13 @@ function theme_webform_email_edit_form($variables) {
   // Loop through fields, rendering them into radio button options.
   foreach (array('email', 'subject', 'from_address', 'from_name') as $field) {
     foreach (array('custom', 'component') as $option) {
-      $form[$field . '_' . $option]['#attributes']['class'] = array('webform-set-active');
+      $form[$field . '_' . $option]['#attributes']['class'][] = 'webform-set-active';
+      $form[$field . '_' . $option]['#theme_wrappers'] = array();
       $form[$field . '_option'][$option]['#theme_wrappers'] = array('webform_inline_radio');
-      $form[$field . '_option'][$option]['#inline_element'] = drupal_render($form[$field . '_' . $option]);
+      $form[$field . '_option'][$option]['#title'] = t('!title: !field', array('!title' => $form[$field . '_option'][$option]['#title'], '!field' => drupal_render($form[$field . '_' . $option])));
     }
     if (isset($form[$field . '_option']['#options']['default'])) {
+      $form[$field]['#theme_wrappers'] = array();
       $form[$field . '_option']['default']['#theme_wrappers'] = array('webform_inline_radio');
     }
   }

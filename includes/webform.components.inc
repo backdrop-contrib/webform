@@ -167,11 +167,10 @@ function template_preprocess_webform_components_form(&$variables) {
 
   // Add a row containing form elements for a new item.
   unset($form['add']['name']['#title'], $form['add_type']['#description']);
-  $form['add']['name']['#attributes']['rel'] = t('New component name');
-  $form['add']['name']['#attributes']['class'] = array('webform-default-value');
-  $form['add']['cid']['#attributes']['class'] = array('webform-cid');
-  $form['add']['pid']['#attributes']['class'] = array('webform-pid');
-  $form['add']['weight']['#attributes']['class'] = array('webform-weight');
+  $form['add']['name']['#attributes']['placeholder'] = t('New component name');
+  $form['add']['cid']['#attributes']['class'][] = 'webform-cid';
+  $form['add']['pid']['#attributes']['class'][] = 'webform-pid';
+  $form['add']['weight']['#attributes']['class'][] = 'webform-weight';
   $row_data = array(
     drupal_render($form['add']['name']),
     drupal_render($form['add']['type']),

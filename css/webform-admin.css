@@ -99,9 +99,6 @@ table.webform-file-extensions input.form-text {
 .webform-container-inline div.form-item {
   display: inline;
 }
-.webform-default-value {
-  color: #999;
-}
 .webform-results-per-page a.selected {
   font-weight: bold;
 }
