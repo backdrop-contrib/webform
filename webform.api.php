@@ -435,6 +435,12 @@ function hook_webform_component_info() {
       // "Before" and "After" when exposed as filters in Views module.
       'views_range' => FALSE,
     ),
+
+    // Specify the conditional behaviour of this component.
+    // Examples are 'string', 'date', 'time', 'numeric', 'select'.
+    // Defaults to 'string'.
+    'conditional_type' => 'string',
+
     'file' => 'components/textfield.inc',
   );
 
