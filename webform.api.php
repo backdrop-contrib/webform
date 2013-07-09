@@ -548,6 +548,19 @@ function _webform_attachments_component($component, $value) {
   return $files;
 }
 
+
+/**
+ * Alter default settings for a newly created webform node.
+ *
+ * @param array $defaults
+ *   Default settings for a newly created webform node as defined by webform_node_defaults().
+ *
+ * @see webform_node_defaults()
+ */
+function hook_webform_node_defaults_alter(&$defaults) {
+  $defaults['teaser'] = '1';
+}
+
 /**
  * @}
  */
@@ -656,6 +669,23 @@ function _webform_render_component($component, $value = NULL, $filter = TRUE) {
 }
 
 /**
+ * Allow modules to modify a webform component that is going to be rendered in a form.
+ *
+ * @param array $element
+ *   The display element as returned by _webform_render_component().
+ * @param array $component
+ *   A Webform component array.
+ *
+ * @see _webform_render_component()
+ */
+function hook_webform_component_render_alter(&$element, &$component) {
+  if ($component['cid'] == 10) {
+    $element['#title'] = 'My custom title';
+    $element['#default_value'] = 42;
+  }
+}
+
+/**
  * Display the result of a submission for a component.
  *
  * The output of this function will be displayed under the "Results" tab then
@@ -694,6 +724,23 @@ function _webform_display_component($component, $value, $format = 'html') {
     '#format' => $format,
     '#value' => isset($value[0]) ? $value[0] : '',
   );
+}
+
+/**
+ * Allow modules to modify a "display only" webform component.
+ *
+ * @param array $element
+ *   The display element as returned by _webform_display_component().
+ * @param array $component
+ *   A Webform component array.
+ *
+ * @see _webform_display_component()
+ */
+function hook_webform_component_display_alter(&$element, &$component) {
+  if ($component['cid'] == 10) {
+    $element['#title'] = 'My custom title';
+    $element['#default_value'] = 42;
+  }
 }
 
 /**
