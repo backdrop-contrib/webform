@@ -519,7 +519,7 @@ function webform_email_edit_form_submit($form, &$form_state) {
       $email[$field] = $form_state['values'][$field . '_' . $option];
 
       // Merge the email mapping(s) into single value(s)
-      $cid = $form_state['values'][$field . '_component']; 
+      $cid = $form_state['values'][$field . '_' . $option]; 
       if (is_numeric($cid) && isset($form_state['values'][$field . '_mapping'][$cid])) {
         $email['extra'][$field .'_mapping'] = $form_state['values'][$field . '_mapping'][$cid];
       }
