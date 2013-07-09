@@ -140,6 +140,9 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
               if ($modifier === 'nolabel') {
                 $display_element['#theme_wrappers'] = array();
               }
+              // Individual tokens always have access granted even if they're
+              // not displayed when printing the whole renderable.
+              $display_element['#access'] = TRUE;
               $replacements[$original] = render($display_element);
               break;
             }
