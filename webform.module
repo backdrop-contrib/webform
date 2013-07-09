@@ -3423,7 +3423,7 @@ function theme_webform_token_help($variables) {
 
   // If token supports dialogs, display simply as a link.
   module_load_include('inc', 'token', 'token.pages');
-  if (function_exists('token_page_output_tree')) {
+  if (module_exists('token') && function_exists('token_page_output_tree')) {
     return theme('token_tree', array('token_types' => $groups, 'dialog' => TRUE));
   }
 
