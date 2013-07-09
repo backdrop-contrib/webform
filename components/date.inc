@@ -233,9 +233,9 @@ function webform_expand_date($element) {
 function theme_webform_date($variables) {
   $element = $variables['element'];
 
-  $element['year']['#attributes']['class'] = array('year');
-  $element['month']['#attributes']['class'] = array('month');
-  $element['day']['#attributes']['class'] = array('day');
+  $element['year']['#attributes']['class'][] = 'year';
+  $element['month']['#attributes']['class'][] = 'month';
+  $element['day']['#attributes']['class'][] = 'day';
 
   // Add error classes to all items within the element.
   if (form_get_error($element)) {
