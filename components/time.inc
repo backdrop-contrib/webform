@@ -233,8 +233,8 @@ function webform_expand_time($element) {
 function theme_webform_time($variables) {
   $element = $variables['element'];
 
-  $element['hour']['#attributes']['class'] = array('hour');
-  $element['minute']['#attributes']['class'] = array('minute');
+  $element['hour']['#attributes']['class'][] = 'hour';
+  $element['minute']['#attributes']['class'][] = 'minute';
 
   // Add error classes to all items within the element.
   if (form_get_error($element)) {
