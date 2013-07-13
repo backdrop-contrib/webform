@@ -700,40 +700,54 @@ function webform_results_export($node, $format = 'delimited', $options = array()
   module_load_include('inc', 'webform', 'includes/webform.export');
   module_load_include('inc', 'webform', 'includes/webform.components');
 
-  $submission_information = array(
-    'serial' => t('Serial'),
-    'sid' => t('SID'),
-    'time' => t('Time'),
-    'draft' => t('Draft'),
-    'ip_address' => t('IP Address'),
-    'uid' => t('UID'),
-    'username' => t('Username'),
-  );
-
-  if (empty($options)) {
-    $options = array(
-      'delimiter' => variable_get('webform_csv_delimiter', '\t'),
-      'components' => array_merge(array_keys($submission_information), array_keys(webform_component_list($node, 'csv', TRUE))),
-      'header_keys' => 0,
-      'select_keys' => 0,
-      'select_format' => 'separate',
-      'range_type' => 'all',
-    );
-  }
-  else {
-    foreach ($submission_information as $key => $label) {
-      if (!in_array($key, $options['components'])) {
-        unset($submission_information[$key]);
-      }
-    }
-  }
+  $options += webform_results_download_default_options($node);
 
   // Open a new Webform exporter object.
   $exporter = webform_export_create_handler($format, $options);
 
   $file_name = drupal_tempnam('temporary://', 'webform_');
   $handle = @fopen($file_name, 'w'); // The @ suppresses errors.
+
+  // Add the beginning of file marker (little-endian usually for MS Excel).
   $exporter->bof($handle);
+
+  // Add headers to the file.
+  $headers = webform_results_download_headers($node, $options);
+  foreach ($headers as $row) {
+    $exporter->add_row($handle, $row);
+  }
+
+  // Write data from submissions.
+  $rows = webform_results_download_rows($node, $options);
+  foreach ($rows as $row) {
+    $exporter->add_row($handle, $row);
+  }
+
+  // Add the closing bytes.
+  $exporter->eof($handle);
+
+  // Close the file.
+  @fclose($handle);
+
+  $export_info['options'] = $options;
+  $export_info['file_name'] = $file_name;
+  $export_info['exporter'] = $exporter;
+  $export_info['row_count'] = $row_count;
+  $export_info['last_sid'] = $sid;
+
+  return $export_info;
+}
+
+/**
+ * Print the header rows for the downloadable webform data.
+ *
+ * @param $node
+ *   The webform node on which to generate the analysis.
+ * @param array $options
+ *   A list of options that define the output format. These are generally passed through the GUI interface.
+ */
+function webform_results_download_headers($node, $options) {
+  $submission_information = webform_results_download_submission_information($node, $options);
 
   // Fill in the header for the submission information (if any).
   $header[2] = $header[1] = $header[0] = count($submission_information) ? array_fill(0, count($submission_information), '') : array();
@@ -771,27 +785,45 @@ function webform_results_export($node, $format = 'delimited', $options = array()
     }
   }
 
-  // Add headers to the file.
-  foreach ($header as $row) {
-    $exporter->add_row($handle, $row);
-  }
+  return $header;
+}
 
+/**
+ * Returns rows of downloadable webform data.
+ *
+ * @param $node
+ *   The webform node on which to generate the analysis.
+ * @param array $options
+ *   A list of options that define the output format. These are generally passed
+ *   through the GUI interface.
+ * @param $serial_start
+ *   The starting position for for the Serial column in the output.
+ *
+ * @return $rows
+ *   An array of rows built according to the provided $serial_start and
+ *   $pager_count variables. Note that the current page number is determined
+ *   by the super-global $_GET['page'] variable.
+ */
+function webform_results_download_rows($node, $options, $serial_start = 0) {
   // Get all the required submissions for the download.
   $filters['nid'] = $node->nid;
   if (!empty($options['sids'])){
     $filters['sid'] = $options['sids'];
   }
-  $submissions = webform_get_submissions($filters);
+
+  $submissions = webform_get_submissions($filters, NULL);
+  $submission_information = webform_results_download_submission_information($node, $options);
 
   // Generate a row for each submission.
   $row_count = 0;
   $sid = 0;
+  $rows = array();
   foreach ($submissions as $sid => $submission) {
     $row_count++;
 
     $row = array();
     if (isset($submission_information['serial'])) {
-      $row[] = $row_count;
+      $row[] = $serial_start + $row_count;
     }
     if (isset($submission_information['sid'])) {
       $row[] = $sid;
@@ -833,23 +865,65 @@ function webform_results_export($node, $format = 'delimited', $options = array()
       }
     }
 
-    // Write data from submissions.
-    $data = $exporter->add_row($handle, $row);
+    $rows[$serial_start + $row_count] = $row;
   }
 
-  // Add the closing bytes.
-  $exporter->eof($handle);
+  return $rows;
+}
 
-  // Close the file.
-  @fclose($handle);
+/**
+ * Default columns for submission information.
+ *
+ * By default all exports have several columns of generic information that
+ * applies to all submissions. This function simply returns this list of generic
+ * columns that can be included in all exports.
+ *
+ * @param $options
+ *   Filter down the list of columns based on a provided column list.
+ */
+function webform_results_download_submission_information($node, $options = array()) {
+  $submission_information = array(
+    'serial' => t('Serial'),
+    'sid' => t('SID'),
+    'time' => t('Time'),
+    'draft' => t('Draft'),
+    'ip_address' => t('IP Address'),
+    'uid' => t('UID'),
+    'username' => t('Username'),
+  );
 
-  $export_info['options'] = $options;
-  $export_info['file_name'] = $file_name;
-  $export_info['exporter'] = $exporter;
-  $export_info['row_count'] = $row_count;
-  $export_info['last_sid'] = $sid;
+  if (isset($options['components'])) {
+    foreach ($submission_information as $key => $label) {
+      if (!in_array($key, $options['components'])) {
+        unset($submission_information[$key]);
+      }
+    }
+  }
 
-  return $export_info;
+  return $submission_information;
+}
+/**
+ * Get options for creating downloadable versions of the webform data.
+ *
+ * @param $node
+ *   The webform node on which to generate the analysis.
+ * @param array $options
+ *   A list of options that define the output format. These are generally passed
+ *   through from the GUI interface.
+ */
+function webform_results_download_default_options($node) {
+  $submission_information = webform_results_download_submission_information($node);
+
+  $options = array(
+    'delimiter' => variable_get('webform_csv_delimiter', '\t'),
+    'components' => array_merge(array_keys($submission_information), array_keys(webform_component_list($node, 'csv', TRUE))),
+    'header_keys' => 0,
+    'select_keys' => 0,
+    'select_format' => 'separate',
+    'range_type' => 'all',
+  );
+
+  return $options;
 }
 
 /**
@@ -973,7 +1047,8 @@ function theme_webform_results_analysis($variables) {
 function webform_download_sids($nid, $range_options, $uid = NULL) {
   $query = db_select('webform_submissions', 'ws')
     ->fields('ws', array('sid'))
-    ->condition('nid', $nid);
+    ->condition('nid', $nid)
+    ->addTag('webform_download_sids');
 
   switch ($range_options['range_type']) {
     case 'all':
@@ -990,9 +1065,8 @@ function webform_download_sids($nid, $range_options, $uid = NULL) {
       break;
     case 'latest':
       // Last x Submissions.
-      $query
-        ->orderBy('sid', 'DESC')
-        ->range(0, $range_options['latest']);
+      $start_sid = webform_download_latest_start_sid($nid, $range_options['latest']);
+      $query->condition('sid', $start_sid, '>=');
       break;
     case 'range':
       // Submissions Start-End.
@@ -1004,7 +1078,26 @@ function webform_download_sids($nid, $range_options, $uid = NULL) {
       break;
   }
 
+  // Set batch properties. Unfortunately the pager query class reads directly
+  // from $_GET['page'] to determine the current page number, so we have to set
+  // this super-global and then restore it after executing the query.
+  if (isset($_GET['page'])) {
+    $current_page = $_GET['page'];
+  }
+  if (isset($range_options['batch_number'])) {
+    $_GET['page'] = $range_options['batch_number'];
+  }
+  if (isset($range_options['batch_size'])) {
+    $query = $query->extend('PagerDefault');
+    $query->limit($range_options['batch_size']);
+  }
+
   $sids = $query->execute()->fetchCol();
+
+  // Restore the current page number (if any).
+  if (isset($current_page)) {
+    $_GET['page'] = $current_page;
+  }
 
   // The last x submissions option has SIDs that are in reverse order.
   if ($range_options['range_type'] == 'latest') {
@@ -1042,4 +1135,27 @@ function webform_download_last_download_info($nid, $uid = NULL) {
     ->fetchAssoc();
 
   return $info;
+}
+
+/**
+ * Get an SID based a requested latest count.
+ *
+ * @param int $nid
+ *   The webform NID.
+ * @param int $latest_count
+ *   The latest count on which the SID will be retrieved.
+ * @return
+ *   The submission ID that starts the latest sequence of submissions.
+ */
+function webform_download_latest_start_sid($nid, $latest_count) {
+  // TODO: Find a more efficient DBTNG query to retrieve this number.
+  $latest_sids = db_select('webform_submissions', 'ws')
+    ->fields('ws', array('sid'))
+    ->condition('nid', $nid)
+    ->orderBy('ws.sid', 'DESC')
+    ->range(0, $latest_count)
+    ->addTag('webform_download_latest_start_sid')
+    ->execute()
+    ->fetchCol();
+  return min($latest_sids);
 }
