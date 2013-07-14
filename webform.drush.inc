@@ -13,6 +13,7 @@ function webform_drush_command() {
     ),
     'options' => array(
       'file' => 'The file path to export to (defaults to print to stdout)',
+      'format' => 'The exporter format to use. Out-of-the-box this may be "delimited" or "excel".',
       'delimiter' => 'Delimiter between columns (defaults to site-wide setting). This option may need to be wrapped in quotes. i.e. --delimter="\t".',
       'components' => 'Comma-separated list of components IDs to include in the export. May also include the built-in special options "serial", "sid", "time", "draft", "ip_address", "uid", and "username".',
       'header-keys' => 'Integer 0 or 1 value. Set to 1 to print header components by their field keys instead of labels.',
@@ -59,6 +60,7 @@ function drush_webform_export($nid = FALSE, $file_name = NULL, $batch_number = N
   $node = node_load($nid);
 
   // Pull in options from drush to override the defaults.
+  $format = drush_get_option('format', 'delimited');
   $options = webform_results_download_default_options($node);
   foreach ($options as $option_name => $option_value) {
     $options[$option_name] = drush_get_option(str_replace('_', '-', $option_name), $option_value);
@@ -67,84 +69,38 @@ function drush_webform_export($nid = FALSE, $file_name = NULL, $batch_number = N
 
   // Get the range options.
   $range_input = drush_get_merged_prefixed_options('range-');
-  $range_options = array();
   foreach ($range_input as $option_name => $option_value) {
     $option_name = str_replace('range-', '', $option_name);
     $option_name = str_replace('-', '_', $option_name);
     $option_name = $option_name === 'type' ? 'range_type' : $option_name;
     $range_options[$option_name] = $option_value;
   }
-  if (!isset($range_options['range_type'])) {
-    if (isset($range_options['start'])) {
-      $range_options['range_type'] = 'range';
+
+  // Determine the range type based on provided input.
+  $options['range']['range_type'] = drush_get_option('range-type', NULL);
+  if (!isset($options['range']['range_type'])) {
+    if (isset($options['range']['start'])) {
+      $options['range']['range_type'] = 'range';
     }
-    elseif (isset($range_options['latest'])) {
-      $range_options['range_type'] = 'latest';
+    elseif (isset($options['range']['latest'])) {
+      $options['range']['range_type'] = 'latest';
     }
     else {
-      $range_options['range_type'] = 'all';
+      $options['range']['range_type'] = 'all';
     }
   }
 
-  $batch_size = drush_get_option('batch-size', 10000);
-  $sid_count = count(webform_download_sids($nid, $range_options));
-  $total_batches = ceil($sid_count / $batch_size);
+  // Set the export options.
+  $options['range']['batch_size'] = drush_get_option('batch-size', 10000);
+  $options['file_name'] = drush_get_option('file', tempnam(variable_get('file_directory_temp', file_directory_temp()), 'webform_'));
 
-  // Open a new Webform exporter object.
-  $exporter = webform_export_create_handler('delimited', $options);
-  if ($batch_number === NULL) {
-    $batch_number = 0;
+  $batch = webform_results_export_batch($node, $format, $options);
+  batch_set($batch);
+  drush_backend_batch_process();
 
-    // On the initial run, set up the file and initiate the batch run.
-    $file_name = drush_get_option('file', tempnam(variable_get('file_directory_temp', file_directory_temp()), 'webform'));
-    $handle = @fopen($file_name, 'w'); // The @ suppresses errors.
-    $exporter->bof($handle);
-
-    if (!drush_get_option('skip-header', FALSE)) {
-      $headers = webform_results_download_headers($node, $options);
-      foreach ($headers as $row) {
-        $exporter->add_row($handle, $row);
-      }
-    }
-
-    @fclose($handle);
-
-    // This is where we repeatedly call this function, by passing in the
-    // generated filename and the updated $batch_number count.
-    while ($batch_number < $total_batches) {
-      drush_do_command_redispatch('webform-export', array($nid, $file_name, $batch_number));
-      $batch_number++;
-    }
-
-    // Add the closing bytes.
-    $handle = @fopen($file_name, 'a'); // The @ suppresses errors.
-    $exporter->eof($handle);
-    @fclose($handle);
-    if (drush_get_option('file', FALSE) === FALSE) {
-      // If no filename was specified, print the file and delete it.
-      drush_print(file_get_contents($file_name));  // The @ makes it silent.
-      @unlink($file_name);  // Clean up, the @ makes it silent.
-    }
-  }
-  else {
-    // Inside a specific batch run, we append results to the file.
-    $handle = @fopen($file_name, 'a'); // The @ suppresses errors.
-
-    $serial_start = $batch_size * $batch_number;
-
-    $range_options['batch_number'] = $batch_number;
-    $range_options['batch_size'] = $batch_size;
-    $sids = webform_download_sids($nid, $range_options);
-    $options['sids'] = $sids;
-    $rows = webform_results_download_rows($node, $options, $serial_start);
-
-    // Write data from submissions.
-    foreach ($rows as $row) {
-      $exporter->add_row($handle, $row);
-    }
-
-    drush_log(dt('Exported !size submissions. Batch !number of !total.', array('!size' => count($rows), '!number' => $batch_number + 1, '!total' => $total_batches)));
-
-    @fclose($handle);
+  // If no filename was specified, print the file and delete it.
+  if (drush_get_option('file', FALSE) === FALSE) {
+    drush_print(file_get_contents($options['file_name']));  // The @ makes it silent.
+    @unlink($options['file_name']);  // Clean up, the @ makes it silent.
   }
 }

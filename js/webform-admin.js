@@ -14,6 +14,8 @@ Drupal.behaviors.webformAdmin.attach = function(context) {
   Drupal.webform.selectCheckboxesLink(context);
   // Enhance the normal tableselect.js file to support indentations.
   Drupal.webform.tableSelectIndentation(context);
+  // Automatically download exports if available.
+  Drupal.webform.downloadExport(context);
   // Enhancements for the conditionals administrative page.
   Drupal.webform.conditionalAdmin(context);
 }
@@ -88,6 +90,16 @@ Drupal.webform.tableSelectIndentation = function(context) {
       $rows.eq(n).find('input.form-checkbox').attr('checked', this.checked);
     }
   });
+}
+
+/**
+ * Attach behaviors for Webform results download page.
+ */
+Drupal.webform.downloadExport = function(context) {
+  if (context === document && Drupal.settings && Drupal.settings.webformExport) {
+    window.location = Drupal.settings.webformExport;
+    delete Drupal.settings.webformExport;
+  }
 }
 
 /**

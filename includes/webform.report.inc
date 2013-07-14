@@ -311,7 +311,14 @@ function webform_results_download_form($form, &$form_state, $node) {
   module_load_include('inc', 'webform', 'includes/webform.export');
   module_load_include('inc', 'webform', 'includes/webform.components');
 
-  $form = array();
+  $form['#attached']['js'][] = drupal_get_path('module', 'webform') . '/js/webform-admin.js';
+
+  // If an export is waiting to be downloaded, redirect the user there after
+  // the page has finished loading.
+  if (isset($_SESSION['webform_export_info'])) {
+    $download_url = url('node/' . $node->nid . '/webform-results/download-file', array('absolute' => TRUE));
+    $form['#attached']['js'][] = array('data' => array('webformExport' => $download_url), 'type' => 'setting');
+  }
 
   $form['node'] = array(
     '#type' => 'value',
@@ -526,41 +533,6 @@ function webform_results_download_range_validate($element, $form_state) {
 }
 
 /**
- * Validate handler for webform_results_download_form().
- */
-function webform_results_download_form_submit(&$form, &$form_state) {
-  $options = array(
-    'delimiter' => $form_state['values']['delimiter'],
-    'components' => array_keys(array_filter($form_state['values']['components'])),
-    'header_keys' => $form_state['values']['header_keys'],
-    'select_keys' => $form_state['values']['select_keys'],
-    'select_format' => $form_state['values']['select_format'],
-    'range_type' => $form_state['values']['range']['range_type'],
-    'download' => $form_state['values']['download'],
-  );
-
-  // Use a pre-built list of SIDs provided by validate handlers (if any).
-  if (isset($form_state['values']['sids'])) {
-    $options['sids'] = $form_state['values']['sids'];
-  }
-  // Retrieve the list of required SIDs.
-  elseif ($options['range_type'] != 'all') {
-    $options['sids'] = webform_download_sids($form_state['values']['node']->nid, $form_state['values']['range']);
-  }
-
-  $export_info = webform_results_export($form_state['values']['node'], $form_state['values']['format'], $options);
-
-  // If webform result file should be downloaded, send the file to the browser,
-  // otherwise save information about the created file in $form_state.
-  if ($options['download']) {
-    webform_results_download($form_state['values']['node'], $export_info);
-  }
-  else {
-    $form_state['export_info'] = $export_info;
-  }
-}
-
-/**
  * FormAPI after build function for the download range fieldset.
  */
 function webform_results_download_range_after_build($element, &$form_state) {
@@ -664,36 +636,57 @@ function theme_webform_results_download_select_format($variables) {
 }
 
 /**
+ * Submit handler for webform_results_download_form().
+ */
+function webform_results_download_form_submit(&$form, &$form_state) {
+  $options = array(
+    'delimiter' => $form_state['values']['delimiter'],
+    'components' => array_keys(array_filter($form_state['values']['components'])),
+    'header_keys' => $form_state['values']['header_keys'],
+    'select_keys' => $form_state['values']['select_keys'],
+    'select_format' => $form_state['values']['select_format'],
+    'range_type' => $form_state['values']['range']['range_type'],
+    'download' => $form_state['values']['download'],
+  );
+
+  // Use a pre-built list of SIDs provided by validate handlers (if any).
+  if (isset($form_state['values']['sids'])) {
+    $options['sids'] = $form_state['values']['sids'];
+  }
+  // Retrieve the list of required SIDs.
+  elseif ($options['range_type'] != 'all') {
+    $options['sids'] = webform_download_sids($form_state['values']['node']->nid, $form_state['values']['range']);
+  }
+
+  // Determine an appropriate batch size based on the form and server specs.
+  if (!isset($options['range']['batch_size'])) {
+    // Start the batch size at 50,000 per batch, but divide by number of
+    // components in the form. e.g. If a form had 10 components, it would
+    // export 5,000 submissions at a time.
+    $batch_size = ceil(50000 / count($form_state['values']['node']->webform['components']));
+
+    // Every 32MB of additional memory after 64MB adds a multiplier in size.
+    $memory_limit = parse_size(ini_get('memory_limit'));
+    $mb = 1048576;
+    $memory_modifier = max(1, ($memory_limit - (64 * $mb)) / (32 * $mb));
+    $batch_size = ceil($batch_size * $memory_modifier);
+    $options['range']['batch_size'] = $batch_size;
+  }
+
+  $options['file_name'] = drupal_tempnam('temporary://', 'webform_');
+
+  // Set up a batch to export the results.
+  $batch = webform_results_export_batch($form_state['values']['node'], $form_state['values']['format'], $options);
+  batch_set($batch);
+}
+
+/**
  * Generate a Excel-readable CSV file containing all submissions for a Webform.
  *
- * The CSV requires that the data be presented in a flat file.  In order
- * to maximize usability to the Excel community and minimize subsequent
- * stats or spreadsheet programming this program extracts data from the
- * various records for a given session and presents them as a single file
- * where each row represents a single record.
- * The structure of the file is:
- *   Heading Line 1: Gives group overviews padded by empty cells to the
- *                   next group.  A group may be a question and corresponds
- *                   to a component in the webform philosophy. Each group
- *                   overview will have a fixed number of columns beneath it.
- *   Heading line 2: gives column headings
- *   Data line 1 .....
- *   Data line 2 .....
+ * Note that this function is generally no longer utilized. Instead Batch API
+ * should be used to generate a file over multiple requests.
  *
- * An example of this format is given below.  Note the columns have had spaces
- * added so the columns line up.  This is not the case with actual file where
- * a column may be null.  Note also, that multiple choice questions as produced
- * by checkboxes or radio buttons have been presented as "yes" or "no" and the
- * actual choice text is retained only in the header line 2.
- * Data from text boxes and input fields are written out in the body of the table.
- *
- *   Submission Details,    ,   ,      ,Question 1,        ,        ,..,        ,Question 2,        ,        ,..,        ,Question n
- *   timestamp         ,time,SID,userid,Choice 1  ,Choice 2,Choice 3,..,Choice n,Choice 1  ,Choice 2,Choice 3,..,Choice n,Comment
- *   21 Feb 2005       ,1835,23 ,34    ,X         ,        ,        ,..,       ,X          ,X       ,X       ,..,X       ,My comment
- *   23 Feb 2005       ,1125,24 ,89    ,X         ,X       ,        ,..,       ,X          ,X       ,X       ,..,X       ,Hello
- *   .................................................................................................................................
- *   27 Feb 2005       ,1035,56 ,212   ,X         ,        ,        ,..,       ,X          ,X       ,X       ,..,X       ,How is this?
- *
+ * @see webform_results_export_batch()
  */
 function webform_results_export($node, $format = 'delimited', $options = array()) {
   global $user;
@@ -729,13 +722,37 @@ function webform_results_export($node, $format = 'delimited', $options = array()
   // Close the file.
   @fclose($handle);
 
+  $export_info['format'] = $format;
   $export_info['options'] = $options;
   $export_info['file_name'] = $file_name;
-  $export_info['exporter'] = $exporter;
   $export_info['row_count'] = $row_count;
   $export_info['last_sid'] = $sid;
 
   return $export_info;
+}
+
+/**
+ * Return a Batch API array of commands that will generate an export.
+ *
+ * @return array
+ *   A Batch API array suitable to pass to batch_set().
+ */
+function webform_results_export_batch($node, $format = 'delimited', $options = array()) {
+  $options += webform_results_download_default_options($node);
+  return array(
+    'operations' => array(
+      array('webform_results_batch_bof', array($node, $format, $options)),
+      array('webform_results_batch_headers', array($node, $format, $options)),
+      array('webform_results_batch_rows', array($node, $format, $options)),
+      array('webform_results_batch_eof', array($node, $format, $options)),
+      array('webform_results_batch_results', array($node, $format, $options)),
+    ),
+    'finished' => 'webform_results_batch_finished',
+    'title' => t('Exporting submissions'),
+    'init_message' => t('Creating export file'),
+    'error_message' => t('The export file could not be created because an error occurred.'),
+    'file' => drupal_get_path('module', 'webform') . '/includes/webform.report.inc',
+  );
 }
 
 /**
@@ -744,9 +761,11 @@ function webform_results_export($node, $format = 'delimited', $options = array()
  * @param $node
  *   The webform node on which to generate the analysis.
  * @param array $options
- *   A list of options that define the output format. These are generally passed through the GUI interface.
+ *   A list of options that define the output format. These are generally passed
+ *   through from the GUI interface.
  */
 function webform_results_download_headers($node, $options) {
+  module_load_include('inc', 'webform', 'includes/webform.components');
   $submission_information = webform_results_download_submission_information($node, $options);
 
   // Fill in the header for the submission information (if any).
@@ -795,7 +814,7 @@ function webform_results_download_headers($node, $options) {
  *   The webform node on which to generate the analysis.
  * @param array $options
  *   A list of options that define the output format. These are generally passed
- *   through the GUI interface.
+ *   through from the GUI interface.
  * @param $serial_start
  *   The starting position for for the Serial column in the output.
  *
@@ -805,6 +824,8 @@ function webform_results_download_headers($node, $options) {
  *   by the super-global $_GET['page'] variable.
  */
 function webform_results_download_rows($node, $options, $serial_start = 0) {
+  module_load_include('inc', 'webform', 'includes/webform.components');
+
   // Get all the required submissions for the download.
   $filters['nid'] = $node->nid;
   if (!empty($options['sids'])){
@@ -965,6 +986,155 @@ function webform_results_download($node, $export_info) {
 }
 
 /**
+ * Menu callback; Download an exported file.
+ *
+ * This callabck requires that an export file be already generated by a batch
+ * process. The $_SESSION settings are usually put in place by the
+ * webform_results_export_results() function.
+ *
+ * @param $node
+ *   The webform $node whose export file is being downloaded.
+ *
+ * @return
+ *   Either an export file is downloaded with the appropriate HTTP headers set,
+ *   or an error page is shown if now export is available to download.
+ */
+function webform_results_download_callback($node) {
+  if (isset($_SESSION['webform_export_info'])) {
+    module_load_include('inc', 'webform', 'includes/webform.export');
+
+    $export_info = $_SESSION['webform_export_info'];
+    $export_info['exporter'] = webform_export_create_handler($export_info['format'], $export_info['options']);
+    unset($_SESSION['webform_export_info']);
+    webform_results_download($node, $export_info);
+  }
+  else {
+    return t('No export file ready for download. The file may have already been downloaded by your browser. Visit the <a href="!href">download export form</a> to create a new export.', array('!href' => url('node/' . $node->nid . '/webform-results/download')));
+  }
+}
+
+/**
+ * Batch API callback; Write the opening byte in the export file.
+ */
+function webform_results_batch_bof($node, $format = 'delimited', $options = array(), &$context) {
+  module_load_include('inc', 'webform', 'includes/webform.export');
+
+  $exporter = webform_export_create_handler($format, $options);
+  $handle = @fopen($options['file_name'], 'w'); // The @ suppresses errors.
+  $exporter->bof($handle);
+  @fclose($handle);
+}
+
+/**
+ * Batch API callback; Write the headers of the export to the export file.
+ */
+function webform_results_batch_headers($node, $format = 'delimited', $options = array(), &$context) {
+  module_load_include('inc', 'webform', 'includes/webform.export');
+
+  $exporter = webform_export_create_handler($format, $options);
+  $handle = @fopen($options['file_name'], 'a'); // The @ suppresses errors.
+  $headers = webform_results_download_headers($node, $options);
+  foreach ($headers as $row) {
+    $exporter->add_row($handle, $row);
+  }
+  @fclose($handle);
+}
+
+/**
+ * Batch API callback; Write the headers of the export to the export file.
+ */
+function webform_results_batch_rows($node, $format = 'delimited', $options = array(), &$context) {
+  module_load_include('inc', 'webform', 'includes/webform.export');
+
+  if (!isset($context['sandbox']['batch_number'])) {
+    $context['sandbox']['batch_number'] = 0;
+    $context['sandbox']['sid_count'] = count(webform_download_sids($node->nid, $options['range']));
+    $context['sandbox']['batch_max'] = ceil($context['sandbox']['sid_count'] / $options['range']['batch_size']);
+    $context['sandbox']['serial'] = 0;
+    $context['sandbox']['last_sid'] = 0;
+  }
+  // Retrieve the submissions for this batch process.
+  $options['range']['batch_number'] = $context['sandbox']['batch_number'];
+  $sids = webform_download_sids($node->nid, $options['range']);
+  $options['sids'] = $sids;
+  $rows = webform_results_download_rows($node, $options, $context['sandbox']['serial']);
+
+  // Write these submissions to the file.
+  $exporter = webform_export_create_handler($format, $options);
+  $handle = @fopen($options['file_name'], 'a'); // The @ suppresses errors.
+  foreach ($rows as $row) {
+    $exporter->add_row($handle, $row);
+  }
+  $context['sandbox']['serial'] += count($sids);
+  $context['sandbox']['last_sid'] = end($sids);
+  $context['sandbox']['batch_number']++;
+
+  @fclose($handle);
+
+  // Display status message if not yet finished.
+  if ($context['sandbox']['batch_number'] != $context['sandbox']['batch_max']) {
+    $context['message'] = t('Exported @count of @total submissions...', array('@count' => $context['sandbox']['serial'], '@total' => $context['sandbox']['sid_count']));
+    $context['finished'] = $context['sandbox']['batch_number'] / $context['sandbox']['batch_max'];
+  }
+  // If finished, save the results.
+  else {
+    $context['results']['row_count'] = $context['sandbox']['serial'];
+    $context['results']['last_sid'] = $context['sandbox']['last_sid'];
+  }
+}
+
+/**
+ * Batch API callback; Write the opening byte in the export file.
+ */
+function webform_results_batch_eof($node, $format = 'delimited', $options = array(), &$context) {
+  module_load_include('inc', 'webform', 'includes/webform.export');
+
+  $exporter = webform_export_create_handler($format, $options);
+  $handle = @fopen($options['file_name'], 'a'); // The @ suppresses errors.
+  $exporter->eof($handle);
+  @fclose($handle);
+}
+
+/**
+ * Batch API callback; Set the $_SESSION variables used to download the file.
+ *
+ * Because we want the user to be returned to the main form first, we have to
+ * temporarily store information about the created file, send the user to the
+ * form, then use JavaScript to request node/x/webform-results/download-file,
+ * which will execute webform_results_download_file().
+ */
+function webform_results_batch_results($node, $format, $options, &$context) {
+  $context['results']['node'] = $node;
+  $context['results']['file_name'] = $options['file_name'];
+
+  $export_info = array(
+    'format' => $format,
+    'options' => $options,
+    'file_name' => $options['file_name'],
+    'row_count' => $context['results']['row_count'],
+    'last_sid' => $context['results']['last_sid'],
+  );
+
+  $_SESSION['webform_export_info'] = $export_info;
+}
+
+/**
+ * Batch API completion callback; Display completion message and cleanup.
+ */
+function webform_results_batch_finished($success, $results, $operations) {
+  if ($success) {
+    $download_url = url('node/' . $results['node']->nid . '/webform-results/download-file');
+    drupal_set_message(t('Export creation complete. Your download should begin now. If it does not start, <a href="!href">download the file here</a>. This file may only be downloaded once.', array('!href' => $download_url)));
+  }
+  else {
+    drupal_set_message(t('An error occurred while generating the export file.'));
+    if (isset($results['file_name']) && is_file($results['file_name'])) {
+      @unlink($results['file_name']);
+    }
+  }
+}
+
+/**
  * Provides a simple analysis of all submissions to a webform.
  *
  * @param $node
@@ -1081,15 +1251,14 @@ function webform_download_sids($nid, $range_options, $uid = NULL) {
   // Set batch properties. Unfortunately the pager query class reads directly
   // from $_GET['page'] to determine the current page number, so we have to set
   // this super-global and then restore it after executing the query.
-  if (isset($_GET['page'])) {
-    $current_page = $_GET['page'];
-  }
-  if (isset($range_options['batch_number'])) {
+  if (isset($range_options['batch_number']) && isset($range_options['batch_size'])) {
+    if (isset($_GET['page'])) {
+      $current_page = $_GET['page'];
+    }
     $_GET['page'] = $range_options['batch_number'];
-  }
-  if (isset($range_options['batch_size'])) {
     $query = $query->extend('PagerDefault');
     $query->limit($range_options['batch_size']);
+    $query->element(0);
   }
 
   $sids = $query->execute()->fetchCol();
@@ -1097,11 +1266,6 @@ function webform_download_sids($nid, $range_options, $uid = NULL) {
   // Restore the current page number (if any).
   if (isset($current_page)) {
     $_GET['page'] = $current_page;
-  }
-
-  // The last x submissions option has SIDs that are in reverse order.
-  if ($range_options['range_type'] == 'latest') {
-    $sids = array_reverse($sids);
   }
 
   return $sids;

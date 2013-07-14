@@ -298,6 +298,15 @@ function webform_menu() {
     'weight' => 7,
     'type' => MENU_LOCAL_TASK,
   );
+  $items['node/%webform_menu/webform-results/download-file'] = array(
+    'title' => 'Download',
+    'page callback' => 'webform_results_download_callback',
+    'page arguments' => array(1),
+    'access callback' => 'webform_results_access',
+    'access arguments' => array(1),
+    'file' => 'includes/webform.report.inc',
+    'type' => MENU_CALLBACK,
+  );
   $items['node/%webform_menu/webform-results/clear'] = array(
     'title' => 'Clear',
     'page callback' => 'drupal_get_form',
