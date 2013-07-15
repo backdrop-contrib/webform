@@ -96,7 +96,7 @@ Drupal.webform.tableSelectIndentation = function(context) {
  * Attach behaviors for Webform results download page.
  */
 Drupal.webform.downloadExport = function(context) {
-  if (context === document && Drupal.settings && Drupal.settings.webformExport) {
+  if (context === document && Drupal.settings && Drupal.settings.webformExport && document.cookie.match(/webform_export_info=1/)) {
     window.location = Drupal.settings.webformExport;
     delete Drupal.settings.webformExport;
   }

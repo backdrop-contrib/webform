@@ -3423,6 +3423,12 @@ function webform_variable_get($variable) {
     case 'webform_node_types_primary':
       $result = variable_get('webform_node_types_primary', array('webform'));
       break;
+    case 'webform_export_format':
+      $result = variable_get('webform_export_format', 'excel');
+      break;
+    case 'webform_csv_delimiter':
+      $result = variable_get('webform_csv_delimiter', '\t');
+      break;
   }
   return $result;
 }

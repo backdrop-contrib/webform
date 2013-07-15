@@ -346,6 +346,11 @@ function webform_results_download_form($form, &$form_state, $node) {
       '.'  => t('Period (.)'),
       ' '  => t('Space ( )'),
     ),
+    '#states' => array(
+      'visible' => array(
+        ':input[name=format]' => array('value' => 'delimited'),
+      ),
+    ),
   );
 
   $form['header_keys'] = array(
@@ -958,11 +963,18 @@ function webform_results_download_default_options($node) {
 function webform_results_download($node, $export_info) {
   global $user;
 
-  // $exporter, $file_name, $row_count
-  $export_name = _webform_safe_name($node->title);
-  $export_info['exporter']->set_headers($export_name);
-  @readfile($export_info['file_name']);  // The @ makes it silent.
-  @unlink($export_info['file_name']);  // Clean up, the @ makes it silent.
+  // If the exporter provides a custom download method, use that.
+  if (method_exists($export_info['exporter'], 'download')) {
+    $export_info['exporter']->download($node);
+  }
+  // Otherwise use the set_headers() method to set headers and then read in the
+  // file directly. Delete it when complete.
+  else {
+    $export_name = _webform_safe_name($node->title);
+    $export_info['exporter']->set_headers($export_name);
+    @readfile($export_info['file_name']);  // The @ makes it silent.
+    @unlink($export_info['file_name']);  // Clean up, the @ makes it silent.
+  }
 
   // Update user last downloaded sid if required.
   if ($export_info['options']['range_type'] != 'range' && $export_info['row_count'] > 0) {
@@ -1005,7 +1017,14 @@ function webform_results_download_callback($node) {
 
     $export_info = $_SESSION['webform_export_info'];
     $export_info['exporter'] = webform_export_create_handler($export_info['format'], $export_info['options']);
+
     unset($_SESSION['webform_export_info']);
+    if (isset($_COOKIE['webform_export_info'])) {
+      unset($_COOKIE['webform_export_info']);
+      $params = session_get_cookie_params();
+      setcookie('webform_export_info', '', -1, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
+    }
+
     webform_results_download($node, $export_info);
   }
   else {
@@ -1115,7 +1134,12 @@ function webform_results_batch_results($node, $format, $options, &$context) {
     'last_sid' => $context['results']['last_sid'],
   );
 
+  // Set a session variable containing the information referencing the exported
+  // file. A cookie is also set to allow the browser to ensure the redirect
+  // to the file only happens one time.
   $_SESSION['webform_export_info'] = $export_info;
+  $params = session_get_cookie_params();
+  setcookie('webform_export_info', '1', REQUEST_TIME + 120, $params['path'], $params['domain'], $params['secure'], FALSE);
 }
 
 /**

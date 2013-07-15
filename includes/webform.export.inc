@@ -20,11 +20,15 @@ function webform_webform_exporters() {
       'title' => t('Delimited text'),
       'description' => t('A plain text file delimited by commas, tabs, or other characters.'),
       'handler' => 'webform_exporter_delimited',
+      'file' => drupal_get_path('module', 'webform') . '/includes/webform.export.inc',
+      'weight' => 10,
     ),
     'excel' => array(
       'title' => t('Microsoft Excel'),
       'description' => t('A file readable by Microsoft Excel.'),
       'handler' => 'webform_exporter_excel',
+      'file' => drupal_get_path('module', 'webform') . '/includes/webform.export.inc',
+      'weight' => -1,
     ),
   );
 }
@@ -48,6 +52,11 @@ function webform_export_fetch_definition($format = NULL) {
   static $cache;
   if (!isset($cache)) {
     $cache = module_invoke_all('webform_exporters');
+    drupal_alter('webform_exporters', $cache);
+    foreach ($cache as $key => $exporter) {
+      $cache[$key] += array('weight' => 0);
+    }
+    uasort($cache, '_webform_components_sort');
   }
 
   if (isset($format)) {
@@ -65,6 +74,9 @@ function webform_export_fetch_definition($format = NULL) {
  */
 function webform_export_create_handler($format, $options) {
   $definition = webform_export_fetch_definition($format);
+  if (isset($definition['file'])) {
+    include_once $definition['file'];
+  }
   if (isset($definition) && class_exists($definition['handler'])) {
     $handler = new $definition['handler']($options);
   }
