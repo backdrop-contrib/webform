@@ -1294,6 +1294,11 @@ function webform_node_insert($node) {
   foreach (array_filter($node->webform['roles']) as $rid) {
     db_insert('webform_roles')->fields(array('nid' => $node->nid, 'rid' => $rid))->execute();
   }
+
+  // Flush the block cache if creating a block.
+  if ($node->webform['block']) {
+    block_flush_caches();
+  }
 }
 
 /**
@@ -1395,6 +1400,11 @@ function webform_node_update($node) {
     foreach (array_filter($node->webform['roles']) as $rid) {
       db_insert('webform_roles')->fields(array('nid' => $node->nid, 'rid' => $rid))->execute();
     }
+  }
+
+  // Flush the block cache if block settings have been changed.
+  if ($node->webform['block'] != $original->webform['block']) {
+    block_flush_caches();
   }
 }
 
