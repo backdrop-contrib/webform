@@ -131,10 +131,10 @@ function webform_submission_insert($node, $submission) {
 /**
  * Delete a single submission.
  *
- * @param $nid
- *   ID of node for which this webform was submitted.
- * @param $sid
- *   ID of submission to be deleted (from webform_submitted_data).
+ * @param $node
+ *   The node object containing the current webform.
+ * @param $submission
+ *   The webform submission object to be deleted from the database.
  */
 function webform_submission_delete($node, $submission) {
   // Iterate through all components and let each do cleanup if necessary.
