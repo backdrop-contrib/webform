@@ -232,7 +232,7 @@ function template_preprocess_webform_components_form(&$variables) {
         $row_class[] = 'webform-pagebreak';
         $row_data[0] = array('class' => array('webform-pagebreak'), 'data' => $row_data[0]);
       }
-      $rows[] = array('data' => $row_data, 'class' => $row_class);
+      $rows[] = array('data' => $row_data, 'class' => $row_class, 'data-cid' => $cid);
       if (isset($component['children']) && is_array($component['children'])) {
         foreach ($component['children'] as $cid => $component) {
           _webform_components_form_rows($node, $cid, $component, $level + 1, $form, $rows, $add_form);
