@@ -1377,7 +1377,9 @@ function webform_update_7406() {
  */
 function webform_update_7407() {
   // Delete entire conditions for deleted components that were the target.
-  $result = db_query("SELECT rg.* FROM {webform_conditional} rg LEFT JOIN {webform_component} c ON rg.nid = c.nid AND rg.target_type = 'component' AND rg.target = c.cid WHERE c.cid IS NULL");
+  // This query is complicated by database compatibility since we're joining two
+  // non-matching columns. See http://drupal.org/node/2026891.
+  $result = db_query("SELECT rg.* FROM {webform_conditional} rg LEFT JOIN {webform_component} c ON rg.nid = c.nid AND rg.target_type = 'component' AND rg.target = RTRIM(CAST(c.cid AS CHAR(10))) WHERE c.cid IS NULL");
   foreach ($result as $row) {
     db_delete('webform_conditional')
       ->condition('nid', $row->nid)
