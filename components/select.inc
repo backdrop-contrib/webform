@@ -368,6 +368,9 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
     $element['#other_delimiter'] = ', ';
     // Merge in Webform's #process function for Select or other.
     $element['#process'] = array_merge(element_info_property('select_or_other', '#process'), array('webform_expand_select_or_other'));
+    // Inherit select_or_other settings or set defaults.
+    $element['#disabled'] = isset($component['extra']['#disabled']) ? $component['extra']['#disabled'] : element_info_property('select_or_other', 'disabled');
+    $element['#size'] = isset($component['extra']['#size']) ? $component['extra']['#size'] : element_info_property('select_or_other', 'size');
 
     if ($component['extra']['multiple']) {
       $element['#multiple'] = TRUE;
@@ -510,9 +513,21 @@ function _webform_display_select($component, $value, $format = 'html') {
 /**
  * Implements _webform_submit_component().
  *
- * Convert FAPI 0/1 values into something saveable.
+ * Handle select or other... modifications and convert FAPI 0/1 values into
+ * something saveable.
  */
 function _webform_submit_select($component, $value) {
+  if (module_exists('select_or_other') && $component['extra']['other_option'] && is_array($value) && count($value) == 2 && isset($value['select'])) {
+    if (is_array($value['select']) && isset($value['select']['select_or_other'])) {
+      unset($value['select']['select_or_other']);
+      $value['select'][] = $value['other'];
+    }
+    elseif ($value['select'] == 'select_or_other') {
+      $value['select'] = $value['other'];
+    }
+    $value = $value['select'];
+  }
+
   // Build a list of all valid keys expected to be submitted.
   $options = _webform_select_options($component, TRUE);
 
