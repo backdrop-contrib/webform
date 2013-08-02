@@ -3530,7 +3530,14 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
   }
   elseif (is_numeric($name) && isset($node->webform['components'][$name])) {
     if (isset($submission->data[$name])) {
+      $component = $node->webform['components'][$name];
       $name = $submission->data[$name];
+
+      // Convert the FROM name to be the label of select lists.
+      if (webform_component_implements($component['type'], 'options')) {
+        $options = webform_component_invoke($component['type'], 'options', $component);
+        $name = isset($options[$name[0]]) ? $options[$name[0]] : $name;
+      }
     }
     else {
       $name = t('Value of !component', array('!component' => $node->webform['components'][$name]['name']));
