@@ -576,7 +576,7 @@ function _webform_validate_number($element, &$form_state) {
 
       // Step test.
       $starting_number = $element['#min'] ? $element['#min'] : 0;
-      if ($element['#step'] != 0 && fmod($element['#value'] - $starting_number, $element['#step']) != 0) {
+      if ($element['#step'] != 0 && webform_modulo($element['#value'] - $starting_number, $element['#step']) != 0) {
         $samples = array(
           $starting_number,
           $starting_number + ($element['#step'] * 1),
@@ -723,4 +723,13 @@ function _webform_number_format($component, $value) {
   }
 
   return number_format($value, $decimals, $component['extra']['point'], $component['extra']['separator']);
+}
+
+/**
+ * Custom modulo function that properly handles float division.
+ *
+ * See https://drupal.org/node/1601968.
+ */
+function webform_modulo($a, $b) {
+  return $a - $b * (($b < 0) ? ceil($a / $b) : floor($a / $b));
 }
