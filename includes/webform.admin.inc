@@ -93,11 +93,44 @@ function webform_admin_settings() {
     '#access' => webform_email_html_capable(),
   );
 
+  $form['progressbar'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Progress bar'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['progressbar']['webform_progressbar_style']  = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Progress bar style'),
+    '#options' => array(
+      'progressbar_bar' => t('Show progress bar'),
+      'progressbar_page_number' => t('Show page number as number of completed (i.e. Page 1 of 10)'),
+      'progressbar_percent' => t('Show percentage completed (i.e. 10%)'),
+      'progressbar_pagebreak_labels' => t('Show page labels from page break components'),
+      'progressbar_include_confirmation' => t('Include confirmation page in progress bar'),
+    ),
+    '#default_value' => webform_variable_get('webform_progressbar_style'),
+    '#description' => t('Choose how the progress bar should be displayed for multi-page forms.'),
+  );
+  $form['progressbar']['webform_progressbar_label_first'] = array(
+    '#type' => 'textfield',
+    '#title' => t('First page label'),
+    '#default_value' => webform_variable_get('webform_progressbar_label_first'),
+    '#maxlength' => 255,
+  );
+  $form['progressbar']['webform_progressbar_label_confirmation'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Confirmation page label'),
+    '#default_value' => webform_variable_get('webform_progressbar_label_confirmation'),
+    '#maxlength' => 255,
+  );
+
   $form['advanced'] = array(
     '#type' => 'fieldset',
     '#title' => t('Advanced options'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
+    '#weight' => 20,
   );
 
   $form['advanced']['webform_search_index']  = array(
@@ -197,6 +230,9 @@ function webform_admin_settings_submit($form, &$form_state) {
   // Change the name of the node type variable and clean it up.
   $form_state['values']['webform_node_types'] = array_keys(array_filter($form_state['values']['node_types']));
   unset($form_state['values']['node_types']);
+
+  // Trim out empty options in the progress bar options.
+  $form_state['values']['webform_progressbar_style'] = array_keys(array_filter($form_state['values']['webform_progressbar_style']));
 }
 
 /**

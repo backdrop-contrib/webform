@@ -109,6 +109,51 @@ function webform_schema() {
         'not null' => TRUE,
         'default' => -1,
       ),
+      'progressbar_bar' => array(
+        'description' => 'Boolean value indicating if the bar should be shown as part of the progress bar.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'progressbar_page_number' => array(
+        'description' => 'Boolean value indicating if the page number should be shown as part of the progress bar.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'progressbar_percent' => array(
+        'description' => 'Boolean value indicating if the percentage complete should be shown as part of the progress bar.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'progressbar_pagebreak_labels' => array(
+        'description' => 'Boolean value indicating if the pagebreak labels should be included as part of the progress bar.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'progressbar_include_confirmation' => array(
+        'description' => 'Boolean value indicating if the confirmation page should count as a page in the progress bar.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'progressbar_label_first' => array(
+        'description' => 'Label for the first page of the progress bar.',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+      'progressbar_label_confirmation' => array(
+        'description' => 'Label for the last page of the progress bar.',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
     ),
     'primary key' => array('nid'),
   );
@@ -1421,4 +1466,45 @@ function webform_update_7408() {
     'default' => 0,
   );
   db_change_field('webform_component', 'mandatory', 'required', $spec);
+}
+
+/**
+ * Add progress bar columns to the webform table.
+ */
+function webform_update_7409() {
+  if (!db_field_exists('webform', 'progressbar_bar')) {
+    $int_schema = array(
+      'type' => 'int',
+      'size' => 'tiny',
+      'not null' => TRUE,
+      'default' => 0,
+    );
+    $varchar_schema = array(
+      'type' => 'varchar',
+      'length' => 255,
+    );
+
+    $int_schema['description'] = 'Boolean value indicating if the bar should be shown as part of the progress bar.';
+    db_add_field('webform', 'progressbar_bar', $int_schema);
+
+    $int_schema['description'] = 'Boolean value indicating if the page number should be shown as part of the progress bar.';
+    db_add_field('webform', 'progressbar_page_number', $int_schema);
+
+    $int_schema['description'] = 'Boolean value indicating if the percentage complete should be shown as part of the progress bar.';
+    db_add_field('webform', 'progressbar_percent', $int_schema);
+
+    $int_schema['description'] = 'Boolean value indicating if the pagebreak labels should be included as part of the progress bar.';
+    db_add_field('webform', 'progressbar_pagebreak_labels', $int_schema);
+
+    $int_schema['description'] = 'Boolean value indicating if the confirmation page should count as a page in the progress bar.';
+    db_add_field('webform', 'progressbar_include_confirmation', $int_schema);
+
+    $varchar_schema['description'] = 'Label for the first page of the progress bar.';
+    db_add_field('webform', 'progressbar_label_first', $varchar_schema);
+
+    $varchar_schema['description'] = 'Label for the last page of the progress bar.';
+    db_add_field('webform', 'progressbar_label_confirmation', $varchar_schema);
+
+    return t('New webform columns added.');
+  }
 }

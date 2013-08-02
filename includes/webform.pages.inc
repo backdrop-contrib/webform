@@ -169,6 +169,7 @@ function webform_configure_form($form, &$form_state, $node) {
     '#weight' => -3,
     '#description' => t('These permissions affect which roles can submit this webform. It does not prevent access to the webform page. If needing to prevent access to the webform page entirely, use a content access module such as <a href="http://drupal.org/project/taxonomy_access">Taxonomy Access</a> or <a href="http://drupal.org/project/node_privacy_byrole">Node Privacy by Role</a>.'),
     '#access' => variable_get('webform_submission_access_control', 1),
+    '#weight' => 10,
   );
   $user_roles = user_roles();
   foreach ($user_roles as $rid => $rname) {
@@ -186,13 +187,67 @@ function webform_configure_form($form, &$form_state, $node) {
   );
   /* End per-role submission control */
 
+  /* Start progress bar settings form */
+  $form['progressbar'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Progress bar'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#weight' => 15,
+  );
+  $progress_bar_style = array_filter(array(
+    $node->webform['progressbar_page_number'] ? 'progressbar_page_number' : NULL,
+    $node->webform['progressbar_percent'] ? 'progressbar_percent' : NULL,
+    $node->webform['progressbar_bar'] ? 'progressbar_bar' : NULL,
+    $node->webform['progressbar_pagebreak_labels'] ? 'progressbar_pagebreak_labels' : NULL,
+    $node->webform['progressbar_include_confirmation'] ? 'progressbar_include_confirmation' : NULL,
+  ));
+  $form['progressbar']['webform_progressbar_style']  = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Progress bar style'),
+    '#options' => array(
+      'progressbar_bar' => t('Show progress bar'),
+      'progressbar_page_number' => t('Show page number as number of completed (i.e. Page 1 of 10)'),
+      'progressbar_percent' => t('Show percentage completed (i.e. 10%)'),
+      'progressbar_pagebreak_labels' => t('Show page labels from page break components'),
+      'progressbar_include_confirmation' => t('Include confirmation page in progress bar'),
+    ),
+    '#default_value' => $progress_bar_style,
+    '#description' => t('Choose how the progress bar should be displayed for multi-page forms.'),
+  );
+  $form['progressbar']['progressbar_label_first'] = array(
+    '#type' => 'textfield',
+    '#title' => t('First page label'),
+    '#default_value' => $node->webform['progressbar_label_first'],
+    '#maxlength' => 255,
+    '#description' => t('The first page label in the progress bar. Subseqent pages are titled by their page break label.'),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="webform_progressbar_style[progressbar_pagebreak_labels]"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+  $form['progressbar']['progressbar_label_confirmation'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Confirmation page label'),
+    '#default_value' => $node->webform['progressbar_label_confirmation'],
+    '#maxlength' => 255,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="webform_progressbar_style[progressbar_pagebreak_labels]"]' => array('checked' => TRUE),
+        ':input[name="webform_progressbar_style[progressbar_include_confirmation]"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+  /* End progress Bar settings form */
+
   /* Start advanced settings form */
   $form['advanced'] = array(
     '#type' => 'fieldset',
     '#title' => t('Advanced settings'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-    '#weight' => -1,
+    '#weight' => 20,
   );
   $form['advanced']['block'] = array(
     '#type' => 'checkbox',
@@ -221,7 +276,7 @@ function webform_configure_form($form, &$form_state, $node) {
   );
   $form['advanced']['submit_notice'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Show the notification about previous submissions.'),
+    '#title' => t('Show the notification about previous submissions'),
     '#default_value' => $node->webform['submit_notice'],
     '#description' => t('Show the previous submissions notification that appears when users have previously submitted this form.'),
   );
@@ -333,6 +388,16 @@ function webform_configure_form_submit($form, &$form_state) {
     $node->webform['total_submit_limit'] = $form_state['values']['total_submit_limit'];
     $node->webform['total_submit_interval'] = $form_state['values']['total_submit_interval'];
   }
+
+  // Set the progress bar preferences.
+  $progress_bar_settings = array_filter($form_state['values']['webform_progressbar_style']);
+  $node->webform['progressbar_page_number'] = in_array('progressbar_page_number', $progress_bar_settings);
+  $node->webform['progressbar_percent'] = in_array('progressbar_percent', $progress_bar_settings);
+  $node->webform['progressbar_bar'] = in_array('progressbar_bar', $progress_bar_settings);
+  $node->webform['progressbar_pagebreak_labels'] = in_array('progressbar_pagebreak_labels', $progress_bar_settings);
+  $node->webform['progressbar_include_confirmation'] = in_array('progressbar_include_confirmation', $progress_bar_settings);
+  $node->webform['progressbar_label_first'] = $form_state['values']['progressbar_label_first'];
+  $node->webform['progressbar_label_confirmation'] = $form_state['values']['progressbar_label_confirmation'];
 
   // Set submit notice.
   $node->webform['submit_notice'] = $form_state['values']['submit_notice'];

@@ -649,6 +649,10 @@ function webform_theme() {
     'webform_inline_radio_label' => array(
       'render element' => 'element',
     ),
+    'webform_progressbar' => array(
+      'variables' => array('node' => NULL, 'page_num' => NULL, 'page_count' => NULL, 'page_labels' => array()),
+      'template' => 'templates/webform-progressbar',
+    ),
     'webform_mail_message' => array(
       'variables' => array('node' => NULL, 'submission' => NULL, 'email' => NULL),
       'template' => 'templates/webform-mail',
@@ -1438,6 +1442,7 @@ function webform_node_delete($node) {
  * Default settings for a newly created webform node.
  */
 function webform_node_defaults() {
+  $progress_bar_defaults = webform_variable_get('webform_progressbar_style');
   $defaults = array(
     'confirmation' => '',
     'confirmation_format' => NULL,
@@ -1452,6 +1457,13 @@ function webform_node_defaults() {
     'submit_interval' => '-1',
     'total_submit_limit' => '-1',
     'total_submit_interval' => '-1',
+    'progressbar_page_number' => in_array('progressbar_page_number', $progress_bar_defaults) ? '1' : '0',
+    'progressbar_percent' => in_array('progressbar_percent', $progress_bar_defaults) ? '1' : '0',
+    'progressbar_bar' => in_array('progressbar_bar', $progress_bar_defaults) ? '1' : '0',
+    'progressbar_pagebreak_labels' => in_array('progressbar_pagebreak_labels', $progress_bar_defaults) ? '1' : '0',
+    'progressbar_include_confirmation' => in_array('progressbar_include_confirmation', $progress_bar_defaults) ? '1' : '0',
+    'progressbar_label_first' => webform_variable_get('webform_progressbar_label_first'),
+    'progressbar_label_confirmation' => webform_variable_get('webform_progressbar_label_confirmation'),
     'status' => '1',
     'record_exists' => FALSE,
     'roles' => array('1', '2'),
@@ -2148,6 +2160,17 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
       foreach ($form_state['values']['submitted'] as $cid => $data) {
         $input_values[$cid] = is_array($data) ? $data : array($data);
       }
+    }
+
+    if ($page_count > 1) {
+      $form['progressbar'] = array(
+        '#theme' => 'webform_progressbar',
+        '#node' => $node,
+        '#page_num' => $page_num,
+        '#page_count' => $page_count + ($node->webform['progressbar_include_confirmation'] ? 1 : 0),
+        '#page_labels' => webform_page_labels($node),
+        '#weight' => -100
+      );
     }
 
     // Recursively add components to the form. The unfiltered version of the
@@ -3002,6 +3025,33 @@ function template_preprocess_webform_confirmation(&$vars) {
 
   // Strip out empty tags added by WYSIWYG editors if needed.
   $vars['confirmation_message'] = strlen(trim(strip_tags($confirmation))) ? $confirmation : '';
+
+  // Progress bar.
+  $vars['progressbar'] = '';
+  if ($vars['node']->webform['progressbar_include_confirmation']) {
+    $page_labels = webform_page_labels($vars['node']);
+    $vars['progressbar'] = theme('webform_progressbar', array(
+      'node' => $vars['node'],
+      'page_num' => count($page_labels),
+      'page_count' => count($page_labels),
+      'page_labels' => $page_labels,
+    ));
+  }
+}
+
+/**
+ * Prepare for theming of the webform progressbar.
+ */
+function template_preprocess_webform_progressbar(&$vars) {
+  // Add CSS used by the progress bar.
+  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform.css');
+
+  $vars['progressbar_page_number'] = $vars['node']->webform['progressbar_page_number'];
+  $vars['progressbar_percent'] = $vars['node']->webform['progressbar_percent'];
+  $vars['progressbar_bar'] = $vars['node']->webform['progressbar_bar'];
+  $vars['progressbar_pagebreak_labels'] = $vars['node']->webform['progressbar_pagebreak_labels'];
+  $vars['progressbar_include_confirmation'] = $vars['node']->webform['progressbar_include_confirmation'];
+  $vars['percent'] = ($vars['page_num'] - 1) / ($vars['page_count'] - 1) * 100;
 }
 
 /**
@@ -3342,7 +3392,6 @@ function _webform_filter_xss($string) {
   return filter_xss($string, $allowed_tags);
 }
 
-
 /**
  * Utility function to ensure that a webform record exists in the database.
  *
@@ -3413,7 +3462,31 @@ function webform_get_cid(&$node, $form_key, $pid) {
 }
 
 /**
- * Retreive a Drupal variable with the appropriate default value.
+ * Find the label of a given page based on page breaks.
+ *
+ * @param $webform
+ *   The webform node.
+ * @return array
+ *   An array of all page labels, indexed by page number.
+ */
+function webform_page_labels($node) {
+  $page_count = 1;
+  $page_labels = array();
+  $page_labels[0] = t($node->webform['progressbar_label_first']);
+  foreach ($node->webform['components'] as $component) {
+    if ($component['type'] == 'pagebreak') {
+      $page_labels[$page_count] = $component['name'];
+      $page_count++;
+    }
+  }
+  if ($node->webform['progressbar_include_confirmation']) {
+    $page_labels[] = t($node->webform['progressbar_label_confirmation']);
+  }
+  return $page_labels;
+}
+
+/**
+ * Retrieve a Drupal variable with the appropriate default value.
  */
 function webform_variable_get($variable) {
   switch ($variable) {
@@ -3440,6 +3513,15 @@ function webform_variable_get($variable) {
       break;
     case 'webform_csv_delimiter':
       $result = variable_get('webform_csv_delimiter', '\t');
+      break;
+    case 'webform_progressbar_style':
+      $result = variable_get('webform_progressbar_style', array('progressbar_bar', 'progressbar_pagebreak_labels', 'progressbar_include_confirmation'));
+      break;
+    case 'webform_progressbar_label_first':
+      $result = variable_get('webform_progressbar_label_first', t('Start'));
+      break;
+    case 'webform_progressbar_label_confirmation':
+      $result = variable_get('webform_progressbar_label_confirmation', t('Complete'));
       break;
   }
   return $result;
