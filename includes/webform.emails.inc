@@ -480,14 +480,25 @@ function webform_email_edit_form_validate($form, &$form_state) {
     if ($form_state['values'][$field_name . '_option'] == 'component') {
       $cid = $form_state['values'][$field_name . '_component'];
       $empty_allowed = $field_name === 'email';
+      $multiple_allowed = $field_name === 'email';
       if (isset($form_state['values'][$field_name . '_mapping'][$cid])) {
         foreach ($form_state['values'][$field_name . '_mapping'][$cid] as $key => $value) {
           $email_value = _webform_filter_values(trim($value), $form['#node']);
           if (empty($email_value) && !$empty_allowed) {
             form_set_error("{$field_name}_mapping][$cid][$key", t('An e-mail address must be provided for each option.'));
           }
-          elseif (!empty($email_value) && !valid_email_address($email_value)) {
-            form_set_error("{$field_name}_mapping][$cid][$key", t('The entered e-mail address "@email" does not appear valid', array('@email' => $value)));
+          elseif (!empty($email_value)) {
+            if (!$multiple_allowed && !valid_email_address($email_value)) {
+              form_set_error("{$field_name}_mapping][$cid][$key", t('The entered e-mail address "@email" does not appear valid', array('@email' => $value)));
+            }
+            else {
+              $emails = array_filter(explode(',', $value));
+              foreach ($emails as $email) {
+                if (!valid_email_address(_webform_filter_values(trim($email), $form['#node']))) {
+                  form_set_error("{$field_name}_mapping][$cid][$key", t('The entered e-mail address "@email" does not appear valid', array('@email' => $value)));
+                }
+              }
+            }
           }
         }
       }
