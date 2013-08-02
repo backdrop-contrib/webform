@@ -3229,19 +3229,21 @@ function theme_webform_inline_radio_label($variables) {
   // select elements.
   $title = $element['#title'];
 
-  $attributes = array();
+  $attributes = isset($element['#attributes']) ? $element['#attributes'] : array();
+
   // Style the label as class option to display inline with the element.
   if ($element['#title_display'] == 'after') {
-    $attributes['class'] = 'option';
+    $attributes['class'][] = 'option';
   }
   // Show label only to screen readers to avoid disruption in visual flows.
   elseif ($element['#title_display'] == 'invisible') {
-    $attributes['class'] = 'element-invisible';
+    $attributes['class'][] = 'element-invisible';
   }
 
-  if (!empty($element['#id'])) {
-    $attributes['for'] = $element['#id'];
-  }
+   $attributes['class'][] = 'webform-inline-radio';
+   if (!empty($element['#id'])) {
+     $attributes['for'] = $element['#id'];
+   }
 
   // The leading whitespace helps visually separate fields from inline labels.
   return ' <label' . drupal_attributes($attributes) . '>' . $t('!title !required', array('!title' => $title, '!required' => $required)) . "</label>\n";
