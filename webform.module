@@ -976,7 +976,6 @@ function webform_webform_component_info() {
       'file' => 'components/textarea.inc',
       'features' => array(
         'spam_analysis' => TRUE,
-        'title_inline' => FALSE,
       ),
     ),
     'textfield' => array(

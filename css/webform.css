@@ -28,6 +28,15 @@ html.js input.webform-calendar {
 .webform-container-inline div.ajax-progress-bar div {
   display: inherit;
 }
+.webform-container-inline.webform-component-textarea label {
+  vertical-align: top;
+}
+.webform-container-inline.webform-component-textarea .form-textarea-wrapper {
+  display: inline-block;
+}
+.webform-component-textarea .grippie {
+  display: block;
+}
 .webform-progressbar {
   width: 90%;
   margin: 0 auto;
