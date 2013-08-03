@@ -464,6 +464,36 @@ function hook_webform_component_info_alter(&$components) {
 }
 
 /**
+ * Alter the list of Webform component default values.
+ *
+ * @param $defaults
+ *   A list of component defaults as defined by _webform_defaults_COMPONENT().
+ * @param $type
+ *   The component type whose defaults are being provided.
+ *
+ * @see _webform_defaults_component()
+ */
+function hook_webform_component_defaults_alter(&$defaults, $type) {
+  // Alter a default for all component types.
+  $defaults['required'] = 1;
+
+  // Add a default for a new field added via hook_form_alter() or
+  // hook_form_FORM_ID_alter() for all component types.
+  $defaults['extra']['added_field'] = t('Added default value');
+
+  // Add or alter defaults for specific component types:
+  switch ($type) {
+    case 'select':
+      $defaults['extra']['optrand'] = 1;
+      break;
+
+    case 'textfield':
+    case 'textarea':
+      $defaults['extra']['another_added_field'] = t('Another added default value');
+  }
+}
+
+/**
  * Alter access to a Webform submission.
  *
  * @param $node

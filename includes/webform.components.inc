@@ -1082,7 +1082,9 @@ function webform_component_parent_keys($node, $component) {
  * Populate a component with the defaults for that type.
  */
 function webform_component_defaults(&$component) {
-  if ($defaults = webform_component_invoke($component['type'], 'defaults')) {
+  $defaults = webform_component_invoke($component['type'], 'defaults');
+  drupal_alter('webform_component_defaults', $defaults, $component['type']);
+  if (!empty($defaults)) {
     foreach ($defaults as $key => $default) {
       if (!isset($component[$key])) {
         $component[$key] = $default;
