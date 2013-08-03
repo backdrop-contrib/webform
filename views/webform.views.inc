@@ -462,7 +462,6 @@ function _webform_views_options_form(&$form, &$form_state, $nid, $cid) {
     '#type' => 'select',
     '#options' => $options,
     '#default_value' => $cid,
-    '#dependency' => array('edit-options-component-type' => array($type)),
     '#access' => count($components),
     '#description' => t('Select the component whose values should be made available.'),
   );
