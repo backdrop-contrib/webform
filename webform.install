@@ -51,13 +51,6 @@ function webform_schema() {
          'not null' => TRUE,
          'default' => 0,
       ),
-      'teaser' => array(
-        'description' => 'Boolean value for whether the entire form should be displayed on the teaser.',
-        'type' => 'int',
-        'size' => 'tiny',
-        'not null' => TRUE,
-        'default' => 0,
-      ),
       'allow_draft' => array(
          'description' => 'Boolean value for whether submissions to this form be saved as a draft.',
          'type' => 'int',
@@ -1506,5 +1499,15 @@ function webform_update_7409() {
     db_add_field('webform', 'progressbar_label_confirmation', $varchar_schema);
 
     return t('New webform columns added.');
+  }
+}
+
+/**
+ * Remove the "teaser" column from the "webform" table.
+ */
+function webform_update_7410() {
+  if (db_field_exists('webform', 'teaser')) {
+    db_drop_field('webform', 'teaser');
+    return t('Removed "teaser" column. All forms that had the "Show form in teaser" option disabled will now show forms in their teasers. Use view modes to hide the form if desired.');
   }
 }

@@ -925,7 +925,6 @@ class WebformTestCase extends DrupalWebTestCase {
         'confirmation' => 'Thanks!',
         'confirmation_format' => filter_default_format(),
         'redirect_url' => '<confirmation>',
-        'teaser' => '0',
         'allow_draft' => '1',
         'submit_text' => '',
         'submit_limit' => '-1',

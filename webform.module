@@ -625,7 +625,7 @@ function webform_theme() {
       'render element' => 'webform',
     ),
     'webform_view_messages' => array(
-      'variables' => array('node' => NULL, 'teaser' => NULL, 'page' => NULL, 'submission_count' => NULL, 'user_limit_exceeded' => NULL, 'total_limit_exceeded' => NULL, 'allowed_roles' => NULL, 'closed' => NULL, 'cached' => NULL),
+      'variables' => array('node' => NULL, 'page' => NULL, 'submission_count' => NULL, 'user_limit_exceeded' => NULL, 'total_limit_exceeded' => NULL, 'allowed_roles' => NULL, 'closed' => NULL, 'cached' => NULL),
     ),
     'webform_form' => array(
       'render element' => 'form',
@@ -1460,7 +1460,6 @@ function webform_node_defaults() {
     'confirmation' => '',
     'confirmation_format' => NULL,
     'redirect_url' => '<confirmation>',
-    'teaser' => '0',
     'block' => '0',
     'allow_draft' => '0',
     'auto_save' => '0',
@@ -1644,12 +1643,8 @@ function webform_node_view($node, $view_mode) {
     return;
   }
 
-  // Set teaser and page variables a la Drupal 6.
-  $teaser = $view_mode == 'teaser';
-  $page = arg(0) == 'node' && arg(1) == $node->nid;
-
-  // If empty, a teaser, or a new node (during preview) do not display.
-  if (empty($node->webform['components']) || ($teaser && !$node->webform['teaser']) || empty($node->nid)) {
+  // If empty or a new node (during preview) do not display.
+  if (empty($node->webform['components']) || empty($node->nid)) {
     return;
   }
 
@@ -1661,6 +1656,7 @@ function webform_node_view($node, $view_mode) {
   $info = array();
   $submission = array();
   $submission_count = 0;
+  $page = node_is_page($node);
   $enabled = TRUE;
   $logging_in = FALSE;
   $total_limit_exceeded = FALSE;
@@ -1669,7 +1665,7 @@ function webform_node_view($node, $view_mode) {
   $allowed_roles = array();
 
   // If a teaser, tell the form to load subsequent pages on the node page.
-  if ($teaser && !isset($node->webform['action'])) {
+  if ($view_mode == 'teaser' && !isset($node->webform['action'])) {
     $query = array_diff_key($_GET, array('q' => ''));
     $node->webform['action'] = url('node/' . $node->nid, array('query' => $query));
   }
@@ -1755,14 +1751,13 @@ function webform_node_view($node, $view_mode) {
 
   // Print out messages for the webform.
   if (empty($node->in_preview) && !isset($node->webform_block) && !$logging_in) {
-    theme('webform_view_messages', array('node' => $node, 'teaser' => $teaser, 'page' => $page, 'submission_count' => $submission_count, 'user_limit_exceeded' => $user_limit_exceeded, 'total_limit_exceeded' => $total_limit_exceeded, 'allowed_roles' => $allowed_roles, 'closed' => $closed, 'cached' => $cached));
+    theme('webform_view_messages', array('node' => $node, 'page' => $page, 'submission_count' => $submission_count, 'user_limit_exceeded' => $user_limit_exceeded, 'total_limit_exceeded' => $total_limit_exceeded, 'allowed_roles' => $allowed_roles, 'closed' => $closed, 'cached' => $cached));
   }
 
   // Add the output to the node.
   $node->content['webform'] = array(
     '#theme' => 'webform_view',
     '#node' => $node,
-    '#teaser' => $teaser,
     '#page' => $page,
     '#form' => $form,
     '#enabled' => $enabled,
@@ -1775,8 +1770,6 @@ function webform_node_view($node, $view_mode) {
  *
  * @param $node
  *   The webform node object.
- * @param $teaser
- *   If this webform is being displayed as the teaser view of the node.
  * @param $page
  *   If this webform node is being viewed as the main content of the page.
  * @param $form
@@ -1796,8 +1789,6 @@ function theme_webform_view($variables) {
  *
  * @param $node
  *   The webform node object.
- * @param $teaser
- *   If this webform is being displayed as the teaser view of the node.
  * @param $page
  *   If this webform node is being viewed as the main content of the page.
  * @param $submission_count
@@ -1816,7 +1807,6 @@ function theme_webform_view_messages($variables) {
   global $user;
 
   $node = $variables['node'];
-  $teaser = $variables['teaser'];
   $page = $variables['page'];
   $submission_count = $variables['submission_count'];
   $user_limit_exceeded = $variables['user_limit_exceeded'];
@@ -1976,8 +1966,7 @@ function webform_block_view($delta = '') {
     $content = $node->content['webform'];
   }
   else {
-    $teaser = ($settings['display'] == 'teaser') ? 'teaser' : 'full';
-    $content = node_view($node, $teaser);
+    $content = node_view($node, $settings['display']);
   }
 
   // Add contextual links for the webform node if they aren't already there.
@@ -1999,32 +1988,44 @@ function webform_block_view($delta = '') {
  * Implements hook_block_configure().
  */
 function webform_block_configure($delta = '') {
+  $nid = str_replace('client-block-', '', $delta);
+  $node = node_load($nid);
+
   // Load the block-specific configuration settings.
   $webform_blocks = variable_get('webform_blocks', array());
   $settings = isset($webform_blocks[$delta]) ? $webform_blocks[$delta] : array();
   $settings += array(
     'display' => 'form',
-    'pages_block' => 0,
+    'pages_block' => 1,
   );
+
+  // Build a list of view modes for this node.
+  $entity_info = entity_get_info('node');
+  $view_modes = array(
+    'form' => t('Form only'),
+  );
+  foreach ($entity_info['view modes'] as $view_mode_key => $view_mode_info) {
+    $view_modes[$view_mode_key] = $view_mode_info['label'];
+  }
 
   $form = array();
   $form['display'] = array(
-    '#type' => 'radios',
-    '#title' => t('Display mode'),
+    '#type' => 'select',
+    '#title' => t('View mode'),
     '#default_value' => $settings['display'],
-    '#options' => array(
-      'form' => t('Form only'),
-      'full' => t('Full node'),
-      'teaser' => t('Teaser'),
-    ),
-    '#description' => t('The display mode determines how much of the webform to show within the block.'),
+    '#options' => $view_modes,
+    '#description' => t('The view mode determines how much of the webform to show within the block. You may <a href="!view_modes">customize different view modes</a> (other than the "Form only" mode) or even create new custom view modes if either the <a href="http://drupal.org/project/entity_view_mode">Entity view modes</a> or <a href="http://drupal.org/project/ds">Display Suite</a> modules are installed.', array('!view_modes' => url('admin/structure/types/manage/' . $node->type . '/display'))),
   );
 
   $form['pages_block'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Show all webform pages in block'),
+    '#type' => 'radios',
+    '#title' => t('Multi-page handling'),
+    '#options' => array(
+      1 => t('Display all pages inside block'),
+      0 => t('Redirect to the node page after the first page'),
+    ),
     '#default_value' => $settings['pages_block'],
-    '#description' => t('By default multi-page webforms redirect to the node page for all pages after the first one. If checked, all pages will be shown in the block instead.'),
+    '#description' => t('If your webform has multiple pages, you may change the behavior of the "Next" button. This will also affect where validation messages show up after an error.'),
   );
 
   return $form;
@@ -2571,7 +2572,7 @@ function webform_client_form_validate($form, &$form_state) {
 
   // Prevent submission by throwing an error.
   if ((!$allowed_role || $total_limit_exceeded || $user_limit_exceeded) && $GLOBALS['user']->uid != 1) {
-    theme('webform_view_messages', array('node' => $node, 'teaser' => 0, 'page' => 1, 'submission_count' => 0, 'user_limit_exceeded' => $user_limit_exceeded, 'total_limit_exceeded' => $total_limit_exceeded, 'allowed_roles' => $allowed_roles, 'closed' => FALSE, 'cached' => FALSE));
+    theme('webform_view_messages', array('node' => $node, 'page' => 1, 'submission_count' => 0, 'user_limit_exceeded' => $user_limit_exceeded, 'total_limit_exceeded' => $total_limit_exceeded, 'allowed_roles' => $allowed_roles, 'closed' => FALSE, 'cached' => FALSE));
     form_set_error('', NULL);
     return;
   }

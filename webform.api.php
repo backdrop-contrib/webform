@@ -594,7 +594,7 @@ function _webform_attachments_component($component, $value) {
  * @see webform_node_defaults()
  */
 function hook_webform_node_defaults_alter(&$defaults) {
-  $defaults['teaser'] = '1';
+  $defaults['allow_draft'] = '1';
 }
 
 /**
