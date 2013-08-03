@@ -458,6 +458,20 @@ function webform_results_download_form($form, &$form_state, $node) {
     '#description' => '',
   );
 
+  // If drafts are allowed, provide options to filter download based on draft status.
+  if ($node->webform['allow_draft']) {
+    $form['range']['completion_type'] = array(
+      '#type' => 'radios',
+      '#title' => t('Included submissions'),
+      '#default_value' => 'all',
+      '#options' => array(
+        'all' => t('Finished and draft submissions'),
+        'finished' => t('Finished submissions only'),
+        'draft' => t('Drafts only'),
+      ),
+    );
+  }
+
   // By default results are downloaded. User can override this value if
   // programmatically submitting this form.
   $form['download'] = array(
@@ -650,7 +664,7 @@ function webform_results_download_form_submit(&$form, &$form_state) {
     'header_keys' => $form_state['values']['header_keys'],
     'select_keys' => $form_state['values']['select_keys'],
     'select_format' => $form_state['values']['select_format'],
-    'range_type' => $form_state['values']['range']['range_type'],
+    'range' => $form_state['values']['range'],
     'download' => $form_state['values']['download'],
   );
 
@@ -659,7 +673,7 @@ function webform_results_download_form_submit(&$form, &$form_state) {
     $options['sids'] = $form_state['values']['sids'];
   }
   // Retrieve the list of required SIDs.
-  elseif ($options['range_type'] != 'all') {
+  elseif ($options['range']['range_type'] != 'all') {
     $options['sids'] = webform_download_sids($form_state['values']['node']->nid, $form_state['values']['range']);
   }
 
@@ -836,6 +850,9 @@ function webform_results_download_rows($node, $options, $serial_start = 0) {
   if (!empty($options['sids'])){
     $filters['sid'] = $options['sids'];
   }
+  elseif (!empty($options['completion_type']) && $options['completion_type'] !== 'all') {
+    $filters['is_draft'] = (int) ($options['completion_type'] === 'draft');
+  }
 
   $submissions = webform_get_submissions($filters, NULL);
   $submission_information = webform_results_download_submission_information($node, $options);
@@ -946,7 +963,10 @@ function webform_results_download_default_options($node) {
     'header_keys' => 0,
     'select_keys' => 0,
     'select_format' => 'separate',
-    'range_type' => 'all',
+    'range' => array(
+      'range_type' => 'all',
+      'completion_type' => 'all',
+    ),
   );
 
   return $options;
@@ -977,7 +997,7 @@ function webform_results_download($node, $export_info) {
   }
 
   // Update user last downloaded sid if required.
-  if ($export_info['options']['range_type'] != 'range' && $export_info['row_count'] > 0) {
+  if ($export_info['options']['range']['range_type'] != 'range' && $export_info['row_count'] > 0) {
     // Delete existing record.
     db_delete('webform_last_download')
       ->condition('nid', $node->nid)
@@ -1259,7 +1279,7 @@ function webform_download_sids($nid, $range_options, $uid = NULL) {
       break;
     case 'latest':
       // Last x Submissions.
-      $start_sid = webform_download_latest_start_sid($nid, $range_options['latest']);
+      $start_sid = webform_download_latest_start_sid($nid, $range_options['latest'], $range_options['completion_type']);
       $query->condition('sid', $start_sid, '>=');
       break;
     case 'range':
@@ -1270,6 +1290,11 @@ function webform_download_sids($nid, $range_options, $uid = NULL) {
       }
       $query->orderBy('sid', 'ASC');
       break;
+  }
+
+  // Filter down to draft or finished submissions.
+  if (!empty($range_options['completion_type']) && $range_options['completion_type'] !== 'all') {
+    $query->condition('is_draft', (int) ($range_options['completion_type'] === 'draft'));
   }
 
   // Set batch properties. Unfortunately the pager query class reads directly
@@ -1332,18 +1357,24 @@ function webform_download_last_download_info($nid, $uid = NULL) {
  *   The webform NID.
  * @param int $latest_count
  *   The latest count on which the SID will be retrieved.
+ * @param string $completion_type
+ *   The completion type, either "finished", "draft", or "all".
  * @return
  *   The submission ID that starts the latest sequence of submissions.
  */
-function webform_download_latest_start_sid($nid, $latest_count) {
+function webform_download_latest_start_sid($nid, $latest_count, $completion_type = 'all') {
   // TODO: Find a more efficient DBTNG query to retrieve this number.
-  $latest_sids = db_select('webform_submissions', 'ws')
+  $query = db_select('webform_submissions', 'ws')
     ->fields('ws', array('sid'))
     ->condition('nid', $nid)
     ->orderBy('ws.sid', 'DESC')
     ->range(0, $latest_count)
-    ->addTag('webform_download_latest_start_sid')
-    ->execute()
-    ->fetchCol();
+    ->addTag('webform_download_latest_start_sid');
+
+  if ($completion_type !== 'all') {
+    $query->condition('is_draft', (int) ($completion_type === 'draft'));
+  }
+
+  $latest_sids = $query->execute()->fetchCol();
   return min($latest_sids);
 }
