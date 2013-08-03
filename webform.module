@@ -1604,24 +1604,6 @@ function webform_node_load($nodes, $types) {
 }
 
 /**
- * Implements hook_link().
- * Always add a "view form" link.
- */
-function webform_link($type, $node = NULL, $teaser = FALSE) {
-  $links = array();
-  if (isset($node->type) && $node->type === 'webform') {
-    if ($teaser && !$node->webform['teaser']) {
-      $links['webform_goto'] = array(
-        'title' => t('Go to form'),
-        'href' => 'node/' . $node->nid,
-        'attributes' => array('title' => t('View this form.'), 'class' => array('read-more'))
-      );
-    }
-  }
-  return $links;
-}
-
-/**
  * Implements hook_form_alter().
  */
 function webform_form_alter(&$form, $form_state, $form_id) {
