@@ -23,6 +23,7 @@ function _webform_defaults_grid() {
       'questions' => '',
       'optrand' => 0,
       'qrand' => 0,
+      'unique' => 0,
       'title_display' => 0,
       'custom_option_keys' => 0,
       'custom_question_keys' => 0,
@@ -137,6 +138,17 @@ function _webform_edit_grid($component) {
     '#description' => t('Randomize the order of the questions on the side when they are displayed in the form.'),
     '#parents' => array('extra', 'qrand')
   );
+
+  $form['validation']['unique'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Unique'),
+    '#return_value' => 1,
+    '#description' => t('Check that all entered values for this field are unique. The same value is not allowed to be used twice.'),
+    '#weight' => 1,
+    '#default_value' => $component['extra']['unique'],
+    '#parents' => array('extra', 'unique'),
+  );
+
   return $form;
 }
 
@@ -162,6 +174,11 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
     '#process' => array('webform_expand_grid'),
     '#translatable' => array('title', 'description', 'grid_options', 'grid_questions'),
   );
+
+  // Enforce uniqueness.
+  if ($component['extra']['unique']) {
+    $element['#element_validate'][] = '_webform_edit_grid_unique_validate';
+  }
 
   if ($value) {
     $element['#default_value'] = $value;
@@ -398,6 +415,15 @@ function _webform_csv_data_grid($component, $export_options, $value) {
     }
   }
   return $return;
+}
+
+/**
+ * A Form API element validate function to check that all choices are unique.
+ */
+function _webform_edit_grid_unique_validate($element) {
+  if (!empty($element['#value']) && count($element['#value']) > count(array_unique($element['#value']))) {
+    form_error($element, t('<em>!title</em> is not allowed to have the same answer for more than one question.', array('!title' => $element['#title'])));
+  }
 }
 
 function theme_webform_grid($variables) {
