@@ -202,12 +202,16 @@ function webform_expand_time($element) {
   $element['hour'] = array(
     '#prefix' => '',
     '#type' => 'select',
+    '#title' => t('Hour'),
+    '#title_display' => 'invisible',
     '#default_value' => $default_values['hour'],
     '#options' => $hours,
   );
   $element['minute'] = array(
     '#prefix' => ':',
     '#type' => 'select',
+    '#title' => t('Minute'),
+    '#title_display' => 'invisible',
     '#default_value' => $default_values['minute'],
     '#options' => $minutes,
   );

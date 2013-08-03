@@ -200,6 +200,8 @@ function webform_expand_date($element) {
         break;
     }
     unset($element[$type]['#value']);
+    $element[$type]['#title'] = $none;
+    $element[$type]['#title_display'] = 'invisible';
     $element[$type]['#default_value'] = isset($default_values[$type]) ? $default_values[$type] : NULL;
     $element[$type]['#options'] = array('' => $none) + $element[$type]['#options'];
   }
