@@ -80,7 +80,7 @@ function webform_export_create_handler($format, $options) {
   if (isset($definition) && class_exists($definition['handler'])) {
     $handler = new $definition['handler']($options);
   }
-  else  {
+  else {
     // TODO: Create a default broken exporter.
     $handler = new webform_exporter_broken($options);
   }
@@ -89,6 +89,12 @@ function webform_export_create_handler($format, $options) {
 }
 
 class webform_exporter {
+  public $options = array();
+
+  function __construct($options) {
+    $this->options = $options;
+  }
+
   function add_row(&$file_handle, $data) {
   }
 
@@ -106,14 +112,16 @@ class webform_exporter {
 }
 
 class webform_exporter_delimited extends webform_exporter {
-  var $delimiter;
+  public $delimiter;
 
-  function webform_exporter_delimited($options) {
+  function __construct($options) {
     $this->delimiter = isset($options['delimiter']) ? $options['delimiter'] : ',';
     // Convert tabs.
     if ($this->delimiter == '\t') {
       $this->delimiter = "\t";
     }
+    $options['delimiter'] = $this->delimiter;
+    parent::__construct($options);
   }
 
   function bof(&$file_handle) {
@@ -166,11 +174,9 @@ class webform_exporter_delimited extends webform_exporter {
  * The Excel exporter currently is just a tab-delimited export.
  */
 class webform_exporter_excel extends webform_exporter_delimited {
-  var $delimiter;
-
-  function webform_exporter_excel($options) {
+  function __construct($options) {
     $options['delimiter'] = '\t';
-    parent::webform_exporter_delimited($options);
+    parent::__construct($options);
   }
 
   function set_headers($filename) {
