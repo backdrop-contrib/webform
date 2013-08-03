@@ -187,65 +187,7 @@ function template_preprocess_webform_components_form(&$variables) {
     $page_count = 1;
     _webform_components_tree_build($node->webform['components'], $component_tree, 0, $page_count);
     $component_tree = _webform_components_tree_sort($component_tree);
-    // Build the table rows.
-    function _webform_components_form_rows($node, $cid, $component, $level, &$form, &$rows, &$add_form) {
-      // Create presentable values.
-      if (drupal_strlen($component['value']) > 30) {
-        $component['value'] = drupal_substr($component['value'], 0, 30);
-        $component['value'] .= '...';
-      }
-      $component['value'] = check_plain($component['value']);
-
-      // Remove individual titles from the required and weight fields.
-      unset($form['components'][$cid]['required']['#title']);
-      unset($form['components'][$cid]['pid']['#title']);
-      unset($form['components'][$cid]['weight']['#title']);
-
-      // Add special classes for weight and parent fields.
-      $form['components'][$cid]['cid']['#attributes']['class'] = array('webform-cid');
-      $form['components'][$cid]['pid']['#attributes']['class'] = array('webform-pid');
-      $form['components'][$cid]['weight']['#attributes']['class'] = array('webform-weight');
-
-      // Build indentation for this row.
-      $indents = '';
-      for ($n = 1; $n <= $level; $n++) {
-        $indents .= '<div class="indentation">&nbsp;</div>';
-      }
-
-      // Add each component to a table row.
-      $row_data = array(
-        $indents . filter_xss($component['name']),
-        $form['add']['type']['#options'][$component['type']],
-        ($component['value'] == '') ? '-' : $component['value'],
-        drupal_render($form['components'][$cid]['required']),
-        drupal_render($form['components'][$cid]['cid']) . drupal_render($form['components'][$cid]['pid']) . drupal_render($form['components'][$cid]['weight']),
-        l(t('Edit'), 'node/' . $node->nid . '/webform/components/' . $cid, array('query' => drupal_get_destination())),
-        l(t('Clone'), 'node/' . $node->nid . '/webform/components/' . $cid . '/clone', array('query' => drupal_get_destination())),
-        l(t('Delete'), 'node/' . $node->nid . '/webform/components/' . $cid . '/delete', array('query' => drupal_get_destination())),
-      );
-      $row_class = array('draggable');
-      if (!webform_component_feature($component['type'], 'group')) {
-        $row_class[] = 'tabledrag-leaf';
-      }
-      if ($component['type'] == 'pagebreak') {
-        $row_class[] = 'tabledrag-root';
-        $row_class[] = 'webform-pagebreak';
-        $row_data[0] = array('class' => array('webform-pagebreak'), 'data' => $row_data[0]);
-      }
-      $rows[] = array('data' => $row_data, 'class' => $row_class, 'data-cid' => $cid);
-      if (isset($component['children']) && is_array($component['children'])) {
-        foreach ($component['children'] as $cid => $component) {
-          _webform_components_form_rows($node, $cid, $component, $level + 1, $form, $rows, $add_form);
-        }
-      }
-
-      // Add the add form if this was the last edited component.
-      if (isset($_GET['cid']) && $component['cid'] == $_GET['cid'] && $add_form) {
-        $add_form['data'][0] = $indents . $add_form['data'][0];
-        $rows[] = $add_form;
-        $add_form = FALSE;
-      }
-    }
+    // Build the table rows recursively.
     foreach ($component_tree['children'] as $cid => $component) {
       _webform_components_form_rows($node, $cid, $component, 0, $form, $rows, $add_form);
     }
@@ -262,6 +204,70 @@ function template_preprocess_webform_components_form(&$variables) {
   $variables['rows'] = $rows;
   $variables['header'] = $header;
   $variables['form'] = $form;
+}
+
+/**
+ * Recursive function for nesting components into a table.
+ *
+ * @see preprocess_webform_components_form()
+ */
+function _webform_components_form_rows($node, $cid, $component, $level, &$form, &$rows, &$add_form) {
+  // Create presentable values.
+  if (drupal_strlen($component['value']) > 30) {
+    $component['value'] = drupal_substr($component['value'], 0, 30);
+    $component['value'] .= '...';
+  }
+  $component['value'] = check_plain($component['value']);
+
+  // Remove individual titles from the required and weight fields.
+  unset($form['components'][$cid]['required']['#title']);
+  unset($form['components'][$cid]['pid']['#title']);
+  unset($form['components'][$cid]['weight']['#title']);
+
+  // Add special classes for weight and parent fields.
+  $form['components'][$cid]['cid']['#attributes']['class'] = array('webform-cid');
+  $form['components'][$cid]['pid']['#attributes']['class'] = array('webform-pid');
+  $form['components'][$cid]['weight']['#attributes']['class'] = array('webform-weight');
+
+  // Build indentation for this row.
+  $indents = '';
+  for ($n = 1; $n <= $level; $n++) {
+    $indents .= '<div class="indentation">&nbsp;</div>';
+  }
+
+  // Add each component to a table row.
+  $row_data = array(
+    $indents . filter_xss($component['name']),
+    $form['add']['type']['#options'][$component['type']],
+    ($component['value'] == '') ? '-' : $component['value'],
+    drupal_render($form['components'][$cid]['required']),
+    drupal_render($form['components'][$cid]['cid']) . drupal_render($form['components'][$cid]['pid']) . drupal_render($form['components'][$cid]['weight']),
+    l(t('Edit'), 'node/' . $node->nid . '/webform/components/' . $cid, array('query' => drupal_get_destination())),
+    l(t('Clone'), 'node/' . $node->nid . '/webform/components/' . $cid . '/clone', array('query' => drupal_get_destination())),
+    l(t('Delete'), 'node/' . $node->nid . '/webform/components/' . $cid . '/delete', array('query' => drupal_get_destination())),
+  );
+  $row_class = array('draggable');
+  if (!webform_component_feature($component['type'], 'group')) {
+    $row_class[] = 'tabledrag-leaf';
+  }
+  if ($component['type'] == 'pagebreak') {
+    $row_class[] = 'tabledrag-root';
+    $row_class[] = 'webform-pagebreak';
+    $row_data[0] = array('class' => array('webform-pagebreak'), 'data' => $row_data[0]);
+  }
+  $rows[] = array('data' => $row_data, 'class' => $row_class, 'data-cid' => $cid);
+  if (isset($component['children']) && is_array($component['children'])) {
+    foreach ($component['children'] as $cid => $component) {
+      _webform_components_form_rows($node, $cid, $component, $level + 1, $form, $rows, $add_form);
+    }
+  }
+
+  // Add the add form if this was the last edited component.
+  if (isset($_GET['cid']) && $component['cid'] == $_GET['cid'] && $add_form) {
+    $add_form['data'][0] = $indents . $add_form['data'][0];
+    $rows[] = $add_form;
+    $add_form = FALSE;
+  }
 }
 
 /**
