@@ -256,12 +256,6 @@ function webform_configure_form($form, &$form_state, $node) {
     '#description' => t('If enabled this webform will be available as a block.'),
     '#access' => user_access('administer blocks') || user_access('administer site configuration') || user_access('use panels dashboard'),
   );
-  $form['advanced']['teaser'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Show complete form in teaser'),
-    '#default_value' => $node->webform['teaser'],
-    '#description' => t('Display the entire form in the teaser display of this node.'),
-  );
   $form['advanced']['allow_draft'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show "Save draft" button'),
@@ -359,9 +353,6 @@ function webform_configure_form_submit($form, &$form_state) {
 
   // Set the block option.
   $node->webform['block'] = $form_state['values']['block'];
-
-  // Set the Show complete form in teaser setting.
-  $node->webform['teaser'] = $form_state['values']['teaser'];
 
   // Set the draft option.
   $node->webform['allow_draft'] = $form_state['values']['allow_draft'];
