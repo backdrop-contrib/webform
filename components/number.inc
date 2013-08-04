@@ -20,6 +20,7 @@ function _webform_defaults_number() {
       'type' => 'textfield',
       'field_prefix' => '',
       'field_suffix' => '',
+      'disabled' => 0,
       'unique' => 0,
       'title_display' => 0,
       'description' => '',
@@ -98,6 +99,15 @@ function _webform_edit_number($component) {
     '#maxlength' => 127,
     '#weight' => 1.2,
     '#parents' => array('extra', 'field_suffix'),
+  );
+  $form['display']['disabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Disabled'),
+    '#return_value' => 1,
+    '#description' => t('Make this field non-editable. Useful for setting an unchangeable default value.'),
+    '#weight' => 11,
+    '#default_value' => $component['extra']['disabled'],
+    '#parents' => array('extra', 'disabled'),
   );
   $form['display']['decimals'] = array(
     '#type' => 'select',
@@ -314,6 +324,16 @@ function _webform_render_number($component, $value = NULL, $filter = TRUE) {
   // Enforce uniqueness.
   if ($component['extra']['unique']) {
     $element['#element_validate'][] = 'webform_validate_unique';
+  }
+
+  // Set readonly if disabled
+  if ($component['extra']['disabled']) {
+    if ($filter) {
+      $element['#attributes']['readonly'] = 'readonly';
+    }
+    else {
+      $element['#disabled'] = TRUE;
+    }
   }
 
   return $element;
