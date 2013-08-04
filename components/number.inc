@@ -326,7 +326,7 @@ function _webform_render_number($component, $value = NULL, $filter = TRUE) {
     $element['#element_validate'][] = 'webform_validate_unique';
   }
 
-  // Set readonly if disabled
+  // Set readonly if disabled.
   if ($component['extra']['disabled']) {
     if ($filter) {
       $element['#attributes']['readonly'] = 'readonly';
