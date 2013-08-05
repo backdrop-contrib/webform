@@ -724,15 +724,20 @@ function webform_results_export($node, $format = 'delimited', $options = array()
   $exporter->bof($handle);
 
   // Add headers to the file.
+  $row_count = 0;
+  $col_count = 0;
   $headers = webform_results_download_headers($node, $options);
   foreach ($headers as $row) {
-    $exporter->add_row($handle, $row);
+    $exporter->add_row($handle, $row, $row_count);
+    $row_count++;
+    $col_count = count($row) > $col_count ? count($row) : $col_count;
   }
 
   // Write data from submissions.
   $rows = webform_results_download_rows($node, $options);
   foreach ($rows as $row) {
-    $exporter->add_row($handle, $row);
+    $exporter->add_row($handle, $row, $row_count);
+    $row_count++;
   }
 
   // Add the closing bytes.
@@ -745,6 +750,7 @@ function webform_results_export($node, $format = 'delimited', $options = array()
   $export_info['options'] = $options;
   $export_info['file_name'] = $file_name;
   $export_info['row_count'] = $row_count;
+  $export_info['col_count'] = $col_count;
   $export_info['last_sid'] = $sid;
 
   return $export_info;
@@ -764,6 +770,7 @@ function webform_results_export_batch($node, $format = 'delimited', $options = a
       array('webform_results_batch_headers', array($node, $format, $options)),
       array('webform_results_batch_rows', array($node, $format, $options)),
       array('webform_results_batch_eof', array($node, $format, $options)),
+      array('webform_results_batch_post_process', array($node, $format, $options)),
       array('webform_results_batch_results', array($node, $format, $options)),
     ),
     'finished' => 'webform_results_batch_finished',
@@ -1073,9 +1080,15 @@ function webform_results_batch_headers($node, $format = 'delimited', $options = 
   $exporter = webform_export_create_handler($format, $options);
   $handle = @fopen($options['file_name'], 'a'); // The @ suppresses errors.
   $headers = webform_results_download_headers($node, $options);
+  $row_count = 0;
+  $col_count = 0;
   foreach ($headers as $row) {
-    $exporter->add_row($handle, $row);
+    $exporter->add_row($handle, $row, $row_count);
+    $row_count++;
+    $col_count = count($row) > $col_count ? count($row) : $col_count;
   }
+  $context['results']['row_count'] = $row_count;
+  $context['results']['col_count'] = $col_count;
   @fclose($handle);
 }
 
@@ -1102,7 +1115,8 @@ function webform_results_batch_rows($node, $format = 'delimited', $options = arr
   $exporter = webform_export_create_handler($format, $options);
   $handle = @fopen($options['file_name'], 'a'); // The @ suppresses errors.
   foreach ($rows as $row) {
-    $exporter->add_row($handle, $row);
+    $exporter->add_row($handle, $row, $context['results']['row_count']);
+    $context['results']['row_count']++;
   }
   $context['sandbox']['serial'] += count($sids);
   $context['sandbox']['last_sid'] = end($sids);
@@ -1117,21 +1131,38 @@ function webform_results_batch_rows($node, $format = 'delimited', $options = arr
   }
   // If finished, save the results.
   else {
-    $context['results']['row_count'] = $context['sandbox']['serial'];
     $context['results']['last_sid'] = $context['sandbox']['last_sid'];
   }
 }
 
 /**
- * Batch API callback; Write the opening byte in the export file.
+ * Batch API callback; Write the closing bytes in the export file.
  */
 function webform_results_batch_eof($node, $format = 'delimited', $options = array(), &$context) {
   module_load_include('inc', 'webform', 'includes/webform.export');
 
   $exporter = webform_export_create_handler($format, $options);
-  $handle = @fopen($options['file_name'], 'a'); // The @ suppresses errors.
-  $exporter->eof($handle);
+
+  // We open the file for reading and writing, rather than just appending for
+  // exporters that need to adjust the beginning of the files as well as the
+  // end, i.e. webform_exporter_excel_xlsx::eof().
+  $handle = @fopen($options['file_name'], 'r+'); // The @ suppresses errors.
+  fseek($handle, 0, SEEK_END); // Move pointer to the end of the file.
+  $exporter->eof($handle, $context['results']['row_count'], $context['results']['col_count']);
   @fclose($handle);
+}
+
+/**
+ * Batch API callback; Do any last processing on the finished export.
+ */
+function webform_results_batch_post_process($node, $format = 'delimited', $options = array(), &$context) {
+  module_load_include('inc', 'webform', 'includes/webform.export');
+
+  $context['results']['node'] = $node;
+  $context['results']['file_name'] = $options['file_name'];
+
+  $exporter = webform_export_create_handler($format, $options);
+  $exporter->post_process($context['results']);
 }
 
 /**
@@ -1143,13 +1174,11 @@ function webform_results_batch_eof($node, $format = 'delimited', $options = arra
  * which will execute webform_results_download_file().
  */
 function webform_results_batch_results($node, $format, $options, &$context) {
-  $context['results']['node'] = $node;
-  $context['results']['file_name'] = $options['file_name'];
 
   $export_info = array(
     'format' => $format,
     'options' => $options,
-    'file_name' => $options['file_name'],
+    'file_name' => $context['results']['file_name'],
     'row_count' => $context['results']['row_count'],
     'last_sid' => $context['results']['last_sid'],
   );
