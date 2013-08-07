@@ -3188,10 +3188,8 @@ function theme_webform_element_text($variables) {
     $value = implode("\n", $lines);
   }
 
-  // Add the value to the output.
-  if ($value) {
-    $output .= (strpos($value, "\n") === FALSE ? ' ' : "\n") . $value;
-  }
+  // Add the value to the output. Add a newline before the response if needed.
+  $output .= (strpos($value, "\n") === FALSE ? ' ' : "\n") . $value;
 
   // Indent fieldsets.
   if ($is_group) {
