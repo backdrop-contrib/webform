@@ -4,6 +4,7 @@ description = Enables the creation of forms and questionnaires.
 core = 7.x
 package = Webform
 configure = admin/config/content/webform
+php = 5.3
 
 ; Files that contain classes:
 files[] = includes/exporters/webform_exporter_delimited.inc
