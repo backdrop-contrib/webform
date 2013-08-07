@@ -2989,20 +2989,20 @@ function _webform_client_form_submit_process($node, &$form_values) {
 }
 
 /**
- * Flattens a submitted form back into a single array representation (rather than nested fields)
+ * Flattens a submitted values back into a single flat array representation.
  */
 function _webform_client_form_submit_flatten($node, $fieldset, $parent = 0) {
   $values = array();
 
   if (is_array($fieldset)) {
     foreach ($fieldset as $form_key => $value) {
-      $cid = webform_get_cid($node, $form_key, $parent);
-
-      if (is_array($value) && webform_component_feature($node->webform['components'][$cid]['type'], 'group')) {
-        $values += _webform_client_form_submit_flatten($node, $value, $cid);
-      }
-      else {
-        $values[$cid] = $value;
+      if ($cid = webform_get_cid($node, $form_key, $parent)) {
+        if (is_array($value) && webform_component_feature($node->webform['components'][$cid]['type'], 'group')) {
+          $values += _webform_client_form_submit_flatten($node, $value, $cid);
+        }
+        else {
+          $values[$cid] = $value;
+        }
       }
     }
   }
