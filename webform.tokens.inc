@@ -69,7 +69,7 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
   if ($type == 'submission' && !empty($data['webform-submission'])) {
     // Prepare all the submission data that we will likely need more than once.
     $submission = $data['webform-submission'];
-    $node = $data['node'] ? $data['node'] : node_load($submission->nid);
+    $node = isset($data['node']) ? $data['node'] : node_load($submission->nid);
     $email = isset($data['webform-email']) ? $data['webform-email'] : NULL;
     $format = isset($email['html']) && $email['html'] ? 'html' : 'text';
     $submission_renderable = webform_submission_render($node, $submission, $email, $format);

@@ -384,6 +384,38 @@ function webform_menu() {
     'type' => MENU_CALLBACK,
   );
 
+  // Devel integration for submissions.
+  if (module_exists('devel')) {
+    $items['node/%webform_menu/submission/%webform_menu_submission/devel'] = array(
+      'title' => 'Devel',
+      'load arguments' => array(1),
+      'page callback' => 'devel_load_object',
+      'page arguments' => array('submission', 3),
+      'access arguments' => array('access devel information'),
+      'type' => MENU_LOCAL_TASK,
+      'file' => 'devel.pages.inc',
+      'file path' => drupal_get_path('module', 'devel'),
+      'weight' => 100,
+    );
+    $items['node/%webform_menu/submission/%webform_menu_submission/devel/load'] = array(
+      'title' => 'Load',
+      'type' => MENU_DEFAULT_LOCAL_TASK,
+    );
+    if (module_exists('token')) {
+      $items['node/%webform_menu/submission/%webform_menu_submission/devel/token'] = array(
+        'title' => 'Tokens',
+        'load arguments' => array(1),
+        'page callback' => 'token_devel_token_object',
+        'page arguments' => array('webform-submission', 3, 'submission'),
+        'access arguments' => array('access devel information'),
+        'type' => MENU_LOCAL_TASK,
+        'file' => 'token.pages.inc',
+        'file path' => drupal_get_path('module', 'token'),
+        'weight' => 5,
+      );
+    }
+  }
+
   return $items;
 }
 
