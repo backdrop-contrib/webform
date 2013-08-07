@@ -2189,7 +2189,7 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
     );
     $form['details']['sid'] = array(
       '#type' => 'hidden',
-      '#value' => isset($submission->sid) ? $submission->sid : '',
+      '#value' => isset($submission->sid) ? $submission->sid : NULL,
     );
     $form['details']['uid'] = array(
       '#type' => 'value',
