@@ -329,14 +329,14 @@ function webform_results_download_form($form, &$form_state, $node) {
     '#type' => 'radios',
     '#title' => t('Export format'),
     '#options' => webform_export_list(),
-    '#default_value' => isset($form_state['values']['format']) ? $form_state['values']['format'] : variable_get('webform_export_format', 'delimited'),
+    '#default_value' => webform_variable_get('webform_export_format'),
   );
 
   $form['delimiter'] = array(
     '#type' => 'select',
     '#title' => t('Delimited text format'),
     '#description' => t('This is the delimiter used in the CSV/TSV file when downloading Webform results. Using tabs in the export is the most reliable method for preserving non-latin characters. You may want to change this to another character depending on the program with which you anticipate importing results.'),
-    '#default_value' => isset($form_state['values']['delimiter']) ? $form_state['values']['delimiter'] : variable_get('webform_csv_delimiter', '\t'),
+    '#default_value' => variable_get('webform_csv_delimiter', '\t'),
     '#options' => array(
       ','  => t('Comma (,)'),
       '\t' => t('Tab (\t)'),
@@ -360,7 +360,7 @@ function webform_results_download_form($form, &$form_state, $node) {
       0 => t('Label'),
       1 => t('Field Key'),
     ),
-    '#default_value' => isset($form_state['values']['header_keys']) ? $form_state['values']['header_keys'] : 0,
+    '#default_value' => 0,
     '#description' => t('Choose whether to show the label or field key in each column header.'),
   );
 
@@ -378,7 +378,7 @@ function webform_results_download_form($form, &$form_state, $node) {
       0 => t('Full, human-readable options (values)'),
       1 => t('Short, raw options (keys)'),
     ),
-    '#default_value' => isset($form_state['values']['select_options']['select_keys']) ? $form_state['values']['select_options']['select_keys'] : 0,
+    '#default_value' => 0,
     '#description' => t('Choose which part of options should be displayed from key|value pairs.'),
   );
 
@@ -389,7 +389,7 @@ function webform_results_download_form($form, &$form_state, $node) {
       'separate' => t('Separate'),
       'compact' => t('Compact'),
     ),
-    '#default_value' => isset($form_state['values']['select_options']['select_format']) ? $form_state['values']['select_options']['select_format'] : 'separate',
+    '#default_value' => 'separate',
     '#attributes' => array('class' => array('webform-select-list-format')),
     '#theme' => 'webform_results_download_select_format',
   );
@@ -410,7 +410,7 @@ function webform_results_download_form($form, &$form_state, $node) {
     '#type' => 'select',
     '#title' => t('Included export components'),
     '#options' => $csv_components,
-    '#default_value' => isset($form_state['values']['components']) ? $form_state['values']['components'] : array_keys($csv_components),
+    '#default_value' => array_keys($csv_components),
     '#multiple' => TRUE,
     '#size' => 10,
     '#description' => t('The selected components will be included in the export.'),
@@ -442,20 +442,16 @@ function webform_results_download_form($form, &$form_state, $node) {
     '#type' => 'textfield',
     '#size' => 5,
     '#maxlength' => 8,
-    '#default_value' => isset($form_state['values']['latest']) ? $form_state['values']['latest'] : '',
   );
   $form['range']['start'] = array(
     '#type' => 'textfield',
     '#size' => 5,
     '#maxlength' => 8,
-    '#default_value' => '',
   );
   $form['range']['end'] = array(
     '#type' => 'textfield',
     '#size' => 5,
     '#maxlength' => 8,
-    '#default_value' => '',
-    '#description' => '',
   );
 
   // If drafts are allowed, provide options to filter download based on draft status.
@@ -712,7 +708,7 @@ function webform_results_export($node, $format = 'delimited', $options = array()
   module_load_include('inc', 'webform', 'includes/webform.export');
   module_load_include('inc', 'webform', 'includes/webform.components');
 
-  $options += webform_results_download_default_options($node);
+  $options += webform_results_download_default_options($node, $format);
 
   // Open a new Webform exporter object.
   $exporter = webform_export_create_handler($format, $options);
@@ -763,7 +759,8 @@ function webform_results_export($node, $format = 'delimited', $options = array()
  *   A Batch API array suitable to pass to batch_set().
  */
 function webform_results_export_batch($node, $format = 'delimited', $options = array()) {
-  $options += webform_results_download_default_options($node);
+  $options += webform_results_download_default_options($node, $format);
+
   return array(
     'operations' => array(
       array('webform_results_batch_bof', array($node, $format, $options)),
@@ -879,7 +876,12 @@ function webform_results_download_rows($node, $options, $serial_start = 0) {
       $row[] = $sid;
     }
     if (isset($submission_information['time'])) {
-      $row[] = format_date($submission->submitted, 'short');
+      if (!empty($options['iso8601_date'])) {
+        $row[] = format_date($submission->submitted, 'custom', 'c', 'UTC');
+      }
+      else {
+        $row[] = format_date($submission->submitted, 'short');
+      }
     }
     if (isset($submission_information['draft'])) {
       $row[] = $submission->is_draft;
@@ -957,11 +959,13 @@ function webform_results_download_submission_information($node, $options = array
  *
  * @param $node
  *   The webform node on which to generate the analysis.
+ * @param string $format
+ *   The export format being used.
  * @param array $options
  *   A list of options that define the output format. These are generally passed
  *   through from the GUI interface.
  */
-function webform_results_download_default_options($node) {
+function webform_results_download_default_options($node, $format) {
   $submission_information = webform_results_download_submission_information($node);
 
   $options = array(
@@ -975,6 +979,12 @@ function webform_results_download_default_options($node) {
       'completion_type' => 'all',
     ),
   );
+
+  // Allow exporters to merge in additional options.
+  $exporter_information = webform_export_fetch_definition($format);
+  if (isset($exporter_information['options'])) {
+    $options = array_merge($options, $exporter_information['options']);
+  }
 
   return $options;
 }

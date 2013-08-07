@@ -15,7 +15,7 @@
  *   should point to the PHP class implementing this flag.
  */
 function webform_webform_exporters() {
-  return array(
+  $exporters = array(
     'delimited' => array(
       'title' => t('Delimited text'),
       'description' => t('A plain text file delimited by commas, tabs, or other characters.'),
@@ -26,11 +26,35 @@ function webform_webform_exporters() {
     'excel' => array(
       'title' => t('Microsoft Excel'),
       'description' => t('A file readable by Microsoft Excel.'),
+      'handler' => 'webform_exporter_excel_xlsx',
+      'file' => drupal_get_path('module', 'webform') . '/includes/exporters/webform_exporter_excel_xlsx.inc',
+      'weight' => -1,
+      // Tells the options to use consistent dates instead of user-defined
+      // formats.
+      'options' => array(
+        'iso8601_time' => TRUE,
+        'iso8601_date' => TRUE,
+      ),
+    ),
+    'excel_legacy' => array(
+      'title' => t('Microsoft Excel (older versions)'),
+      'description' => t('A file readable by older versions of Microsoft Excel.'),
       'handler' => 'webform_exporter_excel_delimited',
       'file' => drupal_get_path('module', 'webform') . '/includes/exporters/webform_exporter_excel_delimited.inc',
-      'weight' => -1,
+      'weight' => 0,
     ),
   );
+
+  // The new Excel exporter is only available if ZipArchive is available.
+  if (!class_exists('ZipArchive')) {
+    unset($exporters['excel']);
+  }
+  // By default the legacy Excel exporter is disabled.
+  if (!variable_get('webform_excel_legacy_exporter', 0)) {
+    unset($exporters['excel_legacy']);
+  }
+
+  return $exporters;
 }
 
 /**

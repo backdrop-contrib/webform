@@ -3505,7 +3505,10 @@ function webform_variable_get($variable) {
       $result = variable_get('webform_node_types_primary', array('webform'));
       break;
     case 'webform_export_format':
+      module_load_include('inc', 'webform', 'includes/webform.export');
+      $options = webform_export_list();
       $result = variable_get('webform_export_format', 'excel');
+      $result = isset($options[$result]) ? $result : key($options);
       break;
     case 'webform_csv_delimiter':
       $result = variable_get('webform_csv_delimiter', '\t');

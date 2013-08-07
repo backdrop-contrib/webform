@@ -554,6 +554,27 @@ function webform_schema() {
   return $schema;
 }
 
+
+/**
+ * Implements hook_requirements().
+ */
+function webform_requirements($phase) {
+  $requirements = array();
+  $t = get_t();
+
+  // Ensure cURL exists if SimpleTest hasn't checked it already.
+  if (!class_exists('ZipArchive')) {
+    $requirements['webform_zip'] = array(
+      'title' => $t('Zip archive support'),
+      'value' => $t('Missing'),
+      'severity' => REQUIREMENT_WARNING,
+      'description' => $t('PHP does not have the zip archive extension available. Webform module requires zip support for exporting submissions to Microsoft Excel.'),
+    );
+  }
+
+  return $requirements;
+}
+
 /**
  * Implements hook_install().
  */

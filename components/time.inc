@@ -391,7 +391,8 @@ function _webform_csv_headers_time($component, $export_options) {
 function _webform_csv_data_time($component, $export_options, $value) {
   if ($value[0]) {
     $time = webform_date_array($value[0], 'time');
-    if ($component['extra']['hourformat'] == '24-hour') {
+    // An ISO 8601 time is the same as 24-hour time.
+    if (!empty($export_options['iso8601_time']) || $component['extra']['hourformat'] == '24-hour') {
       return sprintf('%02d', $time['hour']) . ':' . sprintf('%02d', $time['minute']);
     }
     else {

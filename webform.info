@@ -8,6 +8,7 @@ configure = admin/config/content/webform
 ; Files that contain classes:
 files[] = includes/exporters/webform_exporter_delimited.inc
 files[] = includes/exporters/webform_exporter_excel_delimited.inc
+files[] = includes/exporters/webform_exporter_excel_xlsx.inc
 files[] = includes/exporters/webform_exporter.inc
 
 files[] = views/webform_handler_field_form_body.inc
