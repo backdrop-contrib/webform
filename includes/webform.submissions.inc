@@ -633,55 +633,55 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     unset($filters['uid']);
   }
 
-  // No need to find SIDs if it was given to us.
-  if (isset($filters['sid'])) {
-    $sids = array($filters['sid']);
+  // Build the list of submissions and load their basic information.
+  $pager_query = db_select('webform_submissions', 'ws')
+    ->addTag('webform_get_submissions_sids')
+    ->fields('ws', array('sid', 'nid', 'submitted', 'remote_addr', 'uid', 'is_draft'));
+  foreach ($filters as $column => $value) {
+    $pager_query->condition($column, $value);
   }
-  // Build the list of SIDs that need to be retrieved.
-  else {
-    $pager_query = db_select('webform_submissions', 'ws')
-      ->addTag('webform_get_submissions_sids')
-      ->fields('ws', array('sid'));
-    foreach ($filters as $column => $value) {
-      $pager_query->condition($column, $value);
-    }
 
-    if (isset($filters['u.uid']) || !empty($header)) {
-      // Join to the users table for sorting by user name.
-      $pager_query->leftJoin('users', 'u', 'u.uid = ws.uid');
-    }
-
-    if (isset($filters['u.uid']) && $filters['u.uid'] === 0) {
-      if (!empty($_SESSION['webform_submission'])) {
-        $anonymous_sids = array_keys($_SESSION['webform_submission']);
-        $pager_query->condition('sid', $anonymous_sids, 'IN');
-      }
-      else {
-        $pager_query->condition('sid', 0);
-      }
-    }
-
-    if (is_array($header)) {
-      // Extending the query instatiates a new query object.
-      $pager_query = $pager_query->extend('TableSort');
-      $pager_query->orderByHeader($header);
+  // Join to the users table to include user name in results.
+  $pager_query->leftJoin('users', 'u', 'u.uid = ws.uid');
+  $pager_query->fields('u', array('name'));
+  if (isset($filters['u.uid']) && $filters['u.uid'] === 0) {
+    if (!empty($_SESSION['webform_submission'])) {
+      $anonymous_sids = array_keys($_SESSION['webform_submission']);
+      $pager_query->condition('sid', $anonymous_sids, 'IN');
     }
     else {
-      $pager_query->orderBy('sid', 'ASC');
+      $pager_query->condition('sid', 0);
     }
+  }
 
-    if ($pager_count) {
-      // Extending the query instatiates a new query object.
-      $pager_query = $pager_query->extend('PagerDefault');
-      $pager_query->limit($pager_count);
-    }
-    $result = $pager_query->execute();
+  if (is_array($header)) {
+    // Extending the query instantiates a new query object.
+    $pager_query = $pager_query->extend('TableSort');
+    $pager_query->orderByHeader($header);
+  }
+  else {
+    $pager_query->orderBy('sid', 'ASC');
+  }
 
-    $sids = array();
-    foreach ($result as $row) {
-      $sids[] = $row->sid;
-      $submissions[$row->sid] = FALSE;
-    }
+  if ($pager_count) {
+    // Extending the query instantiates a new query object.
+    $pager_query = $pager_query->extend('PagerDefault');
+    $pager_query->limit($pager_count);
+  }
+  $result = $pager_query->execute();
+
+  $sids = array();
+  foreach ($result as $row) {
+    $sids[] = $row->sid;
+    $submissions[$row->sid] = new stdClass();
+    $submissions[$row->sid]->sid = $row->sid;
+    $submissions[$row->sid]->nid = $row->nid;
+    $submissions[$row->sid]->submitted = $row->submitted;
+    $submissions[$row->sid]->remote_addr = $row->remote_addr;
+    $submissions[$row->sid]->uid = $row->uid;
+    $submissions[$row->sid]->name = $row->name;
+    $submissions[$row->sid]->is_draft = $row->is_draft;
+    $submissions[$row->sid]->data = array();
   }
 
   // If there are no submissions being retrieved, return an empty array.
@@ -691,13 +691,9 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
 
   // Query the required submission data.
   $query = db_select('webform_submitted_data', 'sd');
-  $query->leftJoin('webform_submissions', 's', 's.sid = sd.sid');
-  $query->leftJoin('users', 'u', 'u.uid = s.uid');
   $query
     ->addTag('webform_get_submissions_data')
-    ->fields('s')
-    ->fields('sd', array('cid', 'no', 'data'))
-    ->fields('u', array('name'))
+    ->fields('sd', array('sid', 'cid', 'no', 'data'))
     ->condition('sd.sid', $sids, 'IN')
     ->orderBy('sd.sid', 'ASC')
     ->orderBy('sd.cid', 'ASC')
@@ -711,25 +707,9 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
 
   $result = $query->execute();
 
-  // Convert the queried rows into submissions.
-  $previous = 0;
+  // Convert the queried rows into submission data.
   foreach ($result as $row) {
-    if ($row->sid != $previous) {
-      $submissions[$row->sid] = new stdClass();
-      $submissions[$row->sid]->sid = $row->sid;
-      $submissions[$row->sid]->nid = $row->nid;
-      $submissions[$row->sid]->submitted = $row->submitted;
-      $submissions[$row->sid]->remote_addr = $row->remote_addr;
-      $submissions[$row->sid]->uid = $row->uid;
-      $submissions[$row->sid]->name = $row->name;
-      $submissions[$row->sid]->is_draft = $row->is_draft;
-      $submissions[$row->sid]->data = array();
-    }
-    // CID may be NULL if this submission does not actually contain any data.
-    if ($row->cid) {
-      $submissions[$row->sid]->data[$row->cid][$row->no] = $row->data;
-    }
-    $previous = $row->sid;
+    $submissions[$row->sid]->data[$row->cid][$row->no] = $row->data;
   }
 
   foreach (module_implements('webform_submission_load') as $module) {
