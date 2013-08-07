@@ -2581,7 +2581,7 @@ function webform_client_form_validate($form, &$form_state) {
   // certain elements need validation at all.
   if (!empty($node->webform['conditionals'])) {
     $input_values = isset($form_state['storage']['submitted']) ? $form_state['storage']['submitted'] : array();
-    $new_values = _webform_client_form_submit_flatten($form['#node'], $form_state['values']['submitted']);
+    $new_values = isset($form_state['values']['submitted']) ? _webform_client_form_submit_flatten($form['#node'], $form_state['values']['submitted']) : array();
     foreach ($new_values as $cid => $values) {
       $input_values[$cid] = $values;
     }
