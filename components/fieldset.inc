@@ -56,10 +56,10 @@ function _webform_render_fieldset($component, $value = NULL, $filter = TRUE) {
 
   $element = array(
     '#type' => 'fieldset',
-    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#title' => $filter ? webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : NULL,
     '#weight' => $component['weight'],
-    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
+    '#description' => $filter ? webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#collapsible' => $component['extra']['collapsible'],
     '#collapsed' => $component['extra']['collapsed'],
     '#attributes' => array('class' => array('webform-component-fieldset')),

@@ -316,7 +316,7 @@ function webform_configure_form_validate($form, &$form_state) {
     if (empty($redirect_url)) {
       form_error($form['submission']['redirection']['redirect_url'], t('A valid URL is required for custom redirection.'));
     }
-    elseif (strpos($redirect_url, 'http') === 0 && !valid_url(_webform_filter_values($redirect_url, $form['#node']), TRUE)) {
+    elseif (strpos($redirect_url, 'http') === 0 && !valid_url(webform_replace_tokens($redirect_url, $form['#node']), TRUE)) {
       form_error($form['submission']['redirection']['redirect_url'], t('The entered URL is not a valid address.'));
     }
     else {

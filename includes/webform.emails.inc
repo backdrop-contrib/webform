@@ -185,17 +185,17 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
         $description = t('Form submissions will be e-mailed to this address. Any email, select, or hidden form element may be selected as the recipient address. Multiple e-mail addresses may be separated by commas.');
         break;
       case 'subject':
-        $default_value = _webform_filter_values(webform_variable_get('webform_default_subject'), $node);
+        $default_value = webform_replace_tokens(webform_variable_get('webform_default_subject'), $node);
         $title = t('E-mail subject');
         $description = t('Any textfield, select, or hidden form element may be selected as the subject for e-mails.');
         break;
       case 'from_address':
-        $default_value = _webform_filter_values(webform_variable_get('webform_default_from_address'), $node);
+        $default_value = webform_replace_tokens(webform_variable_get('webform_default_from_address'), $node);
         $title = t('E-mail from address');
         $description = t('Any email, select, or hidden form element may be selected as the sender\'s e-mail address.');
         break;
       case 'from_name':
-        $default_value = _webform_filter_values(webform_variable_get('webform_default_from_name'), $node);
+        $default_value = webform_replace_tokens(webform_variable_get('webform_default_from_name'), $node);
         $title = t('E-mail from name');
         $description = t('Any textfield, select, or hidden form element may be selected as the sender\'s name for e-mails.');
         break;
@@ -458,7 +458,7 @@ function webform_email_address_validate($form, &$form_state) {
     else {
       $emails = array_filter(explode(',', $email));
       foreach ($emails as $email) {
-        if (!valid_email_address(_webform_filter_values(trim($email), $form['#node']))) {
+        if (!valid_email_address(webform_replace_tokens(trim($email), $form['#node']))) {
           form_set_error('email_custom', t('The entered e-mail address "@email" does not appear valid.', array('@email' => $email)));
         }
       }
@@ -470,7 +470,7 @@ function webform_email_address_validate($form, &$form_state) {
  * Validate handler for webform_email_edit_form().
  */
 function webform_email_edit_form_validate($form, &$form_state) {
-  if ($form_state['values']['from_address_option'] == 'custom' && !valid_email_address(_webform_filter_values($form_state['values']['from_address_custom'], $form['#node']))) {
+  if ($form_state['values']['from_address_option'] == 'custom' && !valid_email_address(webform_replace_tokens($form_state['values']['from_address_custom'], $form['#node']))) {
     form_set_error('from_address_custom', t('The entered e-mail address "@email" does not appear valid.', array('@email' => $form_state['values']['from_address_custom'])));
   }
 
@@ -494,7 +494,7 @@ function webform_email_edit_form_validate($form, &$form_state) {
             else {
               $emails = array_filter(explode(',', $value));
               foreach ($emails as $email) {
-                if (!valid_email_address(_webform_filter_values(trim($email), $form['#node']))) {
+                if (!valid_email_address(webform_replace_tokens(trim($email), $form['#node']))) {
                   form_set_error("{$field_name}_mapping][$cid][$key", t('The entered e-mail address "@email" does not appear valid', array('@email' => $value)));
                 }
               }

@@ -124,12 +124,12 @@ function _webform_render_email($component, $value = NULL, $filter = TRUE) {
 
   $element = array(
     '#type' => 'webform_email',
-    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#title' => $filter ? webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
-    '#default_value' => $filter ? _webform_filter_values($component['value'], $node) : $component['value'],
+    '#default_value' => $filter ? webform_replace_tokens($component['value'], $node) : $component['value'],
     '#required' => $component['required'],
     '#weight' => $component['weight'],
-    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
+    '#description' => $filter ? webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#attributes' => $component['extra']['attributes'],
     '#element_validate'  => array('_webform_validate_email'),
     '#theme_wrappers' => array('webform_element'),

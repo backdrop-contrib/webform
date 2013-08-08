@@ -295,18 +295,18 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
   $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
 
   $element = array(
-    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#title' => $filter ? webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#required' => $component['required'],
     '#weight' => $component['weight'],
-    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
+    '#description' => $filter ? webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#theme_wrappers' => array('webform_element'),
     '#pre_render' => array(), // Needed to disable double-wrapping of radios and checkboxes.
     '#translatable' => array('title', 'description', 'options'),
   );
 
   // Convert the user-entered options list into an array.
-  $default_value = $filter ? _webform_filter_values($component['value'], $node, NULL, NULL, FALSE) : $component['value'];
+  $default_value = $filter ? webform_replace_tokens($component['value'], $node) : $component['value'];
   $options = _webform_select_options($component, !$component['extra']['aslist'], $filter);
 
   if ($component['extra']['optrand']) {
@@ -488,7 +488,7 @@ function webform_expand_select_ids($element) {
     $element[$key]['#id'] = $id . '-' . $delta;
 
     // Prevent scripts or CSS in the labels for each checkbox or radio.
-    $element[$key]['#title'] = _webform_filter_xss($element[$key]['#title']);
+    $element[$key]['#title'] = webform_filter_xss($element[$key]['#title']);
   }
   return $element;
 }
@@ -586,7 +586,7 @@ function theme_webform_display_select($variables) {
       if ($option_value !== '') {
         // Administer provided values.
         if (isset($options[$option_value])) {
-          $items[] = $element['#format'] == 'html' ? _webform_filter_xss($options[$option_value]) : $options[$option_value];
+          $items[] = $element['#format'] == 'html' ? webform_filter_xss($options[$option_value]) : $options[$option_value];
         }
         // User-specified in the "other" field.
         else {
@@ -599,7 +599,7 @@ function theme_webform_display_select($variables) {
     if (isset($element['#value'][0]) && $element['#value'][0] !== '') {
       // Administer provided values.
       if (isset($options[$element['#value'][0]])) {
-        $items[] = $element['#format'] == 'html' ? _webform_filter_xss($options[$element['#value'][0]]) : $options[$element['#value'][0]];
+        $items[] = $element['#format'] == 'html' ? webform_filter_xss($options[$element['#value'][0]]) : $options[$element['#value'][0]];
       }
       // User-specified in the "other" field.
       else {
@@ -664,7 +664,7 @@ function _webform_analysis_select($component, $sids = array(), $single = FALSE) 
   $normal_count = 0;
   foreach ($result as $data) {
     $display_option = $single ? $data['data'] : $options[$data['data']];
-    $rows[$data['data']] = array(_webform_filter_xss($display_option), $data['datacount']);
+    $rows[$data['data']] = array(webform_filter_xss($display_option), $data['datacount']);
     $normal_count += $data['datacount'];
   }
 
@@ -703,7 +703,7 @@ function _webform_table_select($component, $value) {
   foreach ($value as $option_value) {
     if ($option_value !== '') {
       if (isset($options[$option_value])) {
-        $items[] = _webform_filter_xss($options[$option_value]);
+        $items[] = webform_filter_xss($options[$option_value]);
       }
       else {
         $items[] = check_plain($option_value);
@@ -955,16 +955,16 @@ function _webform_select_options_from_text($text, $flat = FALSE, $filter = TRUE)
           unset($group);
         }
         elseif (!$flat) {
-          $group = $filter ? _webform_filter_values($matches[1], NULL, NULL, NULL, FALSE) : $matches[1];
+          $group = $filter ? webform_replace_tokens($matches[1]) : $matches[1];
         }
       }
       elseif (preg_match('/^([^|]+)\|(.*)$/', $option, $matches)) {
-        $key = $filter ? _webform_filter_values($matches[1], NULL, NULL, NULL, FALSE) : $matches[1];
-        $value = $filter ? _webform_filter_values($matches[2], NULL, NULL, NULL, FALSE) : $matches[2];
+        $key = $filter ? webform_replace_tokens($matches[1]) : $matches[1];
+        $value = $filter ? webform_replace_tokens($matches[2]) : $matches[2];
         isset($group) ? $options[$group][$key] = $value : $options[$key] = $value;
       }
       else {
-        $filtered_option = $filter ? _webform_filter_values($option, NULL, NULL, NULL, FALSE) : $option;
+        $filtered_option = $filter ? webform_replace_tokens($option) : $option;
         isset($group) ? $options[$group][$filtered_option] = $filtered_option : $options[$filtered_option] = $filtered_option;
       }
     }

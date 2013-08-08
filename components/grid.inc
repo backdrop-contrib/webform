@@ -160,11 +160,11 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
 
   $element = array(
     '#type' => 'webform_grid',
-    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#title' => $filter ? webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#required' => $component['required'],
     '#weight' => $component['weight'],
-    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
+    '#description' => $filter ? webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#grid_questions' => _webform_select_options_from_text($component['extra']['questions'], TRUE),
     '#grid_options' => _webform_select_options_from_text($component['extra']['options'], TRUE),
     '#optrand' => $component['extra']['optrand'],
@@ -277,11 +277,11 @@ function theme_webform_display_grid($variables) {
     $rows = array();
     $header = array(array('data' => '', 'class' => array('webform-grid-question')));
     foreach ($element['#grid_options'] as $option) {
-      $header[] = array('data' => _webform_filter_xss($option), 'class' => array('checkbox', 'webform-grid-option'));
+      $header[] = array('data' => webform_filter_xss($option), 'class' => array('checkbox', 'webform-grid-option'));
     }
     foreach ($element['#grid_questions'] as $question_key => $question) {
       $row = array();
-      $row[] = array('data' => _webform_filter_xss($question), 'class' => array('webform-grid-question'));
+      $row[] = array('data' => webform_filter_xss($question), 'class' => array('webform-grid-question'));
       foreach ($element['#grid_options'] as $option_value => $option_label) {
         if (strcmp($element[$question_key]['#value'], $option_value) == 0) {
           $row[] = array('data' => '<strong>X</strong>', 'class' => array('checkbox', 'webform-grid-option'));
@@ -341,12 +341,12 @@ function _webform_analysis_grid($component, $sids = array()) {
 
   // Add options as a header row.
   foreach ($options as $option) {
-    $header[] = _webform_filter_xss($option);
+    $header[] = webform_filter_xss($option);
   }
 
   // Add questions as each row.
   foreach ($questions as $qkey => $question) {
-    $row = array(_webform_filter_xss($question));
+    $row = array(webform_filter_xss($question));
     foreach ($options as $okey => $option) {
       $row[] = !empty($counts[$qkey][$okey]) ? $counts[$qkey][$okey] : 0;
     }
@@ -369,7 +369,7 @@ function _webform_table_grid($component, $value) {
   // Set the value as a single string.
   foreach ($questions as $key => $label) {
     if (isset($value[$key]) && isset($options[$value[$key]])) {
-      $output .= _webform_filter_xss($label) . ': ' . _webform_filter_xss($options[$value[$key]]) . '<br />';
+      $output .= webform_filter_xss($label) . ': ' . webform_filter_xss($options[$value[$key]]) . '<br />';
     }
   }
 
@@ -433,14 +433,14 @@ function theme_webform_grid($variables) {
   $header = array(array('data' => '', 'class' => array('webform-grid-question')));
   // Set the header for the table.
   foreach ($element['#grid_options'] as $option) {
-    $header[] = array('data' => _webform_filter_xss($option), 'class' => array('checkbox', 'webform-grid-option'));
+    $header[] = array('data' => webform_filter_xss($option), 'class' => array('checkbox', 'webform-grid-option'));
   }
 
   foreach (element_children($element) as $key) {
     $question_element = $element[$key];
 
     // Create a row with the question title.
-    $row = array(array('data' => _webform_filter_xss($question_element['#title']), 'class' => array('webform-grid-question')));
+    $row = array(array('data' => webform_filter_xss($question_element['#title']), 'class' => array('webform-grid-question')));
 
     // Render each radio button in the row.
     $radios = form_process_radios($question_element);

@@ -102,15 +102,15 @@ function _webform_render_time($component, $value = NULL, $filter = TRUE) {
 
   $element = array(
     '#type' => 'webform_time',
-    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
+    '#title' => $filter ? webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#required' => $component['required'],
     '#weight' => $component['weight'],
-    '#description' => $filter ? _webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
+    '#description' => $filter ? webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#element_validate' => array('webform_validate_time'),
     '#hourformat' => $component['extra']['hourformat'],
     '#minuteincrements' => $component['extra']['minuteincrements'],
-    '#default_value' => $filter ? _webform_filter_values($component['value'], $node, NULL, NULL, FALSE) : $component['value'],
+    '#default_value' => $filter ? webform_replace_tokens($component['value'], $node) : $component['value'],
     '#timezone' => $component['extra']['timezone'],
     '#process' => array('webform_expand_time'),
     '#theme' => 'webform_time',

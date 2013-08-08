@@ -2911,12 +2911,11 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Strip out empty tags added by WYSIWYG editors if needed.
   $confirmation = strlen(trim(strip_tags($node->webform['confirmation']))) ? $node->webform['confirmation'] : '';
-  $confirmation = _webform_filter_values($confirmation, $node, $submission, NULL, FALSE, TRUE);
+  $confirmation = webform_replace_tokens($confirmation, $node, $submission, NULL, TRUE);
 
   // Clean up the redirect URL and filter it for webform tokens.
   $redirect_url = trim($node->webform['redirect_url']);
-  $redirect_url = _webform_filter_values($redirect_url, $node, $submission, NULL, FALSE);
-
+  $redirect_url = webform_replace_tokens($redirect_url, $node, $submission);
 
   // Remove the domain name from the redirect.
   $redirect_url = preg_replace('/^' . preg_quote($GLOBALS['base_url'], '/') . '\//', '', $redirect_url);
@@ -2954,11 +2953,11 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Show a message if manually set.
   if (isset($message)) {
-    drupal_set_message(_webform_filter_values($message, $node));
+    drupal_set_message(webform_replace_tokens($message, $node, NULL, NULL, TRUE));
   }
   // If redirecting and we have a confirmation message, show it as a message.
   elseif (!$is_draft && !$external_url && (!empty($redirect_url) && $redirect_url != '<confirmation>') && !empty($confirmation)) {
-    drupal_set_message(check_markup(_webform_filter_values($confirmation, $node), $node->webform['confirmation_format'], '', TRUE));
+    drupal_set_message(check_markup(webform_replace_tokens($confirmation, $node), $node->webform['confirmation_format'], '', TRUE));
   }
 
   $form_state['redirect'] = $redirect;
@@ -3049,7 +3048,7 @@ function template_preprocess_webform_confirmation(&$vars) {
   // Replace tokens.
   module_load_include('inc', 'webform', 'includes/webform.submissions');
   $submission = webform_get_submission($vars['node']->nid, $vars['sid']);
-  $confirmation = _webform_filter_values($confirmation, $vars['node'], $submission, NULL, FALSE, TRUE);
+  $confirmation = webform_replace_tokens($confirmation, $vars['node'], $submission, NULL, TRUE);
 
   // Strip out empty tags added by WYSIWYG editors if needed.
   $vars['confirmation_message'] = strlen(trim(strip_tags($confirmation))) ? $confirmation : '';
@@ -3154,8 +3153,8 @@ function theme_webform_element($variables) {
   if (!isset($element['#title'])) {
     $element['#title_display'] = 'none';
   }
-  $prefix = isset($element['#field_prefix']) ? '<span class="field-prefix">' . _webform_filter_xss($element['#field_prefix']) . '</span> ' : '';
-  $suffix = isset($element['#field_suffix']) ? ' <span class="field-suffix">' . _webform_filter_xss($element['#field_suffix']) . '</span>' : '';
+  $prefix = isset($element['#field_prefix']) ? '<span class="field-prefix">' . webform_filter_xss($element['#field_prefix']) . '</span> ' : '';
+  $suffix = isset($element['#field_suffix']) ? ' <span class="field-suffix">' . webform_filter_xss($element['#field_suffix']) . '</span>' : '';
 
   switch ($element['#title_display']) {
     case 'inline':
@@ -3364,7 +3363,17 @@ function _webform_fetch_draft_sid($nid, $uid) {
 }
 
 /**
- * Filters all special tokens provided by webform, such as %post and %profile.
+ * This function is deprecated! Use webform_replace_tokens() instead.
+ *
+ * @deprecated
+ */
+function _webform_filter_values($string, $node = NULL, $submission = NULL, $email = NULL, $strict = TRUE) {
+  $output = webform_replace_tokens($string, $node, $submission, $email, $strict);
+  return $strict ? webform_filter_xss($output) : $output;
+}
+
+/*
+ * Replace tokens with Webform contexts populated.
  *
  * @param $string
  *   The string to have its tokens replaced.
@@ -3376,12 +3385,14 @@ function _webform_fetch_draft_sid($nid, $uid) {
  * @param $email
  *   If replacing tokens within the context of an e-mail, the Webform e-mail
  *   settings array.
- * @param $strict
- *   Boolean value indicating if the results should be run through check_plain.
- *   This is used any time the values will be output as HTML, but not in
- *   default values or e-mails.
+ * @param $sanitize
+ *   Boolean value indicating if the results will be displayed as HTML output.
+ *   This will be passed to token_replace(). If FALSE, the contents returned
+ *   will be unsanitized. This will also result in all Webform submission tokens
+ *   being returned as plain-text, without HTML markup, in preparation for
+ *   e-mailing or other text-only purposes (default values, etc.)
  */
-function _webform_filter_values($string, $node = NULL, $submission = NULL, $email = NULL, $strict = TRUE) {
+function webform_replace_tokens($string, $node = NULL, $submission = NULL, $email = NULL, $sanitize = FALSE) {
   // Don't do any filtering if the string is empty.
   if (strlen(trim($string)) == 0) {
     return $string;
@@ -3397,25 +3408,41 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
   if ($email) {
     $token_data['webform-email'] = $email;
   }
-  $string = token_replace($string, $token_data, array('clear' => true, 'sanitize' => $strict));
-
-  return $strict ? _webform_filter_xss($string) : $string;
+  return token_replace($string, $token_data, array('clear' => true, 'sanitize' => $sanitize));
 }
 
 /**
- * Filters all special tokens provided by webform, and allows basic layout in descriptions.
+ * Replace tokens in descriptions and sanitize according to Webform settings.
+ */
+function webform_filter_descriptions($string, $node = NULL, $submission = NULL) {
+  return strlen($string) == 0 ? '' : webform_filter_xss(webform_replace_tokens($string, $node, $submission));
+}
+
+/**
+ * Deprecated! Use webform_filter_descriptions() instead.
+ *
+ * @deprecated
  */
 function _webform_filter_descriptions($string, $node = NULL, $submission = NULL) {
-  return strlen($string) == 0 ? '' : _webform_filter_xss(_webform_filter_values($string, $node, $submission, NULL, FALSE));
+  return webform_filter_descriptions($string, $node, $submission);
 }
 
 /**
  * Filter labels for display by running through XSS checks.
  */
-function _webform_filter_xss($string) {
+function webform_filter_xss($string) {
   static $allowed_tags;
   $allowed_tags = isset($allowed_tags) ? $allowed_tags : webform_variable_get('webform_allowed_tags');
   return filter_xss($string, $allowed_tags);
+}
+
+/**
+ * Deprecated! Use webform_filter_xss() instead!
+ *
+ * @deprecated
+ */
+function _webform_filter_xss($string) {
+  return webform_filter_xss($string);
 }
 
 /**
@@ -3680,15 +3707,15 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
   // Address may be an array if a component value was used on checkboxes.
   if (is_array($address)) {
     foreach ($address as $key => $individual_address) {
-      $address[$key] = _webform_filter_values($individual_address, $node, $submission, NULL, FALSE);
+      $address[$key] = webform_replace_tokens($individual_address, $node, $submission);
     }
   }
   else {
-    $address = _webform_filter_values($address, $node, $submission, NULL, FALSE);
+    $address = webform_replace_tokens($address, $node, $submission);
   }
 
   if ($format == 'long' && !empty($name)) {
-    $name = _webform_filter_values($name, $node, $submission, NULL, FALSE);
+    $name = webform_replace_tokens($name, $node, $submission);
     if ($encode) {
       $name = mime_header_encode($name);
     }
@@ -3733,7 +3760,7 @@ function webform_format_email_subject($subject, $node = NULL, $submission = NULL
     $subject = reset($subject);
   }
 
-  return _webform_filter_values($subject, $node, $submission, NULL, FALSE, TRUE);
+  return webform_replace_tokens($subject, $node, $submission);
 }
 
 /**
