@@ -68,6 +68,7 @@ class webform_views_plugin_row_submission_view extends views_plugin_row {
     foreach ($this->submissions as $sid => $submission) {
       $nids[] = $submission->nid;
     }
+    $nids = array_unique($nids);
     $this->nodes = $nids ? node_load_multiple($nids) : array();
   }
 
