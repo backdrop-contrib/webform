@@ -196,7 +196,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
     }
 
     // Replace tokens in the message.
-    $email['message'] = webform_replace_tokens($email['message'], $node, $submission, $email);
+    $email['message'] = webform_replace_tokens($email['message'], $node, $submission, $email, $email['html'] ? TRUE : FALSE);
 
     // Build the e-mail headers.
     $email['headers'] = theme(array('webform_mail_headers_' . $node->nid, 'webform_mail_headers'), array('node' => $node, 'submission' => $submission, 'email' => $email));
