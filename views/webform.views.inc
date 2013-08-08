@@ -389,6 +389,21 @@ function webform_views_handlers() {
 }
 
 /**
+ * Implements hook_views_plugins().
+ */
+function webform_views_plugins() {
+  $plugins['row']['webform_submission'] = array(
+    'title' => t('Rendered submissions'),
+    'help' => t('Display the rendered submission'),
+    'handler' => 'webform_views_plugin_row_submission_view',
+    'base' => array('webform_submissions'),
+    'uses options' => TRUE,
+    'type' => 'normal',
+  );
+  return $plugins;
+}
+
+/**
  * Menu callback; Provide a list of Webform nodes for use in autocomplete.
  */
 function webform_views_autocomplete($string = '') {
