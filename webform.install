@@ -1050,6 +1050,32 @@ function webform_update_7401(&$sandbox) {
     '[current-user:$1]',
   );
 
+  $limit = variable_get('webform_update_batch_size', 100);
+  $processed_count = _webform_update_7401_batch($sandbox, $patterns, $replacements, $dpatterns, $dreplacements, $limit);
+
+  // If less than limit was processed, the update process is finished.
+  if ($processed_count < $limit || $sandbox['progress'] == $sandbox['max']) {
+    $finished = TRUE;
+  }
+
+  // If there's no max value then there's nothing to update and we're finished.
+  if (empty($sandbox['max']) || isset($finished)) {
+    $message = t('Your existing webforms have been upgraded to use the global Drupal 7 token system.');
+    if (!module_exists('token')) {
+      $message .= ' <strong>' . t('Please download and install the <a href="http://drupal.org/project/token" target="_blank">Token module</a>. Otherwise some tokens will not be rendered.') . '</strong>';
+    }
+    return $message;
+  }
+  else {
+    // Indicate our current progress to the batch update system.
+    $sandbox['#finished'] = $sandbox['progress'] / $sandbox['max'];
+  }
+}
+
+/**
+ * Utility function to update all the locations that use tokens.
+ */
+function _webform_update_7401_batch(&$sandbox, $patterns, $replacements, $dpatterns, $dreplacements, $limit) {
   // Set up the initial batch process.
   if (!isset($sandbox['progress'])) {
     $sandbox['progress'] = 0;
@@ -1075,7 +1101,6 @@ function webform_update_7401(&$sandbox) {
     }
   }
 
-  $limit = variable_get('webform_update_batch_size', 100);
   $webforms = db_select('webform', 'w')
     ->fields('w')
     ->condition('nid', $sandbox['last_nid_processed'], '>')
@@ -1128,11 +1153,17 @@ function webform_update_7401(&$sandbox) {
       ->condition('we.nid', $nid)
       ->execute();
     foreach ($result as $email) {
-      $original = $email['template'];
-      $template = str_replace($patterns, $replacements, $email['template']);
-      $template = preg_replace($dpatterns, $dreplacements, $template);
-      if ($template != $original) {
-        $email['template'] = $template;
+      $parts = array(
+        'template',
+        'subject',
+        'from_name',
+      );
+      $original = $email;
+      foreach ($parts as $part) {
+        $email[$part] = str_replace($patterns, $replacements, $email[$part]);
+        $email[$part] = preg_replace($dpatterns, $dreplacements, $email[$part]);
+      }
+      if ($email != $original) {
         drupal_write_record('webform_emails', $email, array('nid', 'eid'));
       }
     }
@@ -1141,24 +1172,7 @@ function webform_update_7401(&$sandbox) {
     $sandbox['last_nid_processed'] = $nid;
     $sandbox['progress']++;
   }
-
-  // If less than limit was processed, the update process is finished.
-  if (count($webforms) < $limit || $sandbox['progress'] == $sandbox['max']) {
-    $finished = TRUE;
-  }
-
-  // If there's no max value then there's nothing to update and we're finished.
-  if (empty($sandbox['max']) || isset($finished)) {
-    $message = t('Your existing webforms have been upgraded to use the global Drupal 7 token system.');
-    if (!module_exists('token')) {
-      $message .= ' <strong>' . t('Please download and install the <a href="http://drupal.org/project/token" target="_blank">Token module</a>. Otherwise some tokens will not be rendered.') . '</strong>';
-    }
-    return $message;
-  }
-  else {
-    // Indicate our current progress to the batch update system.
-    $sandbox['#finished'] = $sandbox['progress'] / $sandbox['max'];
-  }
+  return count($webforms);
 }
 
 /**
@@ -1532,5 +1546,39 @@ function webform_update_7410() {
   if (db_field_exists('webform', 'teaser')) {
     db_drop_field('webform', 'teaser');
     return t('Removed "teaser" column. All forms that had the "Show form in teaser" option disabled will now show forms in their teasers. Use view modes to hide the form if desired.');
+  }
+}
+
+/**
+ * Remove [submission:values:x] token use of :nolabel and add :withlabel.
+ */
+function webform_update_7411(&$sandbox) {
+  // Define replacements.
+  $patterns = array();
+  $replacements = array();
+  $dpatterns = array(
+    '/\[submission:values(:(?!nolabel)[a-z_]+)+\]/m',
+    '/\[submission:values(:([a-z_:]+))?:nolabel\]/m',
+  );
+  $dreplacements = array(
+    '[submission:values$1:withlabel]',
+    '[submission:values$1]',
+  );
+
+  $limit = variable_get('webform_update_batch_size', 100);
+  $processed_count = _webform_update_7401_batch($sandbox, $patterns, $replacements, $dpatterns, $dreplacements, $limit);
+
+  // If less than limit was processed, the update process is finished.
+  if ($processed_count < $limit || $sandbox['progress'] == $sandbox['max']) {
+    $finished = TRUE;
+  }
+
+  // If there's no max value then there's nothing to update and we're finished.
+  if (empty($sandbox['max']) || isset($finished)) {
+    return t('Replaced tokens using [submission:values:x] with [submission:values:x:withlabel].');
+  }
+  else {
+    // Indicate our current progress to the batch update system.
+    $sandbox['#finished'] = $sandbox['progress'] / $sandbox['max'];
   }
 }

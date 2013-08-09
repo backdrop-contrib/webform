@@ -41,7 +41,7 @@ function webform_token_info() {
   );
   $info['tokens']['submission']['values'] = array(
     'name' => t('Webform submission values'),
-    'description' => t('Webform tokens from submitted data. Replace the "?" with the "field key", including any parent field keys separated by colons. Tokens include the field label and value. Append ":nolabel" for just the value.'),
+    'description' => t('Webform tokens from submitted data. Replace the "?" with the "field key", including any parent field keys separated by colons. You may append ":label" for just the label or ":withlabel" for both the label and value together.'),
     'dynamic' => TRUE,
   );
 
@@ -121,7 +121,11 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
               $modifier = substr($name, strrpos($name, ':') + 1);
               // TODO: Allow components to provide additional modifiers per
               // type, i.e. key, day, hour, minute, etc.
-              $available_modifiers = array('nolabel');
+              $available_modifiers = array(
+                'label',
+                'withlabel',
+                'nolabel',
+              );
               if (strcmp($name, $parent_token . ':' . $modifier) === 0 && in_array($modifier, $available_modifiers)) {
                 $match = TRUE;
               }
@@ -136,14 +140,20 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
               foreach ($parents as $parent) {
                 $display_element = $display_element[$parent];
               }
-              // Remove theme wrappers for the nolabel modifier.
-              if ($modifier === 'nolabel') {
-                $display_element['#theme_wrappers'] = array();
-              }
               // Individual tokens always have access granted even if they're
               // not displayed when printing the whole renderable.
               $display_element['#access'] = TRUE;
-              $replacements[$original] = render($display_element);
+
+              if ($modifier === 'label') {
+                $replacements[$original] = webform_filter_xss($display_element['#title']);
+              }
+              else {
+                // Remove theme wrappers for the nolabel modifier.
+                if ($modifier === 'nolabel' || empty($modifier)) {
+                  $display_element['#theme_wrappers'] = array();
+                }
+                $replacements[$original] = render($display_element);
+              }
               break;
             }
           }
