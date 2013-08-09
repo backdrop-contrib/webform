@@ -602,6 +602,8 @@ function webform_install() {
     if (variable_get('webform_install_add_body_field', FALSE)) {
       node_add_body_field($webform_type);
     }
+    // Disable comments by default on Webform nodes.
+    variable_set('comment_webform', '0');
   }
 }
 
