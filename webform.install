@@ -614,6 +614,7 @@ function webform_uninstall() {
   // Unset webform variables.
   variable_del('webform_node_types');
   variable_del('webform_node_types_primary');
+  variable_del('webform_disabled_components');
   variable_del('webform_tracking_mode');
   variable_del('webform_default_from_address');
   variable_del('webform_default_from_name');
