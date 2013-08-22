@@ -1235,22 +1235,196 @@ function webform_results_analysis($node, $sids = array(), $analysis_component = 
     $sids = array();
   }
 
-  // If showing a component's details, we don't want to loose the menu tabs.
-  if ($analysis_component) {
-    $item = menu_get_item('node/' . $node->nid . '/webform-results/analysis');
-    menu_set_item(NULL, $item);
+  // Build a renderable for the content of this page.
+  $analysis = array(
+    '#theme' => array('webform_analysis__' . $node->nid, 'webform_analysis'),
+    '#node' => $node,
+    '#component' => $analysis_component,
+  );
+
+  // If showing all components, display selection form.
+  if (!$analysis_component) {
+    $analysis['form'] = drupal_get_form('webform_analysis_components_form', $node);
   }
 
-  $components = isset($analysis_component) ? array($analysis_component['cid'] => $analysis_component) : $node->webform['components'];
-  $data = array();
-  foreach ($components as $cid => $component) {
+  // Add all the components to the analysis renderable array.
+  $components = isset($analysis_component) ? array($analysis_component['cid']) : webform_analysis_enabled_components($node);
+  foreach ($components as $cid) {
     // Do component specific call.
-    if ($row_data = webform_component_invoke($component['type'], 'analysis', $component, $sids, isset($analysis_component))) {
-      $data[$cid] = $row_data;
+    $component = $node->webform['components'][$cid];
+    if ($data = webform_component_invoke($component['type'], 'analysis', $component, $sids, isset($analysis_component))) {
+      drupal_alter('webform_analysis_component_data', $data, $node, $component);
+      $analysis['data'][$cid] = array(
+        '#theme' => array('webform_analysis_component__' . $node->nid . '__' . $cid, 'webform_analysis_component__' . $node->nid, 'webform_analysis_component'),
+        '#node' => $node,
+        '#component' => $component,
+        '#data' => $data,
+      );
+      $analysis['data'][$cid]['basic'] = array(
+        '#theme' => array('webform_analysis_component_basic__' . $node->nid . '__' . $cid, 'webform_analysis_component_basic__' . $node->nid, 'webform_analysis_component_basic'),
+        '#component' => $component,
+        '#data' => $data,
+      );
     }
   }
 
-  return theme('webform_results_analysis', array('node' => $node, 'data' => $data, 'sids' => $sids, 'component' => $analysis_component));
+  drupal_alter('webform_analysis', $analysis);
+  return drupal_render($analysis);
+}
+
+/**
+ * Prerender function for webform-analysis.tpl.php.
+ */
+function template_preprocess_webform_analysis(&$variables) {
+  $analysis = $variables['analysis'];
+  $variables['node'] = $analysis['#node'];
+  $variables['component'] = $analysis['#component'];
+}
+
+/**
+ * Prerender function for webform-analysis-component.tpl.php.
+ */
+function template_preprocess_webform_analysis_component(&$variables) {
+  $component_analysis = $variables['component_analysis'];
+  $variables['node'] = $component_analysis['#node'];
+  $variables['component'] = $component_analysis['#component'];
+
+  // Ensure defaults.
+  $variables['component_analysis']['#data'] += array(
+    'table_header' => NULL,
+    'table_rows' => array(),
+    'other_data' => array(),
+  );
+  $variables['classes_array'][] = 'webform-analysis-component-' . $variables['component']['type'];
+  $variables['classes_array'][] = 'webform-analysis-component--' . str_replace('_', '-', implode('--', webform_component_parent_keys($variables['node'], $variables['component'])));
+}
+
+/**
+ * Render an individual component's analysis data in a table.
+ *
+ * @param $variables
+ *   An array of theming variables for this theme function. Included keys:
+ *   - $component: The component whose analysis is being rendered.
+ *   - $data: An array of array containing the analysis data. Contains the keys:
+ *     - table_header: If this table has more than a single column, an array
+ *       of header labels.
+ *     - table_rows: If this component has a table that should be rendered, an
+ *       array of values
+ */
+function theme_webform_analysis_component_basic($variables) {
+  $data = $variables['data'];
+
+  // Ensure defaults.
+  $data += array(
+    'table_header' => NULL,
+    'table_rows' => array(),
+    'other_data' => array(),
+  );
+
+  // Combine the "other data" into the table rows by default.
+  if (is_array($data['other_data'])) {
+    foreach ($data['other_data'] as $other_data) {
+      if (is_array($other_data)) {
+        $data['table_rows'][] = $other_data;
+      }
+      else {
+        $data['table_rows'][] = array(array(
+          'colspan' => 2,
+          'data' => $other_data,
+        ));
+      }
+    }
+  }
+  elseif (strlen($data['other_data'])) {
+    $data['table_rows'][] = array(
+      'colspan' => 2,
+      'data' => $data['other_data'],
+    );
+  }
+
+  return theme('table', array(
+    'header' => $data['table_header'],
+    'rows' => $data['table_rows'],
+    'class' => array('webform-analysis-table'),
+  ));
+}
+
+/**
+ * Return a list of components that should be displayed for analysis.
+ *
+ * @param $node
+ *   The node whose components' data is being analyzed.
+ * @return array
+ *   An array of component IDs.
+ */
+function webform_analysis_enabled_components($node) {
+  $cids = array();
+  foreach ($node->webform['components'] as $cid => $component) {
+    if (!empty($component['extra']['analysis'])) {
+      $cids[] = $cid;
+    }
+  }
+  return $cids;
+}
+
+/**
+ * Form for selecting which components should be shown on the analysis page.
+ */
+function webform_analysis_components_form($form, &$form_state, $node) {
+  form_load_include($form_state, 'inc', 'webform', 'includes/webform.components');
+  $form['#node'] = $node;
+
+  $component_list = webform_component_list($node, 'analysis', TRUE);
+  $enabled_components = webform_analysis_enabled_components($node);
+  if (empty($component_list)) {
+    $help = t('No components have added that support analysis. <a href="!url">Add components to your form</a> to see calculated data.', array('!url' => url('node/' . $node->nid . '/webform')));
+  }
+  elseif (empty($enabled_components)) {
+    $help = t('No components have analysis enabled in this form. Enable analysis under the "Add analysis components" fieldset.');
+  }
+  else {
+    $help = t('This page shows analysis of submitted data, such as the number of submissions per component value, calculations, and averages. Additional components may be added under the "Add analysis components" fieldset.');
+  }
+
+  $form['help'] = array(
+    '#markup' => '<p>' . $help . '</p>',
+    '#access' => !empty($help),
+    '#weight' => -100,
+  );
+
+  $form['components'] = array(
+    '#type' => 'select',
+    '#title' => t('Add analysis components'),
+    '#options' => $component_list,
+    '#default_value' => $enabled_components,
+    '#multiple' => TRUE,
+    '#size' => 10,
+    '#description' => t('The selected components will be included on the analysis page.'),
+    '#process' => array('webform_component_select'),
+    '#access' => count($component_list),
+  );
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+    '#access' => count($component_list),
+  );
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update analysis display'),
+  );
+
+  return $form;
+}
+
+/**
+ * Submit handler for webform_analysis_components_form().
+ */
+function webform_analysis_components_form_submit($form, $form_state) {
+  $node = $form['#node'];
+  foreach ($form_state['values']['components'] as $cid => $enabled) {
+    $node->webform['components'][$cid]['extra']['analysis'] = (bool) $enabled;
+  }
+  node_save($node);
 }
 
 /**

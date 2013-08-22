@@ -906,6 +906,7 @@ function webform_component_clone(&$node, &$component) {
 function webform_component_feature($type, $feature) {
   $components = webform_components();
   $defaults = array(
+    'analysis' => TRUE,
     'csv' => TRUE,
     'default_value' => TRUE,
     'description' => TRUE,
@@ -1025,6 +1026,7 @@ function webform_component_select($element) {
   $element['#attached'] = array(
     'library' => array(
       array('webform', 'admin'),
+      array('system', 'drupal.collapse'),
     ),
     'js' => array(
       'misc/tableselect.js' => array(),
@@ -1065,7 +1067,7 @@ function theme_webform_component_select($variables) {
     $element['#children'] = t('No available components.');
   }
   else {
-    $element['#children'] = '<div class="webform-component-select-wrapper">' . theme('table', array('header' => $header, 'rows' => $rows)) . '</div>';
+    $element['#children'] = '<div class="webform-component-select-wrapper">' . theme('table', array('header' => $header, 'rows' => $rows, 'sticky' => FALSE)) . '</div>';
   }
 
   return theme('fieldset', array('element' => $element));

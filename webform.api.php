@@ -302,6 +302,64 @@ function hook_webform_component_delete($component) {
 }
 
 /**
+ * Alter the entire analysis before rendering to the page on the Analysis tab.
+ *
+ * This alter hook allows modification of the entire analysis of a node's
+ * Webform results. The resulting analysis is displayed on the Results ->
+ * Analysis tab on the Webform.
+ *
+ * @param array $analysis
+ *   A Drupal renderable array, passed by reference, containing the entire
+ *   contents of the analysis page. This typically will contain the following
+ *   two major keys:
+ *   - form: The form for configuring the shown analysis.
+ *   - components: The list of analyses for each analysis-enabled component
+ *     for the node. Each keyed by its component ID.
+ */
+function hook_webform_analysis_alter(&$analysis) {
+  $node = $analysis['#node'];
+
+  // Add an additional piece of information to every component's analysis:
+  foreach (element_children($analysis['components']) as $cid) {
+    $component = $node->components[$cid];
+    $analysis['components'][$cid]['chart'] = array(
+      '#markup' => t('Chart for the @name component', array('@name' => $component['name']);
+    );
+  }
+}
+/**
+ * Alter data when displaying an analysis on that component.
+ *
+ * This hook modifies the data from an individual component's analysis results.
+ * It can be used to add additional analysis, or to modify the existing results.
+ * If needing to alter the entire set of analyses rather than an individual
+ * component, hook_webform_analysis_alter() may be used instead.
+ *
+ * @param array $data
+ *   An array containing the result of a components analysis hook, passed by
+ *   reference. This is passed directly from a component's
+ *   _webform_analysis_component() function. See that hook for more information
+ *   on this value.
+ * @param object $node
+ *   The node object that contains the component being analyzed.
+ * @param array $component
+ *   The Webform component array whose analysis results are being displayed.
+ *
+ * @see _webform_analysis_component()
+ * @see hook_webform_analysis_alter()
+ */
+function hook_webform_analysis_component_data_alter(&$data, $node, $component) {
+  if ($component['type'] === 'textfield') {
+    // Do not display rows that contain a zero value.
+    foreach ($data as $row_number => $row_data) {
+      if ($row_data[1] === 0) {
+        unset($data[$row_number]);
+      }
+    }
+  }
+}
+
+/**
  * Alter a Webform submission's header when exported.
  */
 function hook_webform_csv_header_alter(&$header, $component) {
@@ -383,6 +441,9 @@ function hook_webform_component_info() {
     'label' => t('Textfield'),
     'description' => t('Basic textfield type.'),
     'features' => array(
+      // This component includes an analysis callback. Defaults to TRUE.
+      'analysis' => TRUE,
+
       // Add content to CSV downloads. Defaults to TRUE.
       'csv' => TRUE,
 
@@ -629,6 +690,8 @@ function _webform_defaults_component() {
       'optrand' => 0,
       'qrand' => 0,
       'description' => '',
+      'private' => FALSE,
+      'analysis' => TRUE,
     ),
   );
 }
@@ -885,8 +948,24 @@ function _webform_theme_component() {
  *   shown. May be used to provided detailed information about a single
  *   component's analysis, such as showing "Other" options within a select list.
  * @return
- *   An array of data rows, each containing a statistic for this component's
- *   submissions.
+ *   An array containing one or more of the following keys:
+ *   - table_rows: If this component has numeric data that can be represented in
+ *     a grid, return the values here. This array assumes a 2-dimensional
+ *     structure, with the first value being a label and subsequent values
+ *     containing a decimal or integer.
+ *   - table_header: If this component has more than a single set of values,
+ *     include a table header so each column can be labeled.
+ *   - other_data: If your component has non-numeric data to include, such as
+ *     a description or link, include that in the other_data array. Each item
+ *     may be a string or an array of values that matches the number of columns
+ *     in the table_header property.
+ *   At the very least, either table_rows or other_data should be provided.
+ *   Note that if you want your component's analysis to be available by default
+ *   without the user specifically enabling it, you must set
+ *   $component['extra']['analysis'] = TRUE in your
+ *   _webform_defaults_component() callback.
+ *
+ * @see _webform_defaults_component()
  */
 function _webform_analysis_component($component, $sids = array(), $single = FALSE) {
   // Generate the list of options and questions.
@@ -930,9 +1009,15 @@ function _webform_analysis_component($component, $sids = array(), $single = FALS
     }
     $rows[] = $row;
   }
-  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('webform-grid'))));
 
-  return array(array(array('data' => $output, 'colspan' => 2)));
+  $other = array();
+  $other[] = l(t('More information'), 'node/' . $component['nid'] . '/webform-results/analysis/' . $component['cid']);
+
+  array(
+    'table_header' => $header,
+    'table_rows' => $rows,
+    'other_data' => $other,
+  );
 }
 
 /**

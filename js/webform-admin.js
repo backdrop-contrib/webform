@@ -8,8 +8,8 @@ Drupal.behaviors.webformAdmin = {};
 Drupal.behaviors.webformAdmin.attach = function(context) {
   // On click or change, make a parent radio button selected.
   Drupal.webform.setActive(context);
-  // Update the template select list upon changing a template.
   Drupal.webform.updateTemplate(context);
+  // Update the template select list upon changing a template.
   // Select all link for file extensions.
   Drupal.webform.selectCheckboxesLink(context);
   // Enhance the normal tableselect.js file to support indentations.

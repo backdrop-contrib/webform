@@ -25,6 +25,7 @@ function _webform_defaults_date() {
       'title_display' => 0,
       'description' => '',
       'private' => FALSE,
+      'analysis' => FALSE,
     ),
   );
 }
@@ -392,7 +393,10 @@ function _webform_analysis_date($component, $sids = array()) {
   $nonblanks = count($dates);
   $rows[0] = array(t('Left Blank'), ($submissions - $nonblanks));
   $rows[1] = array(t('User entered value'), $nonblanks);
-  return $rows;
+
+  return array(
+    'table_rows' => $rows,
+  );
 }
 
 /**

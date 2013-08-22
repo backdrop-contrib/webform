@@ -28,6 +28,7 @@ function _webform_defaults_select() {
       'custom_keys' => FALSE,
       'options_source' => '',
       'private' => FALSE,
+      'analysis' => TRUE,
     ),
   );
 }
@@ -633,16 +634,12 @@ function _webform_analysis_select($component, $sids = array(), $single = FALSE) 
   $options = _webform_select_options($component, TRUE);
   $show_other_results = $single;
 
-  $sid_placeholders = count($sids) ? array_fill(0, count($sids), "'%s'") : array();
-  $sid_filter = count($sids) ? " AND sid IN (" . implode(",", $sid_placeholders) . ")" : "";
-
-  $option_operator = $show_other_results ? 'NOT IN' : 'IN';
+  // Gather the normal results first (not "other" options).
   $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
     ->fields('wsd', array('data'))
     ->condition('nid', $component['nid'])
     ->condition('cid', $component['cid'])
     ->condition('data', '', '<>')
-    ->condition('data', array_keys($options), $option_operator)
     ->groupBy('data');
   $query->addExpression('COUNT(data)', 'datacount');
 
@@ -650,44 +647,64 @@ function _webform_analysis_select($component, $sids = array(), $single = FALSE) 
     $query->condition('sid', $sids, 'IN');
   }
 
-  $count_query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
-    ->condition('nid', $component['nid'])
-    ->condition('cid', $component['cid'])
-    ->condition('data', '', '<>');
-  $count_query->addExpression('COUNT(*)', 'datacount');
-  if (count($sids)) {
-    $count_query->condition('sid', $sids, 'IN');
+  // Duplicate the query for other options.
+  if ($show_other_results) {
+    $other_query = clone($query);
+    $other_query->condition('data', array_keys($options), 'NOT IN');
+    $other_query->orderBy('datacount', 'DESC');
   }
+
+  $query->condition('data', array_keys($options), 'IN');
 
   $result = $query->execute();
   $rows = array();
+  $other = array();
   $normal_count = 0;
   foreach ($result as $data) {
-    $display_option = $single ? $data['data'] : $options[$data['data']];
+    $display_option = isset($options[$data['data']]) ? $options[$data['data']] : $data['data'];
     $rows[$data['data']] = array(webform_filter_xss($display_option), $data['datacount']);
     $normal_count += $data['datacount'];
   }
 
-  if (!$show_other_results) {
-    // Order the results according to the normal options array.
-    $ordered_rows = array();
-    foreach (array_intersect_key($options, $rows) as $key => $label) {
-      $ordered_rows[] = $rows[$key];
-    }
+  // Order the results according to the normal options array.
+  $ordered_rows = array();
+  foreach (array_intersect_key($options, $rows) as $key => $label) {
+    $ordered_rows[] = $rows[$key];
+  }
+  $rows = $ordered_rows;
 
-    // Add a row for any unknown or user-entered values.
-    if ($component['extra']['other_option']) {
-      $full_count = $count_query->execute()->fetchField();
-      $other_count = $full_count - $normal_count;
-      $display_option = !empty($component['extra']['other_text']) ? check_plain($component['extra']['other_text']) : t('Other...');
-      $other_text = $other_count ? $other_count . ' (' . l(t('view'), 'node/' . $component['nid'] . '/webform-results/analysis/' . $component['cid']) . ')' : $other_count;
-      $ordered_rows[] = array($display_option, $other_text);
+  // Add a row for displaying the total unknown or user-entered values.
+  if ($component['extra']['other_option']) {
+    $count_query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
+      ->condition('nid', $component['nid'])
+      ->condition('cid', $component['cid'])
+      ->condition('data', '', '<>');
+    $count_query->addExpression('COUNT(*)', 'datacount');
+    if (count($sids)) {
+      $count_query->condition('sid', $sids, 'IN');
     }
+    $full_count = $count_query->execute()->fetchField();
+    $other_count = $full_count - $normal_count;
+    $display_option = !empty($component['extra']['other_text']) ? check_plain($component['extra']['other_text']) : t('Other...');
+    $other_text = ($other_count && !$show_other_results) ? $other_count . ' (' . l(t('view'), 'node/' . $component['nid'] . '/webform-results/analysis/' . $component['cid']) . ')' : $other_count;
+    $rows[] = array($display_option, $other_text);
 
-    $rows = $ordered_rows;
+    // If showing all results, execute the "other" query and append their rows.
+    if ($show_other_results) {
+      $other_result = $other_query->execute();
+      foreach ($other_result as $data) {
+        $other[] = array(check_plain($data['data']), $data['datacount']);
+      }
+      if ($other) {
+        array_unshift($other, '<strong>' . t('Other responses') . '</strong>');
+      }
+    }
   }
 
-  return $rows;
+  return array(
+    'table_rows' => $rows,
+    'other_data' => $other,
+  );
 }
 
 /**

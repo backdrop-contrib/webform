@@ -29,6 +29,7 @@ function _webform_defaults_grid() {
       'custom_question_keys' => 0,
       'description' => '',
       'private' => FALSE,
+      'analysis' => TRUE,
     ),
   );
 }
@@ -352,10 +353,11 @@ function _webform_analysis_grid($component, $sids = array()) {
     }
     $rows[] = $row;
   }
-  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('webform-grid'))));
 
-
-  return array(array(array('data' => $output, 'colspan' => 2)));
+  return array(
+    'table_header' => $header,
+    'table_rows' => $rows,
+  );
 }
 
 /**

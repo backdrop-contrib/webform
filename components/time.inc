@@ -26,6 +26,7 @@ function _webform_defaults_time() {
       'title_display' => 0,
       'description' => '',
       'private' => FALSE,
+      'analysis' => FALSE,
     ),
   );
 }
@@ -352,7 +353,10 @@ function _webform_analysis_time($component, $sids = array()) {
   $nonblanks = count($times);
   $rows[0] = array(t('Left Blank'), ($submissions - $nonblanks));
   $rows[1] = array(t('User entered value'), $nonblanks);
-  return $rows;
+
+  return array(
+    'table_rows' => $rows,
+  );
 }
 
 /**

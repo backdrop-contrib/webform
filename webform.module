@@ -276,7 +276,11 @@ function webform_menu() {
     'access callback' => 'webform_results_access',
     'access arguments' => array(1),
     'file' => 'includes/webform.report.inc',
-    'type' => MENU_CALLBACK,
+    'type' => MENU_LOCAL_TASK,
+  );
+  $items['node/%webform_menu/webform-results/analysis/%webform_menu_component/more'] = array(
+    'title' => 'In-depth analysis',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
   );
   $items['node/%webform_menu/webform-results/table'] = array(
     'title' => 'Table',
@@ -788,8 +792,18 @@ function webform_theme() {
       'render element' => 'element',
       'file' => 'includes/webform.report.inc',
     ),
-    'webform_results_analysis' => array(
-      'variables' => array('node' => NULL, 'data' => NULL, 'sids' => array(), 'component' => NULL),
+    'webform_analysis' => array(
+      'render element' => 'analysis',
+      'template' => 'templates/webform-analysis',
+      'file' => 'includes/webform.report.inc',
+    ),
+    'webform_analysis_component' => array(
+      'render element' => 'component_analysis',
+      'template' => 'templates/webform-analysis-component',
+      'file' => 'includes/webform.report.inc',
+    ),
+    'webform_analysis_component_basic' => array(
+      'variables' => array('component' => NULL, 'data' => NULL),
       'file' => 'includes/webform.report.inc',
     ),
     // webform.submissions.inc
@@ -954,6 +968,7 @@ function webform_webform_component_info() {
       'label' => t('Markup'),
       'description' => t('Displays text as HTML in the form; does not render a field.'),
       'features' => array(
+        'analysis' => FALSE,
         'csv' => FALSE,
         'default_value' => FALSE,
         'description' => FALSE,
@@ -979,6 +994,7 @@ function webform_webform_component_info() {
       'label' => t('Page break'),
       'description' => t('Organize forms into multiple pages.'),
       'features' => array(
+        'analysis' => FALSE,
         'conditional' => FALSE,
         'csv' => FALSE,
         'default_value' => FALSE,

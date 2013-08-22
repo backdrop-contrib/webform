@@ -26,6 +26,7 @@ function _webform_defaults_number() {
       'description' => '',
       'attributes' => array(),
       'private' => FALSE,
+      'analysis' => FALSE,
       'min' => '',
       'max' => '',
       'step' => '',
@@ -434,13 +435,14 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
   $average = _webform_number_format($component, $average);
   $sum = _webform_number_format($component, $sum);
 
-  $rows[0] = array(t('Zero/blank'), ($submissions - $nonzero));
-  $rows[1] = array(t('User entered value'), $not_empty);
-  $rows[2] = array(t('Sum') . ($advanced_stats ? ' (&Sigma;)' : ''), $sum);
-  $rows[3] = array($average_title, $average);
+  $rows[] = array(t('Zero/blank'), ($submissions - $nonzero));
+  $rows[] = array(t('User entered value'), $not_empty);
+
+  $other[] = array(t('Sum') . ($advanced_stats ? ' (&Sigma;)' : ''), $sum);
+  $other[] = array($average_title, $average);
 
   if (!$advanced_stats && $sum != 0) {
-    $rows[4] = array('', l(t('More stats »'), 'node/' . $component['nid'] . '/webform-results/analysis/' . $component['cid']));
+    $other[] = l(t('More stats »'), 'node/' . $component['nid'] . '/webform-results/analysis/' . $component['cid']);
   }
 
   // Normal distribution information.
@@ -460,7 +462,10 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
 
     // Skip the rest of the distribution rows if standard deviation is 0.
     if (empty($stddev)) {
-      return $rows;
+      return array(
+        'table_rows' => $rows,
+        'other_data' => $other,
+      );
     }
 
     // Build normal distribution table rows.
@@ -511,14 +516,17 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
     array_unshift($count, t('Count'));
     array_unshift($percent, t('% of !description', array('!description' => $description)));
 
-    $output = theme('table', array('header' => $header, 'rows' => array($limit, $count, $percent)));
+    $normal_distribution = theme('table', array('header' => $header, 'rows' => array($limit, $count, $percent)));
 
-    $rows[4] = array(t('Range'), t('!low to !high', array('!low' => $low, '!high' => $high)));
-    $rows[5] = array(t('Standard deviation (!sigma)', array('!sigma' => $sigma)), $stddev);
-    $rows[6] = array(array('data' => $output, 'colspan' => 2));
+    $other[] = array(t('Range'), t('!low to !high', array('!low' => $low, '!high' => $high)));
+    $other[] = array(t('Standard deviation (!sigma)', array('!sigma' => $sigma)), $stddev);
+    $other[] = $normal_distribution;
   }
 
-  return $rows;
+  return array(
+    'table_rows' => $rows,
+    'other_data' => $other,
+  );
 }
 
 /**
