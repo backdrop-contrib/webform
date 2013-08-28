@@ -1029,7 +1029,8 @@ class WebformGeneralTestCase extends WebformTestCase {
    */
   function testWebformCreateNewType() {
     // Enable webforms on the page content type.
-    variable_set('webform_node_types', array('webform', 'page'));
+    variable_set('webform_node_webform', TRUE);
+    variable_set('webform_node_page', TRUE);
 
     $settings = array(
       'title' => 'Test webform-enabled page',

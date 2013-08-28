@@ -602,6 +602,8 @@ function webform_install() {
     if (variable_get('webform_install_add_body_field', FALSE)) {
       node_add_body_field($webform_type);
     }
+    // Enable webform components by default on Webform nodes.
+    variable_set('webform_node_webform', TRUE);
     // Disable comments by default on Webform nodes.
     variable_set('comment_webform', '0');
   }
@@ -612,7 +614,6 @@ function webform_install() {
  */
 function webform_uninstall() {
   // Unset webform variables.
-  variable_del('webform_node_types');
   variable_del('webform_node_types_primary');
   variable_del('webform_disabled_components');
   variable_del('webform_tracking_mode');
@@ -635,6 +636,10 @@ function webform_uninstall() {
   variable_del('webform_progressbar_label_first');
   variable_del('webform_progressbar_label_confirmation');
   variable_del('webform_excel_legacy_exporter');
+
+  foreach (node_type_get_names() as $type => $name) {
+    variable_del('webform_node_' . $type);
+  }
 
   $component_list = array();
   $path = drupal_get_path('module', 'webform') . '/components';
@@ -1595,4 +1600,15 @@ function webform_update_7411(&$sandbox) {
     // Indicate our current progress to the batch update system.
     $sandbox['#finished'] = $sandbox['progress'] / $sandbox['max'];
   }
+}
+
+/**
+ * Split webform_node_types as content type specific.
+ */
+function webform_update_7412() {
+  $types = variable_get('webform_node_types', array('webform'));
+  foreach ($types as $type) {
+    variable_set('webform_node_' . $type, TRUE);
+  }
+  variable_del('webform_node_types');
 }

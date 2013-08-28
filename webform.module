@@ -31,7 +31,7 @@ function webform_help($section = 'admin/help#webform', $arg = NULL) {
         $output .= ' ' . t('To add one, create a !types piece of content.', array('!types' => $type_list));
       }
       else {
-        $output .= ' <strong>' . t('Webform is currently not enabled on any content types.') . '</strong> ' . t('To use Webform, please enable it on at least one content type on this page.');
+        $output .= ' <strong>' . t('Webform is currently not enabled on any content types.') . '</strong> ' . t('To use Webform, please enable it on at least one <a href="!url">content type</a>.', array('!url' => url('admin/structure/types')));
       }
       $output = '<p>' . $output . '</p>';
       break;
@@ -431,7 +431,7 @@ function webform_menu_load($nid) {
     return FALSE;
   }
   $node = node_load($nid);
-  if (!isset($node->type) || !in_array($node->type, webform_variable_get('webform_node_types'))) {
+  if (!isset($node->type) || !variable_get('webform_node_' . $node->type, FALSE)) {
     return FALSE;
   }
   return $node;
@@ -1271,44 +1271,33 @@ function webform_file_download($uri) {
 }
 
 /**
- * Implements hook_node_type().
+ * Return all content type enabled with webform.
  *
- * Not a real hook in Drupal 7. Re-used for consistency with the D6 version.
+ * @return array
+ *   An array of node type names.
  */
-function webform_node_type($op, $info) {
-  $webform_types = webform_variable_get('webform_node_types');
-  $affected_type = isset($info->old_type) ? $info->old_type : $info->type;
-  $key = array_search($affected_type, $webform_types);
-  if ($key !== FALSE) {
-    if ($op == 'update') {
-      $webform_types[$key] = $info->type;
+function webform_node_types() {
+  $types = array();
+  foreach (node_type_get_names() as $type => $name) {
+    if (variable_get('webform_node_' . $type, FALSE)) {
+      $types[] = $type;
     }
-    if ($op == 'delete') {
-      unset($webform_types[$key]);
-    }
-    variable_set('webform_node_types', $webform_types);
   }
-}
-
-/**
- * Implements hook_node_type_update().
- */
-function webform_node_type_update($info) {
-  webform_node_type('update', $info);
+  return $types;
 }
 
 /**
  * Implements hook_node_type_delete().
  */
 function webform_node_type_delete($info) {
-  webform_node_type('delete', $info);
+  variable_del('webform_node_' . $info->type);
 }
 
 /**
  * Implements hook_node_insert().
  */
 function webform_node_insert($node) {
-  if (!in_array($node->type, webform_variable_get('webform_node_types'))) {
+  if (!variable_get('webform_node_' . $node->type, FALSE)) {
     return;
   }
 
@@ -1370,7 +1359,7 @@ function webform_node_insert($node) {
  * Implements hook_node_update().
  */
 function webform_node_update($node) {
-  if (!in_array($node->type, webform_variable_get('webform_node_types'))) {
+  if (!variable_get('webform_node_' . $node->type, FALSE)) {
     return;
   }
 
@@ -1477,7 +1466,7 @@ function webform_node_update($node) {
  * Implements hook_delete().
  */
 function webform_node_delete($node) {
-  if (!in_array($node->type, webform_variable_get('webform_node_types'))) {
+  if (!variable_get('webform_node_' . $node->type, FALSE)) {
     return;
   }
 
@@ -1539,8 +1528,7 @@ function webform_node_defaults() {
  * Implements hook_node_prepare().
  */
 function webform_node_prepare($node) {
-  $webform_types = webform_variable_get('webform_node_types');
-  if (in_array($node->type, $webform_types) && !isset($node->webform)) {
+  if (variable_get('webform_node_' . $node->type, FALSE) && !isset($node->webform)) {
     $node->webform = webform_node_defaults();
   }
 }
@@ -1551,7 +1539,7 @@ function webform_node_prepare($node) {
  */
 function webform_node_load($nodes, $types) {
   // Quick check to see if we need to do anything at all for these nodes.
-  $webform_types = webform_variable_get('webform_node_types');
+  $webform_types = webform_node_types();
   if (count(array_intersect($types, $webform_types)) == 0) {
     return;
   }
@@ -1655,7 +1643,7 @@ function webform_node_load($nodes, $types) {
  */
 function webform_form_alter(&$form, $form_state, $form_id) {
   $matches = array();
-  if (isset($form['#node']->type) && $form_id == $form['#node']->type . '_node_form' && in_array($form['#node']->type, webform_variable_get('webform_node_types'))) {
+  if (isset($form['#node']->type) && $form_id == $form['#node']->type . '_node_form' && variable_get('webform_node_' . $form['#node']->type, FALSE)) {
     $node = $form['#node'];
     // Preserve all Webform options currently set on the node.
     $form['webform'] = array(
@@ -1667,6 +1655,36 @@ function webform_form_alter(&$form, $form_state, $form_id) {
     if (empty($node->nid) && in_array($node->type, webform_variable_get('webform_node_types_primary'))) {
       $form['actions']['submit']['#submit'][] = 'webform_form_submit';
     }
+  }
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ */
+function webform_form_node_type_form_alter(&$form, $form_state) {
+  if (isset($form['type'])) {
+    $form['webform'] = array(
+      '#title' => t('Webform'),
+      '#type' => 'fieldset',
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#group' => 'additional_settings',
+      '#weight' => 10,
+      '#attached' => array(
+        'js' => array(drupal_get_path('module', 'webform') . '/js/node-type-form.js'),
+      ),
+    );
+    $form['webform']['webform_node'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Enable webform functionality'),
+      '#description' => t('Allows a form to be attached to content. This will add tabs for "Webform" and "Results" on all content of this type.'),
+      '#weight' => 0,
+      '#default_value' => variable_get('webform_node_' . $form['#node_type']->type, FALSE),
+      '#attributes' => array(
+        'data-enabled-description' => t('Enabled'),
+        'data-disabled-description' => t('Disabled'),
+      ),
+    );
   }
 }
 
@@ -1687,7 +1705,7 @@ function webform_form_submit($form, &$form_state) {
 function webform_node_view($node, $view_mode) {
   global $user;
 
-  if (!in_array($node->type, webform_variable_get('webform_node_types'))) {
+  if (!variable_get('webform_node_' . $node->type, FALSE)) {
     return;
   }
 
@@ -1943,7 +1961,7 @@ function webform_mail($key, &$message, $params) {
  */
 function webform_block_info() {
   $blocks = array();
-  $webform_node_types = webform_variable_get('webform_node_types');
+  $webform_node_types = webform_node_types();
   if (!empty($webform_node_types)) {
     $query = db_select('webform', 'w')->fields('w')->fields('n', array('title'));
     $query->leftJoin('node', 'n', 'w.nid = n.nid');
@@ -3571,9 +3589,6 @@ function webform_variable_get($variable) {
     case 'webform_default_subject':
       $result = variable_get('webform_default_subject', t('Form submission from: [node:title]'));
       break;
-    case 'webform_node_types':
-      $result = variable_get('webform_node_types', array('webform'));
-      break;
     case 'webform_node_types_primary':
       $result = variable_get('webform_node_types_primary', array('webform'));
       break;
@@ -4200,7 +4215,7 @@ function webform_views_api() {
  */
 function webform_field_extra_fields() {
   $extra = array();
-  foreach (webform_variable_get('webform_node_types') as $type) {
+  foreach (webform_node_types() as $type) {
     $extra['node'][$type]['display']['webform'] = array(
       'label' => t('Webform'),
       'description' => t('Webform client form.'),
@@ -4215,7 +4230,7 @@ function webform_field_extra_fields() {
  */
 function webform_mollom_form_list() {
   $forms = array();
-  $webform_types = webform_variable_get('webform_node_types');
+  $webform_types = webform_node_types();
   if (empty($webform_types)) {
     return $forms;
   }

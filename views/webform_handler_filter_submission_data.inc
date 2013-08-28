@@ -46,7 +46,7 @@ class webform_handler_filter_submission_data extends views_handler_filter_string
     if ($which === 'title') {
       $nid = $this->view->relationship[$this->options['relationship']]->options['webform_nid'];
       $cid = $this->view->relationship[$this->options['relationship']]->options['webform_cid'];
-  
+
       if ($nid && $node = $node = node_load($nid)) {
         $component = $node->webform['components'][$cid];
         if (webform_component_feature($component['type'], 'views_range')) {

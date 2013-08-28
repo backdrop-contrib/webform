@@ -530,7 +530,7 @@ function webform_email_edit_form_submit($form, &$form_state) {
       $email[$field] = $form_state['values'][$field . '_' . $option];
 
       // Merge the email mapping(s) into single value(s)
-      $cid = $form_state['values'][$field . '_' . $option]; 
+      $cid = $form_state['values'][$field . '_' . $option];
       if (is_numeric($cid) && isset($form_state['values'][$field . '_mapping'][$cid])) {
         $email['extra'][$field .'_mapping'] = $form_state['values'][$field . '_mapping'][$cid];
       }
@@ -672,7 +672,7 @@ function webform_email_insert($email) {
   }
 
   $email['excluded_components'] = implode(',', $email['excluded_components']);
-  $email['extra'] = empty($email['extra']) ? '' : serialize($email['extra']); 
+  $email['extra'] = empty($email['extra']) ? '' : serialize($email['extra']);
   $success = drupal_write_record('webform_emails', $email);
 
   return $success ? $email['eid'] : FALSE;
@@ -687,7 +687,7 @@ function webform_email_insert($email) {
  */
 function webform_email_update($email) {
   $email['excluded_components'] = implode(',', $email['excluded_components']);
-  $email['extra'] = empty($email['extra']) ? '' : serialize($email['extra']); 
+  $email['extra'] = empty($email['extra']) ? '' : serialize($email['extra']);
   return drupal_write_record('webform_emails', $email, array('nid', 'eid'));
 }
 

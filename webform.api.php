@@ -363,7 +363,7 @@ function hook_webform_analysis_component_data_alter(&$data, $node, $component) {
  * Alter a Webform submission's header when exported.
  */
 function hook_webform_csv_header_alter(&$header, $component) {
-  // Use the machine name for component headers, but only for the webform 
+  // Use the machine name for component headers, but only for the webform
   // with node 5 and components that are text fields.
   if ($component['nid'] == 5 && $component['type'] == 'textfield') {
     $header[2] = $component['form_key'];
