@@ -195,6 +195,8 @@ function hook_webform_submission_delete($node, $submission) {
  *   The Webform submission on which the actions may be performed.
  */
 function hook_webform_submission_actions($node, $submission) {
+  $actions= array();
+
   if (webform_results_access($node)) {
     $actions['myaction'] = array(
       'title' => t('Do my action'),
@@ -323,7 +325,7 @@ function hook_webform_analysis_alter(&$analysis) {
   foreach (element_children($analysis['components']) as $cid) {
     $component = $node->components[$cid];
     $analysis['components'][$cid]['chart'] = array(
-      '#markup' => t('Chart for the @name component', array('@name' => $component['name']);
+      '#markup' => t('Chart for the @name component', array('@name' => $component['name'])),
     );
   }
 }
@@ -865,8 +867,7 @@ function hook_webform_component_display_alter(&$element, &$component) {
 function _webform_submit_component($component, $value) {
   // Clean up a phone number into 123-456-7890 format.
   if ($component['extra']['phone_number']) {
-    $matches = array();
-    $number = preg_replace('[^0-9]', $value[0]);
+    $number = preg_replace('/[^0-9]/', '', $value[0]);
     if (strlen($number) == 7) {
       $number = substr($number, 0, 3) . '-' . substr($number, 3, 4);
     }
