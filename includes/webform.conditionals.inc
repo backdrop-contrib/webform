@@ -823,7 +823,7 @@ function webform_conditional_prepare_javascript($node, $submission_data) {
     if ($conditional['target_type'] == 'component') {
       $target_component = $node->webform['components'][$conditional['target']];
       $target_parents = webform_component_parent_keys($node, $target_component);
-      $target_id = 'webform-component-' . str_replace('_', '-', implode('--', $target_parents));
+      $target_id = 'webform-component--' . str_replace('_', '-', implode('--', $target_parents));
       $settings['ruleGroups'][$conditional['rgid']]['target'] = $target_id;
       $settings['ruleGroups'][$conditional['rgid']]['andor'] = $conditional['andor'];
       $settings['ruleGroups'][$conditional['rgid']]['action'] = $conditional['action'];
@@ -833,7 +833,7 @@ function webform_conditional_prepare_javascript($node, $submission_data) {
       if ($rule['source_type'] == 'component') {
         $source_component = $node->webform['components'][$rule['source']];
         $source_parents = webform_component_parent_keys($node, $source_component);
-        $source_id = 'webform-component-' . str_replace('_', '-', implode('--', $source_parents));
+        $source_id = 'webform-component--' . str_replace('_', '-', implode('--', $source_parents));
 
         // If this source has a value set, add that as a setting.
         if (isset($submission_data[$source_component['cid']])) {

@@ -71,10 +71,11 @@ function _webform_render_fieldset($component, $value = NULL, $filter = TRUE) {
 }
 
 /**
- * Pre-render function to set a fieldset ID.
+ * Pre-render function to set a unique fieldset class name.
  */
 function webform_fieldset_prerender($element) {
-  $element['#id'] = 'webform-component-' . str_replace('_', '-', implode('--', array_slice($element['#parents'], 1)));
+  $element['#id'] = NULL;
+  $element['#attributes']['class'][] = 'webform-component--' . str_replace('_', '-', implode('--', array_slice($element['#parents'], 1)));
   return $element;
 }
 

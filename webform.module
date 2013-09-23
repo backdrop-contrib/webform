@@ -2148,6 +2148,9 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
   $form['#process'] = array(
     'webform_client_form_includes',
   );
+  $form['#pre_render'] = array(
+    'webform_pre_render_remove_id',
+  );
 
   // If in a multi-step form, a submission ID may be specified in form state.
   // Load this submission. This allows anonymous users to use auto-save.
@@ -2165,8 +2168,9 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
   // Add a theme function for this form.
   $form['#theme'] = array('webform_form_' . $node->nid, 'webform_form');
 
-  // Add a css class for all client forms.
-  $form['#attributes'] = array('class' => array('webform-client-form'));
+  // Add a CSS class for all client forms.
+  $form['#attributes']['class'][] = 'webform-client-form';
+  $form['#attributes']['class'][] = 'webform-client-form-' . $node->nid;
 
   // Set the encoding type (necessary for file uploads).
   $form['#attributes']['enctype'] = 'multipart/form-data';
@@ -2274,10 +2278,15 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
       '#value' => isset($submission->is_draft) ? (!$submission->is_draft) : 0,
     );
 
+    // Add process functions to remove the IDs forced upon buttons and wrappers.
+    $actions_pre_render = array_merge(element_info_property('actions', '#pre_render', array()), array('webform_pre_render_remove_id'));
+    $buttons_pre_render = array_merge(element_info_property('submit', '#pre_render', array()), array('webform_pre_render_remove_id'));
+
     // Add buttons for pages, drafts, and submissions.
     $form['actions'] = array(
       '#type' => 'actions',
       '#weight' => 1000,
+      '#pre_render' => $actions_pre_render,
     );
 
     // Add the draft button.
@@ -2287,7 +2296,11 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
         '#value' => t('Save Draft'),
         '#weight' => -2,
         '#validate' => array(),
-        '#attributes' => array('formnovalidate' => 'formnovalidate'),
+        '#attributes' => array(
+          'formnovalidate' => 'formnovalidate',
+          'class' => array('webform-draft'),
+        ),
+        '#pre_render' => $buttons_pre_render,
       );
     }
 
@@ -2299,7 +2312,11 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
           '#value' => $prev_page_labels[$page_num],
           '#weight' => 5,
           '#validate' => array(),
-          '#attributes' => array('formnovalidate' => 'formnovalidate'),
+          '#attributes' => array(
+            'formnovalidate' => 'formnovalidate',
+            'class' => array('webform-previous'),
+          ),
+          '#pre_render' => $buttons_pre_render,
         );
       }
       if ($page_num == $page_count) {
@@ -2307,6 +2324,10 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
           '#type' => 'submit',
           '#value' => empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text']),
           '#weight' => 10,
+          '#attributes' => array(
+            'class' => array('webform-submit', 'button-primary'),
+          ),
+          '#pre_render' => $buttons_pre_render,
         );
       }
       elseif ($page_num < $page_count) {
@@ -2314,6 +2335,10 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
           '#type' => 'submit',
           '#value' => $next_page_labels[$page_num],
           '#weight' => 10,
+          '#attributes' => array(
+            'class' => array('webform-next', 'button-primary'),
+          ),
+          '#pre_render' => $buttons_pre_render,
         );
       }
     }
@@ -2323,6 +2348,10 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
         '#type' => 'submit',
         '#value' => empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text']),
         '#weight' => 10,
+        '#attributes' => array(
+          'class' => array('webform-submit', 'button-primary'),
+        ),
+        '#pre_render' => $buttons_pre_render,
       );
     }
   }
@@ -3139,6 +3168,21 @@ function webform_element_title_display($element) {
 }
 
 /**
+ * A Form API #pre_render function that removes the ID from an element.
+ *
+ * Drupal forcibly adds IDs to all form elements, including those that do not
+ * need them for any reason, such as the actions wrapper or submit buttons. We
+ * use this process function wherever we wish to remove an ID from an element.
+ */
+function webform_pre_render_remove_id($element) {
+  $element['#id'] = NULL;
+  // Removing array parents is required to prevent theme_container from adding
+  // an empty ID attribute.
+  $element['#array_parents'] = NULL;
+  return $element;
+}
+
+/**
  * Replacement for theme_form_element().
  */
 function theme_webform_element($variables) {
@@ -3154,7 +3198,7 @@ function theme_webform_element($variables) {
     $type = 'display';
   }
   else {
-    $type = (isset($element['#type']) && !in_array($element['#type'], array('markup', 'textfield', 'webform_email', 'webform_number'))) ? $element['#type'] : $element['#webform_component']['type'];
+    $type = ($element['#webform_component']['type'] == 'select' && isset($element['#type'])) ? $element['#type'] : $element['#webform_component']['type'];
   }
 
   // Convert the parents array into a string, excluding the "submitted" wrapper.
@@ -3165,13 +3209,13 @@ function theme_webform_element($variables) {
   $wrapper_classes = array(
    'form-item',
    'webform-component',
-   'webform-component-' . $type,
+   'webform-component-' . str_replace('_', '-', $type),
+   'webform-component--' . $parents,
   );
   if (isset($element['#title_display']) && strcmp($element['#title_display'], 'inline') === 0) {
     $wrapper_classes[] = 'webform-container-inline';
   }
   $wrapper_attributes['class'] = array_merge($wrapper_classes, $wrapper_attributes['class']);
-  $wrapper_attributes['id'] = 'webform-component-' . $parents;
   $output = '<div ' . drupal_attributes($wrapper_attributes) . '>' . "\n";
 
   // If #title_display is none, set it to invisible instead - none only used if
