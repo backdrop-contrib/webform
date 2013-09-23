@@ -2148,9 +2148,6 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
   $form['#process'] = array(
     'webform_client_form_includes',
   );
-  $form['#pre_render'] = array(
-    'webform_pre_render_remove_id',
-  );
 
   // If in a multi-step form, a submission ID may be specified in form state.
   // Load this submission. This allows anonymous users to use auto-save.
