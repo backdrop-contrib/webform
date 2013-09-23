@@ -95,5 +95,5 @@ function _webform_display_pagebreak($component, $value = NULL, $format = 'html')
 function theme_webform_display_pagebreak($variables) {
   $element = $variables['element'];
 
-  return $element['#format'] == 'html' ? '<h2 class="webform-page">' . check_plain($element['#title']) . '</h2>' : "--" . $element['#title'] . "--\n";
+  return $element['#format'] == 'html' ? '<h2 class="webform-page">' . check_plain($element['#title']) . '</h2>' : '==' . $element['#title'] . "==\n";
 }

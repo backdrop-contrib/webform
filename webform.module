@@ -3276,7 +3276,7 @@ function theme_webform_element_text($variables) {
   // Output the element title.
   if (isset($element['#title'])) {
     if ($is_group) {
-      $output .= '--' . $element['#title'] . '--';
+      $output .= '==' . $element['#title'] . '==';
     }
     elseif (!in_array(drupal_substr($element['#title'], -1), array('?', ':', '!', '%', ';', '@'))) {
       $output .= $element['#title'] . ':';
