@@ -3633,6 +3633,9 @@ function webform_variable_get($variable) {
     case 'webform_default_subject':
       $result = variable_get('webform_default_subject', t('Form submission from: [node:title]'));
       break;
+    case 'webform_node_types':
+      $result = webform_node_types();
+      break;
     case 'webform_node_types_primary':
       $result = variable_get('webform_node_types_primary', array('webform'));
       break;
