@@ -126,8 +126,7 @@ Drupal.webform.conditionalAdmin = function(context) {
     // This handler needs a delay to let the form submit before we remove the
     // table row.
     $(this).find('.webform-conditional-rule-remove').mousedown(function() {
-      var button = this;
-      window.setTimeout(Drupal.webform.conditionalRemove.apply(button), 10);
+      window.setTimeout($.proxy(Drupal.webform.conditionalRemove, this), 10);
     });
 
     $(this).find('.webform-conditional-source select').each(function() {
