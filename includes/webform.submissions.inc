@@ -39,6 +39,23 @@ function webform_submission_data($node, $submitted) {
 }
 
 /**
+ * Given set of $form_state values, prepare a psuedo-submission.
+ */
+function webform_submission_create($node, $account, $form_state) {
+  $submission = (object) array(
+    'nid' => $node->nid,
+    'uid' => $account->uid,
+    'submitted' => REQUEST_TIME,
+    'remote_addr' => ip_address(),
+    'is_draft' => TRUE,
+    'preview' => FALSE,
+    'data' => webform_submission_data($node, $form_state['values']['submitted']),
+  );
+  drupal_alter('webform_submission_create', $submission, $node, $account, $form_state);
+  return $submission;
+}
+
+/**
  * Update a webform submission entry in the database.
  *
  * @param $node
@@ -567,11 +584,10 @@ function theme_webform_submission_resend($variables) {
 /**
  * Print a Webform submission for display on a page or in an e-mail.
  */
-function webform_submission_render($node, $submission, $email, $format) {
+function webform_submission_render($node, $submission, $email, $format, $excluded_components = array()) {
   $component_tree = array();
   $renderable = array();
   $page_count = 1;
-  $excluded_components = isset($email) ? $email['excluded_components'] : array();
 
   // Meta data that may be useful for modules implementing
   // hook_webform_submission_render_alter().
@@ -681,6 +697,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     $submissions[$row->sid]->uid = $row->uid;
     $submissions[$row->sid]->name = $row->name;
     $submissions[$row->sid]->is_draft = $row->is_draft;
+    $submissions[$row->sid]->preview = FALSE;
     $submissions[$row->sid]->data = array();
   }
 

@@ -105,6 +105,31 @@ function hook_webform_submission_load(&$submissions) {
 }
 
 /**
+ * Respond to the creation of a new submission from form values.
+ *
+ * This hook is called when a user has completed a submission to initialize the
+ * submission object. After this object has its values populated, it will be
+ * saved by webform_submission_insert(). Note that this hook is only called for
+ * new submissions, not for submissions being edited. If responding to the
+ * saving of all submissions, it's recommended to use
+ * hook_webform_submission_presave().
+ *
+ * @param $submission
+ *   The submission object that has been created.
+ * @param $node
+ *   The Webform node for which this submission is being saved.
+ * @param $account
+ *   The user account that is creating the submission.
+ * @param $form_state
+ *   The contents of form state that is the basis for this submission.
+ *
+ * @see webform_submission_create()
+ */
+function hook_webform_submission_create($submission, $node, $account, $form_state) {
+  $submission->new_property = TRUE;
+}
+
+/**
  * Modify a Webform submission, prior to saving it in the database.
  *
  * @param $node

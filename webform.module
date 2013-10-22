@@ -1315,9 +1315,13 @@ function webform_node_insert($node) {
   module_load_include('inc', 'webform', 'includes/webform.conditionals');
   module_load_include('inc', 'webform', 'includes/webform.emails');
 
+  // Prepare the record for writing.
+  $webform_record = $node->webform;
+  $webform_record['preview_excluded_components'] = implode(',', $webform_record['preview_excluded_components']);
+
   // Insert the webform.
   $node->webform['nid'] = $node->nid;
-  $node->webform['record_exists'] = (bool) drupal_write_record('webform', $node->webform);
+  $node->webform['record_exists'] = (bool) drupal_write_record('webform', $webform_record);
 
   // Insert the components into the database. Used with clone.module.
   if (isset($node->webform['components']) && !empty($node->webform['components'])) {
@@ -1374,9 +1378,13 @@ function webform_node_update($node) {
     return;
   }
 
-  // Update the webform entry.
+  // Prepare the record for writing.
   $node->webform['nid'] = $node->nid;
-  drupal_write_record('webform', $node->webform, array('nid'));
+  $webform_record = $node->webform;
+  $webform_record['preview_excluded_components'] = implode(',', $webform_record['preview_excluded_components']);
+
+  // Update the webform entry.
+  drupal_write_record('webform', $webform_record, array('nid'));
 
   // Compare the webform components and don't do anything if it's not needed.
   $original = $node->original;
@@ -1513,6 +1521,13 @@ function webform_node_defaults() {
     'progressbar_include_confirmation' => in_array('progressbar_include_confirmation', $progress_bar_defaults) ? '1' : '0',
     'progressbar_label_first' => webform_variable_get('webform_progressbar_label_first'),
     'progressbar_label_confirmation' => webform_variable_get('webform_progressbar_label_confirmation'),
+    'preview' => 0,
+    'preview_next_button_label' => '',
+    'preview_prev_button_label' => '',
+    'preview_title' => '',
+    'preview_message' => '',
+    'preview_message_format' => NULL,
+    'preview_excluded_components' => array(),
     'status' => '1',
     'record_exists' => FALSE,
     'roles' => array('1', '2'),
@@ -1557,6 +1572,9 @@ function webform_node_load($nodes, $types) {
     // Load the basic information for each node.
     $nodes[$nid]->webform = $webform;
     $nodes[$nid]->webform['record_exists'] = TRUE;
+
+    // Expand the list of excluded preview components.
+    $nodes[$nid]->webform['preview_excluded_components'] = array_filter(explode(',', $webform['preview_excluded_components']));
   }
 
   // Load the components, emails, and defaults for all webform-enabled nodes.
@@ -2196,6 +2214,11 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
       $form_state['webform']['page_count'] = 1;
       $form_state['webform']['page_num'] = 1;
       _webform_components_tree_build($node->webform['components'], $form_state['webform']['component_tree'], 0, $form_state['webform']['page_count']);
+
+      // If preview is enabled, increase the page count by one.
+      if ($node->webform['preview']) {
+        $form_state['webform']['page_count']++;
+      }
     }
     else {
       $form_state['webform']['component_tree'] = $form_state['storage']['component_tree'];
@@ -2226,12 +2249,13 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
     }
 
     if ($page_count > 1) {
+      $page_labels = webform_page_labels($node);
       $form['progressbar'] = array(
         '#theme' => 'webform_progressbar',
         '#node' => $node,
         '#page_num' => $page_num,
-        '#page_count' => $page_count + ($node->webform['progressbar_include_confirmation'] ? 1 : 0),
-        '#page_labels' => webform_page_labels($node),
+        '#page_count' => count($page_labels),
+        '#page_labels' => $page_labels,
         '#weight' => -100
       );
     }
@@ -2247,6 +2271,29 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
         }
         _webform_client_form_add_component($node, $component, $component_value, $form['submitted'], $form, $input_values, 'form', $page_num, $filter);
       }
+    }
+    if ($node->webform['preview']) {
+      $next_page_labels[] = $node->webform['preview_next_button_label'] ? t($node->webform['preview_next_button_label']) : t('Preview');
+      $prev_page_labels[] = $node->webform['preview_prev_button_label'] ? t($node->webform['preview_prev_button_label']) : t('< Previous');
+    }
+
+    // Add the preview if needed.
+    if ($node->webform['preview'] && $page_num === $page_count) {
+      $preview_submission = webform_submission_create($node, $user, $form_state);
+      $preview_submission->preview = TRUE;
+      $preview_message = $node->webform['preview_message'];
+      $submit_button_text = empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text']);
+      if (strlen(trim(strip_tags($preview_message))) === 0) {
+        $preview_message = t('Please review your submission. Your submission is not complete until you press the "!button" button!', array('!button' => $submit_button_text));
+      }
+      $preview_message = webform_replace_tokens($preview_message, $node, $submission);
+      $preview_message = check_markup($preview_message, $node->webform['preview_message_format']);
+      $form['preview_message'] = array(
+        '#type' => 'markup',
+        '#markup' => $preview_message,
+      );
+
+      $form['preview'] = webform_submission_render($node, $preview_submission, NULL, 'html', $node->webform['preview_excluded_components']);
     }
 
     // These form details help managing data upon submission.
@@ -2820,9 +2867,10 @@ function webform_client_form_pages($form, &$form_state) {
     if (end($form_state['clicked_button']['#parents']) == 'next') {
       $direction = 1;
     }
-    else {
+    elseif (end($form_state['clicked_button']['#parents']) == 'previous') {
       $direction = 0;
     }
+    $current_page = $form_state['storage']['page_num'];
 
     // If the next page has no components that need to be displayed, skip it.
     if (isset($direction)) {
@@ -2848,6 +2896,14 @@ function webform_client_form_pages($form, &$form_state) {
             $form_state['storage']['page_num'] = $page_num + 1;
           }
         }
+      }
+
+      // The preview page is not represented by a pagebreak, if no movement has
+      // yet happened, move the form in the intended direction one page.
+      if ($node->webform['preview'] && ($direction === 0 && isset($form['preview']) || $current_page === $form_state['storage']['page_num'])) {
+        // The "Previous" button over-shoots backwards by one page. The "Next"
+        // button doesn't advance at all, so in both cases, we increment by one.
+        $form_state['storage']['page_num']++;
       }
     }
 
@@ -2906,14 +2962,8 @@ function webform_client_form_submit($form, &$form_state) {
 
   if (!$sid) {
     // Create a new submission object.
-    $submission = (object) array(
-      'nid' => $node->nid,
-      'uid' => $form_state['values']['details']['uid'],
-      'submitted' => REQUEST_TIME,
-      'remote_addr' => ip_address(),
-      'is_draft' => $is_draft,
-      'data' => webform_submission_data($node, $form_state['values']['submitted']),
-    );
+    $submission = webform_submission_create($node, $user, $form_state);
+    $submission->is_draft = $is_draft;
   }
   else {
     // To maintain time and user information, load the existing submission.
@@ -3607,6 +3657,9 @@ function webform_page_labels($node) {
       $page_count++;
     }
   }
+  if ($node->webform['preview']) {
+    $page_labels[] = $node->webform['preview_title'] ? t($node->webform['preview_title']) : t('Preview');
+  }
   if ($node->webform['progressbar_include_confirmation']) {
     $page_labels[] = t($node->webform['progressbar_label_confirmation']);
   }
@@ -3658,6 +3711,13 @@ function webform_variable_get($variable) {
   return $result;
 }
 
+/**
+ * Output the contents of token help used throughout Webform.
+ *
+ * In earlier versions of Token, a fieldset is used to show all the tokens.
+ * Later versions now use a modal dialog that is accessed through a link. If
+ * Token module is not available, a message should be displayed.
+ */
 function theme_webform_token_help($variables) {
   $groups = $variables['groups'];
 

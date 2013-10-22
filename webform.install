@@ -147,6 +147,43 @@ function webform_schema() {
         'type' => 'varchar',
         'length' => 255,
       ),
+      'preview' => array(
+        'description' => 'Boolean value indicating if this form includes a page for previewing the submission.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'preview_next_button_label' => array(
+        'description' => 'The text for the button that will proceed to the preview page.',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+      'preview_prev_button_label' => array(
+        'description' => 'The text for the button to go backwards from the preview page.',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+      'preview_title' => array(
+        'description' => 'The title of the preview page, as used by the progress bar.',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+      'preview_message' => array(
+        'description' => 'Text shown on the preview page of the form.',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'preview_message_format' => array(
+        'description' => 'The {filter_format}.format of the preview page message.',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+      'preview_excluded_components' => array(
+        'description' => 'Comma-separated list of component IDs that should not be included in this form\'s confirmation page.',
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
     ),
     'primary key' => array('nid'),
   );
@@ -1611,4 +1648,50 @@ function webform_update_7412() {
     variable_set('webform_node_' . $type, TRUE);
   }
   variable_del('webform_node_types');
+}
+
+/**
+ * Add preview page columns to the webform table.
+ */
+function webform_update_7413() {
+  if (!db_field_exists('webform', 'preview')) {
+    $int_schema = array(
+      'type' => 'int',
+      'size' => 'tiny',
+      'not null' => TRUE,
+      'default' => 0,
+    );
+    $varchar_schema = array(
+      'type' => 'varchar',
+      'length' => 255,
+    );
+    $text_schema = array(
+      'type' => 'text',
+      'not null' => TRUE,
+      'initial' => '',
+    );
+
+    $int_schema['description'] = 'Boolean value indicating if this form includes a page for previewing the submission.';
+    db_add_field('webform', 'preview', $int_schema);
+
+    $varchar_schema['description'] = 'The text for the button that will proceed to the preview page.';
+    db_add_field('webform', 'preview_next_button_label', $varchar_schema);
+
+    $varchar_schema['description'] = 'The text for the button to go backwards from the preview page.';
+    db_add_field('webform', 'preview_prev_button_label', $varchar_schema);
+
+    $varchar_schema['description'] = 'The title of the preview page, as used by the progress bar.';
+    db_add_field('webform', 'preview_title', $varchar_schema);
+
+    $text_schema['description'] = 'Text shown on the preview page of the form.';
+    db_add_field('webform', 'preview_message', $text_schema);
+
+    $varchar_schema['description'] = 'The {filter_format}.format of the preview page message.';
+    db_add_field('webform', 'preview_message_format', $varchar_schema);
+
+    $text_schema['description'] = 'Comma-separated list of component IDs that should not be included in this form\'s confirmation page.';
+    db_add_field('webform', 'preview_excluded_components', $text_schema);
+
+    return t('New webform columns added.');
+  }
 }

@@ -71,8 +71,10 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
     $submission = $data['webform-submission'];
     $node = isset($data['node']) ? $data['node'] : node_load($submission->nid);
     $email = isset($data['webform-email']) ? $data['webform-email'] : NULL;
+    $excluded_components = isset($email['excluded_components']) ? $email['excluded_components'] : array();
     $format = $sanitize ? 'html' : 'text';
-    $submission_renderable = webform_submission_render($node, $submission, $email, $format);
+
+    $submission_renderable = webform_submission_render($node, $submission, $email, $format, $excluded_components);
 
     // Replace individual tokens that have an exact replacement.
     foreach ($tokens as $name => $original) {

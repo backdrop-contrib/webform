@@ -238,7 +238,75 @@ function webform_configure_form($form, &$form_state, $node) {
       ),
     ),
   );
-  /* End progress Bar settings form */
+  /* End progress bar settings form */
+
+  /* Preview page settings form */
+  $form['preview'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Preview page'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#weight' => 18,
+    '#id' => 'webform-preview-fieldset',
+  );
+
+  $form['preview']['preview'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable preview page'),
+    '#description' => t('Add a page for previewing the form before submitting.'),
+    '#default_value' => $node->webform['preview'],
+    '#id' => 'webform-preview-enable'
+  );
+  $form['preview']['settings'] = array(
+    '#type' => 'container',
+    '#states' => array(
+      'visible' => array(
+        '#webform-preview-enable' => array('checked' => TRUE),
+      ),
+    ),
+    '#id' => 'webform-preview-settings',
+    '#theme_wrappers' => array('container'),
+  );
+  $form['preview']['settings']['preview_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Preview page title'),
+    '#default_value' => $node->webform['preview_title'],
+    '#description' => t('The page title will be used in the progress bar (if enabled). If left blank, the default title %preview will be used.', array('%preview' => t('Preview'))),
+  );
+  $form['preview']['settings']['preview_next_button_label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Preview button label'),
+    '#default_value' => $node->webform['preview_next_button_label'],
+    '#description' => t('The text for the button that will proceed to the preview page. If left blank, the default label %preview will be used.', array('%preview' => t('Preview'))),
+    '#size' => 20,
+  );
+  $form['preview']['settings']['preview_prev_button_label'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Previous page button label'),
+    '#default_value' => $node->webform['preview_prev_button_label'],
+    '#description' => t('The text for the button to go backwards from the preview page. If left blank, the default label %previous will be used.', array('%previous' => t('< Previous'))),
+    '#size' => 20,
+  );
+  $submit_button_text = $node->webform['submit_text'] ? t($node->webform['submit_text']) : t('Submit');
+  $preview_default_message = t('Please review your submission. Your submission is not complete until you press the "@button" button!', array('@button' => $submit_button_text));
+  $form['preview']['settings']['preview_message'] = array(
+    '#type' => 'text_format',
+    '#title' => t('Preview message'),
+    '#default_value' => $node->webform['preview_message'],
+    '#format' => $node->webform['preview_message_format'],
+    '#description' => t('A message to be displayed on the preview page. If left blank, the message "!default" will be used. Supports Webform token replacements.', array('!default' => $preview_default_message))  . ' ' . theme('webform_token_help', array('groups' => array('node', 'submission'))),
+  );
+  $form['preview']['settings']['preview_components'] = array(
+    '#type' => 'select',
+    '#title' => t('Included preview values'),
+    '#options' => webform_component_list($node, 'email', TRUE),
+    '#default_value' => array_diff(array_keys($node->webform['components']), $node->webform['preview_excluded_components']),
+    '#multiple' => TRUE,
+    '#size' => 10,
+    '#description' => t('If you wish to include only parts of the submission in the preview, select the components that should be included.'),
+    '#process' => array('webform_component_select'),
+  );
+  /* End preview page settings form */
 
   /* Start advanced settings form */
   $form['advanced'] = array(
@@ -275,9 +343,10 @@ function webform_configure_form($form, &$form_state, $node) {
   );
   $form['advanced']['submit_text'] = array(
     '#type' => 'textfield',
-    '#title' => t('Submit button text'),
+    '#title' => t('Submit button label'),
     '#default_value' => $node->webform['submit_text'],
     '#description' => t('By default the submit button on this form will have the label <em>Submit</em>. Enter a new title here to override the default.'),
+    '#size' => 20,
   );
   /* End Advanced Settings Form */
 
@@ -388,6 +457,21 @@ function webform_configure_form_submit($form, &$form_state) {
   $node->webform['progressbar_include_confirmation'] = in_array('progressbar_include_confirmation', $progress_bar_settings);
   $node->webform['progressbar_label_first'] = $form_state['values']['progressbar_label_first'];
   $node->webform['progressbar_label_confirmation'] = $form_state['values']['progressbar_label_confirmation'];
+
+  // Set the preview settings.
+  $node->webform['preview'] = (int) $form_state['values']['preview'];
+  $node->webform['preview_next_button_label'] = $form_state['values']['preview_next_button_label'];
+  $node->webform['preview_prev_button_label'] = $form_state['values']['preview_prev_button_label'];
+  $node->webform['preview_title'] = $form_state['values']['preview_title'];
+  $node->webform['preview_message'] = $form_state['values']['preview_message']['value'];
+  $node->webform['preview_message_format'] = $form_state['values']['preview_message']['format'];
+
+  // Save the list of included preview components.
+  // We actually maintain an *exclusion* list, so any new components will
+  // default to being included in the preview until unchecked.
+  $included = array_keys(array_filter((array) $form_state['values']['preview_components']));
+  $excluded = array_diff(array_keys($node->webform['components']), $included);
+  $node->webform['preview_excluded_components'] = $excluded;
 
   // Set submit notice.
   $node->webform['submit_notice'] = $form_state['values']['submit_notice'];
