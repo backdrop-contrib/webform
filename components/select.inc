@@ -474,7 +474,6 @@ function webform_expand_checkboxes($element) {
   foreach ($default_value as $key => $val) {
     $element[$key]['#default_value'] = $val;
   }
-
   return $element;
 }
 
@@ -745,7 +744,7 @@ function _webform_csv_headers_select($component, $export_options) {
   if ($component['extra']['multiple'] && $export_options['select_format'] == 'separate') {
     $headers[0][] = '';
     $headers[1][] = $export_options['header_keys'] ? $component['form_key'] : $component['name'];
-    $items = _webform_select_options($component, TRUE);
+    $items = _webform_select_options($component, TRUE, FALSE);
     if ($component['extra']['other_option']) {
       if ($export_options['header_keys']) {
         $other_label = $component['form_key'] . '_other';
@@ -783,7 +782,7 @@ function _webform_csv_headers_select($component, $export_options) {
  * Implements _webform_csv_data_component().
  */
 function _webform_csv_data_select($component, $export_options, $value) {
-  $options = _webform_select_options($component, TRUE);
+  $options = _webform_select_options($component, TRUE, FALSE);
   $return = array();
 
   if ($component['extra']['multiple']) {
@@ -839,8 +838,8 @@ function _webform_csv_data_select($component, $export_options, $value) {
  * $options = webform_component_invoke($component['type'], 'options', $component);
  * @endcode
  */
-function _webform_options_select($component, $flat = FALSE) {
-  return _webform_select_options($component, $flat);
+function _webform_options_select($component, $flat = FALSE, $filter = TRUE) {
+  return _webform_select_options($component, $flat, $filter);
 }
 
 /**
@@ -870,34 +869,13 @@ function webform_select_options_ajax($source_name = '') {
  */
 function _webform_select_options($component, $flat = FALSE, $filter = TRUE) {
   if ($component['extra']['options_source']) {
-    $options = _webform_select_options_callback($component['extra']['options_source'], $component, $flat);
+    $options = _webform_select_options_callback($component['extra']['options_source'], $component, $flat, $filter);
   }
   else {
-    $options = _webform_select_options_from_text($component['extra']['items'], $flat);
-  }
-
-  // Replace tokens if needed in the options.
-  if ($filter) {
-    $node = node_load($component['nid']);
-    $options = _webform_select_replace_tokens($options, $node);
+    $options = _webform_select_options_from_text($component['extra']['items'], $flat, $filter);
   }
 
   return isset($options) ? $options : array();
-}
-
-/**
- * Replace tokens in the values of a list of select options.
- */
-function _webform_select_replace_tokens($options, $node) {
-  foreach ($options as $key => $option) {
-    if (is_array($option)) {
-      $options[$key] = _webform_select_replace_tokens($option, $node);
-    }
-    else {
-      $options[$key] = webform_replace_tokens($option, $node);
-    }
-  }
-  return $options;
 }
 
 /**
@@ -929,8 +907,10 @@ function _webform_select_options_info() {
  *   The full Webform component.
  * @param $flat
  *   Whether the information returned should exclude any nested groups.
+ * @param $filter
+ *   Whether information returned should be sanitized. Defaults to TRUE.
  */
-function _webform_select_options_callback($name, $component, $flat = FALSE) {
+function _webform_select_options_callback($name, $component, $flat = FALSE, $filter = TRUE) {
   $info = _webform_select_options_info();
 
   // Include any necessary files.
@@ -957,16 +937,14 @@ function _webform_select_options_callback($name, $component, $flat = FALSE) {
  * Utility function to split user-entered values from new-line separated
  * text into an array of options.
  *
- * @param string $text
+ * @param $text
  *   Text to be converted into a select option array.
- * @param bool $flat
+ * @param $flat
  *   Optional. If specified, return the option array and exclude any optgroups.
- * @return array
- *   An array of options suitable for use as a #options property. Note that
- *   values are not filtered and may contain tokens. Individual values should be
- *   run through webform_replace_tokens() if displaying to an end-user.
+ * @param $filter
+ *   Optional. Whether or not to filter returned values.
  */
-function _webform_select_options_from_text($text, $flat = FALSE) {
+function _webform_select_options_from_text($text, $flat = FALSE, $filter = TRUE) {
   static $option_cache = array();
 
   // Keep each processed option block in an array indexed by the MD5 hash of
@@ -994,16 +972,17 @@ function _webform_select_options_from_text($text, $flat = FALSE) {
           unset($group);
         }
         elseif (!$flat) {
-          $group = $matches[1];
+          $group = $filter ? webform_replace_tokens($matches[1]) : $matches[1];
         }
       }
       elseif (preg_match('/^([^|]+)\|(.*)$/', $option, $matches)) {
-        $key = $matches[1];
-        $value = $matches[2];
+        $key = $filter ? webform_replace_tokens($matches[1]) : $matches[1];
+        $value = $filter ? webform_replace_tokens($matches[2]) : $matches[2];
         isset($group) ? $options[$group][$key] = $value : $options[$key] = $value;
       }
       else {
-        isset($group) ? $options[$group][$option] = $option : $options[$option] = $option;
+        $filtered_option = $filter ? webform_replace_tokens($option) : $option;
+        isset($group) ? $options[$group][$filtered_option] = $filtered_option : $options[$filtered_option] = $filtered_option;
       }
     }
 
