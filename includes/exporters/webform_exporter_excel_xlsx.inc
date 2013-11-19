@@ -2,8 +2,8 @@
 /**
  * This exporter creates an XLSX file readable by newer versions of Excel.
  */
-class webform_exporter_excel_xlsx extends webform_exporter {
-  /**
+class  extends webform_exporter {
+  /**webform_exporter_excel_xlsx
    * Regular expression that checks for a valid ISO 8601 date/time.
    */
   const DATE_REGEX_ANY = '/^((\d{4})(-(\d{2}))(-(\d{2})))?(([T \s]?(\d{2}))(:(\d{2}))(:(\d{2}))?)?$/';

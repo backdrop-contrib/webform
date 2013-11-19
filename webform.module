@@ -2283,11 +2283,11 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
       $preview_submission->preview = TRUE;
       $preview_message = $node->webform['preview_message'];
       $submit_button_text = empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text']);
-      if (strlen(trim(strip_tags($preview_message))) === 0) {
-        $preview_message = t('Please review your submission. Your submission is not complete until you press the "!button" button!', array('!button' => $submit_button_text));
-      }
-      $preview_message = webform_replace_tokens($preview_message, $node, $submission);
+      $preview_message = webform_replace_tokens($preview_message, $node, $preview_submission);
       $preview_message = check_markup($preview_message, $node->webform['preview_message_format']);
+      if (strlen(trim($preview_message)) === 0) {
+        $preview_message = t('Please review your submission. Your submission is not complete until you press the "@button" button!', array('@button' => $submit_button_text));
+      }
       $form['preview_message'] = array(
         '#type' => 'markup',
         '#markup' => $preview_message,
