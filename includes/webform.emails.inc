@@ -92,7 +92,7 @@ function theme_webform_emails_form($variables) {
   $form = $variables['form'];
   $node = $form['#node'];
 
-  $header = array(t('E-mail to'), t('Subject'), t('From'), array('data' => t('Operations'), 'colspan' => 2));
+  $header = array(t('E-mail to'), t('Subject'), t('From'), array('data' => t('Operations'), 'colspan' => 3));
   $rows = array();
 
   if (!empty($form['emails'])) {
@@ -103,18 +103,19 @@ function theme_webform_emails_form($variables) {
         drupal_render($form['emails'][$eid]['subject']),
         drupal_render($form['emails'][$eid]['from']),
         l(t('Edit'), 'node/' . $node->nid . '/webform/emails/' . $eid),
+        l(t('Clone'), 'node/' . $node->nid . '/webform/emails/' . $eid . '/clone'),
         l(t('Delete'), 'node/' . $node->nid . '/webform/emails/' . $eid . '/delete'),
       );
     }
   }
   else {
-    $rows[] = array(array('data' => t('Currently not sending e-mails, add an e-mail recipient below.'), 'colspan' => 5));
+    $rows[] = array(array('data' => t('Currently not sending e-mails, add an e-mail recipient below.'), 'colspan' => 6));
   }
 
   // Add a row containing form elements for a new item.
   $row_data = array(
     array('colspan' => 3, 'data' => drupal_render($form['add'])),
-    array('colspan' => 2, 'data' => drupal_render($form['add_button'])),
+    array('colspan' => 3, 'data' => drupal_render($form['add_button'])),
   );
   $rows[] = array('data' => $row_data, 'class' => array('webform-add-form'));
 
@@ -162,7 +163,7 @@ function webform_emails_form_submit($form, &$form_state) {
 /**
  * Form for configuring an e-mail setting and template.
  */
-function webform_email_edit_form($form, $form_state, $node, $email = array()) {
+function webform_email_edit_form($form, $form_state, $node, $email = array(), $clone = FALSE) {
   module_load_include('inc', 'webform', 'includes/webform.components');
 
   $form['#attached']['library'][] = array('webform', 'admin');
@@ -173,6 +174,10 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
   $form['eid'] = array(
     '#type' => 'value',
     '#value' => isset($email['eid']) ? $email['eid'] : NULL,
+  );
+  $form['clone'] = array(
+    '#type' => 'value',
+    '#value' => $clone,
   );
 
   // All these fields work essentially the same, with a radio button set,
@@ -561,7 +566,11 @@ function webform_email_edit_form_submit($form, &$form_state) {
   $excluded = array_diff(array_keys($node->webform['components']), $included);
   $email['excluded_components'] = $excluded;
 
-  if (empty($form_state['values']['eid'])) {
+  if ($form_state['values']['clone']) {
+    drupal_set_message(t('Email settings cloned.'));
+    $form_state['values']['eid'] = webform_email_clone($email);
+  }
+  elseif (empty($form_state['values']['eid'])) {
     drupal_set_message(t('Email settings added.'));
     $form_state['values']['eid'] = webform_email_insert($email);
   }
@@ -676,6 +685,17 @@ function webform_email_insert($email) {
   $success = drupal_write_record('webform_emails', $email);
 
   return $success ? $email['eid'] : FALSE;
+}
+
+/**
+ * Clone an existing e-mail setting.
+ *
+ * @param $email
+ *   An array of settings for sending an e-mail.
+ */
+function webform_email_clone($email) {
+  $email['eid'] = NULL;
+  return webform_email_insert($email);
 }
 
 /**
