@@ -921,18 +921,7 @@ class WebformTestCase extends DrupalWebTestCase {
      'format' => '1',
      'webform' => array(
         'confirmation' => 'Thanks!',
-        'confirmation_format' => filter_default_format(),
-        'redirect_url' => '<confirmation>',
-        'allow_draft' => '1',
-        'submit_text' => '',
-        'submit_limit' => '-1',
-        'submit_interval' => '-1',
-        'submit_notice' => '1',
-        'roles' => array('1', '2'),
-        'components' => array(),
-        'conditionals' => array(),
-        'emails' => array(),
-      ),
+      ) + webform_node_defaults(),
     );
 
     $cid = 0;
