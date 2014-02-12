@@ -1400,6 +1400,7 @@ function webform_node_update($node) {
     $inserted_cids = array_diff($current_cids, $original_cids);
 
     foreach ($all_cids as $cid) {
+      $node->webform['components'][$cid]['nid'] = $node->nid;
       if (in_array($cid, $inserted_cids)) {
         webform_component_insert($node->webform['components'][$cid]);
       }
@@ -1407,7 +1408,6 @@ function webform_node_update($node) {
         webform_component_delete($node, $original->webform['components'][$cid]);
       }
       elseif ($node->webform['components'][$cid] != $original->webform['components'][$cid]) {
-        $node->webform['components'][$cid]['nid'] = $node->nid;
         webform_component_update($node->webform['components'][$cid]);
       }
     }
