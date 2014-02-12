@@ -1316,11 +1316,11 @@ function webform_node_insert($node) {
   module_load_include('inc', 'webform', 'includes/webform.emails');
 
   // Prepare the record for writing.
+  $node->webform['nid'] = $node->nid;
   $webform_record = $node->webform;
   $webform_record['preview_excluded_components'] = implode(',', $webform_record['preview_excluded_components']);
 
   // Insert the webform.
-  $node->webform['nid'] = $node->nid;
   $node->webform['record_exists'] = (bool) drupal_write_record('webform', $webform_record);
 
   // Insert the components into the database. Used with clone.module.
