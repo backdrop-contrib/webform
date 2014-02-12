@@ -2266,8 +2266,8 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
       $component_value = isset($form_state['values']['submitted'][$cid]) ? $form_state['values']['submitted'][$cid] : NULL;
       if ($filter == FALSE || _webform_client_form_rule_check($node, $component, $page_num, $input_values)) {
         if ($component['type'] == 'pagebreak') {
-          $next_page_labels[$component['page_num'] - 1] = !empty($component['extra']['next_page_label']) ? $component['extra']['next_page_label'] : t('Next Page >');
-          $prev_page_labels[$component['page_num']] = !empty($component['extra']['prev_page_label']) ? $component['extra']['prev_page_label'] : t('< Previous Page');
+          $next_page_labels[$component['page_num'] - 1] = !empty($component['extra']['next_page_label']) ? t($component['extra']['next_page_label']) : t('Next Page >');
+          $prev_page_labels[$component['page_num']] = !empty($component['extra']['prev_page_label']) ? t($component['extra']['prev_page_label']) : t('< Previous Page');
         }
         _webform_client_form_add_component($node, $component, $component_value, $form['submitted'], $form, $input_values, 'form', $page_num, $filter);
       }
