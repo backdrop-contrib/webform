@@ -1598,7 +1598,7 @@ function webform_update_7409() {
 function webform_update_7410() {
   if (db_field_exists('webform', 'teaser')) {
     db_drop_field('webform', 'teaser');
-    return t('Removed "teaser" column. All forms that had the "Show form in teaser" option disabled will now show forms in their teasers. Use view modes to hide the form if desired.');
+    return t('Removed "teaser" column. All forms that had the "Show complete form in teaser" option disabled will now show forms in their teasers. Use view modes to hide the form if desired.');
   }
 }
 
