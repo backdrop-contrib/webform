@@ -3165,12 +3165,13 @@ function template_preprocess_webform_confirmation(&$vars) {
 
   // Progress bar.
   $vars['progressbar'] = '';
-  if ($vars['node']->webform['progressbar_include_confirmation']) {
-    $page_labels = webform_page_labels($vars['node']);
+  $page_labels = webform_page_labels($vars['node']);
+  $page_count = count($page_labels);
+  if ($vars['node']->webform['progressbar_include_confirmation'] && $page_count > 2) {
     $vars['progressbar'] = theme('webform_progressbar', array(
       'node' => $vars['node'],
-      'page_num' => count($page_labels),
-      'page_count' => count($page_labels),
+      'page_num' => $page_count,
+      'page_count' => $page_count,
       'page_labels' => $page_labels,
     ));
   }
