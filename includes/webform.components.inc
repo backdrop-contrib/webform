@@ -308,7 +308,7 @@ function webform_components_form_validate($form, &$form_state) {
     $items = array();
     foreach ($duplicates as $form_key => $cids) {
       foreach ($cids as $cid) {
-        $items[] = $form['#node']->webform['components'][$cid]['name'];
+        $items[] = webform_filter_xss($form['#node']->webform['components'][$cid]['name']);
       }
     }
 
