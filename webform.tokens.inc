@@ -140,8 +140,19 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
               // Drill down into the renderable to find the element.
               $display_element = $submission_renderable;
               foreach ($parents as $parent) {
-                $display_element = $display_element[$parent];
+                if (isset($display_element[$parent])) {
+                  $display_element = $display_element[$parent];
+                }
+                // Sometimes an element won't exist in the submission renderable
+                // due to conditional logic. If not found, skip that element.
+                else {
+                  $display_element = FALSE;
+                  break;
+                }
               }
+            }
+
+            if ($display_element) {
               // Individual tokens always have access granted even if they're
               // not displayed when printing the whole renderable.
               $display_element['#access'] = TRUE;
