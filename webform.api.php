@@ -686,6 +686,50 @@ function hook_webform_node_defaults_alter(&$defaults) {
 }
 
 /**
+ * Add additional fields to submission data downloads.
+ *
+ * @return
+ *   Keys and titles for default submission information.
+ *
+ * @see hook_webform_results_download_submission_information_data()
+ */
+function hook_webform_results_download_submission_information_info() {
+  return array(
+    'field_key_1' => t('Field Title 1'),
+    'field_key_2' => t('Field Title 2'),
+  );
+}
+
+/**
+ * Return values for submission data download fields.
+ *
+ * @param $token
+ *   The name of the token being replaced.
+ * @param $submission
+ *   The data for an individual submission from webform_get_submissions().
+ * @param $options
+ *   A list of options that define the output format. These are generally passed
+ *   through from the GUI interface.
+ * @param $serial_start
+ *   The starting position for the Serial column in the output.
+ * @param $row_count
+ *   The number of the row being generated.
+ *
+ * @return
+ *   Value for requested submission information field.
+ *
+ * @see hook_webform_results_download_submission_information_info()
+ */
+function hook_webform_results_download_submission_information_data($token, $submission, array $options, $serial_start, $row_count) {
+  switch ($token) {
+    case 'field_key_1':
+      return 'Field Value 1';
+    case 'field_key_2':
+      return 'Field Value 2';
+  }
+}
+
+/**
  * @}
  */
 

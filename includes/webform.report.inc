@@ -394,16 +394,12 @@ function webform_results_download_form($form, &$form_state, $node) {
     '#theme' => 'webform_results_download_select_format',
   );
 
-  $csv_components = array(
-    'info' => t('Submission information'),
-    'serial' => '-' . t('Submission Number'),
-    'sid' => '-' . t('Submission ID'),
-    'time' => '-' . t('Time'),
-    'draft' => '-' . t('Draft'),
-    'ip_address' => '-' . t('IP Address'),
-    'uid' => '-' . t('User ID'),
-    'username' => '-' . t('Username'),
-  );
+  $csv_components = array('info' => t('Submission information'));
+  // Prepend information fields with "-" to indent.
+  foreach (webform_results_download_submission_information($node) as $key => $title) {
+    $csv_components[$key] = '-' . $title;
+  }
+
   $csv_components += webform_component_list($node, 'csv', TRUE);
 
   $form['components'] = array(
@@ -839,7 +835,7 @@ function webform_results_download_headers($node, $options) {
  *   A list of options that define the output format. These are generally passed
  *   through from the GUI interface.
  * @param $serial_start
- *   The starting position for for the Serial column in the output.
+ *   The starting position for the Serial column in the output.
  *
  * @return $rows
  *   An array of rows built according to the provided $serial_start and
@@ -869,31 +865,13 @@ function webform_results_download_rows($node, $options, $serial_start = 0) {
     $row_count++;
 
     $row = array();
-    if (isset($submission_information['serial'])) {
-      $row[] = $serial_start + $row_count;
-    }
-    if (isset($submission_information['sid'])) {
-      $row[] = $sid;
-    }
-    if (isset($submission_information['time'])) {
-      if (!empty($options['iso8601_date'])) {
-        $row[] = format_date($submission->submitted, 'custom', 'c', 'UTC');
-      }
-      else {
-        $row[] = format_date($submission->submitted, 'short');
-      }
-    }
-    if (isset($submission_information['draft'])) {
-      $row[] = $submission->is_draft;
-    }
-    if (isset($submission_information['ip_address'])) {
-      $row[] =  $submission->remote_addr;
-    }
-    if (isset($submission_information['uid'])) {
-      $row[] = $submission->uid;
-    }
-    if (isset($submission_information['username'])) {
-      $row[] = $submission->name;
+    // Add submission information.
+    foreach (array_keys($submission_information) as $token) {
+      $cell = module_invoke_all('webform_results_download_submission_information_data', $token, $submission, $options, $serial_start, $row_count);
+      $context = array('token' => $token, 'submission' => $submission, 'options' => $options, 'serial_start' => $serial_start, 'row_count' => $row_count);
+      drupal_alter('webform_results_download_submission_information_data', $cell, $context);
+      // implode() to ensure everything from a single value goes into one column, even if more than one module responds to this item.
+      $row[] = implode(', ', $cell);
     }
 
     foreach ($options['components'] as $cid) {
@@ -927,22 +905,15 @@ function webform_results_download_rows($node, $options, $serial_start = 0) {
  * Default columns for submission information.
  *
  * By default all exports have several columns of generic information that
- * applies to all submissions. This function simply returns this list of generic
- * columns that can be included in all exports.
+ * applies to all submissions. This function returns the list of generic columns
+ * plus columns added by other modules.
  *
  * @param $options
  *   Filter down the list of columns based on a provided column list.
  */
 function webform_results_download_submission_information($node, $options = array()) {
-  $submission_information = array(
-    'serial' => t('Serial'),
-    'sid' => t('SID'),
-    'time' => t('Time'),
-    'draft' => t('Draft'),
-    'ip_address' => t('IP Address'),
-    'uid' => t('UID'),
-    'username' => t('Username'),
-  );
+  $submission_information = module_invoke_all('webform_results_download_submission_information_info');
+  drupal_alter('webform_results_download_submission_information_info', $submission_information);
 
   if (isset($options['components'])) {
     foreach ($submission_information as $key => $label) {
@@ -954,6 +925,49 @@ function webform_results_download_submission_information($node, $options = array
 
   return $submission_information;
 }
+
+/**
+ * Implements hook_webform_results_download_submission_information_info().
+ */
+function webform_webform_results_download_submission_information_info() {
+  return array(
+    'webform_serial' => t('Serial'),
+    'webform_sid' => t('SID'),
+    'webform_time' => t('Time'),
+    'webform_draft' => t('Draft'),
+    'webform_ip_address' => t('IP Address'),
+    'webform_uid' => t('UID'),
+    'webform_username' => t('Username'),
+  );
+}
+
+/**
+ * Implements hook_webform_results_download_submission_information_data().
+ */
+function webform_webform_results_download_submission_information_data($token, $submission, array $options, $serial_start, $row_count) {
+  switch ($token) {
+    case 'webform_serial':
+      return $serial_start + $row_count;
+    case 'webform_sid':
+      return $submission->sid;
+    case 'webform_time':
+      if (!empty($options['iso8601_date'])) {
+        return format_date($submission->submitted, 'custom', 'c', 'UTC');
+      }
+      else {
+        return format_date($submission->submitted, 'short');
+      }
+    case 'webform_draft':
+      return $submission->is_draft;
+    case 'webform_ip_address':
+      return $submission->remote_addr;
+    case 'webform_uid':
+      return $submission->uid;
+    case 'webform_username':
+      return $submission->name;
+  }
+}
+
 /**
  * Get options for creating downloadable versions of the webform data.
  *
