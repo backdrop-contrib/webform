@@ -383,20 +383,17 @@ function webform_schema() {
       ),
       'subject' => array(
         'description' => 'The e-mail subject that will be used. This may be a string, the special key "default" or a numeric value. If a numeric value is used, the value of a component will be substituted on submission.',
-        'type' => 'varchar',
-        'length' => '255',
+        'type' => 'text',
         'not null' => FALSE,
       ),
       'from_name' => array(
         'description' => 'The e-mail "from" name that will be used. This may be a string, the special key "default" or a numeric value. If a numeric value is used, the value of a component will be substituted on submission.',
-        'type' => 'varchar',
-        'length' => '255',
+        'type' => 'text',
         'not null' => FALSE,
       ),
       'from_address' => array(
         'description' => 'The e-mail "from" e-mail address that will be used. This may be a string, the special key "default" or a numeric value. If a numeric value is used, the value of a component will be substituted on submission.',
-        'type' => 'varchar',
-        'length' => '255',
+        'type' => 'text',
         'not null' => FALSE,
       ),
       'template' => array(
@@ -1694,4 +1691,33 @@ function webform_update_7413() {
 
     return t('New webform columns added.');
   }
+}
+
+/**
+ * Change email subject, from_name and from_address fields to type 'TEXT'.
+ */
+function webform_update_7414() {
+  $schema = array(
+    'subject' => array(
+      'description' => 'The e-mail subject that will be used. This may be a string, the special key "default" or a numeric value. If a numeric value is used, the value of a component will be substituted on submission.',
+      'type' => 'text',
+      'not null' => FALSE,
+    ),
+    'from_name' => array(
+      'description' => 'The e-mail "from" name that will be used. This may be a string, the special key "default" or a numeric value. If a numeric value is used, the value of a component will be substituted on submission.',
+      'type' => 'text',
+      'not null' => FALSE,
+    ),
+    'from_address' => array(
+      'description' => 'The e-mail "from" e-mail address that will be used. This may be a string, the special key "default" or a numeric value. If a numeric value is used, the value of a component will be substituted on submission.',
+      'type' => 'text',
+      'not null' => FALSE,
+    ),
+  );
+
+  db_change_field('webform_emails', 'subject', 'subject', $schema['subject']);
+  db_change_field('webform_emails', 'from_name', 'from_name', $schema['from_name']);
+  db_change_field('webform_emails', 'from_address', 'from_address', $schema['from_address']);
+
+  return t('Custom email columns successfully changed.');
 }

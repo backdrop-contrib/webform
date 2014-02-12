@@ -217,7 +217,7 @@ function webform_email_edit_form($form, $form_state, $node, $email = array()) {
       '#type' => 'textfield',
       '#size' => 40,
       '#default_value' => (!is_numeric($email[$field]) && $email[$field] != 'default') ? $email[$field] : NULL,
-      '#maxlength' => $field == 'email' ? 500 : 255,
+      '#maxlength' => 500,
     );
     $field_type = $field === 'from_address' || $field === 'email' ? 'email_address' : 'email_name';
     $component_options = webform_component_list($node, $field_type, FALSE);
