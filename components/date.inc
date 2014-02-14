@@ -289,14 +289,9 @@ function webform_validate_date($element, $form_state) {
         $missing_fields[] = $field_type;
       }
     }
-    // Check if the user filled the required fields.
-    if ($element['#required'] && count($missing_fields) === 3){
-      form_error($element, t('!name field is required.', array('!name' => $element['#title'])));
-      return;
-    }
-    elseif (count($missing_fields)) {
+    if (count($missing_fields)) {
       foreach ($missing_fields as $missing_field) {
-        form_error($element[$missing_field], t('!part in !name field must be entered.', array('!name' => $element['#title'], '!part' => $element[$missing_field]['#title'])));
+        form_error($element[$missing_field], t('!part in !name is missing.', array('!name' => $element['#title'], '!part' => $element[$missing_field]['#title'])));
       }
       return;
     }
@@ -336,6 +331,9 @@ function webform_validate_date($element, $form_state) {
         form_error($element, t('The entered date must be @end_date or earlier.', array('@end_date' => date($format, $end_date))));
       }
     }
+  }
+  elseif ($element['#required']) {
+    form_error($element, t('!name field is required.', array('!name' => $element['#title'])));
   }
 }
 
