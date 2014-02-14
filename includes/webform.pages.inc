@@ -10,6 +10,8 @@
  * Main configuration form for editing a webform node.
  */
 function webform_configure_form($form, &$form_state, $node) {
+  form_load_include($form_state, 'inc', 'webform', 'includes/webform.components');
+
   $form['#attached']['library'][] = array('webform', 'admin');
 
   $form['#node'] = $node;
