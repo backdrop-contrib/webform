@@ -2249,6 +2249,14 @@ function webform_client_form($form, &$form_state, $node, $submission, $is_draft 
     // submission or not.
     $input_values = isset($submission->data) ? $submission->data : array();
 
+    // Form state storage override any default submission information. Convert
+    // the value structure to always be an array, matching $submission->data.
+    if (isset($form_state['storage']['submitted'])) {
+      foreach ($form_state['storage']['submitted'] as $cid => $data) {
+        $input_values[$cid] = is_array($data) ? $data : array($data);
+      }
+    }
+
     // Form state values override any default submission information. Convert
     // the value structure to always be an array, matching $submission->data.
     if (isset($form_state['values']['submitted'])) {
