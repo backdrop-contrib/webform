@@ -153,25 +153,26 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
                   break;
                 }
               }
-            }
 
-            if ($display_element) {
-              // Individual tokens always have access granted even if they're
-              // not displayed when printing the whole renderable.
-              $display_element['#access'] = TRUE;
-
-              if ($modifier === 'label') {
-                $replacements[$original] = webform_filter_xss($display_element['#title']);
-              }
-              else {
-                // Remove theme wrappers for the nolabel modifier.
-                if ($modifier === 'nolabel' || empty($modifier)) {
-                  $display_element['#theme_wrappers'] = array();
+              if ($display_element) {
+                // Individual tokens always have access granted even if they're
+                // not displayed when printing the whole renderable.
+                $display_element['#access'] = TRUE;
+  
+                if ($modifier === 'label') {
+                  $replacements[$original] = webform_filter_xss($display_element['#title']);
                 }
-                $replacements[$original] = render($display_element);
+                else {
+                  // Remove theme wrappers for the nolabel modifier.
+                  if ($modifier === 'nolabel' || empty($modifier)) {
+                    $display_element['#theme_wrappers'] = array();
+                  }
+                  $replacements[$original] = render($display_element);
+                }
+                break;
               }
-              break;
             }
+
           }
         }
 
