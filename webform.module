@@ -2480,13 +2480,8 @@ function _webform_client_form_rule_check($node, $component, $page_num, $input_va
     $target_map = $target_maps[$node->nid];
   }
 
-  // Check for private components first, which is an easy check.
-  if ($component['extra']['private']) {
-    $show_component = webform_results_access($node);
-  }
-
   // Short cut the rest of this function if no conditionals are defined.
-  if (empty($target_map) || $component['extra']['private']) {
+  if (empty($target_map)) {
     return $show_component ? WEBFORM_CONDITIONAL_INCLUDE : WEBFORM_CONDITIONAL_EXCLUDE;
   }
 
@@ -2611,12 +2606,16 @@ function _webform_client_form_rule_check($node, $component, $page_num, $input_va
  */
 function _webform_client_form_add_component($node, $component, $component_value, &$parent_fieldset, &$form, $input_values, $format = 'form', $page_num = 0, $filter = TRUE) {
   $cid = $component['cid'];
+  $component_access = empty($component['extra']['private']) || webform_results_access($node);
 
   // Load with submission information if necessary.
   if ($format != 'form') {
     // This component is display only.
     $data = empty($input_values[$cid]) ? NULL : $input_values[$cid];
     if ($display_element = webform_component_invoke($component['type'], 'display', $component, $data, $format)) {
+      // Set access based on the private property.
+      $element['#access'] = $component_access;
+
       // Ensure the component is added as a property.
       $display_element['#webform_component'] = $component;
 
@@ -2647,6 +2646,9 @@ function _webform_client_form_add_component($node, $component, $component_value,
     // Add this user-defined field to the form (with all the values that are always available).
     $data = isset($input_values[$cid]) ? $input_values[$cid] : NULL;
     if ($element = webform_component_invoke($component['type'], 'render', $component, $data, $filter)) {
+      // Set access based on the private property.
+      $element['#access'] = $component_access;
+
       // Ensure the component is added as a property.
       $element['#webform_component'] = $component;
 
