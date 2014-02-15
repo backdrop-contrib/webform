@@ -3040,13 +3040,6 @@ function webform_client_form_submit($form, &$form_state) {
   $confirmation = strlen(trim(strip_tags($node->webform['confirmation']))) ? $node->webform['confirmation'] : '';
   $confirmation = webform_replace_tokens($confirmation, $node, $submission, NULL, TRUE);
 
-  // Clean up the redirect URL and filter it for webform tokens.
-  $redirect_url = trim($node->webform['redirect_url']);
-  $redirect_url = webform_replace_tokens($redirect_url, $node, $submission);
-
-  // Remove the domain name from the redirect.
-  $redirect_url = preg_replace('/^' . preg_quote($GLOBALS['base_url'], '/') . '\//', '', $redirect_url);
-
   // Check confirmation and redirect_url fields.
   $message = NULL;
   $redirect = NULL;
@@ -3060,22 +3053,32 @@ function webform_client_form_submit($form, &$form_state) {
   elseif (!empty($form_state['values']['details']['finished'])) {
     $message = t('Submission updated.');
   }
-  elseif ($redirect_url == '<none>') {
+  elseif ($node->webform['redirect_url'] == '<none>') {
     $redirect = NULL;
   }
-  elseif ($redirect_url == '<confirmation>') {
+  elseif ($node->webform['redirect_url'] == '<confirmation>') {
     $query = array('sid' => $sid);
     if ((int) $user->uid === 0) {
       $query['token'] = md5($submission->submitted . $submission->sid . drupal_get_private_key());
     }
     $redirect = array('node/' . $node->nid . '/done', array('query' => $query));
   }
-  elseif (valid_url($redirect_url, TRUE)) {
-    $redirect = $redirect_url;
-    $external_url = TRUE;
-  }
-  elseif ($redirect_url && strpos($redirect_url, 'http') !== 0) {
-    $redirect = $redirect_url;
+  else {
+    // Clean up the redirect URL, filter it for tokens and remove the domain name.
+    $redirect_url = trim($node->webform['redirect_url']);
+    $redirect_url = webform_replace_url_tokens($redirect_url, $node, $submission);
+    $redirect_url = preg_replace('/^' . preg_quote($GLOBALS['base_url'], '/') . '\//', '', $redirect_url);
+
+    // $redirect_url is an absolute, external URL
+    if (valid_url($redirect_url, TRUE)) {
+      $redirect = $redirect_url;
+      $external_url = TRUE;
+    }
+    elseif ($redirect_url && strpos($redirect_url, 'http') !== 0) {
+      // Pass URL as an array so we support a query string and/or fragment.
+      $parsed_url = drupal_parse_url($redirect_url);
+      $redirect = array('path' => $parsed_url['path'], $parsed_url);
+    }
   }
 
   // Show a message if manually set.
@@ -3552,6 +3555,31 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
     $token_data['webform-email'] = $email;
   }
   return token_replace($string, $token_data, array('clear' => true, 'sanitize' => $sanitize));
+}
+
+/**
+ * Replace tokens within a URL, encoding the parts within the query string.
+ *
+ * @param string $redirect_url
+ *   The redirect URL, with everything other than tokens already URL encoded.
+ * @param $node
+ *   If replacing node-level tokens, the node for which tokens will be created.
+ * @param $submission
+ *   If replacing submission-level tokens, the submission for which tokens will
+ *   be created.
+ * @return string
+ *   The parsed and URL-encoded URL.
+ */
+function webform_replace_url_tokens($redirect_url, $node = NULL, $submission = NULL) {
+  $parsed_redirect_url = drupal_parse_url($redirect_url);
+  $parsed_redirect_url['path'] = webform_replace_tokens($parsed_redirect_url['path'], $node, $submission);
+  if (!empty($parsed_redirect_url['query'])) {
+    foreach ($parsed_redirect_url['query'] as $key => $value) {
+      $parsed_redirect_url['query'][$key] = webform_replace_tokens($value, $node, $submission);;
+    }
+  }
+  $redirect_url = url($parsed_redirect_url['path'], $parsed_redirect_url);
+  return $redirect_url;
 }
 
 /**
