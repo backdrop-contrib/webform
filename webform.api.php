@@ -71,17 +71,13 @@ function hook_webform_select_options_info_alter(&$items) {
  *   of key => value pairs. Select components support up to one level of
  *   nesting, but when results are displayed, the list needs to be returned
  *   without the nesting.
- * @param $filter
- *   Boolean value indicating whether the included options should be passed
- *   through the webform_replace_tokens() function for token replacement (only)
- *   needed if your list contains tokens).
  * @param $arguments
  *   The "options arguments" specified in hook_webform_select_options_info().
  * @return
  *   An array of key => value pairs suitable for a select list's #options
  *   FormAPI property.
  */
-function webform_options_example($component, $flat, $filter, $arguments) {
+function webform_options_example($component, $flat, $arguments) {
   $options = array(
     'one' => t('Pre-built option one'),
     'two' => t('Pre-built option two'),
