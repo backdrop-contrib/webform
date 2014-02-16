@@ -133,6 +133,9 @@ function webform_views_data() {
     'sort' => array(
       'handler' => 'views_handler_sort_date',
     ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_date',
+    ),
   );
 
   // IP Address (remote_addr).

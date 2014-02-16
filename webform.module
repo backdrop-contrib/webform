@@ -4474,3 +4474,10 @@ function webform_mollom_form_info($form_id) {
 
   return $form_info;
 }
+
+/**
+ * Implements hook_date_views_extra_tables().
+ */
+function webform_date_views_extra_tables() {
+  return array('webform_submissions' => 'webform_submissions');
+}
