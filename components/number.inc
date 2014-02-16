@@ -781,7 +781,7 @@ function _webform_number_format($component, $value) {
  * Based on http://stackoverflow.com/questions/5917082/regular-expression-to-match-numbers-with-or-without-commas-and-decimals-in-text.
  */
 function webform_number_format_match($value, $point, $separator) {
-  return preg_match('/^([1-9](?:\d{0,2})(?:' . ($separator ? (preg_quote($separator, '/') . '?') : '') . '\d{3})*(?:' . preg_quote($point, '/') . '\d*[0-9])?|0?' . preg_quote($point, '/') . '\d*[1-9]|0)$/', $value);
+  return preg_match('/^(-? ?[1-9](?:\d{0,2})(?:' . ($separator ? (preg_quote($separator, '/') . '?') : '') . '\d{3})*(?:' . preg_quote($point, '/') . '\d*[0-9])?|0?' . preg_quote($point, '/') . '\d*[1-9]|0)$/', $value);
 }
 
 /**
@@ -823,7 +823,7 @@ function webform_number_format($value, $decimals = NULL, $point = '.', $separato
  */
 function webform_number_standardize($value, $point) {
   // For simplicity, strip everything that's not the decimal point.
-  $value = preg_replace('/[^0-9' . preg_quote($point, '/') . ']/', '', $value);
+  $value = preg_replace('/[^\-0-9' . preg_quote($point, '/') . ']/', '', $value);
   // Convert the decimal point to a period.
   $value = str_replace($point, '.', $value);
   return $value;
