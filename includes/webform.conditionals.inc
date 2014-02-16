@@ -100,6 +100,7 @@ function webform_conditionals_form($form, &$form_state, $node) {
   $form['actions']['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save conditions'),
+    '#validate' => array('webform_conditionals_form_validate'),
     '#submit' => array('webform_conditionals_form_submit'),
   );
 
@@ -130,6 +131,23 @@ function webform_conditionals_form_add($form, &$form_state) {
   // Add the conditional to form state and rebuild the form.
   $form_state['values']['conditionals'][] = $conditional;
   $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Validate handler for webform_conditionals_form().
+ *
+ * Prohibit the source and target of a conditional rule from being the same.
+ */
+function webform_conditionals_form_validate($form, &$form_state) {
+  foreach ($form_state['complete form']['conditionals'] as $conditional_key => $conditional) {
+    if (substr($conditional_key, 0, 1) !== '#' && $conditional_key !== 'new') {
+      foreach ($conditional['rules'] as $rule_key => $rule) {
+        if (substr($rule_key, 0, 1) !== '#' && $rule['source']['#value'] === $conditional['target']['#value']) {
+          form_set_error('conditionals][' . $conditional_key . '][rules][' . $rule_key . '][source', t('The subject of the conditional cannot be the same as the component that is shown or hidden (%target).', array('%target' => $conditional['target']['#options'][$conditional['target']['#value']])));
+        }
+      }
+    }
+  }
 }
 
 /**
