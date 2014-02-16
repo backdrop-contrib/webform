@@ -640,7 +640,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
   $submissions = array();
 
   if (!is_array($filters)) {
-    $filters = array('nid' => $filters);
+    $filters = array('ws.nid' => $filters);
   }
 
   // UID filters need to be against a specific table.
@@ -651,6 +651,9 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
 
   // Build the list of submissions and load their basic information.
   $pager_query = db_select('webform_submissions', 'ws')
+    // Ensure only one row per submission is returned. Could be more than one if
+    // sorting on a column that uses multiple rows for its data.
+    ->distinct()
     ->addTag('webform_get_submissions_sids')
     ->fields('ws', array('sid', 'nid', 'submitted', 'remote_addr', 'uid', 'is_draft'));
   foreach ($filters as $column => $value) {
@@ -671,9 +674,28 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
   }
 
   if (is_array($header)) {
-    // Extending the query instantiates a new query object.
-    $pager_query = $pager_query->extend('TableSort');
-    $pager_query->orderByHeader($header);
+    $metadata_columns = array();
+    foreach ($header as $header_item) {
+      $metadata_columns[] = $header_item['data'];
+    }
+    $sort = drupal_get_query_parameters();
+    // Sort by submitted data column if order is set but not in $metadata_columns.
+    if (isset($sort['order']) && !in_array($sort['order'], $metadata_columns, TRUE)) {
+      // Default if sort is unset or invalid.
+      if (!isset($sort['sort']) || !in_array($sort['sort'], array('asc', 'desc'), TRUE)) {
+        $sort['sort'] = '';
+      }
+      $pager_query->leftJoin('webform_component', 'wc', 'ws.nid = wc.nid AND wc.name = :form_key', array('form_key' => $sort['order']));
+      $pager_query->leftJoin('webform_submitted_data', 'wsd', 'wc.nid = wsd.nid AND ws.sid = wsd.sid AND wc.cid = wsd.cid');
+      $pager_query->orderBy('wsd.data', $sort['sort']);
+      $pager_query->orderBy('sid', 'ASC');
+    }
+    // Sort by metadata column.
+    else {
+      // Extending the query instantiates a new query object.
+      $pager_query = $pager_query->extend('TableSort');
+      $pager_query->orderByHeader($header);
+    }
   }
   else {
     $pager_query->orderBy('sid', 'ASC');
