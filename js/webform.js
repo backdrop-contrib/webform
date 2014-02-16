@@ -148,6 +148,7 @@ Drupal.webform.conditionalCheck = function(e) {
       }
 
       // Flip the result of the action is to hide.
+      var showComponent;
       if (ruleGroup['action'] == 'hide') {
         showComponent = !conditionalResult;
       }
