@@ -1666,6 +1666,15 @@ function webform_node_load($nodes, $types) {
 }
 
 /**
+* Implements hook_user_role_delete().
+*
+* Removes references to deleted role from existing webforms.
+*/
+function webform_user_role_delete($role) {
+  db_delete('webform_roles')->condition('rid', $role->rid)->execute();
+}
+
+/**
  * Implements hook_form_alter().
  */
 function webform_form_alter(&$form, $form_state, $form_id) {
