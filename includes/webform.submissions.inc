@@ -248,7 +248,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
     }
 
     // Replace the "email" field content with chosen email mapping.
-    if (isset($email['extra']['email_mapping'])) {
+    if (isset($email['extra']['email_mapping']) && !empty($submission->data[$email['email']])) {
       $component_emails = array();
       foreach ($submission->data[$email['email']] as $email_value) {
         if (isset($email['extra']['email_mapping'][$email_value])) {
