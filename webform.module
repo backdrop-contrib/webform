@@ -1221,6 +1221,7 @@ function webform_webform_submission_render_alter(&$renderable) {
   $is_admin = webform_results_access($node);
   if (empty($renderable['#email']) && !$is_admin) {
     // Find and hide the display of all hidden components.
+    module_load_include('inc', 'webform', 'includes/webform.components');
     foreach ($node->webform['components'] as $cid => $component) {
       if ($component['type'] == 'hidden') {
         $parents = webform_component_parent_keys($node, $component);
