@@ -399,6 +399,14 @@ function webform_configure_form_validate($form, &$form_state) {
   else {
     form_set_value($form['submission']['redirection']['redirect_url'], '<none>', $form_state);
   }
+
+  // Ensure only positive integers are entered as submission limits.
+  foreach (array('total_submit_limit', 'submit_limit') as $field) {
+    $limit = (int) $form['submission'][$field][$field]['#value'];
+    if ($limit < 1 && $limit !== -1) {
+      form_error($form['submission'][$field][$field], t('The submission limit must be at least 1.'));
+    }
+  }
 }
 
 /**
@@ -436,8 +444,8 @@ function webform_configure_form_submit($form, &$form_state) {
     $node->webform['submit_interval'] = -1;
   }
   else {
-    $node->webform['submit_limit'] = $form_state['values']['submit_limit'];
-    $node->webform['submit_interval'] = $form_state['values']['submit_interval'];
+    $node->webform['submit_limit'] = (int) $form_state['values']['submit_limit'];
+    $node->webform['submit_interval'] = (int) $form_state['values']['submit_interval'];
   }
 
   // Set the total submit limit to -1 if set to unlimited.
@@ -446,8 +454,8 @@ function webform_configure_form_submit($form, &$form_state) {
     $node->webform['total_submit_interval'] = -1;
   }
   else {
-    $node->webform['total_submit_limit'] = $form_state['values']['total_submit_limit'];
-    $node->webform['total_submit_interval'] = $form_state['values']['total_submit_interval'];
+    $node->webform['total_submit_limit'] = (int) $form_state['values']['total_submit_limit'];
+    $node->webform['total_submit_interval'] = (int) $form_state['values']['total_submit_interval'];
   }
 
   // Set the progress bar preferences.
