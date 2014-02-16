@@ -520,6 +520,9 @@ function webform_email_edit_form_submit($form, &$form_state) {
   $node = $form['#node'];
   webform_ensure_record($node);
 
+  // Remove duplicate email To: addresses.
+  $form_state['values']['email_custom'] = implode(',', array_unique(array_map('trim', explode(',', $form_state['values']['email_custom']))));
+
   // Merge the e-mail, name, address, and subject options into single values.
   $email = array(
     'eid' => $form_state['values']['eid'],
