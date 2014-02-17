@@ -667,6 +667,18 @@ function _webform_conditional_operator_info() {
     'js comparison callback' => 'conditionalOperatorStringNotEqual',
     'form callback' => 'webform_conditional_form_select',
   );
+  $operators['select']['empty'] = array(
+    'label' => t('is empty'),
+    'comparison callback' => 'webform_conditional_operator_string_empty',
+    'js comparison callback' => 'conditionalOperatorStringEmpty',
+    'form callback' => FALSE, // No value form at all.
+  );
+  $operators['select']['not_empty'] = array(
+    'label' => t('is not empty'),
+    'comparison callback' => 'webform_conditional_operator_string_not_empty',
+    'js comparison callback' => 'conditionalOperatorStringNotEmpty',
+    'form callback' => FALSE, // No value form at all.
+  );
 
   // Date operators:
   $operators['date']['equal'] = array(

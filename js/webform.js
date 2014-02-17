@@ -240,7 +240,7 @@ Drupal.webform.conditionalOperatorStringEndsWith = function(element, existingVal
 
 Drupal.webform.conditionalOperatorStringEmpty = function(element, existingValue, ruleValue) {
   var currentValue = Drupal.webform.stringValue(element, existingValue);
-  var returnValue = true;
+  var returnValue = currentValue.length ? false : true;
   $.each(currentValue, function(n, value) {
     if (value !== '') {
       returnValue = false;
@@ -251,15 +251,7 @@ Drupal.webform.conditionalOperatorStringEmpty = function(element, existingValue,
 };
 
 Drupal.webform.conditionalOperatorStringNotEmpty = function(element, existingValue, ruleValue) {
-  var currentValue = Drupal.webform.stringValue(element, existingValue);
-  var empty = false;
-  $.each(currentValue, function(n, value) {
-    if (value === '') {
-      empty = true;
-      return false; // break.
-    }
-  });
-  return !empty;
+  return !Drupal.webform.conditionalOperatorStringEmpty(element, existingValue, ruleValue);
 };
 
 Drupal.webform.conditionalOperatorNumericEqual = function(element, existingValue, ruleValue) {
