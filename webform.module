@@ -3586,7 +3586,7 @@ function webform_replace_url_tokens($redirect_url, $node = NULL, $submission = N
   $parsed_redirect_url['path'] = webform_replace_tokens($parsed_redirect_url['path'], $node, $submission);
   if (!empty($parsed_redirect_url['query'])) {
     foreach ($parsed_redirect_url['query'] as $key => $value) {
-      $parsed_redirect_url['query'][$key] = webform_replace_tokens($value, $node, $submission);;
+      $parsed_redirect_url['query'][$key] = trim(webform_replace_tokens($value, $node, $submission));
     }
   }
   $redirect_url = url($parsed_redirect_url['path'], $parsed_redirect_url);
