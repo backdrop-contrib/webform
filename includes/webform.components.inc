@@ -357,7 +357,22 @@ function webform_components_form_add_submit($form, &$form_state) {
   $node = node_load($form_state['values']['nid']);
 
   $component = $form_state['values']['add'];
-  $form_state['redirect'] = array('node/' . $node->nid . '/webform/components/new/' . $component['type'], array('query' => array('name' => $component['name'], 'required' => $component['required'], 'pid' => $component['pid'], 'weight' => $component['weight'])));
+
+  // Set the values in the query string for the add component page.
+  $query = array(
+    'name' => $component['name'],
+    'required' => $component['required'],
+    'pid' => $component['pid'],
+    'weight' => $component['weight'],
+  );
+
+  // Forward the "destination" query string value to the next form.
+  if (isset($_GET['destination'])) {
+    $query['destination'] = $_GET['destination'];
+    unset($_GET['destination']);
+    drupal_static_reset('drupal_get_destination');
+  }
+  $form_state['redirect'] = array('node/' . $node->nid . '/webform/components/new/' . $component['type'], array('query' => $query));
 }
 
 /**
