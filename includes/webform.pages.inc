@@ -402,8 +402,8 @@ function webform_configure_form_validate($form, &$form_state) {
 
   // Ensure only positive integers are entered as submission limits.
   foreach (array('total_submit_limit', 'submit_limit') as $field) {
-    $limit = (int) $form['submission'][$field][$field]['#value'];
-    if ($limit < 1 && $limit !== -1) {
+    $limit = $form['submission'][$field][$field]['#value'];
+    if ($limit !== '' && (int) $limit < 1 && (int) $limit !== -1) {
       form_error($form['submission'][$field][$field], t('The submission limit must be at least 1.'));
     }
   }
