@@ -1313,8 +1313,12 @@ function webform_node_insert($node) {
 
   // If added directly through node_save(), set defaults for the node.
   if (!isset($node->webform)) {
-    $node->webform = webform_node_defaults();
+    $node->webform = array();
   }
+
+  // Ensure values for all defaults are provided. Useful for importing from
+  // older versions into newer ones.
+  $node->webform += webform_node_defaults();
 
   // Do not make an entry if this node does not have any Webform settings.
   if ($node->webform == webform_node_defaults() && !in_array($node->type, webform_variable_get('webform_node_types_primary'))) {
