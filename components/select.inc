@@ -449,8 +449,7 @@ function webform_expand_select_or_other($element) {
 }
 
 /**
- * Drupal 6 hack that properly *renders* checkboxes in multistep forms. This is
- * different than the value hack needed in Drupal 5, which is no longer needed.
+ * Webform-specific checkbox #process function. Sanitize values before output.
  */
 function webform_expand_checkboxes($element) {
   // Elements that have a value set are already in the form structure cause
