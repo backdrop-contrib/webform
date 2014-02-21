@@ -733,7 +733,7 @@ function webform_results_export($node, $format = 'delimited', $options = array()
   }
 
   // Add the closing bytes.
-  $exporter->eof($handle);
+  $exporter->eof($handle, $row_count, $col_count);
 
   // Close the file.
   @fclose($handle);
