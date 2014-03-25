@@ -230,6 +230,25 @@ function hook_webform_submission_actions($node, $submission) {
 }
 
 /**
+ * Modify the draft to be presented for editing.
+ *
+ * When drafts are enabled for the webform, by default, a pre-existig draft is
+ * presented when the webform is displayed to that user. To allow multiple
+ * drafts, implement this alter function to set the $sid to NULL, or use your
+ * application's business logic to determine whether a new draft or which of
+ * he pre-existing drafts should be presented.
+ *
+ * @param integer $sid
+ *    The id of the most recent submission to be presented for editing. Change
+ *    to a different draft's sid or set to NULL for a new draft.
+ */
+function hook_webform_draft_alter(&$sid) {
+  if ($_GET['newdraft']) {
+    $sid = NULL;
+  }
+}
+
+/**
  * Alter the display of a Webform submission.
  *
  * This function applies to both e-mails sent by Webform and normal display of

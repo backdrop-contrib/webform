@@ -3516,7 +3516,7 @@ function theme_webform_mail_headers($variables) {
  * Check if current user has a draft of this webform, and return the sid.
  */
 function _webform_fetch_draft_sid($nid, $uid) {
-  return db_select('webform_submissions')
+  $sid = db_select('webform_submissions')
     ->fields('webform_submissions', array('sid'))
     ->condition('nid', $nid)
     ->condition('uid', $uid)
@@ -3524,6 +3524,10 @@ function _webform_fetch_draft_sid($nid, $uid) {
     ->orderBy('submitted', 'DESC')
     ->execute()
     ->fetchField();
+  if ($sid) {
+    drupal_alter('webform_draft', $sid); 
+  }
+  return $sid;
 }
 
 /**

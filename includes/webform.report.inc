@@ -681,7 +681,7 @@ function webform_results_download_form_submit(&$form, &$form_state) {
     // Start the batch size at 50,000 per batch, but divide by number of
     // components in the form. e.g. If a form had 10 components, it would
     // export 5,000 submissions at a time.
-    $batch_size = ceil(50000 / count($form_state['values']['node']->webform['components']));
+    $batch_size = ceil(50000 / max(1, count($form_state['values']['node']->webform['components'])));
 
     // Every 32MB of additional memory after 64MB adds a multiplier in size.
     $memory_limit = parse_size(ini_get('memory_limit'));
@@ -1162,7 +1162,9 @@ function webform_results_batch_rows($node, $format = 'delimited', $options = arr
   // Display status message if not yet finished.
   if ($context['sandbox']['batch_number'] != $context['sandbox']['batch_max']) {
     $context['message'] = t('Exported @count of @total submissions...', array('@count' => $context['sandbox']['serial'], '@total' => $context['sandbox']['sid_count']));
-    $context['finished'] = $context['sandbox']['batch_number'] / $context['sandbox']['batch_max'];
+    $context['finished'] = $context['sandbox']['batch_number'] < $context['sandbox']['batch_max']
+                              ? $context['sandbox']['batch_number'] / $context['sandbox']['batch_max']
+                              : 1.0;
   }
   // If finished, save the results.
   else {

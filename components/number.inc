@@ -402,28 +402,17 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
 
   $population = array();
   $submissions = 0;
-  $nonzero = 0;
-  $not_empty = 0;
+  $non_zero = 0;
+  $non_empty = 0;
   $sum = 0;
 
   $result = $query->execute();
   foreach ($result as $data) {
     $value = trim($data['data']);
-    if ($value == '') {
-      $number = 0.0;
-    }
-    else {
-      $number = $value * 1.0;
-    }
-
-    if ($value !== '') {
-      $not_empty++;
-    }
-
-    if ($number > 0) {
-      $nonzero++;
-      $sum += $number;
-    }
+    $number = (float)$value;
+    $non_empty += (integer)($value !== '');
+    $non_zero += (integer)($number != 0.0);
+    $sum += $number;
     $population[] = $number;
     $submissions++;
   }
@@ -431,10 +420,10 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
 
   // Average and population count.
   if ($component['extra']['excludezero']) {
-    $average = $nonzero ? ($sum / $nonzero) : 0;
+    $average = $non_zero ? ($sum / $non_zero) : 0;
     $average_title = t('Average !mu excluding zeros/blanks', array('!mu' => $advanced_stats ? '(&mu;)' : ''));
     // Sample (sub-set of total population).
-    $population_count = $nonzero - 1;
+    $population_count = $non_zero - 1;
     $sigma = 'sd';
     $description = t('sample');
   }
@@ -451,8 +440,8 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
   $average = _webform_number_format($component, $average);
   $sum = _webform_number_format($component, $sum);
 
-  $rows[] = array(t('Zero/blank'), ($submissions - $nonzero));
-  $rows[] = array(t('User entered value'), $not_empty);
+  $rows[] = array(t('Zero/blank'), ($submissions - $non_zero));
+  $rows[] = array(t('User entered value'), $non_empty);
 
   $other[] = array(t('Sum') . ($advanced_stats ? ' (&Sigma;)' : ''), $sum);
   $other[] = array($average_title, $average);
