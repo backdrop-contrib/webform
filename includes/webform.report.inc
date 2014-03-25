@@ -963,7 +963,7 @@ function webform_webform_results_download_submission_information_data($token, $s
       return $submission->sid;
     case 'webform_time':
       if (!empty($options['iso8601_date'])) {
-        return format_date($submission->submitted, 'custom', 'c', 'UTC');
+        return format_date($submission->submitted, 'custom', 'Y-m-d\TH:i:s', 'UTC');
       }
       else {
         return format_date($submission->submitted, 'short');
