@@ -34,7 +34,7 @@ function webform_schema() {
       'redirect_url' => array(
         'description' => 'The URL a user is redirected to after submitting a form.',
         'type' => 'varchar',
-        'length' => 255,
+        'length' => 2048,
         'default' => '<confirmation>',
       ),
       'status' => array(
@@ -1720,4 +1720,17 @@ function webform_update_7414() {
   db_change_field('webform_emails', 'from_address', 'from_address', $schema['from_address']);
 
   return t('Custom email columns successfully changed.');
+}
+
+/**
+ * Increase length of webform.redirect_url.
+ */
+function webform_update_7415() {
+  $spec = array(
+    'description' => 'The URL a user is redirected to after submitting a form.',
+    'type' => 'varchar',
+    'length' => 2048,
+    'default' => '<confirmation>',
+  );
+  db_change_field('webform', 'redirect_url', 'redirect_url', $spec);
 }
