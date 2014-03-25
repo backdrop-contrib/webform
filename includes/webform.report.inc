@@ -650,6 +650,9 @@ function theme_webform_results_download_select_format($variables) {
  * Submit handler for webform_results_download_form().
  */
 function webform_results_download_form_submit(&$form, &$form_state) {
+  $node = $form_state['values']['node'];
+  $format = $form_state['values']['format'];
+
   $options = array(
     'delimiter' => $form_state['values']['delimiter'],
     'components' => array_keys(array_filter($form_state['values']['components'])),
@@ -660,13 +663,17 @@ function webform_results_download_form_submit(&$form, &$form_state) {
     'download' => $form_state['values']['download'],
   );
 
+  $defaults = webform_results_download_default_options($node, $format);
+  $options += $defaults;
+  $options['range'] += $defaults['range'];
+
   // Use a pre-built list of SIDs provided by validate handlers (if any).
   if (isset($form_state['values']['sids'])) {
     $options['sids'] = $form_state['values']['sids'];
   }
   // Retrieve the list of required SIDs.
   elseif ($options['range']['range_type'] != 'all') {
-    $options['sids'] = webform_download_sids($form_state['values']['node']->nid, $form_state['values']['range']);
+    $options['sids'] = webform_download_sids($node->nid, $options['range']);
   }
 
   // Determine an appropriate batch size based on the form and server specs.
@@ -687,7 +694,7 @@ function webform_results_download_form_submit(&$form, &$form_state) {
   $options['file_name'] = drupal_tempnam('temporary://', 'webform_');
 
   // Set up a batch to export the results.
-  $batch = webform_results_export_batch($form_state['values']['node'], $form_state['values']['format'], $options);
+  $batch = webform_results_export_batch($node, $format, $options);
   batch_set($batch);
 }
 
@@ -704,7 +711,9 @@ function webform_results_export($node, $format = 'delimited', $options = array()
   module_load_include('inc', 'webform', 'includes/webform.export');
   module_load_include('inc', 'webform', 'includes/webform.components');
 
-  $options += webform_results_download_default_options($node, $format);
+  $defaults = webform_results_download_default_options($node, $format);
+  $options += $defaults;
+  $options['range'] += $defaults['range'];
 
   // Open a new Webform exporter object.
   $exporter = webform_export_create_handler($format, $options);
@@ -755,7 +764,9 @@ function webform_results_export($node, $format = 'delimited', $options = array()
  *   A Batch API array suitable to pass to batch_set().
  */
 function webform_results_export_batch($node, $format = 'delimited', $options = array()) {
-  $options += webform_results_download_default_options($node, $format);
+  $defaults = webform_results_download_default_options($node, $format);
+  $options += $defaults;
+  $options['range'] += $defaults['range'];
 
   return array(
     'operations' => array(
