@@ -240,7 +240,7 @@ Drupal.webform.conditionalOperatorStringEndsWith = function(element, existingVal
 
 Drupal.webform.conditionalOperatorStringEmpty = function(element, existingValue, ruleValue) {
   var currentValue = Drupal.webform.stringValue(element, existingValue);
-  var returnValue = currentValue.length ? false : true;
+  var returnValue = true;
   $.each(currentValue, function(n, value) {
     if (value !== '') {
       returnValue = false;

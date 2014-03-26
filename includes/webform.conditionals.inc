@@ -994,25 +994,21 @@ function webform_conditional_operator_string_ends_with($input_values, $rule_valu
  * Conditional callback for checking for empty fields.
  */
 function webform_conditional_operator_string_empty($input_values, $rule_value) {
+  $empty = TRUE;
   foreach ($input_values as $value) {
-    if ($value !== '' || $value !== NULL) {
-      return FALSE;
+    if ($value !== '' && $value !== NULL && $value !== 0) {
+      $empty = FALSE;
+      break;
     }
   }
-  return TRUE;
+  return $empty;
 }
 
 /**
  * Conditional callback for checking for empty fields.
  */
 function webform_conditional_operator_string_not_empty($input_values, $rule_value) {
-  $empty = FALSE;
-  foreach ($input_values as $value) {
-    if ($value === '' || $value === NULL) {
-      $empty = TRUE;
-    }
-  }
-  return !$empty;
+  return !webform_conditional_operator_string_empty($input_values, $rule_value);
 }
 
 /**
