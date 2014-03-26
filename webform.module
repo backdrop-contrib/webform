@@ -2936,9 +2936,15 @@ function webform_client_form_pages($form, &$form_state) {
       // The preview page is not represented by a pagebreak, if no movement has
       // yet happened, move the form in the intended direction one page.
       if ($node->webform['preview'] && ($direction === 0 && isset($form['preview']) || $current_page === $form_state['storage']['page_num'])) {
-        // The "Previous" button over-shoots backwards by one page. The "Next"
-        // button doesn't advance at all, so in both cases, we increment by one.
-        $form_state['storage']['page_num']++;
+        if ($direction === 1 || isset($previous_pagebreak)) {
+          // The "Previous" button over-shoots backwards by one page. The "Next"
+          // button doesn't advance at all, so in both cases, we increment by one.
+          $form_state['storage']['page_num']++;
+        }
+        else {
+          // No "previous pagebreak" so manually step backwards by one page.
+          $form_state['storage']['page_num']--;
+        }
       }
     }
 
