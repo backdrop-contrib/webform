@@ -3307,7 +3307,7 @@ function theme_webform_element($variables) {
   if (isset($element['#title_display']) && strcmp($element['#title_display'], 'inline') === 0) {
     $wrapper_classes[] = 'webform-container-inline';
   }
-  $wrapper_attributes['class'] = array_merge($wrapper_classes, $wrapper_attributes['class']);
+  $wrapper_attributes['class'] = isset($wrapper_attributes['class']) ? array_merge($wrapper_classes, $wrapper_attributes['class']) : $wrapper_classes;
   $output = '<div ' . drupal_attributes($wrapper_attributes) . '>' . "\n";
 
   // If #title_display is none, set it to invisible instead - none only used if
