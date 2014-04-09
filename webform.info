@@ -5,6 +5,7 @@ core = 7.x
 package = Webform
 configure = admin/config/content/webform
 php = 5.3
+dependencies[] = views
 
 ; Files that contain classes:
 files[] = includes/exporters/webform_exporter_delimited.inc
