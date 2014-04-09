@@ -1135,7 +1135,7 @@ function webform_webform_submission_actions($node, $submission) {
 }
 
 /**
- * Implements hook_webform_submission_update().
+ * Implements hook_webform_submission_presave().
  *
  * We implement our own hook here to facilitate the File component, which needs
  * to clean up manage file usage records and delete files from submissions that
