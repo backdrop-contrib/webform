@@ -20,6 +20,13 @@ function webform_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
+      'next_serial' => array(
+        'description' => 'The serial number to give to the next submission to this webform.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 1,
+      ),
       'confirmation' => array(
         'description' => 'The confirmation message or URL displayed to the user after submitting a form.',
         'type' => 'text',
@@ -468,6 +475,12 @@ function webform_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'serial' => array(
+        'description' => 'The serial number of this submission.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
       'uid' => array(
         'description' => 'The id of the user that completed this submission.',
         'type' => 'int',
@@ -497,6 +510,7 @@ function webform_schema() {
     'primary key' => array('sid'),
     'unique keys' => array(
       'sid_nid' => array('sid', 'nid'),
+      'nid_serial' => array('nid', 'serial'),
     ),
     'indexes' => array(
       'nid_uid_sid' => array('nid', 'uid', 'sid'),
@@ -1733,4 +1747,79 @@ function webform_update_7415() {
     'default' => '<confirmation>',
   );
   db_change_field('webform', 'redirect_url', 'redirect_url', $spec);
+}
+
+/**
+ * Add columns for serial numbered submissions. Add serial numbers to existing submissions.
+ */
+function webform_update_7416() {
+  // Delete stray entries from the Webform tables before adding serial numbers.
+  db_query("DELETE FROM {webform_submissions} WHERE nid NOT IN (SELECT nid FROM {webform})");
+  db_query("DELETE FROM {webform_submitted_data} WHERE nid NOT IN (SELECT nid FROM {webform})");
+
+  // Postgres has a transactional DDL.
+  db_transaction();
+
+  // Add next_serial column to webform.
+  $spec = array(
+    'description' => 'The serial number to give to the next submission to this webform.',
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 1,
+  );
+  db_add_field('webform', 'next_serial', $spec);
+
+  // Add serial column to webform_submissions.
+  $spec = array(
+    'description' => 'The serial number of this submission.',
+    'type' => 'int',
+    'unsigned' => TRUE,
+  );
+  $keys = array(
+    'unique keys' => array(
+      'nid_serial' => array('nid', 'serial'),
+    ),
+  );
+  db_add_field('webform_submissions', 'serial', $spec, $keys);
+
+  // Add serial numbers to all submissions.
+  // MySQL COMMITs transactions when it encounters a DDL change, so start the
+  // transaction. In Postgres transactions will nest, which is fine.
+  db_transaction();
+
+  // Repeat for every Webform.
+  $nids = db_select('webform', 'w')
+    ->fields('w', array('nid'))
+    ->execute();
+  while ($nid = $nids->fetchColumn()) {
+    $serial = 1;
+    // Repeat for every submission in this Webform.
+    $sids = db_select('webform_submissions', 'ws')
+      ->forUpdate()
+      ->fields('ws', array('sid'))
+      ->condition('nid', $nid)
+      ->orderBy('sid')
+      ->execute();
+    while ($sid = $sids->fetchColumn()) {
+      // Set the serial number.
+      db_update('webform_submissions')
+        ->fields(array('serial' => $serial))
+        ->condition('nid', $nid)
+        ->condition('sid', $sid)
+        ->execute();
+      $serial++;
+    }
+    // Set the next serial number.
+    db_update('webform')
+      ->fields(array('next_serial' => $serial))
+      ->condition('nid', $nid)
+      ->execute();
+  }
+
+  // Now that every submission has a serial number, make serial numbers required.
+  $spec['not null'] = TRUE;
+  db_change_field('webform_submissions', 'serial', 'serial', $spec);
+
+  return t('Columns for serial numbered submissions successfully added. Serial numbers added to existing submissions.');
 }

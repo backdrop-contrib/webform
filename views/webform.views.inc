@@ -47,6 +47,26 @@ function webform_views_data() {
     'help' => t('Submissions generated from Webform forms.'),
   );
 
+  // Serial number.
+  $data['webform_submissions']['serial'] = array(
+    'title' => t('Serial number'),
+    'help' => t('The serial number of the submission.'),
+    'field' => array(
+      'handler' => 'views_handler_field_numeric',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'title' => t('Serial number'),
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_numeric',
+    ),
+  );
+
   // SID.
   $data['webform_submissions']['sid'] = array(
     'title' => t('Sid'),

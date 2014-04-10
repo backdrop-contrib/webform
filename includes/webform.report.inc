@@ -44,7 +44,7 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
   $rows = array();
   foreach ($submissions as $sid => $submission) {
     $row = array(
-      $submission->is_draft ? t('@sid (draft)', array('@sid' => $sid)) : $sid,
+      $submission->is_draft ? t('@serial (draft)', array('@serial' => $submission->serial)) : $submission->serial,
       format_date($submission->submitted, 'short'),
     );
     if (webform_results_access($node, $user)) {
@@ -230,7 +230,8 @@ function theme_webform_results_table($variables) {
 
   // Generate a row for each submission.
   foreach ($submissions as $sid => $submission) {
-    $cell[] = l($sid, 'node/' . $node->nid . '/submission/' . $sid);
+    $link_text = $submission->is_draft ? t('@serial (draft)', array('@serial' => $submission->serial)) : $submission->serial;
+    $cell[] = l($link_text, 'node/' . $node->nid . '/submission/' . $sid);
     $cell[] = format_date($submission->submitted, 'short');
     $cell[] = theme('username', array('account' => $submission));
     $cell[] = $submission->remote_addr;
@@ -430,7 +431,7 @@ function webform_results_download_form($form, &$form_state, $node) {
       'all' => t('All submissions'),
       'new' => t('Only new submissions since your last download'),
       'latest' => t('Only the latest'),
-      'range' => t('All submissions starting from'),
+      'range_serial' => t('All submissions starting from'),
     ),
     '#default_value' => 'all',
   );
@@ -501,7 +502,7 @@ function webform_results_download_range_validate($element, $form_state) {
         }
       }
       break;
-    case 'range':
+    case 'range_serial':
       // Download Start-End range of submissions.
       // Start submission number.
       if ($element['start']['#value'] == '') {
@@ -556,6 +557,7 @@ function webform_results_download_range_after_build($element, &$form_state) {
   $last_download = webform_download_last_download_info($node->nid);
 
   $element['#webform_download_info']['sid'] = $last_download ? $last_download['sid'] : 0;
+  $element['#webform_download_info']['serial'] = $last_download ? $last_download['serial'] : NULL;
   $element['#webform_download_info']['requested'] = $last_download ? $last_download['requested'] : $node->created;
   $element['#webform_download_info']['total'] = $count;
   $element['#webform_download_info']['new'] = count($sids);
@@ -599,11 +601,11 @@ function theme_webform_results_download_range($variables) {
   $element['end']['#attributes']['class'][] = 'webform-set-active';
   $element['start']['#theme_wrappers'] = array();
   $element['end']['#theme_wrappers'] = array();
-  $element['range_type']['range']['#theme_wrappers'] = array('webform_inline_radio');
-  $element['range_type']['range']['#title'] = t('All submissions starting from: !start and optionally to: !end', array('!start' => drupal_render($element['start']), '!end' => drupal_render($element['end'])));
+  $element['range_type']['range_serial']['#theme_wrappers'] = array('webform_inline_radio');
+  $element['range_type']['range_serial']['#title'] = t('All submissions starting from: !start and optionally to: !end', array('!start' => drupal_render($element['start']), '!end' => drupal_render($element['end'])));
 
-  $last_sid = $download_info['sid'] ? $download_info['sid'] : drupal_placeholder(t('none'));
-  $element['range_type']['range']['#description'] = '(' . t('Use submission IDs for the range. Last downloaded end SID: !sid.', array('!sid' => $last_sid)) . ')';
+  $last_serial = $download_info['serial'] ? $download_info['serial'] : drupal_placeholder(t('none'));
+  $element['range_type']['range_serial']['#description'] = '(' . t('Last downloaded end submission number: !serial.', array('!serial' => $last_serial)) . ')';
 
   return drupal_render_children($element);
 }
@@ -958,7 +960,7 @@ function webform_webform_results_download_submission_information_info() {
 function webform_webform_results_download_submission_information_data($token, $submission, array $options, $serial_start, $row_count) {
   switch ($token) {
     case 'webform_serial':
-      return $serial_start + $row_count;
+      return $submission->serial;
     case 'webform_sid':
       return $submission->sid;
     case 'webform_time':
@@ -1530,6 +1532,14 @@ function webform_download_sids($nid, $range_options, $uid = NULL) {
       }
       $query->orderBy('sid', 'ASC');
       break;
+    case 'range_serial':
+      // Submissions Start-End, using serial numbers.
+      $query->condition('serial', $range_options['start'], '>=');
+      if ($range_options['end']){
+        $query->condition('serial', $range_options['end'], '<=');
+      }
+      $query->orderBy('serial', 'ASC');
+      break;
   }
 
   // Filter down to draft or finished submissions.
@@ -1580,10 +1590,13 @@ function webform_download_sids($nid, $range_options, $uid = NULL) {
 function webform_download_last_download_info($nid, $uid = NULL) {
   $uid = isset($uid) ? $uid : $GLOBALS['user']->uid;
 
-  $info = db_select('webform_last_download', 'wld')
+  $query = db_select('webform_last_download', 'wld');
+  $query->leftJoin('webform_submissions', 'wfs', 'wld.sid = wfs.sid');
+  $info = $query
     ->fields('wld')
-    ->condition('nid', $nid)
-    ->condition('uid', $uid)
+    ->fields('wfs', array('serial'))
+    ->condition('wld.nid', $nid)
+    ->condition('wld.uid', $uid)
     ->execute()
     ->fetchAssoc();
 

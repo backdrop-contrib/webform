@@ -16,6 +16,10 @@ function webform_token_info() {
     'needs-data' => 'webform-submission',
   );
 
+  $info['tokens']['submission']['serial'] = array(
+    'name' => t('Serial number'),
+    'description' => t('The serial number of this webform submission.'),
+  );
   $info['tokens']['submission']['sid'] = array(
     'name' => t('Submission ID'),
     'description' => t('The unique indentifier for the webform submission.'),
@@ -77,6 +81,9 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
     // Replace individual tokens that have an exact replacement.
     foreach ($tokens as $name => $original) {
       switch ($name) {
+        case 'serial':
+          $replacements[$original] = $submission->serial;
+          break;
         case 'sid':
           $replacements[$original] = $submission->sid;
           break;
@@ -114,7 +121,7 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
         'withlabel',
         'nolabel',
       );
-      
+
       foreach ($node->webform['components'] as $cid => $component) {
         // Build the list of parents for this component.
         $parents = ($component['pid'] == 0) ? array($component['form_key']) : webform_component_parent_keys($node, $component);
@@ -164,7 +171,7 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
           break;    // Token loop break.
         }
       }
-      
+
     }
 
     // Chained token relationships.

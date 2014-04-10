@@ -49,6 +49,7 @@ function webform_submission_create($node, $account, $form_state) {
     'remote_addr' => ip_address(),
     'is_draft' => TRUE,
     'preview' => FALSE,
+    'serial' => _webform_submission_serial_next_value($node->nid),
     'data' => webform_submission_data($node, $form_state['values']['submitted']),
   );
   drupal_alter('webform_submission_create', $submission, $node, $account, $form_state);
@@ -405,7 +406,7 @@ function webform_submission_delete_form_submit($form, &$form_state) {
  * Menu title callback; Return the submission number as a title.
  */
 function webform_submission_title($node, $submission) {
-  return t('Submission #@sid', array('@sid' => $submission->sid));
+  return t('Submission #@serial', array('@serial' => $submission->serial));
 }
 
 /**
@@ -655,7 +656,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     // sorting on a column that uses multiple rows for its data.
     ->distinct()
     ->addTag('webform_get_submissions_sids')
-    ->fields('ws', array('sid', 'nid', 'submitted', 'remote_addr', 'uid', 'is_draft'));
+    ->fields('ws', array('sid', 'nid', 'serial', 'submitted', 'remote_addr', 'uid', 'is_draft'));
   foreach ($filters as $column => $value) {
     $pager_query->condition($column, $value);
   }
@@ -714,6 +715,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     $submissions[$row->sid] = new stdClass();
     $submissions[$row->sid]->sid = $row->sid;
     $submissions[$row->sid]->nid = $row->nid;
+    $submissions[$row->sid]->serial = $row->serial;
     $submissions[$row->sid]->submitted = $row->submitted;
     $submissions[$row->sid]->remote_addr = $row->remote_addr;
     $submissions[$row->sid]->uid = $row->uid;

@@ -3531,7 +3531,7 @@ function _webform_fetch_draft_sid($nid, $uid) {
     ->execute()
     ->fetchField();
   if ($sid) {
-    drupal_alter('webform_draft', $sid); 
+    drupal_alter('webform_draft', $sid);
   }
   return $sid;
 }
@@ -4498,4 +4498,46 @@ function webform_mollom_form_info($form_id) {
  */
 function webform_date_views_extra_tables() {
   return array('webform_submissions' => 'webform_submissions');
+}
+
+/**
+ * Returns the next serial number for a given node and optionally increment the serial number.
+ *
+ * @param int $nid
+ *   The nid of the node.
+ * @paran bool $increment
+ *   Whether to increment the serial number.
+ *
+ * @return int|null
+ *   The next value of the serial number or NULL if no form at this nid.
+ */
+function _webform_submission_serial_next_value($nid, $do_increment = TRUE) {
+  // Use a transaction with SELECT ... FOR UPDATE to lock the row between
+  // the SELECT and the UPDATE, ensuring that multiple Webform submissions
+  // at the same time do not have duplicate numbers.
+  // Do not lock unless incrementing.
+  if ($do_increment) {
+    db_transaction();
+  }
+
+  // Get the next_serial value.
+  $next_serial = db_select('webform', 'w')
+    // FOR UPDATE does not lock outside of a transaction.
+    ->forUpdate()
+    ->fields('w', array('next_serial'))
+    ->condition('nid', $nid)
+    ->execute()
+    ->fetchField();
+
+  // Otherwise, no number was found, no form at this nid, return the NULL.
+  if ($next_serial && $do_increment) {
+    // Increment the next_value.
+    $increment_amount = 1;
+    db_update('webform')
+      ->fields(array('next_serial' => $next_serial + $increment_amount))
+      ->condition('nid', $nid)
+      ->execute();
+  }
+
+  return $next_serial;
 }
