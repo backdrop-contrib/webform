@@ -228,8 +228,8 @@ function webform_schema() {
       ),
       'name' => array(
         'description' => 'The label for this component.',
-        'type' => 'varchar',
-        'length' => 255,
+        'type' => 'text',
+        'not null' => TRUE,
       ),
       'type' => array(
         'description' => 'The field type of this component (textfield, select, hidden, etc.).',
@@ -1822,4 +1822,11 @@ function webform_update_7416() {
   db_change_field('webform_submissions', 'serial', 'serial', $spec);
 
   return t('Columns for serial numbered submissions successfully added. Serial numbers added to existing submissions.');
+}
+
+/**
+ * Change webform_component.name to text to allow for longer labels.
+ */
+function webform_update_7417() {
+  db_change_field('webform_component', 'name', 'name', array('type' => 'text', 'not null' => TRUE));
 }

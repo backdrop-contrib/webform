@@ -412,7 +412,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
       '#description' => t('This is used as a descriptive label when displaying this form element.'),
       '#required' => TRUE,
       '#weight' => -10,
-      '#maxlength' => 255,
+      '#maxlength' => NULL,
     );
   }
 
