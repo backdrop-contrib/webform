@@ -350,6 +350,14 @@ function webform_configure_form($form, &$form_state, $node) {
     '#description' => t('By default the submit button on this form will have the label <em>Submit</em>. Enter a new title here to override the default.'),
     '#size' => 20,
   );
+  $form['advanced']['next_serial'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Next submission number'),
+    '#default_value' => $node->webform['next_serial'],
+    '#description' => t('The value of the next submission number. This is usually 1 when you start and will go up with each form submission.'),
+    '#size' => 8,
+    '#maxlength' => 8,
+  );
   /* End Advanced Settings Form */
 
   $form['actions'] = array(
@@ -406,6 +414,16 @@ function webform_configure_form_validate($form, &$form_state) {
     if ($limit !== '' && (int) $limit < 1 && (int) $limit !== -1) {
       form_error($form['submission'][$field][$field], t('The submission limit must be at least 1.'));
     }
+  }
+
+  // Serial number must be a positive integer greater than any existing serial number.
+  $query = db_select('webform_submissions', 'ws')
+    ->condition('nid', $form['#node']->nid);
+  $query->addExpression('MAX(serial)', 'serial');
+  $max_serial = (int) $query->execute()->fetchField();
+  $next_min = $max_serial + 1;
+  if ((int) $form['advanced']['next_serial']['#value'] < $next_min) {
+    form_error($form['advanced']['next_serial'], t('The next submission number must be at least %min (greater than any existing serial number).', array('%min' => $next_min)));
   }
 }
 
@@ -488,6 +506,9 @@ function webform_configure_form_submit($form, &$form_state) {
 
   // Set submit button text.
   $node->webform['submit_text'] = $form_state['values']['submit_text'];
+
+  // Set next serial number.
+  $node->webform['next_serial'] = (int) $form_state['values']['next_serial'];
 }
 
 /**
