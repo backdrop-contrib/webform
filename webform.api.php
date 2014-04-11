@@ -1197,5 +1197,17 @@ function _webform_csv_data_component($component, $export_options, $value) {
 }
 
 /**
+ * Modify the list of mail systems that are capable of sending HTML email.
+ *
+ * @param array &$systems
+ *   An array of mail system class names.
+ */
+function hook_webform_html_capable_mail_systems_alter(&$systems) {
+  if (module_exists('my_module')) {
+    $systems[] = 'MyModuleMailSystem';
+  }
+}
+
+/**
  * @}
  */

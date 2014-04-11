@@ -4365,27 +4365,49 @@ function webform_tt($name, $string, $langcode = NULL, $update = FALSE) {
 }
 
 /**
- * Check if any available HTML mail handlers are available for Webform to use.
+ * Check if there are any HTML mail systems available for Webform to use.
+ *
+ * @return bool
+ *   TRUE if Webform can send HTML emails, FALSE if not.
  */
 function webform_email_html_capable() {
-  // TODO: Right now we only support MIME Mail and HTML Mail. Support others
-  // if available through a hook?
+  $capable = &drupal_static(__FUNCTION__);
+  if (isset($capable)) {
+    return $capable;
+  }
+  // Build a list of HTML-capable mail systems.
+  $systems = array();
+  if (module_exists('mandrill')) {
+    $systems[] = 'MandrillMailSystem';
+  }
   if (module_exists('mimemail')) {
-    $mail_systems = variable_get('mail_system', array('default-system' => 'DefaultMailSystem'));
-    $enable = (!isset($mail_systems['webform']) || $mail_systems['webform'] == 'MimeMailSystem') ? 'MimeMailSystem' : FALSE;
+    $systems[] = 'MimeMailSystem';
   }
-  elseif (module_exists('htmlmail')) {
-    $mail_systems = variable_get('mail_system', array('default-system' => 'DefaultMailSystem'));
-    $enable = (!isset($mail_systems['webform']) || $mail_systems['webform'] == 'HTMLMailSystem') ? 'HTMLMailSystem' : FALSE;
+  if (module_exists('htmlmail')) {
+    $systems[] = 'HTMLMailSystem';
   }
-  if (!empty($enable)) {
-    // We assume that if a solution exists even if it's not specified we should
-    // use it. Webform will specify if e-mails sent with the system are plain-
-    // text or not when sending each e-mail.
-    $GLOBALS['conf']['mail_system']['webform'] = $enable;
-    return TRUE;
+  // Allow other modules to alter the list.
+  drupal_alter('webform_html_capable_mail_systems', $systems);
+
+  if (!count($systems)) {
+    $capable = FALSE;
+    return FALSE;
   }
-  return FALSE;
+  $mail_systems = variable_get('mail_system', array('default-system' => 'DefaultMailSystem'));
+  // If an HTML mail system exists then we will use it for Webform emails, even
+  // if it's not already specified.
+  if (!isset($mail_systems['webform']) || !in_array($mail_systems['webform'], $systems)) {
+    // Use the system default system, if that's HTML capable.
+    if (in_array($mail_systems['default-system'], $systems)) {
+      $GLOBALS['conf']['mail_system']['webform'] = $mail_systems['default-system'];
+    }
+    // Otherwise, use the first available HTML-capable system.
+    else {
+      $GLOBALS['conf']['mail_system']['webform'] = reset($systems);
+    }
+  }
+  $capable = TRUE;
+  return TRUE;
 }
 
 /**
