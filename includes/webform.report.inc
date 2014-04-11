@@ -762,6 +762,18 @@ function webform_results_export($node, $format = 'delimited', $options = array()
 /**
  * Return a Batch API array of commands that will generate an export.
  *
+ * @param $node
+ *   The webform node on which to generate the analysis.
+ * @param string $format
+ *   (optional) Delimiter of the exported file.
+ * @param array $options
+ *   (optional) An associative array of options that define the output format.
+ *   These are generally passed through from the GUI interface. Possible options
+ *   include:
+ *   - sids: An array of submission IDs to which this export may be filtered.
+ *     May be used to generate exports that are per-user or other groups of
+ *     submissions.
+ *
  * @return array
  *   A Batch API array suitable to pass to batch_set().
  */
@@ -1042,7 +1054,7 @@ function webform_results_download($node, $export_info) {
   }
 
   // Update user last downloaded sid if required.
-  if ($export_info['options']['range']['range_type'] != 'range' && $export_info['row_count'] > 0) {
+  if ((isset($export_info['options']['sids']) || $export_info['options']['range']['range_type'] != 'range') && $export_info['row_count'] > 0) {
     // Delete existing record.
     db_delete('webform_last_download')
       ->condition('nid', $node->nid)
@@ -1138,14 +1150,15 @@ function webform_results_batch_rows($node, $format = 'delimited', $options = arr
 
   if (!isset($context['sandbox']['batch_number'])) {
     $context['sandbox']['batch_number'] = 0;
-    $context['sandbox']['sid_count'] = count(webform_download_sids($node->nid, $options['range']));
+    $sids = isset($options['sids']) ? $options['sids'] : webform_download_sids($node->nid, $options['range']);
+    $context['sandbox']['sid_count'] = count($sids);
     $context['sandbox']['batch_max'] = ceil($context['sandbox']['sid_count'] / $options['range']['batch_size']);
     $context['sandbox']['serial'] = 0;
     $context['sandbox']['last_sid'] = 0;
   }
   // Retrieve the submissions for this batch process.
   $options['range']['batch_number'] = $context['sandbox']['batch_number'];
-  $sids = webform_download_sids($node->nid, $options['range']);
+  $sids = isset($options['sids']) ? $options['sids'] : webform_download_sids($node->nid, $options['range']);
   $options['sids'] = $sids;
   $rows = webform_results_download_rows($node, $options, $context['sandbox']['serial']);
 
