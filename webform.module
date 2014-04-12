@@ -1760,8 +1760,7 @@ function webform_node_view($node, $view_mode) {
     return;
   }
 
-  $info = array();
-  $submission = array();
+  $submission = FALSE;
   $submission_count = 0;
   $page = node_is_page($node);
   $enabled = TRUE;
@@ -2185,7 +2184,7 @@ function webform_block_save($delta = '', $edit = array()) {
  *   building the form. Values need to be unfiltered to be editable by
  *   Form Builder.
  */
-function webform_client_form($form, &$form_state, $node, $submission, $is_draft = FALSE, $filter = TRUE) {
+function webform_client_form($form, &$form_state, $node, $submission = FALSE, $is_draft = FALSE, $filter = TRUE) {
   global $user;
 
   // Attach necessary JavaScript and CSS.
