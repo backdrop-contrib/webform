@@ -619,6 +619,16 @@ function webform_requirements($phase) {
       'description' => $t('PHP does not have the zip archive extension available. Webform module requires zip support for exporting submissions to Microsoft Excel.'),
     );
   }
+  // Though the .info file specifies PHP version as well, this will prevent
+  // users from upgrading from 3.x if their PHP version is too old.
+  if (version_compare(phpversion(), '5.3') < 0) {
+    $requirements['webform_php'] = array(
+      'title' => $t('Webform PHP requirements'),
+      'value' => phpversion(),
+      'severity' => REQUIREMENT_ERROR,
+      'description' => $t('Webform requires PHP 5.3 or higher.'),
+    );
+  }
 
   return $requirements;
 }
