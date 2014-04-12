@@ -172,15 +172,14 @@ function template_preprocess_webform_components_form(&$variables) {
   $form['add']['pid']['#attributes']['class'][] = 'webform-pid';
   $form['add']['weight']['#attributes']['class'][] = 'webform-weight';
   $row_data = array(
-    drupal_render($form['add']['name']),
-    drupal_render($form['add']['type']),
-    '',
-    drupal_render($form['add']['required']),
-    drupal_render($form['add']['cid']) . drupal_render($form['add']['pid']) . drupal_render($form['add']['weight']),
-    array('colspan' => 3, 'data' => drupal_render($form['add']['add'])),
+    array('data' => drupal_render($form['add']['name']), 'class' => array('webform-component-name')),
+    array('data' => drupal_render($form['add']['type']), 'class' => array('webform-component-type')),
+    array('data' => '', 'class' => array('webform-component-value')),
+    array('data' => drupal_render($form['add']['required']), 'class' => array('webform-component-required', 'checkbox')),
+    array('data' => drupal_render($form['add']['cid']) . drupal_render($form['add']['pid']) . drupal_render($form['add']['weight'])),
+    array('colspan' => 3, 'data' => drupal_render($form['add']['add']), 'class' => array('webform-component-add')),
   );
   $add_form = array('data' => $row_data, 'class' => array('draggable', 'webform-add-form'));
-  $form_rendered = FALSE;
 
   if (!empty($node->webform['components'])) {
     $component_tree = array();
@@ -237,14 +236,14 @@ function _webform_components_form_rows($node, $cid, $component, $level, &$form, 
 
   // Add each component to a table row.
   $row_data = array(
-    $indents . filter_xss($component['name']),
-    $form['add']['type']['#options'][$component['type']],
-    ($component['value'] == '') ? '-' : $component['value'],
-    drupal_render($form['components'][$cid]['required']),
-    drupal_render($form['components'][$cid]['cid']) . drupal_render($form['components'][$cid]['pid']) . drupal_render($form['components'][$cid]['weight']),
-    l(t('Edit'), 'node/' . $node->nid . '/webform/components/' . $cid, array('query' => drupal_get_destination())),
-    l(t('Clone'), 'node/' . $node->nid . '/webform/components/' . $cid . '/clone', array('query' => drupal_get_destination())),
-    l(t('Delete'), 'node/' . $node->nid . '/webform/components/' . $cid . '/delete', array('query' => drupal_get_destination())),
+    array('data' => $indents . filter_xss($component['name']), 'class' => array('webform-component-name')),
+    array('data' => $form['add']['type']['#options'][$component['type']], 'class' => array('webform-component-type')),
+    array('data' => ($component['value'] == '') ? '-' : $component['value'], 'class' => array('webform-component-value')),
+    array('data' => drupal_render($form['components'][$cid]['required']), 'class' => array('webform-component-required', 'checkbox')),
+    array('data' => drupal_render($form['components'][$cid]['cid']) . drupal_render($form['components'][$cid]['pid']) . drupal_render($form['components'][$cid]['weight'])),
+    array('data' => l(t('Edit'), 'node/' . $node->nid . '/webform/components/' . $cid, array('query' => drupal_get_destination())), 'class' => array('webform-component-edit')),
+    array('data' => l(t('Clone'), 'node/' . $node->nid . '/webform/components/' . $cid . '/clone', array('query' => drupal_get_destination())), 'class' => array('webform-component-clone')),
+    array('data' => l(t('Delete'), 'node/' . $node->nid . '/webform/components/' . $cid . '/delete', array('query' => drupal_get_destination())), 'class' => array('webform-component-delete')),
   );
   $row_class = array('draggable');
   if (!webform_component_feature($component['type'], 'group')) {
@@ -253,7 +252,7 @@ function _webform_components_form_rows($node, $cid, $component, $level, &$form, 
   if ($component['type'] == 'pagebreak') {
     $row_class[] = 'tabledrag-root';
     $row_class[] = 'webform-pagebreak';
-    $row_data[0] = array('class' => array('webform-pagebreak'), 'data' => $row_data[0]);
+    $row_data[0]['class'][] = 'webform-pagebreak';
   }
   $rows[] = array('data' => $row_data, 'class' => $row_class, 'data-cid' => $cid);
   if (isset($component['children']) && is_array($component['children'])) {
