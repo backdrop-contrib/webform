@@ -1246,6 +1246,18 @@ function _webform_update_7401_batch(&$sandbox, $patterns, $replacements, $dpatte
  * Add the webform_conditional database table.
  */
 function webform_update_7402() {
+  // Sanity checks.
+  if (db_table_exists('webform_conditional')) {
+    // Both tables exist, so these are Webform-core provided tables.
+    if (db_table_exists('webform_conditional_rules')) {
+      return;
+    }
+    // Webform Conditional module was installed previously but not uninstalled.
+    else {
+      throw new DrupalUpdateException(t('The "Webform Conditional" module has previously been installed on your site. Either uninstall the module or drop the database table "webform_conditional".'));
+    }
+  }
+
   $schema['webform_conditional'] = array(
     'description' => 'Holds information about conditional logic.',
     'fields' => array(
@@ -1562,7 +1574,9 @@ function webform_update_7408() {
     'not null' => TRUE,
     'default' => 0,
   );
-  db_change_field('webform_component', 'mandatory', 'required', $spec);
+  if (!db_field_exists('webform_component', 'required')) {
+    db_change_field('webform_component', 'mandatory', 'required', $spec);
+  }
 }
 
 /**
@@ -1768,7 +1782,9 @@ function webform_update_7416() {
     'not null' => TRUE,
     'default' => 1,
   );
-  db_add_field('webform', 'next_serial', $spec);
+  if (!db_field_exists('webform', 'next_serial')) {
+    db_add_field('webform', 'next_serial', $spec);
+  }
 
   // Add serial column to webform_submissions.
   $spec = array(
@@ -1781,7 +1797,9 @@ function webform_update_7416() {
       'nid_serial' => array('nid', 'serial'),
     ),
   );
-  db_add_field('webform_submissions', 'serial', $spec, $keys);
+  if (!db_field_exists('webform_submissions', 'serial')) {
+    db_add_field('webform_submissions', 'serial', $spec, $keys);
+  }
 
   // Add serial numbers to all submissions.
   // MySQL COMMITs transactions when it encounters a DDL change, so start the
