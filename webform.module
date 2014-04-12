@@ -1368,7 +1368,7 @@ function webform_node_insert($node) {
   }
 
   // Flush the block cache if creating a block.
-  if ($node->webform['block']) {
+  if (function_exists('block_flush_caches') && $node->webform['block']) {
     block_flush_caches();
   }
 }
@@ -1479,7 +1479,7 @@ function webform_node_update($node) {
   }
 
   // Flush the block cache if block settings have been changed.
-  if ($node->webform['block'] != $original->webform['block']) {
+  if (function_exists('block_flush_caches') && $node->webform['block'] != $original->webform['block']) {
     block_flush_caches();
   }
 }
