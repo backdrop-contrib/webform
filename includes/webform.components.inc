@@ -263,7 +263,7 @@ function _webform_components_form_rows($node, $cid, $component, $level, &$form, 
 
   // Add the add form if this was the last edited component.
   if (isset($_GET['cid']) && $component['cid'] == $_GET['cid'] && $add_form) {
-    $add_form['data'][0] = $indents . $add_form['data'][0];
+    $add_form['data'][0]['data'] = $indents . $add_form['data'][0]['data'];
     $rows[] = $add_form;
     $add_form = FALSE;
   }
