@@ -4382,6 +4382,7 @@ function webform_email_html_capable() {
   }
   if (module_exists('mimemail')) {
     $systems[] = 'MimeMailSystem';
+    $systems[] = 'MimeMailSystem__SmtpMailSystem';
   }
   if (module_exists('htmlmail')) {
     $systems[] = 'HTMLMailSystem';
