@@ -1802,13 +1802,8 @@ function webform_update_7416() {
     'type' => 'int',
     'unsigned' => TRUE,
   );
-  $keys = array(
-    'unique keys' => array(
-      'nid_serial' => array('nid', 'serial'),
-    ),
-  );
   if (!db_field_exists('webform_submissions', 'serial')) {
-    db_add_field('webform_submissions', 'serial', $spec, $keys);
+    db_add_field('webform_submissions', 'serial', $spec);
   }
 
   // Add serial numbers to all submissions.
@@ -1847,7 +1842,12 @@ function webform_update_7416() {
 
   // Now that every submission has a serial number, make serial numbers required.
   $spec['not null'] = TRUE;
-  db_change_field('webform_submissions', 'serial', 'serial', $spec);
+  $keys = array(
+    'unique keys' => array(
+      'nid_serial' => array('nid', 'serial'),
+    ),
+  );
+  db_change_field('webform_submissions', 'serial', 'serial', $spec, $keys);
 
   return t('Columns for serial numbered submissions successfully added. Serial numbers added to existing submissions.');
 }
