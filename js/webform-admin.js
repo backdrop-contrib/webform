@@ -25,12 +25,14 @@ Drupal.webform = Drupal.webform || {};
 Drupal.webform.setActive = function(context) {
   var setActiveOnChange = function(e) {
     if ($(this).val()) {
-      $(this).closest('.form-type-radio').find('input[type=radio]').attr('checked', true);
+      var $checkbox = $(this).closest('.form-type-radio').find('input[type=radio]');
+      $.fn.prop ? $checkbox.prop('checked', true) : $checkbox.attr('checked', true);
     }
     e.preventDefault();
   };
   var setActiveOnClick = function(e) {
-    $(this).closest('.form-type-radio').find('input[type=radio]').attr('checked', true);
+    var $checkbox = $(this).closest('.form-type-radio').find('input[type=radio]');
+    $.fn.prop ? $checkbox.prop('checked', true) : $checkbox.attr('checked', true);
   };
   $('.webform-inline-radio', context).click(setActiveOnClick);
   $('.webform-set-active', context).change(setActiveOnChange);
@@ -91,6 +93,7 @@ Drupal.webform.tableSelectIndentation = function(context) {
   var $tables = $('th.select-all', context).parents('table');
   $tables.find('input.form-checkbox').change(function() {
     var $rows = $(this).parents('table:first').find('tr');
+    var $checkbox;
     var row = $(this).parents('tr:first').get(0);
     var rowNumber = $rows.index(row);
     var rowTotal = $rows.size();
@@ -99,7 +102,8 @@ Drupal.webform.tableSelectIndentation = function(context) {
       if ($rows.eq(n).find('div.indentation').size() <= indentLevel) {
         break;
       }
-      $rows.eq(n).find('input.form-checkbox').attr('checked', this.checked);
+      $checkbox = $rows.eq(n).find('input.form-checkbox');
+      $.fn.prop ? $checkbox.prop('checked', this.checked) : $checkbox.attr('checked', this.checked);
     }
   });
 }

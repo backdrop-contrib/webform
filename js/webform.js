@@ -156,13 +156,18 @@ Drupal.webform.conditionalCheck = function(e) {
         showComponent = conditionalResult;
       }
 
+      var $target = $form.find('.' + ruleGroup['target']);
+      var $targetElements;
       if (showComponent) {
-        $form.find('.' + ruleGroup['target']).find('.webform-conditional-disabled').removeAttr('disabled').removeClass('webform-conditional-disabled').end().show();
+        $targetElements = $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled');
+        $.fn.prop ? $targetElements.prop('disabled', false) : $targetElements.removeAttr('disabled');
+        $target.show();
       }
       else {
-        $form.find('.' + ruleGroup['target']).find(':input').attr('disabled', true).addClass('webform-conditional-disabled').end().hide();
+        $targetElements = $target.find(':input').addClass('webform-conditional-disabled');
+        $.fn.prop ? $targetElements.prop('disabled', true) : $targetElements.attr('disabled', true);
+        $target.hide();
       }
-
     });
   }
 
