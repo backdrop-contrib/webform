@@ -145,6 +145,12 @@ function webform_conditionals_form_add($form, &$form_state) {
  * Prohibit the source and target of a conditional rule from being the same.
  */
 function webform_conditionals_form_validate($form, &$form_state) {
+  // Skip validation unless this is saving the form.
+  $button_key = end($form_state['triggering_element']['#array_parents']);
+  if ($button_key !== 'submit') {
+    return;
+  }
+
   foreach ($form_state['complete form']['conditionals'] as $conditional_key => $element) {
     if (substr($conditional_key, 0, 1) !== '#' && $conditional_key !== 'new') {
       $conditional = $element['conditional'];
