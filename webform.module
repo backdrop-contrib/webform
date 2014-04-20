@@ -754,6 +754,10 @@ function webform_theme() {
       'render element' => 'element',
       'file' => 'includes/webform.conditionals.inc',
     ),
+    'webform_conditional_group_row' => array(
+      'render element' => 'element',
+      'file' => 'includes/webform.conditionals.inc',
+    ),
     'webform_conditional' => array(
       'render element' => 'element',
       'file' => 'includes/webform.conditionals.inc',

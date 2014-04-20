@@ -50,9 +50,15 @@ function webform_conditionals_form($form, &$form_state, $node) {
   $target_list = webform_component_list($node, TRUE);
   $delta = $form_state['conditional_count'];
   $weight = -$delta - 1;
+  $index = 0;
   foreach ($conditionals as $rgid => $conditional_group) {
     $weight = $conditional_group['weight'];
     $form['conditionals'][$rgid] = array(
+      '#theme' => 'webform_conditional_group_row',
+      '#even_odd' => ++$index % 2 ? 'odd' : 'even',
+      '#weight' => $weight,
+    );
+    $form['conditionals'][$rgid]['conditional'] = array(
       '#type' => 'webform_conditional',
       '#default_value' => $conditional_group,
       '#nid' => $node->nid,
@@ -62,7 +68,7 @@ function webform_conditionals_form($form, &$form_state, $node) {
         'show' => t('show'),
       ),
       '#targets' => $target_list,
-      '#weight' => $weight,
+      '#parents' => array('conditionals', $rgid),
     );
     $form['conditionals'][$rgid]['weight'] = array(
       '#type' => 'weight',
@@ -139,8 +145,9 @@ function webform_conditionals_form_add($form, &$form_state) {
  * Prohibit the source and target of a conditional rule from being the same.
  */
 function webform_conditionals_form_validate($form, &$form_state) {
-  foreach ($form_state['complete form']['conditionals'] as $conditional_key => $conditional) {
+  foreach ($form_state['complete form']['conditionals'] as $conditional_key => $element) {
     if (substr($conditional_key, 0, 1) !== '#' && $conditional_key !== 'new') {
+      $conditional = $element['conditional'];
       foreach ($conditional['rules'] as $rule_key => $rule) {
         if (substr($rule_key, 0, 1) !== '#' && $rule['source']['#value'] === $conditional['target']['#value']) {
           form_set_error('conditionals][' . $conditional_key . '][rules][' . $rule_key . '][source', t('The subject of the conditional cannot be the same as the component that is shown or hidden (%target).', array('%target' => $conditional['target']['#options'][$conditional['target']['#value']])));
@@ -185,7 +192,10 @@ function webform_conditionals_ajax($form, $form_state) {
   $new_rgid = max($rgids);
   $form['conditionals'][$new_rgid]['#ajax_added'] = TRUE;
 
-  return drupal_render($form['conditionals']);
+  $commands = array('#type' => 'ajax');
+  $commands['#commands'][] = ajax_command_before('.webform-conditional-new-row', drupal_render($form['conditionals'][$new_rgid]));
+  $commands['#commands'][] = ajax_command_restripe('#webform-conditionals-table');
+  return $commands;
 }
 
 /**
@@ -197,43 +207,53 @@ function theme_webform_conditional_groups($variables) {
   drupal_add_js('Drupal.theme.prototype.tableDragChangedMarker = function() { return ""; }', 'inline');
   drupal_add_js('Drupal.theme.prototype.tableDragChangedWarning = function() { return "<span>&nbsp;</span>"; }', 'inline');
 
-  $header = array();
-  $rows = array();
-
+  $output = '<table id="webform-conditionals-table"><tbody>';
   $element_children = element_children($element, TRUE);
   $element_count = count($element_children);
-  foreach ($element_children as $key) {
-    $row = array();
+  foreach ($element_children as $index => $key) {
     if ($key === 'new') {
       $data = '';
       if ($element_count === 1) {
         $data = t('There are no conditional actions on this form.') . ' ';
       }
+      $even_odd = ($index + 1) % 2 ? 'odd' : 'even';
       $data = '<div class="webform-conditional-new">' . $data . t('Add a new condition: ') . drupal_render($element[$key]['new']) . '</div>';
+      $output .= '<tr class="webform-conditional-new-row ' . $even_odd . '">';
+      $output .= '<td>' . $data . '</td>';
+      $output .= '<td>' . drupal_render($element[$key]['weight']) . '</td>';
+      $output .= '</tr>';
     }
     else {
-      $data = drupal_render($element[$key]);
+      $output .= drupal_render($element[$key]);
     }
-    $row[] = array(
-      'data' => $data,
-    );
-    $element[$key]['weight']['#attributes']['class'] = array('webform-conditional-weight');
-    $row[] = array(
-      'data' => drupal_render($element[$key]['weight']),
-    );
-    $classes = ($key === 'new') ? array() : array('draggable');
-    if (!empty($element[$key]['#ajax_added'])) {
-      $classes[] = 'ajax-new-content';
-    }
-    $rows[] = array(
-      'class' => $classes,
-      'data' => $row,
-    );
+  }
+  $output .= '</tbody></table>';
+  $output .= drupal_render_children($element);
+
+  return $output;
+}
+
+/**
+ * Theme an individual conditional row of webform_conditionals_form().
+ */
+function theme_webform_conditional_group_row($variables) {
+  $element = $variables['element'];
+
+  $element['weight']['#attributes']['class'] = array('webform-conditional-weight');
+  $weight = drupal_render($element['weight']);
+  $classes = array('draggable');
+  if (!empty($element['#even_odd'])) {
+    $classes[] = $element['#even_odd'];
+  }
+  if (!empty($element['#ajax_added'])) {
+    $classes[] = 'ajax-new-content';
   }
 
   $output = '';
-  $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'webform-conditionals-table'), 'sticky' => FALSE));
-  $output .= drupal_render_children($element);
+  $output .= '<tr class="' . implode(' ', $classes) . '">';
+  $output .= '<td>' . drupal_render_children($element) . '</td>';
+  $output .= '<td>' . $weight . '</td>';
+  $output .= '</tr>';
 
   return $output;
 }
@@ -242,9 +262,6 @@ function theme_webform_conditional_groups($variables) {
  * Form API #process function to expand a webform conditional element.
  */
 function _webform_conditional_expand($element) {
-  $node = node_load($element['#nid']);
-  _webform_conditional_expand_value_forms($node);
-
   $element['#tree'] = TRUE;
   $element['#default_value'] += array(
     'andor' => 'and',
@@ -283,6 +300,7 @@ function _webform_conditional_expand($element) {
         'progress' => 'none',
         'callback' => 'webform_conditional_element_ajax',
         'wrapper' => $wrapper_id,
+        'event' => 'click',
       ),
     );
     $element['rules'][$rid]['add'] = array(
@@ -295,6 +313,7 @@ function _webform_conditional_expand($element) {
         'progress' => 'none',
         'callback' => 'webform_conditional_element_ajax',
         'wrapper' => $wrapper_id,
+        'event' => 'click',
       ),
     );
 
@@ -464,7 +483,7 @@ function webform_conditional_element_ajax($form, $form_state) {
     $element = $element[$key];
   }
 
-  return drupal_render($element);
+  return drupal_render($element['conditional']);
 }
 
 /**

@@ -152,6 +152,16 @@ Drupal.webform.conditionalAdmin = function(context) {
   // Trigger default handlers on the source element, this in turn will trigger
   // the operator handlers.
   $context.find('.webform-conditional-source select').trigger('change');
+
+  // When adding a new table row, make it draggable and hide the weight column.
+  if ($context.is('tr.ajax-new-content') && $context.find('.webform-conditional').length === 1) {
+    Drupal.tableDrag['webform-conditionals-table'].makeDraggable($context[0]);
+    $context.find('.webform-conditional-weight').closest('td').addClass('tabledrag-hide');
+    if ($.cookie('Drupal.tableDrag.showWeight') !== '1') {
+      Drupal.tableDrag['webform-conditionals-table'].hideColumns();
+    }
+    $context.removeClass('ajax-new-content');
+  }
 }
 
 /**
