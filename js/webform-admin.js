@@ -122,29 +122,36 @@ Drupal.webform.downloadExport = function(context) {
  * Attach behaviors for Webform conditional administration.
  */
 Drupal.webform.conditionalAdmin = function(context) {
-  $('.webform-conditional:not(.webform-conditional-processed)').each(function() {
+  $context = $(context);
+  // Bind to the entire form and allow events to bubble-up from elements. This
+  // saves a lot of processing when new conditions are added/removed.
+  $context.find('#webform-conditionals-form:not(.webform-conditional-processed)').bind('change', function(e) {
     $(this).addClass('webform-conditional-processed');
 
+    if ($(e.target).is('.webform-conditional-source select')) {
+      Drupal.webform.conditionalSourceChange.apply(e.target);
+    }
+
+    if ($(e.target).is('.webform-conditional-operator select')) {
+      Drupal.webform.conditionalOperatorChange.apply(e.target);
+    }
+
+    if ($(e.target).is('.webform-conditional-andor select')) {
+      Drupal.webform.conditionalAndOrChange.apply(e.target);
+    }
+  }).bind('mousedown', function(e) {
     // Rather than binding to click, we have to use mousedown to work with
     // the AJAX handling, which disables the button and prevents "click" events.
     // This handler needs a delay to let the form submit before we remove the
     // table row.
-    $(this).find('.webform-conditional-rule-remove').mousedown(function() {
-      window.setTimeout($.proxy(Drupal.webform.conditionalRemove, this), 10);
-    });
-
-    $(this).find('.webform-conditional-source select').each(function() {
-      $(this).change(Drupal.webform.conditionalSourceChange).triggerHandler('change');
-    });
-
-    $(this).find('.webform-conditional-operator select').each(function() {
-      $(this).change(Drupal.webform.conditionalOperatorChange).triggerHandler('change');
-    });
-
-    $(this).find('.webform-conditional-andor select').each(function() {
-      $(this).change(Drupal.webform.conditionalAndOrChange).triggerHandler('change');
-    });
+    if ($(e.target).is('.webform-conditional-rule-remove')) {
+      window.setTimeout($.proxy(Drupal.webform.conditionalRemove, e.target), 10);
+    }
   });
+
+  // Trigger default handlers on the source element, this in turn will trigger
+  // the operator handlers.
+  $context.find('.webform-conditional-source select').trigger('change');
 }
 
 /**
@@ -183,11 +190,11 @@ Drupal.webform.conditionalSourceChange = function() {
   $operator.html($newList[0].innerHTML);
 
   // Fire the change event handler on the list to update the value field.
-  $operator.triggerHandler('change');
+  $operator.trigger('change');
 }
 
 /**
- * Event callback to update the list of operators after a source change.
+ * Event callback to update the value field after an operator change.
  */
 Drupal.webform.conditionalOperatorChange = function() {
   var source = $(this).parents('.webform-conditional-rule:first').find('.webform-conditional-source select').val();
@@ -205,6 +212,14 @@ Drupal.webform.conditionalOperatorChange = function() {
     $value[0]['webformConditionalOriginal'] = $value[0].innerHTML;
     originalValue = $value.find('input:first').val();
   }
+  // On changes to an existing operator, check if the form key is different
+  // before bothering with replacing the form with an identical version.
+  else if ($value[0]['webformConditionalFormKey'] == formKey) {
+    return;
+  }
+
+  // Store the current form key for checking the next time the operator changes.
+  $value[0]['webformConditionalFormKey'] = formKey;
 
   // If using the default (a textfield), restore the original field.
   if (formKey === 'default') {
