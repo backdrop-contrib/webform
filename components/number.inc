@@ -770,7 +770,7 @@ function _webform_number_format($component, $value) {
  * Based on http://stackoverflow.com/questions/5917082/regular-expression-to-match-numbers-with-or-without-commas-and-decimals-in-text.
  */
 function webform_number_format_match($value, $point, $separator) {
-  return preg_match('/^(-? ?[1-9](?:\d{0,2})(?:' . ($separator ? (preg_quote($separator, '/') . '?') : '') . '\d{2,3})*(?:' . preg_quote($point, '/') . '\d*[0-9])?|0?' . preg_quote($point, '/') . '\d*)$/', $value);
+  return preg_match('/^-? ?\d{1,3}(?:' . ($separator ? (preg_quote($separator, '/') . '?') : '') . '\d{2,3})*(?:' . preg_quote($point, '/') . '\d+)?$/', $value);
 }
 
 /**
