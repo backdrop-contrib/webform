@@ -333,7 +333,9 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE) {
     '#translatable' => array('title', 'description'),
   );
 
-  $element['#description'] = theme('file_upload_help', array('description' => $element['#description'], 'upload_validators' => $element['#upload_validators']));
+  if ($filter) {
+    $element['#description'] = theme('file_upload_help', array('description' => $element['#description'], 'upload_validators' => $element['#upload_validators']));
+  }
 
   return $element;
 }
