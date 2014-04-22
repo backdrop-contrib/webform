@@ -489,7 +489,7 @@ function webform_expand_select_ids($element) {
     $element[$key]['#id'] = $id . '-' . $delta;
 
     // Prevent scripts or CSS in the labels for each checkbox or radio.
-    $element[$key]['#title'] = webform_filter_xss($element[$key]['#title']);
+    $element[$key]['#title'] = isset($element[$key]['#title']) ? webform_filter_xss($element[$key]['#title']) : '';
   }
   return $element;
 }
