@@ -125,7 +125,7 @@ Drupal.webform.conditionalAdmin = function(context) {
   $context = $(context);
   // Bind to the entire form and allow events to bubble-up from elements. This
   // saves a lot of processing when new conditions are added/removed.
-  $context.find('#webform-conditionals-form:not(.webform-conditional-processed)').bind('change', function(e) {
+  $context.find('#webform-conditionals-ajax:not(.webform-conditional-processed)').bind('change', function(e) {
     $(this).addClass('webform-conditional-processed');
 
     if ($(e.target).is('.webform-conditional-source select')) {
@@ -139,15 +139,11 @@ Drupal.webform.conditionalAdmin = function(context) {
     if ($(e.target).is('.webform-conditional-andor select')) {
       Drupal.webform.conditionalAndOrChange.apply(e.target);
     }
-  }).bind('mousedown', function(e) {
-    // Rather than binding to click, we have to use mousedown to work with
-    // the AJAX handling, which disables the button and prevents "click" events.
-    // This handler needs a delay to let the form submit before we remove the
-    // table row.
-    if ($(e.target).is('.webform-conditional-rule-remove')) {
-      window.setTimeout($.proxy(Drupal.webform.conditionalRemove, e.target), 10);
-    }
   });
+
+  $context.find('.webform-conditional-rule-remove:not(.webform-conditional-processed)').bind('click', function() {
+    window.setTimeout($.proxy(Drupal.webform.conditionalRemove, this), 100);
+  }).addClass('webform-conditional-processed');
 
   // Trigger default handlers on the source element, this in turn will trigger
   // the operator handlers.

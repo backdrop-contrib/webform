@@ -95,7 +95,6 @@ function webform_conditionals_form($form, &$form_state, $node) {
       'progress' => 'none',
       'effect' => 'fade',
       'callback' => 'webform_conditionals_ajax',
-      'wrapper' => 'webform-conditionals-ajax',
     ),
   );
 
@@ -161,6 +160,10 @@ function webform_conditionals_form_validate($form, &$form_state) {
       }
     }
   }
+
+  // Form validation will not rebuild the form, so we need to ensure
+  // necessary JavaScript will still exist.
+  _webform_conditional_expand_value_forms($form['#node']);
 }
 
 /**
@@ -223,6 +226,7 @@ function theme_webform_conditional_groups($variables) {
         $data = t('There are no conditional actions on this form.') . ' ';
       }
       $even_odd = ($index + 1) % 2 ? 'odd' : 'even';
+      $element[$key]['weight']['#attributes']['class'] = array('webform-conditional-weight');
       $data = '<div class="webform-conditional-new">' . $data . t('Add a new condition: ') . drupal_render($element[$key]['new']) . '</div>';
       $output .= '<tr class="webform-conditional-new-row ' . $even_odd . '">';
       $output .= '<td>' . $data . '</td>';
