@@ -3619,6 +3619,7 @@ function webform_replace_url_tokens($redirect_url, $node = NULL, $submission = N
       $parsed_redirect_url['query'][$key] = trim(webform_replace_tokens($value, $node, $submission));
     }
   }
+  $parsed_redirect_url['absolute'] = TRUE;
   $redirect_url = url($parsed_redirect_url['path'], $parsed_redirect_url);
   return $redirect_url;
 }
