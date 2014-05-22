@@ -2735,7 +2735,7 @@ function webform_client_form_validate($form, &$form_state) {
     foreach ($node->webform['roles'] as $rid) {
       $allowed_roles[$rid] = isset($user->roles[$rid]) ? TRUE : FALSE;
     }
-    if (array_search(TRUE, $allowed_roles) === FALSE) {
+    if (array_search(TRUE, $allowed_roles) === FALSE && $user->uid != 1) {
       $allowed_role = FALSE;
     }
   }
