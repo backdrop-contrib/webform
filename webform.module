@@ -3104,7 +3104,6 @@ function webform_client_form_submit($form, &$form_state) {
   else {
     // Clean up the redirect URL, filter it for tokens and remove the domain name.
     $redirect_url = webform_replace_url_tokens($redirect_url, $node, $submission);
-    $redirect_url = preg_replace('/^' . preg_quote($GLOBALS['base_url'], '/') . '\//', '', $redirect_url);
 
     // $redirect_url is an absolute, external URL
     if (valid_url($redirect_url, TRUE)) {
@@ -3599,7 +3598,8 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
 }
 
 /**
- * Replace tokens within a URL, encoding the parts within the query string.
+ * Replace tokens within a URL, encoding the parts within the query string. The
+ * base_url, if any, is removed from the resulting URL.
  *
  * @param string $redirect_url
  *   The redirect URL, with everything other than tokens already URL encoded.
@@ -3621,6 +3621,11 @@ function webform_replace_url_tokens($redirect_url, $node = NULL, $submission = N
   }
   $parsed_redirect_url['absolute'] = TRUE;
   $redirect_url = url($parsed_redirect_url['path'], $parsed_redirect_url);
+  $redirect_url = preg_replace('/^' . preg_quote($GLOBALS['base_url'], '/') . '\//', '', $redirect_url);
+  if (!$redirect_url && stripos($parsed_redirect_url['path'], '<front>') !== FALSE) {
+    // URL specifies <front>, rather than an empty redirect (which is interpreted as no redirect)
+    $redirect_url = '/';
+  }
   return $redirect_url;
 }
 
