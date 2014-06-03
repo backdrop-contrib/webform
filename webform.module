@@ -1932,7 +1932,7 @@ function theme_webform_view_messages($variables) {
   $closed = $variables['closed'];
   $cached = $variables['cached'];
 
-  $type = 'status';
+  $type = 'warning';
 
   if ($closed) {
     $message = t('Submissions for this form are closed.');
@@ -1981,16 +1981,16 @@ function theme_webform_view_messages($variables) {
     else {
       $message = t('You may not submit another entry at this time.');
     }
+    $type = 'error';
   }
 
   // If the user has submitted before, give them a link to their submissions.
   if ($submission_count > 0 && $node->webform['submit_notice'] == 1 && !$cached) {
     if (empty($message)) {
-      $message = t('You have already submitted this form.') . ' ' . t('<a href="!url">View your previous submissions</a>.', array('!url' => url('node/' . $node->nid . '/submissions')));
+      $message = t('You have already submitted this form.');
+      $type = 'status';
     }
-    else {
-      $message .= ' ' . t('<a href="!url">View your previous submissions</a>.', array('!url' => url('node/' . $node->nid . '/submissions')));
-    }
+    $message .= ' ' . t('<a href="!url">View your previous submissions</a>.', array('!url' => url('node/' . $node->nid . '/submissions')));
   }
 
   if ($page && isset($message)) {
