@@ -2389,52 +2389,40 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
       );
     }
 
-    if ($page_count > 1) {
-      // Add the submit button(s).
-      if ($page_num > 1) {
-        $form['actions']['previous'] = array(
-          '#type' => 'submit',
-          '#value' => $prev_page_labels[$page_num],
-          '#weight' => 5,
-          '#validate' => array(),
-          '#attributes' => array(
-            'formnovalidate' => 'formnovalidate',
-            'class' => array('webform-previous'),
-          ),
-          '#pre_render' => $buttons_pre_render,
-        );
-      }
-      if ($page_num == $page_count) {
-        $form['actions']['submit'] = array(
-          '#type' => 'submit',
-          '#value' => empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text']),
-          '#weight' => 10,
-          '#attributes' => array(
-            'class' => array('webform-submit', 'button-primary'),
-          ),
-          '#pre_render' => $buttons_pre_render,
-        );
-      }
-      elseif ($page_num < $page_count) {
-        $form['actions']['next'] = array(
-          '#type' => 'submit',
-          '#value' => $next_page_labels[$page_num],
-          '#weight' => 10,
-          '#attributes' => array(
-            'class' => array('webform-next', 'button-primary'),
-          ),
-          '#pre_render' => $buttons_pre_render,
-        );
-      }
+    // Add the submit button(s).
+    if ($page_num > 1) {
+      $form['actions']['previous'] = array(
+        '#type' => 'submit',
+        '#value' => $prev_page_labels[$page_num],
+        '#weight' => 5,
+        '#validate' => array(),
+        '#attributes' => array(
+          'formnovalidate' => 'formnovalidate',
+          'class' => array('webform-previous'),
+        ),
+        '#pre_render' => $buttons_pre_render,
+      );
     }
-    else {
-      // Add the submit button.
+    if ($page_num == $page_count) {
       $form['actions']['submit'] = array(
         '#type' => 'submit',
-        '#value' => empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text']),
+        '#value' => ($form['details']['finished']['#value'])
+                        ? t('Save')
+                        : (empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text'])),
         '#weight' => 10,
         '#attributes' => array(
           'class' => array('webform-submit', 'button-primary'),
+        ),
+        '#pre_render' => $buttons_pre_render,
+      );
+    }
+    elseif ($page_num < $page_count) {
+      $form['actions']['next'] = array(
+        '#type' => 'submit',
+        '#value' => $next_page_labels[$page_num],
+        '#weight' => 10,
+        '#attributes' => array(
+          'class' => array('webform-next', 'button-primary'),
         ),
         '#pre_render' => $buttons_pre_render,
       );
