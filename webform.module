@@ -3283,12 +3283,16 @@ function webform_element_title_display($element) {
  * Drupal forcibly adds IDs to all form elements, including those that do not
  * need them for any reason, such as the actions wrapper or submit buttons. We
  * use this process function wherever we wish to remove an ID from an element.
+ * Because #states require IDs, they are only removed if the states array is
+ * empty.
  */
 function webform_pre_render_remove_id($element) {
-  $element['#id'] = NULL;
-  // Removing array parents is required to prevent theme_container from adding
-  // an empty ID attribute.
-  $element['#array_parents'] = NULL;
+  if (empty($element['#states'])) {
+    $element['#id'] = NULL;
+    // Removing array parents is required to prevent theme_container from adding
+    // an empty ID attribute.
+    $element['#array_parents'] = NULL;
+  }
   return $element;
 }
 
