@@ -323,20 +323,22 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
   // Set the component options.
   $element['#options'] = $options;
 
-  // Set the default value.
+  // Set the default value. Note: "No choice" is stored as an empty string,
+  // which will match a 0 key for radios; NULL is used to avoid unintentional
+  // defaulting to the 0 option.
   if (isset($value)) {
     if ($component['extra']['multiple']) {
       // Set the value as an array.
       $element['#default_value'] = array();
       foreach ((array) $value as $key => $option_value) {
-        $element['#default_value'][] = $option_value;
+        $element['#default_value'][] = $option_value === '' ? NULL : $option_value;
       }
     }
     else {
       // Set the value as a single string.
       $element['#default_value'] = '';
       foreach ((array) $value as $option_value) {
-        $element['#default_value'] = $option_value;
+        $element['#default_value'] = $option_value === '' ? NULL : $option_value;
       }
     }
   }
