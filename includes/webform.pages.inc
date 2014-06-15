@@ -333,9 +333,9 @@ function webform_configure_form($form, &$form_state, $node) {
   );
   $form['advanced']['auto_save'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Automatically save as draft between pages'),
+    '#title' => t('Automatically save as draft between pages and when there are validation errors'),
     '#default_value' => $node->webform['auto_save'],
-    '#description' => t('Automatically save partial submissions when users click the "Next" or "Previous" buttons in a multipage form.'),
+    '#description' => t('Automatically save partial submissions when users click the "Next" or "Previous" buttons in a multipage form or when validation errors prevent form submission.'),
   );
   $form['advanced']['submit_notice'] = array(
     '#type' => 'checkbox',

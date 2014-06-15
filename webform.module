@@ -2206,6 +2206,10 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
     $submission = webform_get_submission($node->nid, $form_state['values']['details']['sid']);
     $is_draft = $submission->is_draft;
   }
+  elseif (empty($submission) && !empty($form_state['input']['details']['sid'])) {
+    $submission = webform_get_submission($node->nid, $form_state['input']['details']['sid']);
+    $is_draft = $submission->is_draft;
+  }
 
   // Bind arguments to $form to make them available in theming and form_alter.
   $form['#node'] = $node;
@@ -2230,7 +2234,7 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
   }
 
   $form['#submit'] = array('webform_client_form_pages', 'webform_client_form_submit');
-  $form['#validate'] = array('webform_client_form_prevalidate', 'webform_client_form_validate');
+  $form['#validate'] = array('webform_client_form_prevalidate', 'webform_client_form_validate', 'webform_client_form_postvalidate');
 
   if (is_array($node->webform['components']) && !empty($node->webform['components'])) {
     // Prepare a new form array.
@@ -2854,6 +2858,37 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
       }
     }
     $elements['#webform_validated'] = TRUE;
+  }
+}
+
+/**
+ * Saves submissions that fail validation as drafts.
+ *
+ * When a user attempts to submit an unfinished form and auto-save allowed,
+ * automatically save the form as a draft to allow the user to complete the
+ * form later. This prevents the common failure of a user submitted a form and
+ * failing to notice validation errors. The user then leaves the page without
+ * realizing that the form hasn't been submitted.
+ */
+function webform_client_form_postvalidate(&$form, &$form_state) {
+  $errors = form_get_errors();
+  $nid = $form_state['values']['details']['nid'];
+  $node = node_load($nid);
+  if (user_is_logged_in() && $errors && !isset($errors['']) && $node->webform['auto_save']) {
+    // Validation errors are present, prevalidation succeeded (e.g submmission 
+    // limits are ok), and auto-save is enabled.
+
+    // Process submission on a copy of the form and form_state to prevent the
+    // submission handlers from making unintended changes.
+    $submit_form = $form;
+    $submit_form_state = $form_state;
+    $submit_form_state['values']['op'] = ''; // A button that isn't Save Draft, Next Page, Submit, etc.
+    form_execute_handlers('submit', $submit_form, $submit_form_state);
+    if ($submit_form_state['values']['details']['sid'] != $form_state['values']['details']['sid']) {
+      // A new submission was created. Update the form and form_state so that the new submission
+      // will be used when the form definition is called again later.
+      $form['details']['sid']['#value'] = $form_state['input']['details']['sid'] = $submit_form_state['values']['details']['sid'];
+    }
   }
 }
 
