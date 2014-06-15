@@ -4433,6 +4433,7 @@ function webform_email_html_capable() {
   }
   if (module_exists('htmlmail')) {
     $systems[] = 'HTMLMailSystem';
+    $systems[] = 'HTMLMailSystem__SmtpMailSystem';
   }
   // Allow other modules to alter the list.
   drupal_alter('webform_html_capable_mail_systems', $systems);
