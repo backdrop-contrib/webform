@@ -537,4 +537,3 @@ function webform_file_usage_adjust($submission) {
     }
   }
 }
-

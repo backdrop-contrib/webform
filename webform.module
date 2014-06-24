@@ -2713,7 +2713,7 @@ function _webform_client_form_add_component($node, $component, $component_value,
  */
 function webform_client_form_prevalidate($form, &$form_state) {
   global $user;
-  
+
   $node = $form['#node'];
   $finished = $form_state['values']['details']['finished'];
 
@@ -2875,7 +2875,7 @@ function webform_client_form_postvalidate(&$form, &$form_state) {
   $nid = $form_state['values']['details']['nid'];
   $node = node_load($nid);
   if (user_is_logged_in() && $errors && !isset($errors['']) && $node->webform['auto_save'] && !empty($form_state['values']['op'])) {
-    // Validation errors are present, prevalidation succeeded (e.g submmission 
+    // Validation errors are present, prevalidation succeeded (e.g. submission
     // limits are ok), auto-save is enabled, and a button was pushed (not ajax).
 
     // Process submission on a copy of the form and form_state to prevent the

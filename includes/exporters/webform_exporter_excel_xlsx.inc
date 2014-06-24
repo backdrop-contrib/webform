@@ -69,7 +69,7 @@ class webform_exporter_excel_xlsx extends webform_exporter {
           else {
             $style_format = 3;
           }
-  
+
           $output .= '<c r="' . $cell_position . '" s="' . $style_format . '"><v>';
           $output .= $excel_timestamp;
           $output .= '</v></c>';
