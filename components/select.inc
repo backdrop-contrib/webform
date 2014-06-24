@@ -271,6 +271,11 @@ function _webform_edit_validate_options($element, &$form_state) {
   // Options saved for grid components.
   else {
     $form_state['values']['extra']['custom_' . rtrim($key, 's') . '_keys'] = $element_options['custom_keys'];
+    // There is only one 'value', but grids have two options widgets, one for questions and one for options.
+    // Only options have a default 'value'. Note that multiple selection is now allowed for grid options.
+    if ($key == 'options') {
+      $form_state['values']['value'] = $element_options['default_value'];
+    }
   }
 }
 

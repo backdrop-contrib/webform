@@ -18,6 +18,7 @@ function _webform_defaults_grid() {
     'required' => 0,
     'pid' => 0,
     'weight' => 0,
+    'value' => '',
     'extra' => array(
       'options' => '',
       'questions' => '',
@@ -69,13 +70,13 @@ function _webform_edit_grid($component) {
     $form['options']['options'] = array(
       '#type' => 'options',
       '#options' => _webform_select_options_from_text($component['extra']['options'], TRUE),
-      '#optgroups' => FALSE,
-      '#default_value' => FALSE,
-      '#default_value_allowed' => FALSE,
+      '#default_value' => $component['value'],
+      '#default_value_allowed' => TRUE,
       '#optgroups' => FALSE,
       '#key_type' => 'mixed',
       '#key_type_toggle' => t('Customize option keys (Advanced)'),
       '#key_type_toggled' => $component['extra']['custom_option_keys'],
+      '#default_value_pattern' => '^%.+\[.+\]$',
     );
 
     $form['questions'] = array(
@@ -92,7 +93,6 @@ function _webform_edit_grid($component) {
       '#optgroups' => FALSE,
       '#default_value' => FALSE,
       '#default_value_allowed' => FALSE,
-      '#optgroups' => FALSE,
       '#key_type' => 'mixed',
       '#key_type_toggle' => t('Customize question keys (Advanced)'),
       '#key_type_toggled' => $component['extra']['custom_question_keys'],
@@ -123,7 +123,17 @@ function _webform_edit_grid($component) {
       '#wysiwyg' => FALSE,
       '#element_validate' => array('_webform_edit_validate_select'),
     );
+    $form['value'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Default value'),
+      '#default_value' => $component['value'],
+      '#description' => t('The default option of the grid identified by its key.') . ' ' . theme('webform_token_help'),
+      '#size' => 60,
+      '#maxlength' => 1024,
+      '#weight' => 1,
+    );
   }
+
 
   $form['display']['optrand'] = array(
     '#type' => 'checkbox',
@@ -175,6 +185,7 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
     '#description' => $filter ? webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#grid_questions' => $questions,
     '#grid_options' => $options,
+    '#default_value' => $component['value'],
     '#optrand' => $component['extra']['optrand'],
     '#qrand' => $component['extra']['qrand'],
     '#theme' => 'webform_grid',
