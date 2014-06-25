@@ -185,7 +185,8 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
     '#description' => $filter ? webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#grid_questions' => $questions,
     '#grid_options' => $options,
-    '#default_value' => $component['value'],
+    '#default_value' => isset($value) ? $value : $component['value'],
+    '#grid_default' => $component['value'],
     '#optrand' => $component['extra']['optrand'],
     '#qrand' => $component['extra']['qrand'],
     '#theme' => 'webform_grid',
@@ -197,10 +198,6 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
   // Enforce uniqueness.
   if ($component['extra']['unique']) {
     $element['#element_validate'][] = '_webform_edit_grid_unique_validate';
-  }
-
-  if ($value) {
-    $element['#default_value'] = $value;
   }
 
   return $element;
@@ -457,7 +454,22 @@ function _webform_csv_data_grid($component, $export_options, $value) {
  * A Form API element validate function to check that all choices are unique.
  */
 function _webform_edit_grid_unique_validate($element) {
-  if (!empty($element['#value']) && count($element['#value']) > count(array_unique($element['#value']))) {
+  $nr_unique = count(array_unique($element['#value']));
+  $nr_values = count($element['#value']);
+  $nr_possible = count($element['#grid_options']);
+  if (strlen($element['#grid_default']) && isset($element['#grid_options'][$element['#grid_default']])) {
+    // A default is defined and is one of the options. Don't count default values
+    // toward uniqueness.
+    $nr_defaults = count(array_keys($element['#value'], $element['#grid_default']));
+    if ($nr_defaults) {
+      $nr_values -= $nr_defaults;
+      $nr_unique--;
+    }
+  }
+  if ($nr_unique < $nr_values && $nr_unique < $nr_possible) {
+    // Fewer unique values than values means that at least one value is duplicated.
+    // Fewer unique values than possible values means that there is a possible choice
+    // that wasn't used.
     form_error($element, t('<em>!title</em> is not allowed to have the same answer for more than one question.', array('!title' => $element['#title'])));
   }
 }
