@@ -2205,17 +2205,12 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
   // Load this submission. This allows anonymous users to use auto-save.
   if (empty($submission) && !empty($form_state['values']['details']['sid'])) {
     $submission = webform_get_submission($node->nid, $form_state['values']['details']['sid']);
-    $is_draft = $submission->is_draft;
-  }
-  elseif (empty($submission) && !empty($form_state['input']['details']['sid'])) {
-    $submission = webform_get_submission($node->nid, $form_state['input']['details']['sid']);
-    $is_draft = $submission->is_draft;
   }
 
   // Bind arguments to $form to make them available in theming and form_alter.
   $form['#node'] = $node;
   $form['#submission'] = $submission;
-  $form['#is_draft'] = $is_draft;
+  $form['#is_draft'] = $submission ? $submission->is_draft : $is_draft;
   $form['#filter'] = $filter;
 
   // Add a theme function for this form.
@@ -2875,7 +2870,11 @@ function webform_client_form_postvalidate(&$form, &$form_state) {
   $errors = form_get_errors();
   $nid = $form_state['values']['details']['nid'];
   $node = node_load($nid);
-  if (user_is_logged_in() && $errors && !isset($errors['']) && $node->webform['auto_save'] && !empty($form_state['values']['op'])) {
+  if (user_is_logged_in() &&
+      $errors && !isset($errors['']) &&
+      $node->webform['auto_save'] &&
+      ($form['#is_draft'] || !$form_state['values']['details']['sid']) &&
+      !empty($form_state['values']['op'])) {
     // Validation errors are present, prevalidation succeeded (e.g. submission
     // limits are ok), auto-save is enabled, and a button was pushed (not ajax).
 
@@ -2883,7 +2882,7 @@ function webform_client_form_postvalidate(&$form, &$form_state) {
     // submission handlers from making unintended changes.
     $submit_form = $form;
     $submit_form_state = $form_state;
-    $submit_form_state['values']['op'] = ''; // A button that isn't Save Draft, Next Page, Submit, etc.
+    $submit_form_state['values']['op'] = '__AUTOSAVE__'; // A button that isn't Save Draft, Next Page, Submit, etc.
     form_execute_handlers('submit', $submit_form, $submit_form_state);
     if ($submit_form_state['values']['details']['sid'] != $form_state['values']['details']['sid']) {
       // A new submission was created. Update the form, form_state and _POST so that the new submission
@@ -2891,7 +2890,9 @@ function webform_client_form_postvalidate(&$form, &$form_state) {
       $sid = $submit_form_state['values']['details']['sid'];
       $form['details']['sid']['#value'] = $sid;
       $form['#submission'] = webform_get_submission($nid, $sid);
+      $form_state['values']['details']['sid'] =  $sid;
       $form_state['input']['details']['sid'] =  $sid;
+      $form['#is_draft'] = TRUE;
       $_POST['details']['sid'] = $sid;
       // Save the updated form and form_state to the cache, from which it will
       // later be retrieved to present the form.
