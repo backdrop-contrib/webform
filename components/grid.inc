@@ -185,7 +185,7 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
     '#description' => $filter ? webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#grid_questions' => $questions,
     '#grid_options' => $options,
-    '#default_value' => isset($value) ? $value : $component['value'],
+    '#default_value' => isset($value) || !strlen($component['value']) ? $value : array_fill_keys(array_keys($questions), $component['value']),
     '#grid_default' => $component['value'],
     '#optrand' => $component['extra']['optrand'],
     '#qrand' => $component['extra']['qrand'],
