@@ -2860,11 +2860,39 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
 /**
  * Saves submissions that fail validation as drafts.
  *
- * When a user attempts to submit an unfinished form and auto-save allowed,
+ * When a user attempts to submit an unfinished form and auto-save is allowed,
  * automatically save the form as a draft to allow the user to complete the
- * form later. This prevents the common failure of a user submitted a form and
- * failing to notice validation errors. The user then leaves the page without
- * realizing that the form hasn't been submitted.
+ * form later. This prevents the common failure of a user trying to submit a 
+ * form and not noticing validation errors. The user then leaves the page 
+ * without realizing that the form hasn't been submitted.
+ *
+ * THEORY OF OPERATION:
+ * The Drupal 7 Form API lacks an easy way to rebuild the form in the event of
+ * validation errors. The opertions is thus:
+ * 
+ * 1) The form is first displayed. If it is an existing draft, 
+ *    webform_client_form will generated a form to edit the draft submission.
+ *    Otherwise it creates a form for a new, empty submission. As usual.
+ * 2) The submit button is pressed. The form is retrieved from cache or is
+ *    recreated by webform_client_form. The values from the $_POST are merged in
+ *    and the validation routines are called. As usual.
+ * 3) The postvalidation routine, below, detects that validation errors should
+ *    be autosaved and calls the submit handlers on a copy of the form and
+ *    form_state. This creates the submission, or saves to the existing
+ *    submission. The original form and form_state are not modified (yet).
+ * 4) If a new submission was created, the form and form_state are updated with
+ *    the newly-created sid of the submission, which is returned to the
+ *    browser in the hidden field [details][sid]. The form is set to not be
+ *    cached, and any existing cached copy is cleared to force step 5. The form
+ *    is presented with validation errors as usual.
+ * 5) When the form is submitted again, the form must be rebuilt because it is
+ *    not in the cache. The existing draft detection in _webform_fetch_draft_sid
+ *    detects that a webform draft is being submitted, and uses its sid in
+ *    preference to any other stored draft sid in the database. In the event
+ *    that multiple drafts are being implemented by another module, this ensures
+ *    that the correct draft is edited.
+ * 6) Repeat from step 2 until the form is abandoned (leaving the draft) or
+ *    successfully submitted.
  */
 function webform_client_form_postvalidate(&$form, &$form_state) {
   $errors = form_get_errors();
@@ -2873,32 +2901,36 @@ function webform_client_form_postvalidate(&$form, &$form_state) {
   if (user_is_logged_in() &&
       $errors && !isset($errors['']) &&
       $node->webform['auto_save'] &&
-      ($form['#is_draft'] || !$form_state['values']['details']['sid']) &&
+      !$form_state['values']['details']['finished'] &&
       !empty($form_state['values']['op'])) {
     // Validation errors are present, prevalidation succeeded (e.g. submission
-    // limits are ok), auto-save is enabled, and a button was pushed (not ajax).
+    // limits are ok), auto-save is enabled, this form isn't finished (i.e. is
+    // or soon will be a draft) and a button was pushed (not ajax).
 
     // Process submission on a copy of the form and form_state to prevent the
-    // submission handlers from making unintended changes.
+    // submission handlers from making unintended changes. Use a button that
+    // isn't Save Draft, Next Page, Submit, etc to avoid triggering any
+    // unwanted side effects.
     $submit_form = $form;
     $submit_form_state = $form_state;
-    $submit_form_state['values']['op'] = '__AUTOSAVE__'; // A button that isn't Save Draft, Next Page, Submit, etc.
+    $submit_form_state['values']['op'] = '__AUTOSAVE__';
     form_execute_handlers('submit', $submit_form, $submit_form_state);
-    if ($submit_form_state['values']['details']['sid'] != $form_state['values']['details']['sid']) {
-      // A new submission was created. Update the form, form_state and _POST so that the new submission
-      // will be used when the form definition is called again later.
-      $sid = $submit_form_state['values']['details']['sid'];
+    $sid = $submit_form_state['values']['details']['sid'];
+    if ($sid != $form_state['values']['details']['sid']) {
+      // A new submission was created. Update the form and form_state as if it
+      // has been submitted with the new sid. This causes the Form API to
+      // render the form with new sid.
+      $form_state['values']['details']['sid'] = $sid;
+      $form_state['input']['details']['sid'] = $sid;
       $form['details']['sid']['#value'] = $sid;
-      $form['#submission'] = webform_get_submission($nid, $sid);
-      $form_state['values']['details']['sid'] =  $sid;
-      $form_state['input']['details']['sid'] =  $sid;
-      $form['#is_draft'] = TRUE;
-      $_POST['details']['sid'] = $sid;
-      // Save the updated form and form_state to the cache, from which it will
-      // later be retrieved to present the form.
-      form_set_cache($form_state['values']['form_build_id'], $form, $form_state);
-      // Set the form_state to not update the cache with the original null submission.
+      
+      // Prevent the form from being cached, forcing it to be rebuilt from the
+      // form definition function, which will honor the new sid.
       $form_state['no_cache'] = TRUE;
+      if (!variable_get('cache', 0) && !empty($form_state['values']['form_build_id'])) {
+        cache_clear_all('form_' . $form_state['values']['form_build_id'], 'cache_form');
+        cache_clear_all('form_state_' . $form_state['values']['form_build_id'], 'cache_form');
+      }
     }
   }
 }
@@ -3578,16 +3610,26 @@ function theme_webform_mail_headers($variables) {
  * Check if current user has a draft of this webform, and return the sid.
  */
 function _webform_fetch_draft_sid($nid, $uid) {
-  $sid = db_select('webform_submissions')
-    ->fields('webform_submissions', array('sid'))
-    ->condition('nid', $nid)
-    ->condition('uid', $uid)
-    ->condition('is_draft', 1)
-    ->orderBy('submitted', 'DESC')
-    ->execute()
-    ->fetchField();
-  if ($sid) {
-    drupal_alter('webform_draft', $sid);
+  // Detect whether a webform draft is being edited. If so, that is the one that
+  // should be returned.
+  if (isset($_POST['form_id']) && stripos($_POST['form_id'], 'webform_client_form_') === 0 &&
+      !empty($_POST['details']['sid']) && empty($_POST['details']['finished'])) {
+    // A draft is already being edited
+    $sid = $_POST['details']['sid'];
+  }
+  else {
+    $sid = db_select('webform_submissions')
+      ->fields('webform_submissions', array('sid'))
+      ->condition('nid', $nid)
+      ->condition('uid', $uid)
+      ->condition('is_draft', 1)
+      ->orderBy('submitted', 'DESC')
+      ->execute()
+      ->fetchField();
+    
+    if ($sid) {
+      drupal_alter('webform_draft', $sid);
+    }
   }
   return $sid;
 }
