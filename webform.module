@@ -2197,10 +2197,6 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
   form_load_include($form_state, 'inc', 'webform', 'includes/webform.components');
   form_load_include($form_state, 'inc', 'webform', 'includes/webform.submissions');
 
-  $form['#process'] = array(
-    'webform_client_form_includes',
-  );
-
   // If in a multi-step form, a submission ID may be specified in form state.
   // Load this submission. This allows anonymous users to use auto-save.
   if (empty($submission) && !empty($form_state['values']['details']['sid'])) {
@@ -2230,7 +2226,9 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
   }
 
   $form['#submit'] = array('webform_client_form_pages', 'webform_client_form_submit');
-  $form['#validate'] = array('webform_client_form_prevalidate', 'webform_client_form_validate', 'webform_client_form_postvalidate');
+  $form['#validate'] = array('webform_client_form_validate');
+  // Add includes for used component types and pre/post validation handlers
+  $form['#process'] = array('webform_client_form_process');
 
   if (is_array($node->webform['components']) && !empty($node->webform['components'])) {
     // Prepare a new form array.
@@ -2436,12 +2434,21 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
  * Process function for webform_client_form().
  *
  * Include all the enabled components for this form to ensure availability.
+ * Also adds the pre- and post-validators to ensure that hook_form_alters don't
+ * add their validation functions in the wrong order.
  */
-function webform_client_form_includes($form, $form_state) {
+function webform_client_form_process($form, $form_state) {
   $components = webform_components();
   foreach ($components as $component_type => $component) {
     webform_component_include($component_type);
   }
+
+  // Add the post validation to end of validators. Do this first on the off
+  // chance that an _alter function has unset form['#validate']. 
+  $form['#validate'][] = 'webform_client_form_postvalidate';
+  // Add the pre-validator to the front of the list to run first
+  array_unshift($form['#validate'], 'webform_client_form_prevalidate');
+
   return $form;
 }
 
