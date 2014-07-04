@@ -2333,6 +2333,7 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
       );
 
       $form['preview'] = webform_submission_render($node, $preview_submission, NULL, 'html', $node->webform['preview_excluded_components']);
+      $form['#attributes']['class'][] = 'preview';
     }
 
     // These form details help managing data upon submission.
