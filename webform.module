@@ -3726,7 +3726,7 @@ function webform_replace_url_tokens($redirect_url, $node = NULL, $submission = N
   $redirect_url = preg_replace('#^' . $rx_base . $rx_language . '#', '', $redirect_url);
   if (!$redirect_url && stripos($parsed_redirect_url['path'], '<front>') !== FALSE) {
     // URL specifies <front>, rather than an empty redirect (which is interpreted as no redirect)
-    $redirect_url = '/';
+    $redirect_url = '<front>';
   }
   return $redirect_url;
 }
