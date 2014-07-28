@@ -2554,7 +2554,12 @@ function _webform_client_form_rule_check($node, $component, $page_num, $input_va
 
         $source_values = array();
         if (isset($input_values[$source_cid])) {
-          $source_values = is_array($input_values[$source_cid]) ? $input_values[$source_cid] : array($input_values[$source_cid]);
+          $component_value = $input_values[$source_cid];
+          // For select_or_other components, use only the select values because $source_values must not be a nested array.
+          if ($source_component['type'] === 'select' && !empty($source_component['extra']['other_option'])) {
+            $component_value = $component_value['select'];
+          }
+          $source_values = is_array($component_value) ? $component_value : array($component_value);
         }
 
         // Determine the operator and callback.
