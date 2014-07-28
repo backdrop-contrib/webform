@@ -41,15 +41,15 @@ function webform_submission_data($node, $submitted) {
 /**
  * Given set of $form_state values, prepare a psuedo-submission.
  */
-function webform_submission_create($node, $account, $form_state) {
+function webform_submission_create($node, $account, $form_state, $is_preview = FALSE) {
   $submission = (object) array(
     'nid' => $node->nid,
     'uid' => $account->uid,
     'submitted' => REQUEST_TIME,
     'remote_addr' => ip_address(),
     'is_draft' => TRUE,
-    'preview' => FALSE,
-    'serial' => _webform_submission_serial_next_value($node->nid),
+    'preview' => $is_preview,
+    'serial' => _webform_submission_serial_next_value($node->nid, !$is_preview),
     'data' => webform_submission_data($node, $form_state['values']['submitted']),
   );
   drupal_alter('webform_submission_create', $submission, $node, $account, $form_state);
