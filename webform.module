@@ -2445,7 +2445,7 @@ function webform_client_form_process($form, $form_state) {
   }
 
   // Add the post validation to end of validators. Do this first on the off
-  // chance that an _alter function has unset form['#validate']. 
+  // chance that an _alter function has unset form['#validate'].
   $form['#validate'][] = 'webform_client_form_postvalidate';
   // Add the pre-validator to the front of the list to run first
   array_unshift($form['#validate'], 'webform_client_form_prevalidate');
@@ -2870,15 +2870,15 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
  *
  * When a user attempts to submit an unfinished form and auto-save is allowed,
  * automatically save the form as a draft to allow the user to complete the
- * form later. This prevents the common failure of a user trying to submit a 
- * form and not noticing validation errors. The user then leaves the page 
+ * form later. This prevents the common failure of a user trying to submit a
+ * form and not noticing validation errors. The user then leaves the page
  * without realizing that the form hasn't been submitted.
  *
  * THEORY OF OPERATION:
  * The Drupal 7 Form API lacks an easy way to rebuild the form in the event of
  * validation errors. The opertions is thus:
- * 
- * 1) The form is first displayed. If it is an existing draft, 
+ *
+ * 1) The form is first displayed. If it is an existing draft,
  *    webform_client_form will generated a form to edit the draft submission.
  *    Otherwise it creates a form for a new, empty submission. As usual.
  * 2) The submit button is pressed. The form is retrieved from cache or is
@@ -2931,7 +2931,7 @@ function webform_client_form_postvalidate(&$form, &$form_state) {
       $form_state['values']['details']['sid'] = $sid;
       $form_state['input']['details']['sid'] = $sid;
       $form['details']['sid']['#value'] = $sid;
-      
+
       // Prevent the form from being cached, forcing it to be rebuilt from the
       // form definition function, which will honor the new sid.
       $form_state['no_cache'] = TRUE;
@@ -3634,7 +3634,7 @@ function _webform_fetch_draft_sid($nid, $uid) {
       ->orderBy('submitted', 'DESC')
       ->execute()
       ->fetchField();
-    
+
     if ($sid) {
       $context = array(
         'nid' => $nid,
