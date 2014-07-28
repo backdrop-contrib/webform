@@ -2556,7 +2556,10 @@ function _webform_client_form_rule_check($node, $component, $page_num, $input_va
         if (isset($input_values[$source_cid])) {
           $component_value = $input_values[$source_cid];
           // For select_or_other components, use only the select values because $source_values must not be a nested array.
-          if ($source_component['type'] === 'select' && !empty($source_component['extra']['other_option'])) {
+          // During preview, the array is already flattened.
+          if ($source_component['type'] === 'select' &&
+              !empty($source_component['extra']['other_option']) &&
+              isset($component_value['select'])) {
             $component_value = $component_value['select'];
           }
           $source_values = is_array($component_value) ? $component_value : array($component_value);
