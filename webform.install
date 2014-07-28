@@ -1777,12 +1777,15 @@ function webform_update_7415() {
  * Add columns for serial numbered submissions. Add serial numbers to existing submissions.
  */
 function webform_update_7416() {
+  // Postgres has a transactional DDL, so wrap the entire update in a
+  // transaction. The return value of db_transaction() must be assigned or the
+  // transaction will commit immediately. The transaction will commit when $txn
+  // goes out-of-scope.
+  $txn = db_transaction();
+
   // Delete stray entries from the Webform tables before adding serial numbers.
   db_query("DELETE FROM {webform_submissions} WHERE nid NOT IN (SELECT nid FROM {webform})");
   db_query("DELETE FROM {webform_submitted_data} WHERE nid NOT IN (SELECT nid FROM {webform})");
-
-  // Postgres has a transactional DDL.
-  db_transaction();
 
   // Add next_serial column to webform.
   $spec = array(
@@ -1808,8 +1811,10 @@ function webform_update_7416() {
 
   // Add serial numbers to all submissions.
   // MySQL COMMITs transactions when it encounters a DDL change, so start the
-  // transaction. In Postgres transactions will nest, which is fine.
-  db_transaction();
+  // transaction. In Postgres transactions will nest, which is fine. The return
+  // value of db_transaction() must be assigned or the transaction will commit
+  // immediately. The transaction will commit when $txn2 goes out-of-scope.
+  $txn2 = db_transaction();
 
   // Repeat for every Webform.
   $nids = db_select('webform', 'w')

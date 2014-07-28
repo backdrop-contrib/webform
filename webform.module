@@ -4660,16 +4660,16 @@ function webform_date_views_extra_tables() {
 function _webform_submission_serial_next_value($nid, $do_increment = TRUE) {
   // Use a transaction with SELECT ... FOR UPDATE to lock the row between
   // the SELECT and the UPDATE, ensuring that multiple Webform submissions
-  // at the same time do not have duplicate numbers.
-  // Do not lock unless incrementing.
-  if ($do_increment) {
-    db_transaction();
-  }
+  // at the same time do not have duplicate numbers. FOR UPDATE must be inside
+  // a transaction. The return value of db_transaction() must be assigned or the
+  // transaction will commit immediately. The transaction will commit when $txn
+  // goes out-of-scope.
+  $txn = db_transaction();
 
   // Get the next_serial value.
   $next_serial = db_select('webform', 'w')
-    // FOR UPDATE does not lock outside of a transaction.
-    ->forUpdate()
+    // Only add FOR UPDATE when incrementing.
+    ->forUpdate($do_increment)
     ->fields('w', array('next_serial'))
     ->condition('nid', $nid)
     ->execute()
