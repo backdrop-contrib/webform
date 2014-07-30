@@ -3378,15 +3378,18 @@ function webform_pre_render_remove_id($element) {
 }
 
 /**
- * Replacement for theme_form_element().
+ * Implements template_preprocess_THEME_HOOK().
  */
-function theme_webform_element($variables) {
-  // Ensure defaults.
-  $variables['element'] += array(
-    '#title_display' => 'before',
-  );
+function template_preprocess_webform_element(&$variables) {
+  $element = &$variables['element'];
 
-  $element = $variables['element'];
+  // Ensure defaults.
+  $element += array(
+    '#title_display' => 'before',
+    '#wrapper_attributes' => array(
+      'class' => array(),
+    ),
+  );
 
   // All elements using this for display only are given the "display" type.
   if (isset($element['#format']) && $element['#format'] == 'html') {
@@ -3400,18 +3403,17 @@ function theme_webform_element($variables) {
   $nested_level = $element['#parents'][0] == 'submitted' ? 1 : 0;
   $parents = str_replace('_', '-', implode('--', array_slice($element['#parents'], $nested_level)));
 
-  $wrapper_attributes = isset($element['#wrapper_attributes']) ? $element['#wrapper_attributes'] : array('class' => array());
+  // Build up a list of classes to apply on the element wrapper.
   $wrapper_classes = array(
-   'form-item',
-   'webform-component',
-   'webform-component-' . str_replace('_', '-', $type),
-   'webform-component--' . $parents,
+    'form-item',
+    'webform-component',
+    'webform-component-' . str_replace('_', '-', $type),
+    'webform-component--' . $parents,
   );
   if (isset($element['#title_display']) && strcmp($element['#title_display'], 'inline') === 0) {
     $wrapper_classes[] = 'webform-container-inline';
   }
-  $wrapper_attributes['class'] = isset($wrapper_attributes['class']) ? array_merge($wrapper_classes, $wrapper_attributes['class']) : $wrapper_classes;
-  $output = '<div ' . drupal_attributes($wrapper_attributes) . '>' . "\n";
+  $element['#wrapper_attributes']['class'] += $wrapper_classes;
 
   // If #title_display is none, set it to invisible instead - none only used if
   // we have no title at all to use.
@@ -3422,10 +3424,20 @@ function theme_webform_element($variables) {
       $element['#attributes']['title'] = $element['#title'];
     }
   }
+
   // If #title is not set, we don't display any label or required marker.
   if (!isset($element['#title'])) {
     $element['#title_display'] = 'none';
   }
+}
+
+/**
+ * Replacement for theme_form_element().
+ */
+function theme_webform_element($variables) {
+  $element = $variables['element'];
+
+  $output = '<div ' . drupal_attributes($element['#wrapper_attributes']) . '>' . "\n";
   $prefix = isset($element['#field_prefix']) ? '<span class="field-prefix">' . webform_filter_xss($element['#field_prefix']) . '</span> ' : '';
   $suffix = isset($element['#field_suffix']) ? ' <span class="field-suffix">' . webform_filter_xss($element['#field_suffix']) . '</span>' : '';
 
