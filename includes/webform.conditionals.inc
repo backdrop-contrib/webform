@@ -959,15 +959,7 @@ function webform_conditional_operator_string_equal($input_values, $rule_value) {
  * Conditional callback for string comparisons.
  */
 function webform_conditional_operator_string_not_equal($input_values, $rule_value) {
-  $found = FALSE;
-  foreach ($input_values as $value) {
-    // Checkbox values come in as 0 integers for unchecked boxes.
-    $value = ($value === 0) ? '' : $value;
-    if (strcasecmp($value, $rule_value) === 0) {
-      $found = TRUE;
-    }
-  }
-  return !$found;
+  return !webform_conditional_operator_string_equal($input_values, $rule_value);
 }
 
 /**
@@ -986,13 +978,7 @@ function webform_conditional_operator_string_contains($input_values, $rule_value
  * Conditional callback for string comparisons.
  */
 function webform_conditional_operator_string_does_not_contain($input_values, $rule_value) {
-  $found = FALSE;
-  foreach ($input_values as $value) {
-    if (stripos($value, $rule_value) !== FALSE) {
-      $found = TRUE;
-    }
-  }
-  return !$found;
+  return !webform_conditional_operator_string_contains($input_values, $rule_value);
 }
 
 /**
@@ -1054,10 +1040,7 @@ function webform_conditional_operator_numeric_equal($input_values, $rule_value) 
  * Conditional callback for numeric comparisons.
  */
 function webform_conditional_operator_numeric_not_equal($input_values, $rule_value) {
-  // See float comparison: http://php.net/manual/en/language.types.float.php
-  $epsilon = 0.000001;
-  // An empty string does not match any number.
-  return $input_values[0] === '' ? TRUE : (abs((float)$input_values[0] - (float)$rule_value) >= $epsilon);
+  return !webform_conditional_operator_numeric_equal($input_values, $rule_value);
 }
 
 /**
