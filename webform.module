@@ -3173,13 +3173,14 @@ function webform_client_form_submit($form, &$form_state) {
     $message = t('Submission saved. You may return to this form later and it will restore the current values.');
   }
   elseif ($is_draft) {
-    $redirect = NULL;
+    // No redirect needed
   }
   elseif (!empty($form_state['values']['details']['finished'])) {
     $message = t('Submission updated.');
+    $redirect = "node/{$node->nid}/submission/$sid";
   }
   elseif ($redirect_url == '<none>') {
-    $redirect = NULL;
+    // No redirect needed
   }
   elseif ($redirect_url == '<confirmation>') {
     $query = array('sid' => $sid);
