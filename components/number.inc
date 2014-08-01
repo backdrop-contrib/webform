@@ -226,7 +226,9 @@ function theme_webform_number($variables) {
   // This IF statement is mostly in place to allow our tests to set type="text"
   // because SimpleTest does not support type="number".
   if (!isset($element['#attributes']['type'])) {
-    $element['#attributes']['type'] = 'number';
+    // HTML5 number fields are no long used pending better browser support.
+    // See issues #2290029, #2202905.
+    // $element['#attributes']['type'] = 'number';
   }
 
   // Step property *must* be a full number with 0 prefix if a decimal.
