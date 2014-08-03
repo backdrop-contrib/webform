@@ -2980,7 +2980,7 @@ function webform_client_form_pages($form, &$form_state) {
   // Check for a multi-page form that is not yet complete.
   $submit_op = !empty($form['actions']['submit']['#value']) ? $form['actions']['submit']['#value'] : t('Submit');
   $draft_op = !empty($form['actions']['draft']['#value']) ? $form['actions']['draft']['#value'] : t('Save Draft');
-  if (!in_array($form_state['values']['op'], array($submit_op, $draft_op))) {
+  if (!in_array($form_state['values']['op'], array($submit_op, $draft_op, '__AUTOSAVE__'))) {
     // Store values from the current page in the form state storage.
     if (is_array($form_state['values']['submitted'])) {
       foreach ($form_state['values']['submitted'] as $key => $val) {
@@ -3069,7 +3069,8 @@ function webform_client_form_pages($form, &$form_state) {
   }
 
   // Inform the submit handlers that a draft will be saved.
-  $form_state['save_draft'] = $form_state['values']['op'] == $draft_op || ($node->webform['auto_save'] && !$form_state['webform_completed'] && user_is_logged_in());
+  $form_state['save_draft'] = in_array($form_state['values']['op'], array($draft_op, '__AUTOSAVE__')) ||
+                              ($node->webform['auto_save'] && !$form_state['webform_completed'] && user_is_logged_in());
 
   // Determine what we need to do on the next page.
   if (!empty($form_state['save_draft']) || !$form_state['webform_completed']) {
