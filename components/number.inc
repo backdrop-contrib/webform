@@ -229,6 +229,7 @@ function theme_webform_number($variables) {
     // HTML5 number fields are no long used pending better browser support.
     // See issues #2290029, #2202905.
     // $element['#attributes']['type'] = 'number';
+    $element['#attributes']['type'] = 'text';
   }
 
   // Step property *must* be a full number with 0 prefix if a decimal.
