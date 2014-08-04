@@ -2250,17 +2250,20 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
       if ($node->webform['preview']) {
         $form_state['webform']['page_count']++;
       }
+      $form_state['webform']['preview'] = $node->webform['preview'];
     }
     else {
       $form_state['webform']['component_tree'] = $form_state['storage']['component_tree'];
       $form_state['webform']['page_count'] = $form_state['storage']['page_count'];
       $form_state['webform']['page_num'] = $form_state['storage']['page_num'];
+      $form_state['webform']['preview'] = $form_state['storage']['preview'];
     }
 
     // Shorten up our variable names.
     $component_tree = $form_state['webform']['component_tree'];
     $page_count = $form_state['webform']['page_count'];
     $page_num = $form_state['webform']['page_num'];
+    $preview = $form_state['webform']['preview'];
 
     if ($page_count > 1) {
       $next_page_labels = array();
@@ -2288,7 +2291,7 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
     }
 
     if ($page_count > 1) {
-      $page_labels = webform_page_labels($node);
+      $page_labels = webform_page_labels($node, $form_state);
       $form['progressbar'] = array(
         '#theme' => 'webform_progressbar',
         '#node' => $node,
@@ -2302,22 +2305,22 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
     // Recursively add components to the form. The unfiltered version of the
     // form (typically used in Form Builder), includes all components.
     foreach ($component_tree['children'] as $cid => $component) {
-      $component_value = isset($input_values[$cid]) ? $input_values[$cid] : NULL;
+      if ($component['type'] == 'pagebreak') {
+        $next_page_labels[$component['page_num'] - 1] = !empty($component['extra']['next_page_label']) ? t($component['extra']['next_page_label']) : t('Next Page >');
+        $prev_page_labels[$component['page_num']] = !empty($component['extra']['prev_page_label']) ? t($component['extra']['prev_page_label']) : t('< Previous Page');
+      }
       if ($filter == FALSE || _webform_client_form_rule_check($node, $component, $page_num, $input_values)) {
-        if ($component['type'] == 'pagebreak') {
-          $next_page_labels[$component['page_num'] - 1] = !empty($component['extra']['next_page_label']) ? t($component['extra']['next_page_label']) : t('Next Page >');
-          $prev_page_labels[$component['page_num']] = !empty($component['extra']['prev_page_label']) ? t($component['extra']['prev_page_label']) : t('< Previous Page');
-        }
+        $component_value = isset($input_values[$cid]) ? $input_values[$cid] : NULL;
         _webform_client_form_add_component($node, $component, $component_value, $form['submitted'], $form, $input_values, 'form', $page_num, $filter);
       }
     }
-    if ($node->webform['preview']) {
+    if ($preview) {
       $next_page_labels[$page_count - 1] = $node->webform['preview_next_button_label'] ? t($node->webform['preview_next_button_label']) : t('Preview');
       $prev_page_labels[$page_count] = $node->webform['preview_prev_button_label'] ? t($node->webform['preview_prev_button_label']) : t('< Previous');
     }
 
     // Add the preview if needed.
-    if ($node->webform['preview'] && $page_num === $page_count) {
+    if ($preview && $page_num === $page_count) {
       $preview_submission = webform_submission_create($node, $user, $form_state, TRUE);
       $preview_message = $node->webform['preview_message'];
       $submit_button_text = empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text']);
@@ -2966,6 +2969,7 @@ function webform_client_form_pages($form, &$form_state) {
     $form_state['storage']['component_tree'] = $form_state['webform']['component_tree'];
     $form_state['storage']['page_count'] = $form_state['webform']['page_count'];
     $form_state['storage']['page_num'] = $form_state['webform']['page_num'];
+    $form_state['storage']['preview'] = $form_state['webform']['preview'];
   }
 
   // Flatten trees within the submission.
@@ -3000,52 +3004,76 @@ function webform_client_form_pages($form, &$form_state) {
       $form_state['storage']['page_num'] = 1;
     }
     if (end($form_state['clicked_button']['#parents']) == 'next') {
-      $direction = 1;
+      $forward = 1;
     }
     elseif (end($form_state['clicked_button']['#parents']) == 'previous') {
-      $direction = 0;
+      $forward = 0;
     }
     $current_page = $form_state['storage']['page_num'];
 
-    // If the next page has no components that need to be displayed, skip it.
-    if (isset($direction)) {
-      $components = $direction ? $node->webform['components'] : array_reverse($node->webform['components'], TRUE);
-      $last_component = end($node->webform['components']);
+    if (isset($forward)) {
+      // Find the
+      //    1) previous/next non-empty page, or
+      //    2) the preview page, or
+      //    3) the preview page, forcing its display if the form would unexpectedly submit, or
+      //    4) page 1 even if empty, if no other previous page would be shown
+      $preview_page_num = $form_state['storage']['page_count'] + (int)!$form_state['webform']['preview'];
+      $page_zero = array(
+        array(
+          'type' => 'faux',
+          'page_num' => 0,
+        ),
+        array(
+          'type' => 'pagebreak',
+          'page_num' => 1,
+        ),
+      );
+      $page_preview = array(
+        array(
+          'type' => 'pagebreak',
+          'page_num' => $preview_page_num,
+        ),
+         array(
+          'type' => 'faux',
+          'page_num' => $preview_page_num,
+        ),
+      );
+      $components = array_merge($page_zero, $node->webform['components'], $page_preview);
+      if (!$forward) {
+        $components = array_reverse($components);
+      }
       foreach ($components as $component) {
-        if ($component['type'] == 'pagebreak' && (
-            $direction == 1 && $component['page_num'] > $form_state['storage']['page_num'] ||
-            $direction == 0 && $component['page_num'] <= $form_state['storage']['page_num'])) {
-          $previous_pagebreak = $component;
-          continue;
-        }
-        if (isset($previous_pagebreak)) {
-          $page_num = $previous_pagebreak['page_num'] + $direction - 1;
-          // If we've found an component on this page, advance to that page.
-          if ($component['page_num'] == $page_num && _webform_client_form_rule_check($node, $component, $page_num, $form_state['values']['submitted'])) {
-            $form_state['storage']['page_num'] = $page_num;
-            break;
+        if ($component['type'] == 'pagebreak') {
+          if ($forward
+               ? ($component['page_num'] > $form_state['storage']['page_num'])
+               : ($component['page_num'] <= $form_state['storage']['page_num'])){
+            $previous_pagebreak = $component;
           }
-          // If we've gotten to the end of the form without finding any more
-          // components, set the page number more than the max, ending the form.
-          elseif ($direction && $component['cid'] == $last_component['cid']) {
-            $form_state['storage']['page_num'] = $page_num + 1;
+        }
+        elseif (isset($previous_pagebreak)) {
+          // If a component is shown on this page, advance to this page.
+          $page_num = $previous_pagebreak['page_num'] + $forward - 1;
+          if ($component['page_num'] == $page_num &&
+              ($component['type'] == 'faux' || _webform_client_form_rule_check($node, $component, $page_num, $form_state['values']['submitted']))) {
+            if ($component['type'] == 'faux') {
+              if ($forward) {
+                if (!$form_state['webform']['preview']) {
+                  // Force a preview to avert an unintended submission via Next.
+                  $form_state['webform']['preview'] = TRUE;
+                  $form_state['storage']['preview'] = TRUE;
+                  $form_state['storage']['page_count']++;
+                }
+              }
+              else {
+                $page_num = max (1, $page_num);
+              }
+            }
+            $form_state['storage']['page_num'] = $page_num;
+            break; // LOOP EXIT
           }
         }
       }
 
-      // The preview page is not represented by a pagebreak, if no movement has
-      // yet happened, move the form in the intended direction one page.
-      if ($node->webform['preview'] && ($direction === 0 && isset($form['preview']) || $current_page === $form_state['storage']['page_num'])) {
-        if ($direction === 1 || isset($previous_pagebreak)) {
-          // The "Previous" button over-shoots backwards by one page. The "Next"
-          // button doesn't advance at all, so in both cases, we increment by one.
-          $form_state['storage']['page_num']++;
-        }
-        else {
-          // No "previous pagebreak" so manually step backwards by one page.
-          $form_state['storage']['page_num']--;
-        }
-      }
     }
 
     // The form is done if the page number is greater than the page count.
@@ -3860,10 +3888,12 @@ function webform_get_cid(&$node, $form_key, $pid) {
  *
  * @param $webform
  *   The webform node.
+ * @param $form_state
+ *   The form's state, if available
  * @return array
  *   An array of all page labels, indexed by page number.
  */
-function webform_page_labels($node) {
+function webform_page_labels($node, $form_state = array()) {
   $page_count = 1;
   $page_labels = array();
   $page_labels[0] = t($node->webform['progressbar_label_first']);
@@ -3873,7 +3903,7 @@ function webform_page_labels($node) {
       $page_count++;
     }
   }
-  if ($node->webform['preview']) {
+  if ($node->webform['preview'] || !empty($form_state['webform']['preview'])) {
     $page_labels[] = $node->webform['preview_title'] ? t($node->webform['preview_title']) : t('Preview');
   }
   if ($node->webform['progressbar_include_confirmation']) {
