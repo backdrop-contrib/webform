@@ -2487,7 +2487,8 @@ function webform_client_form_process($form, $form_state) {
 function _webform_client_form_rule_check($node, $component, $page_num, $input_values, $format = 'form') {
   // Hold a static map of target CID to conditionals for lookup efficiency.
   static $target_maps = array();
-  $show_component = TRUE;
+  static $is_shown = array();
+  static $cyclic_component = array();
 
   if (!isset($target_maps[$node->nid])) {
     $target_map = array();
@@ -2502,9 +2503,14 @@ function _webform_client_form_rule_check($node, $component, $page_num, $input_va
     $target_map = $target_maps[$node->nid];
   }
 
+  // Short cut the rest of this function if the answer has already been calculated
+  if (isset($is_shown[$node->nid][$page_num][$component['cid']])) {
+    return $is_shown[$node->nid][$page_num][$component['cid']];
+  }
+
   // Short cut the rest of this function if no conditionals are defined.
   if (empty($target_map)) {
-    return $show_component ? WEBFORM_CONDITIONAL_INCLUDE : WEBFORM_CONDITIONAL_EXCLUDE;
+    return WEBFORM_CONDITIONAL_INCLUDE;
   }
 
   // Check the rules for this entire page. Note individual page breaks are
@@ -2548,10 +2554,18 @@ function _webform_client_form_rule_check($node, $component, $page_num, $input_va
         // If destined for form output, and a source component is on the same
         // page as the current page, we are unable to tell if the target
         // component is needed, so we return the same page constant, which
-        // evaluates to TRUE (a value of 2).
+        // evaluates to TRUE (a value of 2), if the component would otherwise
+        // be hidden.
         if ($format === 'form' && $source_component['page_num'] == $page_num) {
-          $show_component = WEBFORM_CONDITIONAL_SAME_PAGE;
-          break 2;
+          if (in_array($component['cid'], $cyclic_component)) {
+            // Cyclic dependency detected. Assume intrapage_dependent.
+            return WEBFORM_CONDITIONAL_INCLUDE;
+          }
+          array_push($cyclic_component, $component['cid']);
+          if (_webform_client_form_rule_check($node, $source_component, $page_num, $input_values, $format)) {
+            $intrapage_dependent = TRUE;
+          }
+          array_pop($cyclic_component);
         }
 
         $source_values = array();
@@ -2592,6 +2606,9 @@ function _webform_client_form_rule_check($node, $component, $page_num, $input_va
       else {
         $show_component = $conditional_result;
       }
+      if (!$show_component && isset($intrapage_dependent)) {
+        $show_component = WEBFORM_CONDITIONAL_SAME_PAGE;
+      }
     }
   }
 
@@ -2599,6 +2616,9 @@ function _webform_client_form_rule_check($node, $component, $page_num, $input_va
   if (is_bool($show_component)) {
     $show_component = $show_component ? WEBFORM_CONDITIONAL_INCLUDE : WEBFORM_CONDITIONAL_EXCLUDE;
   }
+
+  // Remember whether this item is shown on this page
+  $is_shown[$node->nid][$page_num][$component['cid']] = $show_component;
 
   return $show_component;
 }
@@ -3054,7 +3074,7 @@ function webform_client_form_pages($form, &$form_state) {
           // If a component is shown on this page, advance to this page.
           $page_num = $previous_pagebreak['page_num'] + $forward - 1;
           if ($component['page_num'] == $page_num &&
-              ($component['type'] == 'faux' || _webform_client_form_rule_check($node, $component, $page_num, $form_state['values']['submitted']))) {
+              ($component['type'] == 'faux' || _webform_client_form_rule_check($node, $component, $page_num, $form_state['values']['submitted']) == WEBFORM_CONDITIONAL_INCLUDE)) {
             if ($component['type'] == 'faux') {
               if ($forward) {
                 if (!$form_state['webform']['preview']) {
