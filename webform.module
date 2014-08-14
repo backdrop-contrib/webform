@@ -538,6 +538,12 @@ function webform_confirmation_page_access($node) {
         return TRUE;
       }
     }
+  } else {
+    // No submission exists (such as auto-deleted by another module, such as
+    // webform_clear), just ensure that the user has access to view the node page.
+    if (node_access('view', $node)) {
+      return TRUE;
+    }
   }
 
   return FALSE;
