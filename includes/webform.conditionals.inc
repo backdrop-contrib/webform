@@ -1079,7 +1079,7 @@ function webform_conditional_compare_floats($number_1, $number_2) {
  * Conditional callback for numeric comparisons.
  */
 function webform_conditional_operator_numeric_equal($input_values, $rule_value) {
-  return webform_conditional_compare_floats($input_values[0], $rule_value) === 0;
+  return empty($input_values) ? FALSE : webform_conditional_compare_floats($input_values[0], $rule_value) === 0;
 }
 
 /**
@@ -1093,14 +1093,14 @@ function webform_conditional_operator_numeric_not_equal($input_values, $rule_val
  * Conditional callback for numeric comparisons.
  */
 function webform_conditional_operator_numeric_greater_than($input_values, $rule_value) {
-  return webform_conditional_compare_floats($input_values[0], $rule_value) > 0;
+  return empty($input_values) ? FALSE : webform_conditional_compare_floats($input_values[0], $rule_value) > 0;
 }
 
 /**
  * Conditional callback for numeric comparisons.
  */
 function webform_conditional_operator_numeric_less_than($input_values, $rule_value) {
-  return webform_conditional_compare_floats($input_values[0], $rule_value) < 0;
+  return empty($input_values) ? FALSE : webform_conditional_compare_floats($input_values[0], $rule_value) < 0;
 }
 
 /**
@@ -1108,7 +1108,7 @@ function webform_conditional_operator_numeric_less_than($input_values, $rule_val
  */
 function webform_conditional_operator_datetime_equal($input_values, $rule_value) {
   $input_values = webform_conditional_value_datetime($input_values);
-  return webform_strtotime($input_values[0]) === webform_strtotime($rule_value);
+  return empty($input_values) ? FALSE : webform_strtotime($input_values[0]) === webform_strtotime($rule_value);
 }
 
 /**
@@ -1116,7 +1116,7 @@ function webform_conditional_operator_datetime_equal($input_values, $rule_value)
  */
 function webform_conditional_operator_datetime_after($input_values, $rule_value) {
   $input_values = webform_conditional_value_datetime($input_values);
-  return webform_strtotime($input_values[0]) > webform_strtotime($rule_value);
+  return empty($input_values) ? FALSE : webform_strtotime($input_values[0]) > webform_strtotime($rule_value);
 }
 
 /**
@@ -1124,7 +1124,7 @@ function webform_conditional_operator_datetime_after($input_values, $rule_value)
  */
 function webform_conditional_operator_datetime_before($input_values, $rule_value) {
   $input_values = webform_conditional_value_datetime($input_values);
-  return webform_strtotime($input_values[0]) < webform_strtotime($rule_value);
+  return empty($input_values) ? FALSE : webform_strtotime($input_values[0]) < webform_strtotime($rule_value);
 }
 
 /**
