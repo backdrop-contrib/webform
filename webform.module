@@ -3158,22 +3158,24 @@ function webform_client_form_submit($form, &$form_state) {
   // Check if user is submitting as a draft.
   $is_draft = (int) !empty($form_state['save_draft']);
 
-  if (!$sid) {
-    // Create a new submission object.
-    $submission = webform_submission_create($node, $user, $form_state);
-    $submission->is_draft = $is_draft;
-  }
-  else {
-    // To maintain time and user information, load the existing submission.
-    $submission = webform_get_submission($node->webform['nid'], $sid);
-    $submission->is_draft = $is_draft;
-
+  // To maintain time and user information, load the existing submission.
+  // If a draft is deleted while a user is working on completing it, $sid will
+  // exist, but webform_get_submission() will not find the draft. So, make a new
+  // submission.
+  if ($sid && $submission = webform_get_submission($node->webform['nid'], $sid)) {
     // Merge with new submission data. The + operator maintains numeric keys.
     // This maintains existing data with just-submitted data when a user resumes
     // a submission previously saved as a draft.
     $new_data = webform_submission_data($node, $form_state['values']['submitted']);
     $submission->data = $new_data + $submission->data;
   }
+  else {
+    // Create a new submission object.
+    $submission = webform_submission_create($node, $user, $form_state);
+    // Since this is a new submission, a new sid is needed.
+    $sid = NULL;
+  }
+  $submission->is_draft = $is_draft;
 
   // If there is no data to be saved (such as on a multipage form with no fields
   // on the first page), process no further. Submissions with no data cannot
