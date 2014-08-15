@@ -2761,6 +2761,7 @@ function webform_client_form_prevalidate($form, &$form_state) {
   // repeated here to ensure the user is still logged in at the time of
   // submission, otherwise a stale form in another window may be allowed.
   $allowed_role = TRUE;
+  $allowed_roles = array();
   if (variable_get('webform_submission_access_control', 1) && !$finished) {
     $allowed_roles = array();
     foreach ($node->webform['roles'] as $rid) {
@@ -2786,9 +2787,8 @@ function webform_client_form_prevalidate($form, &$form_state) {
   }
 
   // Check that the form is still open at time of submission.
-  $closed = empty($form['#submission'])
-              ? empty($node->webform['status'])
-              : !($form['#submission']->is_draft  || webform_submission_access($node, $form['#submission'], 'edit'));
+  $closed = empty($node->webform['status']) ||
+            (!empty($form['#submission']) && !$form['#submission']->is_draft && !webform_submission_access($node, $form['#submission'], 'edit'));
 
   // Prevent submission by throwing an error.
   if ((!$allowed_role || $total_limit_exceeded || $user_limit_exceeded || $closed)) {
