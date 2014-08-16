@@ -620,7 +620,7 @@ function _webform_validate_number($element, &$form_state) {
 
       // Step test.
       $starting_number = $element['#min'] ? $element['#min'] : 0;
-      if ($element['#step'] != 0 && webform_modulo($numeric_value - $starting_number, $element['#step']) != 0) {
+      if ($element['#step'] != 0 && webform_modulo($numeric_value - $starting_number, $element['#step']) != 0.0) {
         $samples = array(
           $starting_number,
           $starting_number + ($element['#step'] * 1),
@@ -827,5 +827,58 @@ function webform_number_standardize($value, $point) {
  * See https://drupal.org/node/1601968.
  */
 function webform_modulo($a, $b) {
-  return $a - $b * (($b < 0) ? ceil($a / $b) : floor($a / $b));
+  $modulo = $a - $b * (($b < 0) ? ceil($a / $b) : floor($a / $b));
+  if (webform_compare_floats($modulo, 0.0) == 0 || webform_compare_floats($modulo, $b) == 0) {
+    $modulo = 0.0;
+  }
+  return $modulo;
+}
+
+/**
+ * Compare two floats.
+ *
+ * See @link http://php.net/manual/en/language.types.float.php @endlink
+ *
+ * Comparison of floating point numbers for equality is surprisingly difficult,
+ * as evidenced by the references below. The simple test in this function works
+ * for numbers that are relatively close to 1E1. For very small numbers, it will
+ * show false equality. For very large numbers, it will show false inequality.
+ * Better implementations are hidered by the absense of PHP platform-specific
+ * floating point constants to properly set the minimum absolute and relative
+ * error in PHP.
+ *
+ * The use case for webform conditionals excludes very small or very large
+ * numeric comparisons.
+ *
+ * See @link http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm @endlink
+ * See @link http://floating-point-gui.de/errors/comparison/ @endlink
+ * See @link http://en.wikipedia.org/wiki/IEEE_754-1985#Denormalized_numbers @endlink
+
+ * @param $number_1 float
+ *   The first number.
+ * @param $number_2 float
+ *   The second number.
+ *
+ * @return int|null
+ *   < 0 if number_1 is less than number_2; > 0 if number_1 is greater than
+ *   number_2, 0 if they are equal, and NULL if either is not numeric.
+ */
+function webform_compare_floats($number_1, $number_2) {
+  if (!is_numeric($number_1) || !is_numeric($number_2)) {
+    return NULL;
+  }
+
+  $number_1 = (float)$number_1;
+  $number_2 = (float)$number_2;
+
+  $epsilon = 0.000001;
+  if (abs($number_1 - $number_2) < $epsilon) {
+    return 0;
+  }
+  elseif ($number_1 > $number_2) {
+    return 1;
+  }
+  else {
+    return -1;
+  }
 }
