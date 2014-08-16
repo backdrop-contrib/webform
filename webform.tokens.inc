@@ -168,7 +168,7 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
             }
             $replacements[$original] = render($display_element);
           }
-          break;    // Token loop break.
+          // Continue processing tokens in case another modifier is used.
         }
       }
 
