@@ -2754,7 +2754,8 @@ function _webform_client_form_add_component($node, $component, $component_value,
 function webform_client_form_prevalidate($form, &$form_state) {
   global $user;
 
-  $node = $form['#node'];
+  // Refresh the node in case it changed since the form was build and retrieved from cache.
+  $node = $form['#node'] = node_load($form['#node']->nid);
   $finished = $form_state['values']['details']['finished'];
 
   // Check if the user is allowed to submit based on role. This check is
@@ -2787,8 +2788,13 @@ function webform_client_form_prevalidate($form, &$form_state) {
   }
 
   // Check that the form is still open at time of submission.
-  $closed = empty($node->webform['status']) ||
-            (!empty($form['#submission']) && !$form['#submission']->is_draft && !webform_submission_access($node, $form['#submission'], 'edit'));
+  // See https://www.drupal.org/node/2317273
+  // Consider the webform closed when it's status is closed AND either there
+  // is no submission yet (hence isn't being edited) or the user isn't an admin.
+  // Another way to consider this is that the form is open when its status is
+  // open OR there is a submission and the user is an admin.
+  $closed = empty($node->webform['status']) &&
+            (empty($form['#submission']) || !user_access('edit all webform submissions'));
 
   // Prevent submission by throwing an error.
   if ((!$allowed_role || $total_limit_exceeded || $user_limit_exceeded || $closed)) {
@@ -2801,6 +2807,11 @@ function webform_client_form_prevalidate($form, &$form_state) {
  * Form API #validate handler for the webform_client_form() form.
  */
 function webform_client_form_validate($form, &$form_state) {
+  if (($errors = form_get_errors()) && key_exists('', $errors)) {
+    // Prevalidation failed. The form cannot be submitted. Do not attemp futher validation.
+    return;
+  }
+
   module_load_include('inc', 'webform', 'includes/webform.submissions');
   $node = $form['#node'];
 
@@ -2945,7 +2956,7 @@ function webform_client_form_postvalidate(&$form, &$form_state) {
   $nid = $form_state['values']['details']['nid'];
   $node = node_load($nid);
   if (user_is_logged_in() &&
-      $errors && !isset($errors['']) &&
+      $errors && !key_exists('', $errors) &&
       $node->webform['auto_save'] &&
       !$form_state['values']['details']['finished'] &&
       !empty($form_state['values']['op'])) {
