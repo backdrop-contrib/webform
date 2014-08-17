@@ -1492,7 +1492,7 @@ function webform_node_update($node) {
 }
 
 /**
- * Implements hook_delete().
+ * Implements hook_node_delete().
  */
 function webform_node_delete($node) {
   if (!variable_get('webform_node_' . $node->type, FALSE)) {
