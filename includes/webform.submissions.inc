@@ -380,17 +380,7 @@ function webform_submission_delete_form($form, $form_state, $node, $submission) 
 
   $question = t('Are you sure you want to delete this submission?');
 
-  if (isset($_GET['destination'])) {
-    $destination = $_GET['destination'];
-  }
-  elseif (webform_results_access($node)) {
-    $destination = 'node/' . $node->nid . '/webform-results';
-  }
-  else {
-    $destination = 'node/' . $node->nid . '/submissions';
-  }
-
-  return confirm_form($form, NULL, $destination, $question, t('Delete'), t('Cancel'));
+  return confirm_form($form, NULL, "node/{$node->nid}/submission/{$submission->sid}", $question, t('Delete'), t('Cancel'));
 }
 
 function webform_submission_delete_form_submit($form, &$form_state) {
@@ -399,7 +389,10 @@ function webform_submission_delete_form_submit($form, &$form_state) {
   webform_submission_delete($node, $submission);
   drupal_set_message(t('Submission deleted.'));
 
-  $form_state['redirect'] = 'node/' . $node->nid . '/webform-results';
+  // If no destination query was supplied in the URL (e.g. Edit tab), redirect
+  // to the most-privledged destination.
+  $form_state['redirect'] = 'node/' . $node->nid .
+                            (webform_results_access($node) ? '/webform-results' : '/submissions');
 }
 
 /**
