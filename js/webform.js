@@ -286,7 +286,7 @@ Drupal.webform.conditionalOperatorNumericLessThan = function(element, existingVa
 };
 
 Drupal.webform.conditionalOperatorDateEqual = function(element, existingValue, ruleValue) {
-  var currentValue = Drupal.webform.timeValue(element, existingValue);
+  var currentValue = Drupal.webform.dateValue(element, existingValue);
   return currentValue === ruleValue;
 };
 
@@ -362,11 +362,11 @@ Drupal.webform.dateValue = function(element, existingValue) {
     if (month) {
       month--;
     }
-    return (year !== '' && month !== '' && day !== '') ? Date.UTC(year, month, day) : false;
+    return (year !== '' && month !== '' && day !== '') ? Date.UTC(year, month, day) / 1000 : false;
   }
   else {
     var existingValue = existingValue.length ? existingValue[0].split('-') : existingValue;
-    return existingValue.length ? Date.UTC(existingValue[0], existingValue[1], existingValue[2]) : false;
+    return existingValue.length ? Date.UTC(existingValue[0], existingValue[1], existingValue[2]) / 1000 : false;
   }
 };
 
@@ -387,11 +387,11 @@ Drupal.webform.timeValue = function(element, existingValue) {
       hour = (hour < 12 && ampm == 'pm') ? hour + 12 : hour;
       hour = (hour === 12 && ampm == 'am') ? 0 : hour;
     }
-    return (hour !== '' && minute !== '') ? Date.UTC(1970, 0, 1, hour, minute) : false;
+    return (hour !== '' && minute !== '') ? Date.UTC(1970, 0, 1, hour, minute) / 1000 : false;
   }
   else {
     var existingValue = existingValue.length ? existingValue[0].split(':') : existingValue;
-    return existingValue.length ? Date.UTC(1970, 0, 1, existingValue[0], existingValue[1]) : false;
+    return existingValue.length ? Date.UTC(1970, 0, 1, existingValue[0], existingValue[1]) / 1000 : false;
   }
 };
 

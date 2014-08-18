@@ -928,7 +928,7 @@ function webform_conditional_prepare_date_js($rule_value) {
   // slightly stale by the time the comparison executes. Timestamps are in
   // milliseconds, as to match JavaScript's Date.toString() method.
   $date = webform_strtodate('c', $rule_value, 'UTC');
-  return (int) (webform_strtotime($date) . '000');
+  return webform_strtotime($date);
 }
 
 /**
@@ -937,7 +937,7 @@ function webform_conditional_prepare_date_js($rule_value) {
 function webform_conditional_prepare_time_js($rule_value) {
   $date = webform_conditional_prepare_date_js($rule_value);
   $today = webform_strtodate('c', 'today', 'UTC');
-  $today = (int) (webform_strtotime($today) . '000');
+  $today = webform_strtotime($today);
   return $date - $today;
 }
 
