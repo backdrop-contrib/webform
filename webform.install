@@ -1515,7 +1515,7 @@ function webform_update_7405() {
   $schema = array(
     'description' => 'A serialized array of additional options for the e-mail configuration, including excluded components and value mapping for the TO and FROM addresses for select lists.',
     'type' => 'text',
-    'not null' => FALSE,
+    'not null' => TRUE,
     'initial' => '',
   );
   if (!db_field_exists('webform_emails', 'extra')) {
@@ -1867,4 +1867,27 @@ function webform_update_7416() {
  */
 function webform_update_7417() {
   db_change_field('webform_component', 'name', 'name', array('type' => 'text', 'not null' => TRUE));
+}
+
+/**
+ * Upgrade the "extra" column in the e-mail table to be consistent with a new
+ * webform installation.
+ *
+ * In version 7.x-4.0-rc6 and earlier, the extra field was added with 'not null'
+ * FALSE, cause the schema module to report in mismatch. While functionally this
+ * causes no problem, this update removes the schema module's warning.
+ */
+function webform_update_7418() {
+  // While there should never be any NULL values in the extra field, change them to '' to be safe.
+  db_update('webform_emails')
+    ->fields(array('extra' => ''))
+    ->isNull('extra')
+    ->execute();
+  // Pass a complete field specification to db_change_field for cross-database compatiblity.
+  $spec = array(
+    'description' => 'A serialized array of additional options for the e-mail configuration, including excluded components and value mapping for the TO and FROM addresses for select lists.',
+    'type' => 'text',
+    'not null' => TRUE,
+  );
+  db_change_field('webform_emails', 'extra', 'extra', $spec);
 }
