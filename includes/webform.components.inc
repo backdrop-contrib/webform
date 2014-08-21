@@ -179,7 +179,7 @@ function template_preprocess_webform_components_form(&$variables) {
     array('data' => drupal_render($form['add']['cid']) . drupal_render($form['add']['pid']) . drupal_render($form['add']['weight'])),
     array('colspan' => 3, 'data' => drupal_render($form['add']['add']), 'class' => array('webform-component-add')),
   );
-  $add_form = array('data' => $row_data, 'class' => array('draggable', 'webform-add-form'));
+  $add_form = array('data' => $row_data, 'class' => array('draggable', 'webform-add-form', 'tabledrag-leaf'));
 
   if (!empty($node->webform['components'])) {
     $component_tree = array();
