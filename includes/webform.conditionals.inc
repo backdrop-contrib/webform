@@ -178,6 +178,7 @@ function webform_conditionals_form_submit($form, &$form_state) {
   unset($form_state['values']['conditionals']['new']);
 
   $conditionals = array();
+  $targets = array();
 
   // Fill in missing properties for each value so that it can save properly.
   // TODO: Remove hard-coded source and target type.
@@ -188,6 +189,12 @@ function webform_conditionals_form_submit($form, &$form_state) {
       $conditional['rules'][$rid]['source_type'] = 'component';
     }
     $conditionals[$rgid] = $conditional;
+    // Warn if there are multiple conditionals targetting the same component.
+    if (isset($targets[$conditional['target']])) {
+      drupal_set_message(t('More than one conditional hides or shows component "@name". Only the most-recently evaluated conditional will determine whether "@name" is displayed.',
+                           array('@name' => $node->webform['components'][$conditional['target']]['name'])), 'warning', FALSE);
+    }
+    $targets[$conditional['target']] = TRUE;
   }
 
   $node->webform['conditionals'] = $conditionals;
