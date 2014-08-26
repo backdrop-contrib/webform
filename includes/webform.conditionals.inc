@@ -123,18 +123,20 @@ function webform_conditionals_form_add($form, &$form_state) {
     $weight = max($weight, $conditional['weight']);
   }
 
-  $conditional['weight'] = $weight + 1;
-  $conditional['rules'][0] = array(
-    'source' => NULL,
-    'operator' => NULL,
-    'value' => NULL,
-  );
-  $conditional['action'] = 'hide';
-  $conditional['target'] = NULL;
-  $conditional['andor'] = 'and';
-
   // Add the conditional to form state and rebuild the form.
-  $form_state['values']['conditionals'][] = $conditional;
+  $form_state['values']['conditionals'][] = array(
+    'rules' => array(
+      array(
+        'source' => NULL,
+        'operator' => NULL,
+        'value' => NULL,
+      ),
+    ),
+    'andor' => 'and',
+    'action' => 'hide',
+    'target' => NULL,
+    'weight' => $weight + 1,
+  );
   $form_state['rebuild'] = TRUE;
 }
 
