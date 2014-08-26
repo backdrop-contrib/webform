@@ -122,21 +122,23 @@ Drupal.webform.downloadExport = function(context) {
  * Attach behaviors for Webform conditional administration.
  */
 Drupal.webform.conditionalAdmin = function(context) {
-  $context = $(context);
+  var $context = $(context);
   // Bind to the entire form and allow events to bubble-up from elements. This
   // saves a lot of processing when new conditions are added/removed.
-  $context.find('#webform-conditionals-ajax:not(.webform-conditional-processed)').bind('change', function(e) {
-    $(this).addClass('webform-conditional-processed');
+  $context.find('#webform-conditionals-ajax:not(.webform-conditional-processed)')
+      .addClass('webform-conditional-processed')
+      .bind('change', function(e) {
 
-    if ($(e.target).is('.webform-conditional-source select')) {
+    var $target = $(e.target);
+    if ($target.is('.webform-conditional-source select')) {
       Drupal.webform.conditionalSourceChange.apply(e.target);
     }
 
-    if ($(e.target).is('.webform-conditional-operator select')) {
+    if ($target.is('.webform-conditional-operator select')) {
       Drupal.webform.conditionalOperatorChange.apply(e.target);
     }
 
-    if ($(e.target).is('.webform-conditional-andor select')) {
+    if ($target.is('.webform-conditional-andor select')) {
       Drupal.webform.conditionalAndOrChange.apply(e.target);
     }
   });
@@ -193,10 +195,15 @@ Drupal.webform.conditionalSourceChange = function() {
   // Reference the original list to create a new list matching the data type.
   var $originalList = $($operator[0]['webformConditionalOriginal']);
   var $newList = $originalList.filter('optgroup[label=' + dataType + ']');
-  $operator.html($newList[0].innerHTML);
+  var newHTML = $newList[0].innerHTML;
 
-  // Fire the change event handler on the list to update the value field.
-  $operator.trigger('change');
+  // Update the options and fire the change event handler on the list to update the value field,
+  // only if the options have changed. This avoids resetting existing selections.
+  if (newHTML != $operator.html()) {
+    $operator.html(newHTML);
+    $operator.trigger('change');
+  }
+
 }
 
 /**
