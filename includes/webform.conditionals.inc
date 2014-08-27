@@ -46,8 +46,8 @@ function webform_conditionals_form($form, &$form_state, $node) {
   $form_state['conditional_count'] = isset($form_state['conditional_count']) ? $form_state['conditional_count'] : 1;
   $form_state['conditional_count'] = count($conditionals) > $form_state['conditional_count'] ? count($conditionals) : $form_state['conditional_count'];
 
-  $source_list = webform_component_list($node, 'conditional', TRUE, TRUE);
-  $target_list = webform_component_list($node, TRUE);
+  $source_list = webform_component_list($node, 'conditional', 'path', TRUE);
+  $target_list = webform_component_list($node, TRUE, 'path', TRUE);
   $delta = $form_state['conditional_count'];
   $weight = -$delta - 1;
   $index = 0;

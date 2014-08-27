@@ -494,7 +494,7 @@ function _webform_views_options_form(&$form, &$form_state, $nid, $cid) {
     $type_options[$key] = check_plain($component['label']);
   }
 
-  $options = webform_component_list($node, NULL, TRUE , TRUE);
+  $options = webform_component_list($node, NULL, 'path', TRUE);
   $form['webform_cid'] = array(
     '#title' => t('Component data'),
     '#type' => 'select',

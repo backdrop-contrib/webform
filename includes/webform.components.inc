@@ -967,49 +967,45 @@ function webform_component_property($type, $property) {
  *   Either an array of components, or a string containing a feature name (csv,
  *   email, required, conditional) on which this list of components will be
  *   restricted.
- * @param $indent
- *   Indent components placed under fieldsets with hyphens.
- * @param $optgroups
+ * @param $prefix_group
+ *   TRUE to indent with a hyphen, or 'path" to Prepend enclosing group (e.g.
+ *   fieldset) name(s)
+ * @param $pagebreak_groups
  *   Determine if pagebreaks should be converted to option groups in the
  *   returned list of options.
  */
-function webform_component_list($node, $component_filter = NULL, $indent = TRUE, $optgroups = FALSE) {
+function webform_component_list($node, $component_filter = NULL, $prepend_group = TRUE, $pagebreak_groups = FALSE) {
   $options = array();
   $page_names = array();
+  $parent_names = array();
 
   $components = is_array($component_filter) ? $component_filter : $node->webform['components'];
   $feature = is_string($component_filter) ? $component_filter : NULL;
 
   foreach ($components as $cid => $component) {
-    if (!isset($feature) || webform_component_feature($component['type'], $feature) || ($indent && webform_component_feature($component['type'], 'group'))) {
-      $prefix = '';
-      $page_num = $component['page_num'];
-      $page_index = 'p' . $page_num;
-      if ($indent && ($parent_count = count(webform_component_parent_keys($node, $component)) - 1)) {
-        $prefix = str_repeat('-', $parent_count);
+    // If this component is a group (e.g. fieldset), then remember its name, including any parents.
+    if ($prepend_group && webform_component_feature($component['type'], 'group')) {
+      $parent_names[$cid] = ($component['pid'] ? $parent_names[$component['pid']] : '') .
+                            ($prepend_group === 'path' ? $component['name'] . ': ' : '-');
+    }
+    $page_num = $component['page_num'];
+    // If this component is a pagebreak, then generate an option group, ensuring a unique name.
+    if ($pagebreak_groups && $component['type'] == 'pagebreak') {
+      $page_name = $component['name'];
+      $copy = 1;
+      while (in_array($page_name, $page_names)) {
+        $page_name = $component['name'] . '_' . ++$copy;
       }
-      if ($optgroups && $component['type'] == 'pagebreak') {
-        $page_names[$page_index] = $component['name'];
-      }
-      elseif ($optgroups && $page_num > 1) {
-        $options[$page_index][$cid] = $prefix . $component['name'];
+      $page_names[$page_num] = $page_name;
+    }
+    // If this component should be included in the options, add it with any prefix, in a page group, as needed.
+    if (!isset($feature) || webform_component_feature($component['type'], $feature) || $prepend_group === TRUE) {
+      $prefix = ($prepend_group && $component['pid']) ? $parent_names[$component['pid']] : '';
+      if ($pagebreak_groups && $page_num > 1) {
+        $options[$page_names[$page_num]][$cid] = $prefix . $component['name'];
       }
       else {
         $options[$cid] = $prefix . $component['name'];
-      }
-    }
-  }
-
-  // Convert page breaks into optgroups.
-  if ($optgroups) {
-    $grouped_options = $options;
-    $options = array();
-    foreach ($grouped_options as $key => $values) {
-      if (is_array($values) && isset($page_names[$key])) {
-        $options[$page_names[$key]] = $values;
-      }
-      else {
-        $options[$key] = $values;
       }
     }
   }
