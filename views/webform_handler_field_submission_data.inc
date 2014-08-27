@@ -100,7 +100,7 @@ class webform_handler_field_submission_data extends views_handler_field {
         return $component['name'];
       }
     }
-    elseif (isset($this->options['label'])) {
+    elseif ($this->options['custom_label'] === 'custom' && isset($this->options['label'])) {
       return $this->options['label'];
     }
     return '';
@@ -148,9 +148,7 @@ class webform_handler_field_submission_data extends views_handler_field {
       $render = $render[$component['form_key']];
 
       // Remove display label.
-      if (empty($this->options['display_label'])) {
-        $render['#theme_wrappers'] = array();
-      }
+      $render['#theme_wrappers'] = array();
 
       return render($render);
     }
