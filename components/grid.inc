@@ -260,6 +260,7 @@ function _webform_display_grid($component, $value, $format = 'html') {
 
   $element = array(
     '#title' => $component['name'],
+    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#weight' => $component['weight'],
     '#format' => $format,
     '#grid_questions' => $questions,

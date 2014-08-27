@@ -507,6 +507,7 @@ function webform_expand_select_ids($element) {
 function _webform_display_select($component, $value, $format = 'html') {
   return array(
     '#title' => $component['name'],
+    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#weight' => $component['weight'],
     '#multiple' => $component['extra']['multiple'],
     '#theme' => 'webform_display_select',

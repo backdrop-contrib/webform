@@ -419,6 +419,7 @@ function webform_submission_page($node, $submission, $format) {
   }
   else {
     $renderable = webform_submission_render($node, $submission, NULL, $format);
+    $renderable['#attached']['css'][] = drupal_get_path('module', 'webform') . '/css/webform.css';
     $output = drupal_render($renderable);
   }
 

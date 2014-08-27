@@ -366,6 +366,7 @@ function _webform_display_number($component, $value, $format = 'html') {
   $empty = !isset($value[0]) || $value[0] === '';
   return array(
     '#title' => $component['name'],
+    '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#weight' => $component['weight'],
     '#theme' => 'webform_display_number',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
