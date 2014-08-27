@@ -639,6 +639,8 @@ function hook_webform_submission_access($node, $submission, $op = 'view', $accou
  *
  * Note in addition to the view access to the results granted here, the $account
  * must also have view access to the Webform node in order to see results.
+ * Access via this hook is in addition (adds permission) to the standard
+ * webform access.
  *
  * @see webform_results_access().
  *
