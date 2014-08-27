@@ -584,7 +584,7 @@ function webform_email_edit_form_submit($form, &$form_state) {
 
   // Clear the entity cache if Entity Cache module is installed.
   if (module_exists('entitycache')) {
-    cache_clear_all($node->nid, 'cache_entity_node');
+    entity_get_controller('node')->resetCache(array($node->nid));
   }
 
   $form_state['redirect'] = array('node/' . $node->nid . '/webform/emails');
@@ -632,7 +632,7 @@ function webform_email_delete_form_submit($form, &$form_state) {
 
   // Clear the entity cache if Entity Cache module is installed.
   if (module_exists('entitycache')) {
-    cache_clear_all($node->nid, 'cache_entity_node');
+    entity_get_controller('node')->resetCache(array($node->nid));
   }
 
   $form_state['redirect'] = 'node/' . $node->nid . '/webform/emails';
