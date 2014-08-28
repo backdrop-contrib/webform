@@ -7,6 +7,7 @@ configure = admin/config/content/webform
 php = 5.3
 dependencies[] = ctools
 dependencies[] = views
+test_dependencies[] = token
 
 ; Files that contain classes:
 files[] = includes/exporters/webform_exporter_delimited.inc
