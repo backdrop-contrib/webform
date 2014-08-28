@@ -45,7 +45,7 @@ function webform_token_info() {
   );
   $info['tokens']['submission']['values'] = array(
     'name' => t('Webform submission values'),
-    'description' => t('Webform tokens from submitted data. Replace the "?" with the "field key", including any parent field keys separated by colons. You may append ":label" for just the label or ":withlabel" for both the label and value together.'),
+    'description' => t('Webform tokens from submitted data. Replace the "?" with the "field key", including any parent field keys separated by colons. You may append ":label" for just the label or ":withlabel" for both the label and value together. Append ":key" for just the key in a key|label pair.'),
     'dynamic' => TRUE,
   );
 
@@ -120,6 +120,7 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
         'label',
         'withlabel',
         'nolabel',
+        'key',
       );
 
       foreach ($node->webform['components'] as $cid => $component) {
@@ -160,6 +161,13 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
 
           if ($modifier === 'label') {
             $replacements[$original] = webform_filter_xss($display_element['#title']);
+          }
+          elseif ($modifier === 'key' && $display_element['#webform_component']['type'] === 'select') {
+            $values = array();
+            foreach ($display_element['#value'] as $value) {
+              $values[] = webform_filter_xss($value);
+            }
+            $replacements[$original] = implode(' ', $values);
           }
           else {
             // Remove theme wrappers for the nolabel modifier.
