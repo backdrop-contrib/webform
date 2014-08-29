@@ -775,6 +775,7 @@ function _webform_conditional_operator_info() {
  * for the condition.
  */
 function webform_conditional_form_select($node) {
+  static $count = 0;
   $forms = array();
   webform_component_include('select');
   foreach ($node->webform['components'] as $cid => $component) {
@@ -787,13 +788,14 @@ function webform_conditional_form_select($node) {
         '#size' => NULL,
         '#attributes' => array(),
         '#id' => NULL,
-        '#name' => NULL,
+        '#name' => 'webform-conditional-select-' . $cid . '-' . $count,
         '#options' => $options,
         '#parents' => array(),
       );
       $forms[$cid] = drupal_render($element);
     }
   }
+  $count++;
   return $forms;
 }
 
@@ -801,12 +803,14 @@ function webform_conditional_form_select($node) {
  * Form callback for date conditional fields.
  */
 function webform_conditional_form_date($node) {
+  static $count = 0;
   $element = array(
     '#title' => NULL,
     '#title_display' => 'none',
     '#size' => 24,
     '#attributes' => array('placeholder' => t('@format or valid date', array('@format' => webform_date_format('short')))),
     '#type' => 'textfield',
+    '#name' => 'webform-conditional-date-' . $count++,
   );
   return drupal_render($element);
 }
@@ -815,12 +819,14 @@ function webform_conditional_form_date($node) {
  * Form callback for time conditional fields.
  */
 function webform_conditional_form_time($node) {
+  static $count = 0;
   $element = array(
     '#title' => NULL,
     '#title_display' => 'none',
     '#size' => 24,
     '#attributes' => array('placeholder' => t('HH:MMam or valid time')),
     '#type' => 'textfield',
+    '#name' => 'webform-conditional-time-' . $count++,
   );
   return drupal_render($element);
 }
