@@ -3260,19 +3260,9 @@ function webform_client_form_submit($form, &$form_state) {
     $redirect = array('node/' . $node->nid . '/done', array('query' => $query));
   }
   else {
-    // Clean up the redirect URL, filter it for tokens and remove the domain name.
-    $redirect_url = webform_replace_url_tokens($redirect_url, $node, $submission);
-
-    // $redirect_url is an absolute, external URL
-    if (valid_url($redirect_url, TRUE)) {
-      $redirect = $redirect_url;
-      $external_url = TRUE;
-    }
-    elseif ($redirect_url && strpos($redirect_url, 'http') !== 0) {
-      // Pass URL as an array so we support a query string and/or fragment.
-      $parsed_url = drupal_parse_url($redirect_url);
-      $redirect = array('path' => $parsed_url['path'], $parsed_url);
-    }
+    // Clean up the redirect URL, filter it for tokens and detect external domains.
+    $redirect = webform_replace_url_tokens($redirect_url, $node, $submission);
+    $external_url = $redirect[1]['#webform_external'];
   }
 
   // Show a message if manually set.
@@ -3786,8 +3776,7 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
 }
 
 /**
- * Replace tokens within a URL, encoding the parts within the query string. The
- * base_url, if any, is removed from the resulting URL.
+ * Replace tokens within a URL, encoding the parts within the query string.
  *
  * @param string $redirect_url
  *   The redirect URL, with everything other than tokens already URL encoded.
@@ -3796,29 +3785,30 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
  * @param $submission
  *   If replacing submission-level tokens, the submission for which tokens will
  *   be created.
- * @return string
- *   The parsed and URL-encoded URL.
+ * @return array
+ *   An array of path and url() options, suitable for a redirect or drupal_goto.
  */
 function webform_replace_url_tokens($redirect_url, $node = NULL, $submission = NULL) {
+  // Parse the url into its components.
   $parsed_redirect_url = drupal_parse_url($redirect_url);
+  // Replace tokens in each component.
   $parsed_redirect_url['path'] = webform_replace_tokens($parsed_redirect_url['path'], $node, $submission);
   if (!empty($parsed_redirect_url['query'])) {
     foreach ($parsed_redirect_url['query'] as $key => $value) {
       $parsed_redirect_url['query'][$key] = trim(webform_replace_tokens($value, $node, $submission));
     }
   }
-  $parsed_redirect_url['absolute'] = TRUE;
-  $redirect_url = url($parsed_redirect_url['path'], $parsed_redirect_url);
-  $rx_base = preg_quote($GLOBALS['base_url'], '#') . '/';
-  $rx_language = empty($GLOBALS['language']->prefix)
-                        ? ''
-                        : '(?:' .  preg_quote($GLOBALS['language']->prefix, '#') . '/)?';
-  $redirect_url = preg_replace('#^' . $rx_base . $rx_language . '#', '', $redirect_url);
-  if (!$redirect_url && stripos($parsed_redirect_url['path'], '<front>') !== FALSE) {
-    // URL specifies <front>, rather than an empty redirect (which is interpreted as no redirect)
-    $redirect_url = '<front>';
+  $parsed_redirect_url['fragment'] = webform_replace_tokens($parsed_redirect_url['fragment'], $node, $submission);
+  // Determine whether the path is internal or external. Paths which contain the site's
+  // base url are still considered internal. #webform_external is private to webform.
+  $parsed_redirect_url['#webform_external'] = url_is_external($parsed_redirect_url['path']);
+  foreach (array(NULL, TRUE, FALSE) as $https) {
+    if (stripos($parsed_redirect_url['path'], url('', array('absolute' => TRUE, 'https' => $https))) === 0) {
+      $parsed_redirect_url['#webform_external'] = FALSE;
+    }
   }
-  return $redirect_url;
+  // Return an array suitable for a form redirect or drupal_goto.
+  return array($parsed_redirect_url['path'], $parsed_redirect_url);
 }
 
 /**
