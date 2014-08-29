@@ -78,6 +78,7 @@ function _webform_edit_file($component) {
         'js' => array(drupal_get_path('module', 'webform') . '/js/webform-admin.js'),
         'css' => array(drupal_get_path('module', 'webform') . '/css/webform-admin.css'),
       ),
+      '#type' => 'webform_file_extensions',
       '#weight' => 2,
     );
 
