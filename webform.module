@@ -3474,7 +3474,7 @@ function template_preprocess_webform_element(&$variables) {
   if (isset($element['#title_display']) && strcmp($element['#title_display'], 'inline') === 0) {
     $wrapper_classes[] = 'webform-container-inline';
   }
-  $element['#wrapper_attributes']['class'] += $wrapper_classes;
+  $element['#wrapper_attributes']['class'] = array_merge($element['#wrapper_attributes']['class'], $wrapper_classes);
 
   // If #title_display is none, set it to invisible instead - none only used if
   // we have no title at all to use.
