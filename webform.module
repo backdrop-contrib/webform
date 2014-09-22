@@ -2984,7 +2984,7 @@ function webform_client_form_postvalidate(&$form, &$form_state) {
       // Prevent the form from being cached, forcing it to be rebuilt from the
       // form definition function, which will honor the new sid.
       $form_state['no_cache'] = TRUE;
-      if (!variable_get('cache', 0) && !empty($form_state['values']['form_build_id'])) {
+      if (!empty($form_state['values']['form_build_id'])) {
         cache_clear_all('form_' . $form_state['values']['form_build_id'], 'cache_form');
         cache_clear_all('form_state_' . $form_state['values']['form_build_id'], 'cache_form');
       }
