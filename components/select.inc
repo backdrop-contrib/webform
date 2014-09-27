@@ -858,7 +858,7 @@ function webform_select_options_ajax($source_name = '') {
 
   $component['extra']['options_source'] = $source_name;
   if ($source_name && isset($info[$source_name])) {
-    $options = _webform_select_options_to_text(_webform_select_options($component, !$component['extra']['aslist'], FALSE));
+    $options = _webform_select_options_to_text(_webform_select_options($component, FALSE, FALSE));
   }
   else {
     $options = '';
