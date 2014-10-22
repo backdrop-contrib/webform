@@ -4736,18 +4736,16 @@ function webform_date_views_extra_tables() {
 }
 
 /**
- * Returns the next serial number for a given node and optionally increment the
- * serial number.
+ * Returns the next serial number for a given node and increments the serial
+ * number.
  *
  * @param int $nid
  *   The nid of the node.
- * @paran bool $do_increment
- *   Whether to increment the serial number.
  *
  * @return int
  *   The next value of the serial number.
  */
-function _webform_submission_serial_next_value($nid, $do_increment = TRUE) {
+function _webform_submission_serial_next_value($nid) {
   // Use a transaction with SELECT ... FOR UPDATE to lock the row between
   // the SELECT and the UPDATE, ensuring that multiple Webform submissions
   // at the same time do not have duplicate numbers. FOR UPDATE must be inside
@@ -4759,7 +4757,7 @@ function _webform_submission_serial_next_value($nid, $do_increment = TRUE) {
   // Get the next_serial value.
   $next_serial = db_select('webform', 'w')
     // Only add FOR UPDATE when incrementing.
-    ->forUpdate($do_increment)
+    ->forUpdate()
     ->fields('w', array('next_serial'))
     ->condition('nid', $nid)
     ->execute()
@@ -4768,13 +4766,11 @@ function _webform_submission_serial_next_value($nid, $do_increment = TRUE) {
   // $next_serial must be greater than any existing serial number.
   $next_serial = max($next_serial, _webform_submission_serial_next_value_used($nid));
 
-  if ($do_increment) {
-    // Increment the next_value.
-    db_update('webform')
-      ->fields(array('next_serial' => $next_serial + 1))
-      ->condition('nid', $nid)
-      ->execute();
-  }
+  // Increment the next_value.
+  db_update('webform')
+    ->fields(array('next_serial' => $next_serial + 1))
+    ->condition('nid', $nid)
+    ->execute();
 
   return $next_serial;
 }

@@ -49,7 +49,7 @@ function webform_submission_create($node, $account, $form_state, $is_preview = F
     'remote_addr' => ip_address(),
     'is_draft' => TRUE,
     'preview' => $is_preview,
-    'serial' => _webform_submission_serial_next_value($node->nid, !$is_preview),
+    'serial' => NULL,
     'data' => webform_submission_data($node, $form_state['values']['submitted']),
   );
   drupal_alter('webform_submission_create', $submission, $node, $account, $form_state);
@@ -121,6 +121,9 @@ function webform_submission_insert($node, $submission) {
       $function($node, $submission);
     }
     $submission->nid = $node->webform['nid'];
+    if (empty($submission->serial)) {
+      $submission->serial = _webform_submission_serial_next_value($node->nid);
+    }
     drupal_write_record('webform_submissions', $submission);
     $is_new = TRUE;
   }
