@@ -415,11 +415,7 @@ function webform_configure_form_validate($form, &$form_state) {
   }
 
   // Serial number must be a positive integer greater than any existing serial number.
-  $query = db_select('webform_submissions', 'ws')
-    ->condition('nid', $form['#node']->nid);
-  $query->addExpression('MAX(serial)', 'serial');
-  $max_serial = (int) $query->execute()->fetchField();
-  $next_min = $max_serial + 1;
+  $next_min = _webform_submission_serial_next_value_used($form['#node']->nid);
   if ((int) $form['advanced']['next_serial']['#value'] < $next_min) {
     form_error($form['advanced']['next_serial'], t('The next submission number must be at least %min (greater than any existing serial number).', array('%min' => $next_min)));
   }

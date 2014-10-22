@@ -4736,15 +4736,16 @@ function webform_date_views_extra_tables() {
 }
 
 /**
- * Returns the next serial number for a given node and optionally increment the serial number.
+ * Returns the next serial number for a given node and optionally increment the
+ * serial number.
  *
  * @param int $nid
  *   The nid of the node.
- * @paran bool $increment
+ * @paran bool $do_increment
  *   Whether to increment the serial number.
  *
- * @return int|null
- *   The next value of the serial number or NULL if no form at this nid.
+ * @return int
+ *   The next value of the serial number.
  */
 function _webform_submission_serial_next_value($nid, $do_increment = TRUE) {
   // Use a transaction with SELECT ... FOR UPDATE to lock the row between
@@ -4764,15 +4765,38 @@ function _webform_submission_serial_next_value($nid, $do_increment = TRUE) {
     ->execute()
     ->fetchField();
 
-  // Otherwise, no number was found, no form at this nid, return the NULL.
-  if ($next_serial && $do_increment) {
+  // $next_serial must be greater than any existing serial number.
+  $next_serial = max($next_serial, _webform_submission_serial_next_value_used($nid));
+
+  if ($do_increment) {
     // Increment the next_value.
-    $increment_amount = 1;
     db_update('webform')
-      ->fields(array('next_serial' => $next_serial + $increment_amount))
+      ->fields(array('next_serial' => $next_serial + 1))
       ->condition('nid', $nid)
       ->execute();
   }
 
   return $next_serial;
+}
+
+/**
+ * Returns the next serial number to be used, based upon actual submissions in
+ * the database.
+ *
+ * @param int $nid
+ *   The Node ID of the Webform.
+ *
+ * $return int
+ *   The largest serial number used by a submission for a given node, 1 when no
+ *   submissions.
+ */
+function _webform_submission_serial_next_value_used($nid) {
+  $max_serial = db_select('webform_submissions');
+  $max_serial->addExpression('MAX(serial)');
+  $max_serial = $max_serial
+    ->condition('nid', $nid)
+    ->execute()
+    ->fetchField();
+  // $max_serial will be a numeric string or NULL.
+  return $max_serial + 1;
 }
