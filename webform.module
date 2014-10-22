@@ -4796,3 +4796,24 @@ function _webform_submission_serial_next_value_used($nid) {
   // $max_serial will be a numeric string or NULL.
   return $max_serial + 1;
 }
+
+/**
+ * Alter the node before saving a clone.
+ *
+ * @param $node
+ *   Reference to the fully loaded node object being saved (the clone) that
+ *   can be altered as needed.
+ * @param array $context
+ *   An array of context describing the clone operation. The keys are:
+ *   - 'method' : Can be either 'prepopulate' or 'save-edit'.
+ *   - 'original_node' : The original fully loaded node object being cloned.
+ *
+ * @see clone_node_save()
+ * @see drupal_alter()
+ */
+function webform_clone_node_alter(&$node, $context) {
+  if (isset($node->webform)) {
+    $defaults = webform_node_defaults();
+    $node->webform['next_serial'] = $defaults['next_serial'];
+  }
+}
