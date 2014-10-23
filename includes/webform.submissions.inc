@@ -647,6 +647,12 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     unset($filters['uid']);
   }
 
+  // If the sid is specified, but there are none, force the query to fail
+  // rather than query on an empty array
+  if (isset($filters['sid']) && empty($filters['sid'])) {
+    $filters['sid'] = 0;
+  }
+
   // Build the list of submissions and load their basic information.
   $pager_query = db_select('webform_submissions', 'ws')
     // Ensure only one row per submission is returned. Could be more than one if

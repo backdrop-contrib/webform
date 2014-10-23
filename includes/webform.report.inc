@@ -873,7 +873,7 @@ function webform_results_download_rows($node, $options, $serial_start = 0) {
 
   // Get all the required submissions for the download.
   $filters['nid'] = $node->nid;
-  if (!empty($options['sids'])){
+  if (isset($options['sids'])){
     $filters['sid'] = $options['sids'];
   }
   elseif (!empty($options['completion_type']) && $options['completion_type'] !== 'all') {
@@ -1054,7 +1054,7 @@ function webform_results_download($node, $export_info) {
   }
 
   // Update user last downloaded sid if required.
-  if ((isset($export_info['options']['sids']) || $export_info['options']['range']['range_type'] != 'range') && $export_info['row_count'] > 0) {
+  if ((isset($export_info['options']['sids']) || $export_info['options']['range']['range_type'] != 'range') && !empty($export_info['last_sid'])) {
     // Delete existing record.
     db_delete('webform_last_download')
       ->condition('nid', $node->nid)
@@ -1152,7 +1152,7 @@ function webform_results_batch_rows($node, $format = 'delimited', $options = arr
     $context['sandbox']['batch_number'] = 0;
     $sids = isset($options['sids']) ? $options['sids'] : webform_download_sids($node->nid, $options['range']);
     $context['sandbox']['sid_count'] = count($sids);
-    $context['sandbox']['batch_max'] = ceil($context['sandbox']['sid_count'] / $options['range']['batch_size']);
+    $context['sandbox']['batch_max'] = max(1, ceil($context['sandbox']['sid_count'] / $options['range']['batch_size']));
     $context['sandbox']['serial'] = 0;
     $context['sandbox']['last_sid'] = 0;
   }
@@ -1175,17 +1175,12 @@ function webform_results_batch_rows($node, $format = 'delimited', $options = arr
 
   @fclose($handle);
 
-  // Display status message if not yet finished.
-  if ($context['sandbox']['batch_number'] != $context['sandbox']['batch_max']) {
-    $context['message'] = t('Exported @count of @total submissions...', array('@count' => $context['sandbox']['serial'], '@total' => $context['sandbox']['sid_count']));
-    $context['finished'] = $context['sandbox']['batch_number'] < $context['sandbox']['batch_max']
-                              ? $context['sandbox']['batch_number'] / $context['sandbox']['batch_max']
-                              : 1.0;
-  }
-  // If finished, save the results.
-  else {
-    $context['results']['last_sid'] = $context['sandbox']['last_sid'];
-  }
+  // Display status message
+  $context['message'] = t('Exported @count of @total submissions...', array('@count' => $context['sandbox']['serial'], '@total' => $context['sandbox']['sid_count']));
+  $context['finished'] = $context['sandbox']['batch_number'] < $context['sandbox']['batch_max']
+                            ? $context['sandbox']['batch_number'] / $context['sandbox']['batch_max']
+                            : 1.0;
+  $context['results']['last_sid'] = $context['sandbox']['last_sid'];
 }
 
 /**
