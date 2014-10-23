@@ -452,7 +452,7 @@ function webform_results_download_form($form, &$form_state, $node) {
   );
 
   // If drafts are allowed, provide options to filter download based on draft status.
-  if ($node->webform['allow_draft']) {
+  if ($node->webform['allow_draft'] || $node->webform['auto_save']) {
     $form['range']['completion_type'] = array(
       '#type' => 'radios',
       '#title' => t('Included submissions'),
