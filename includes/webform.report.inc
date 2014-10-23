@@ -31,11 +31,11 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
     }
     webform_set_breadcrumb($node);
     $submissions = webform_get_submissions(array('nid' => $node->nid, 'uid' => $user->uid), $header, $pager_count);
-    $count = webform_get_submission_count($node->nid, $user->uid);
+    $count = webform_get_submission_count($node->nid, $user->uid, NULL);
   }
   else {
     $submissions = webform_get_submissions($node->nid, $header, $pager_count);
-    $count = webform_get_submission_count($node->nid);
+    $count = webform_get_submission_count($node->nid, NULL, NULL);
   }
 
   $operation_column = end($header);
@@ -179,7 +179,7 @@ function webform_results_table($node, $pager_count = 0) {
   // Get all the submissions for the node.
   $header = theme('webform_results_table_header', array('node' => $node));
   $submissions = webform_get_submissions($node->nid, $header, $pager_count);
-  $total_count = webform_get_submission_count($node->nid);
+  $total_count = webform_get_submission_count($node->nid, NULL, NULL);
 
   $output = theme('webform_results_table', array('node' => $node, 'components' => $node->webform['components'], 'submissions' => $submissions, 'total_count' => $total_count, 'pager_count' => $pager_count));
   if ($pager_count) {
@@ -551,7 +551,7 @@ function webform_results_download_range_after_build($element, &$form_state) {
   $node = $form_state['values']['node'];
 
   // Build a list of counts of new and total submissions.
-  $count = webform_get_submission_count($node->nid);
+  $count = webform_get_submission_count($node->nid, NULL, NULL);
   $sids = webform_download_sids($node->nid, array('range_type' => 'new'));
 
   $last_download = webform_download_last_download_info($node->nid);

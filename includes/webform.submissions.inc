@@ -765,17 +765,19 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
  *   The node ID for which submissions are being fetched.
  * @param $uid
  *   Optional; the user ID to filter the submissions by.
+ * @param $is_draft
+ *   Optional; NULL for all, truthy for drafts only, falsy for completed only.
+ *   The default is completed submissions only.
  * @return
  *   An integer value of the number of submissions.
  */
-function webform_get_submission_count($nid, $uid = NULL) {
+function webform_get_submission_count($nid, $uid = NULL, $is_draft = 0) {
   $counts = &drupal_static(__FUNCTION__);
 
   if (!isset($counts[$nid][$uid])) {
     $query = db_select('webform_submissions', 'ws')
       ->addTag('webform_get_submission_count')
-      ->condition('ws.nid', $nid)
-      ->condition('ws.is_draft', 0);
+      ->condition('ws.nid', $nid);
     $arguments = array($nid);
     if ($uid !== NULL) {
       $query->condition('ws.uid', $uid);
@@ -790,6 +792,9 @@ function webform_get_submission_count($nid, $uid = NULL) {
         // submissions.
         $query->condition('ws.sid', 0);
       }
+    }
+    if (isset($is_draft)) {
+      $query->condition('ws.is_draft', $is_draft);
     }
 
     $counts[$nid][$uid] = $query->countQuery()->execute()->fetchField();
