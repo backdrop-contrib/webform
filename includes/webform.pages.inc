@@ -514,6 +514,29 @@ function webform_configure_form_submit($form, &$form_state) {
 function webform_configure_form_submit_save($form, &$form_state) {
   node_save($form['#node']);
   drupal_set_message(t('The form settings have been updated.'));
+
+  $node = &$form['#node'];
+  if (!$node->webform['block'] &&
+      ($block = block_load('webform', 'client-block-' . $node->nid)) &&
+      !empty($block->bid)) {
+    // An existing block for this not-currently-available block was already configured.
+    // See https://www.drupal.org/node/2365825
+    // The core block module contains a bug which causes it to not remove blocks
+    // which are no longer available in code. Therefore, to prevent the block from
+    // being processed, it must be removed manually here.
+    // Remove the block for all themes.
+    db_delete('block')
+      ->condition('module', 'webform')
+      ->condition('delta', $block->delta)
+      ->execute();
+    // Remove any roles associated with the block
+    db_delete('block_role')
+      ->condition('module', 'webform')
+      ->condition('delta', $block->delta)
+      ->execute();
+    drupal_set_message(t('The block %info was deleted.', array('%info' => t('Webform: !title', array('!title' => $node->title)))));
+    cache_clear_all();
+  }
 }
 
 /**
