@@ -690,6 +690,13 @@ function webform_results_download_form_submit(&$form, &$form_state) {
     $mb = 1048576;
     $memory_modifier = max(1, ($memory_limit - (64 * $mb)) / (32 * $mb));
     $batch_size = ceil($batch_size * $memory_modifier);
+
+    // For time reasons, limit the batch size to 10,000.
+    $batch_size = min($batch_size, 10000);
+
+    // Allow a non-UI configuration to override the batch size.
+    $batch_size = variable_get('webform_export_batch_size', $batch_size);
+    
     $options['range']['batch_size'] = $batch_size;
   }
 
@@ -1143,7 +1150,7 @@ function webform_results_batch_headers($node, $format = 'delimited', $options = 
 }
 
 /**
- * Batch API callback; Write the headers of the export to the export file.
+ * Batch API callback; Write the rows of the export to the export file.
  */
 function webform_results_batch_rows($node, $format = 'delimited', $options = array(), &$context) {
   module_load_include('inc', 'webform', 'includes/webform.export');
