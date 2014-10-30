@@ -120,6 +120,15 @@ function webform_views_data() {
       'handler' => 'views_handler_relationship',
       'label' => t('Webform Submission User'),
     ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_numeric',
+    ),
   );
 
   // Is draft.
