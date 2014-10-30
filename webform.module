@@ -4004,36 +4004,36 @@ function webform_variable_get($variable) {
  */
 function theme_webform_token_help($variables) {
   $groups = $variables['groups'];
-
-  // If token supports dialogs, display simply as a link.
   module_load_include('inc', 'token', 'token.pages');
-  if (module_exists('token') && function_exists('token_page_output_tree')) {
-    return theme('token_tree', array('token_types' => $groups, 'dialog' => TRUE));
-  }
 
-  // If dialogs are not supported, show as a fieldset.
-  $fieldset = array(
+  // Assume dialogs are not supported, show as a fieldset.
+  $help = array(
     '#title' => t('Token values'),
     '#type' => 'fieldset',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#attributes' => array('class' => array('collapsible', 'collapsed')),
+    'help' => array(
+      '#markup' => '<p>' . t('This field supports dynamic token values. Common values might be [current-user:mail] or [node:title].') . '</p>',
+    ),
+    'token_tree' => array(
+      '#theme' => 'token_tree',
+      '#token_types' => $groups,
+    ),
   );
 
-  $help = '<p>' . t('This field supports dynamic token values. Common values might be [current-user:mail] or [node:title].') . '</p>';
   if (!module_exists('token')) {
-    $help .= '<p>' . t('A full listing of tokens may be listed here by installing the <a href="http://drupal.org/project/token">Token module</a>.') . '</p>';
+    // No token module at all. Display a simple suggestion to enable it.
+    $help['help']['#markup'] .= '<p>' . t('A full listing of tokens may be listed here by installing the <a href="http://drupal.org/project/token">Token module</a>.') . '</p>';
+    unset($help['token_tree']);
   }
-  $fieldset['help'] = array(
-    '#markup' => $help,
-  );
+  elseif (function_exists('token_page_output_tree')) {
+    // Token supports dialogs: display simply as a link.
+    $help = $help['token_tree'];
+    $help['#dialog'] = TRUE;
+  }
 
-  $fieldset['token_tree'] = array(
-    '#theme' => 'token_tree',
-    '#token_types' => $groups,
-  );
-
-  return render($fieldset);
+  return render($help);
 }
 
 function _webform_safe_name($name) {
