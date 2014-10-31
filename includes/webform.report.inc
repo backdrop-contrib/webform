@@ -714,6 +714,9 @@ function webform_results_download_form_submit(&$form, &$form_state) {
  * should be used to generate a file over multiple requests.
  *
  * @see webform_results_export_batch()
+ *
+ * @return array|null
+ *   The array of export info or null if the file could not be opened.
  */
 function webform_results_export($node, $format = 'delimited', $options = array()) {
   global $user;
@@ -729,6 +732,9 @@ function webform_results_export($node, $format = 'delimited', $options = array()
 
   $file_name = drupal_tempnam('temporary://', 'webform_');
   $handle = fopen($file_name, 'w');
+  if (!$handle) {
+    return;
+  }
 
   // Add the beginning of file marker (little-endian usually for MS Excel).
   $exporter->bof($handle);
@@ -1124,6 +1130,9 @@ function webform_results_batch_bof($node, $format = 'delimited', $options = arra
 
   $exporter = webform_export_create_handler($format, $options);
   $handle = fopen($options['file_name'], 'w');
+  if (!$handle) {
+    return;
+  }
   $exporter->bof($handle);
   @fclose($handle);
 }
@@ -1136,6 +1145,9 @@ function webform_results_batch_headers($node, $format = 'delimited', $options = 
 
   $exporter = webform_export_create_handler($format, $options);
   $handle = fopen($options['file_name'], 'a');
+  if (!$handle) {
+    return;
+  }
   $headers = webform_results_download_headers($node, $options);
   $row_count = 0;
   $col_count = 0;
@@ -1172,6 +1184,9 @@ function webform_results_batch_rows($node, $format = 'delimited', $options = arr
   // Write these submissions to the file.
   $exporter = webform_export_create_handler($format, $options);
   $handle = fopen($options['file_name'], 'a');
+  if (!$handle) {
+    return;
+  }
   foreach ($rows as $row) {
     $exporter->add_row($handle, $row, $context['results']['row_count']);
     $context['results']['row_count']++;
@@ -1202,6 +1217,9 @@ function webform_results_batch_eof($node, $format = 'delimited', $options = arra
   // exporters that need to adjust the beginning of the files as well as the
   // end, i.e. webform_exporter_excel_xlsx::eof().
   $handle = fopen($options['file_name'], 'r+');
+  if (!$handle) {
+    return;
+  }
   fseek($handle, 0, SEEK_END); // Move pointer to the end of the file.
   $exporter->eof($handle, $context['results']['row_count'], $context['results']['col_count']);
   @fclose($handle);
