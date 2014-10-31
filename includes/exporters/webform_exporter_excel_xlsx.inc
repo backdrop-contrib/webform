@@ -132,7 +132,7 @@ class webform_exporter_excel_xlsx extends webform_exporter {
     // Our download file is currently a single XML sheet file. We need to add
     // the peripheral XML files to make this into a XLSX directory, then zip it.
     $file_uri = $results['file_name'];
-    $zip_uri = drupal_tempnam('temporary://', 'webform_');
+    $zip_uri = _webform_export_tempname();
 
     // ZipArchive does not support stream wrappers, convert to filesystem path.
     $zip_filepath = drupal_realpath($zip_uri);

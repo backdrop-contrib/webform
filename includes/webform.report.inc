@@ -700,11 +700,18 @@ function webform_results_download_form_submit(&$form, &$form_state) {
     $options['range']['batch_size'] = $batch_size;
   }
 
-  $options['file_name'] = drupal_tempnam('temporary://', 'webform_');
+  $options['file_name'] = _webform_export_tempname();
 
   // Set up a batch to export the results.
   $batch = webform_results_export_batch($node, $format, $options);
   batch_set($batch);
+}
+
+/**
+ * Returns a temporary export filename.
+ */
+function _webform_export_tempname() {
+  return drupal_tempnam(variable_get('webform_export_path', 'temporary://'), 'webform_');
 }
 
 /**
@@ -730,7 +737,7 @@ function webform_results_export($node, $format = 'delimited', $options = array()
   // Open a new Webform exporter object.
   $exporter = webform_export_create_handler($format, $options);
 
-  $file_name = drupal_tempnam('temporary://', 'webform_');
+  $file_name = _webform_export_tempname();
   $handle = fopen($file_name, 'w');
   if (!$handle) {
     return;
