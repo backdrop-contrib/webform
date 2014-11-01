@@ -130,8 +130,8 @@ function webform_menu() {
     'title' => 'Webform',
     'page callback' => 'webform_components_page',
     'page arguments' => array(1),
-    'access callback' => 'node_access',
-    'access arguments' => array('update', 1),
+    'access callback' => 'webform_node_update_access',
+    'access arguments' => array(1),
     'file' => 'includes/webform.components.inc',
     'weight' => 1,
     'type' => MENU_LOCAL_TASK,
@@ -141,8 +141,8 @@ function webform_menu() {
     'title' => 'Form components',
     'page callback' => 'webform_components_page',
     'page arguments' => array(1),
-    'access callback' => 'node_access',
-    'access arguments' => array('update', 1),
+    'access callback' => 'webform_node_update_access',
+    'access arguments' => array(1),
     'file' => 'includes/webform.components.inc',
     'weight' => 0,
     'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -151,8 +151,8 @@ function webform_menu() {
     'title' => 'Conditionals',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('webform_conditionals_form', 1),
-    'access callback' => 'node_access',
-    'access arguments' => array('update', 1),
+    'access callback' => 'webform_node_update_access',
+    'access arguments' => array(1),
     'file' => 'includes/webform.conditionals.inc',
     'weight' => 1,
     'type' => MENU_LOCAL_TASK,
@@ -161,8 +161,8 @@ function webform_menu() {
     'title' => 'Form settings',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('webform_configure_form', 1),
-    'access callback' => 'node_access',
-    'access arguments' => array('update', 1),
+    'access callback' => 'webform_node_update_access',
+    'access arguments' => array(1),
     'file' => 'includes/webform.pages.inc',
     'weight' => 5,
     'type' => MENU_LOCAL_TASK,
@@ -174,32 +174,32 @@ function webform_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('webform_emails_form', 1),
     'access callback' => 'node_access',
-    'access arguments' => array('update', 1),
-    'file' => 'includes/webform.emails.inc',
+    'access callback' => 'webform_node_update_access',
+    'access arguments' => array(1),
     'weight' => 4,
     'type' => MENU_LOCAL_TASK,
   );
   $items['node/%webform_menu/webform/emails/%webform_menu_email'] = array(
     'load arguments' => array(1),
     'page arguments' => array('webform_email_edit_form', 1, 4),
-    'access callback' => 'node_access',
-    'access arguments' => array('update', 1),
+    'access callback' => 'webform_node_update_access',
+    'access arguments' => array(1),
     'file' => 'includes/webform.emails.inc',
     'type' => MENU_CALLBACK,
   );
   $items['node/%webform_menu/webform/emails/%webform_menu_email/clone'] = array(
     'load arguments' => array(1),
     'page arguments' => array('webform_email_edit_form', 1, 4, TRUE),
-    'access callback' => 'node_access',
-    'access arguments' => array('update', 1),
+    'access callback' => 'webform_node_update_access',
+    'access arguments' => array(1),
     'file' => 'includes/webform.emails.inc',
     'type' => MENU_CALLBACK,
   );
   $items['node/%webform_menu/webform/emails/%webform_menu_email/delete'] = array(
     'load arguments' => array(1),
     'page arguments' => array('webform_email_delete_form', 1, 4),
-    'access callback' => 'node_access',
-    'access arguments' => array('update', 1),
+    'access callback' => 'webform_node_update_access',
+    'access arguments' => array(1),
     'type' => MENU_CALLBACK,
   );
 
@@ -208,8 +208,8 @@ function webform_menu() {
     'load arguments' => array(1, 5),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('webform_component_edit_form', 1, 4, FALSE),
-    'access callback' => 'node_access',
-    'access arguments' => array('update', 1),
+    'access callback' => 'webform_node_update_access',
+    'access arguments' => array(1),
     'file' => 'includes/webform.components.inc',
     'type' => MENU_LOCAL_TASK,
   );
@@ -217,8 +217,8 @@ function webform_menu() {
     'load arguments' => array(1, 5),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('webform_component_edit_form', 1, 4, TRUE),
-    'access callback' => 'node_access',
-    'access arguments' => array('update', 1),
+    'access callback' => 'webform_node_update_access',
+    'access arguments' => array(1),
     'file' => 'includes/webform.components.inc',
     'type' => MENU_LOCAL_TASK,
   );
@@ -226,8 +226,8 @@ function webform_menu() {
     'load arguments' => array(1, 5),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('webform_component_delete_form', 1, 4),
-    'access callback' => 'node_access',
-    'access arguments' => array('update', 1),
+    'access callback' => 'webform_node_update_access',
+    'access arguments' => array(1),
     'file' => 'includes/webform.components.inc',
     'type' => MENU_LOCAL_TASK,
   );
@@ -236,8 +236,8 @@ function webform_menu() {
   $items['webform/ajax/options/%webform_menu'] = array(
     'load arguments' => array(3),
     'page callback' => 'webform_select_options_ajax',
-    'access callback' => 'node_access',
-    'access arguments' => array('update', 3),
+    'access callback' => 'webform_node_update_access',
+    'access arguments' => array(1),
     'file' => 'components/select.inc',
     'type' => MENU_CALLBACK,
   );
@@ -606,6 +606,10 @@ function webform_results_access($node, $account = NULL) {
   return node_access('view', $node, $account) && ($module_access || user_access('access all webform results', $account) || (user_access('access own webform results', $account) && $account->uid == $node->uid));
 }
 
+/**
+ * Menu access callback. Ensure a user has both results access and permission
+ * to clear submissions.
+ */
 function webform_results_clear_access($node, $account = NULL) {
   global $user;
   $account = isset($account) ? $account : $user;
@@ -613,6 +617,33 @@ function webform_results_clear_access($node, $account = NULL) {
   $module_access = count(array_filter(module_invoke_all('webform_results_clear_access', $node, $account))) > 0;
 
   return webform_results_access($node, $account) && ($module_access || user_access('delete all webform submissions', $account));
+}
+
+/**
+ * Menu access callback. Ensure a sure has access to update a webform node.
+ *
+ * Unlike webform_results_access and webform_results_clear_access, access is
+ * completely overridden by the any implmentation of hook_webform_update_access.
+ *
+ * If hook_webform_update_access is implemented by one or more other modules,
+ * the results must be unanimously TRUE for access to be granted; otherwise it
+ * is denied if even one implementation returns FALSE, regardless of node_access
+ * and the 'edit webform components' permission. This allows implementors
+ * complete flexibility.
+ *
+ * hook_webform_update_access should return TRUE if access should absolutely
+ * be granted, FALSE if it should absolutely be denied, or NULL if node_access
+ * and 'edit webform components' permission should determine access.
+ *
+ * @see hook_webform_update_access().
+ */
+function webform_node_update_access($node, $account = NULL) {
+  global $user;
+  $account = isset($account) ? $account : $user;
+  $module_access = module_invoke_all('webform_update_access', $node, $account);
+  return empty($module_access)
+            ? node_access('update', $node, $account) && user_access('edit webform components')
+            : count(array_filter($module_access)) == count($module_access);
 }
 
 /**
@@ -659,6 +690,10 @@ function webform_permission() {
     ),
     'delete own webform submissions' => array(
       'title' => t('Delete own webform submissions'),
+    ),
+    'edit webform components' => array(
+      'title' => t('Content authors: access and edit webform components and settings'),
+      'description' => t('Grants additional access to the webform components and settings to users who can edit the content. Generally an authenticated user permission.'),
     ),
   );
 }
