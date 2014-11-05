@@ -173,9 +173,9 @@ function webform_menu() {
     'title' => 'E-mails',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('webform_emails_form', 1),
-    'access callback' => 'node_access',
     'access callback' => 'webform_node_update_access',
     'access arguments' => array(1),
+    'file' => 'includes/webform.emails.inc',
     'weight' => 4,
     'type' => MENU_LOCAL_TASK,
   );
