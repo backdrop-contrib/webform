@@ -2705,7 +2705,8 @@ function _webform_client_form_add_component($node, $component, $component_value,
     $data = empty($input_values[$cid]) ? NULL : $input_values[$cid];
     if ($display_element = webform_component_invoke($component['type'], 'display', $component, $data, $format)) {
       // Set access based on the private property.
-      $display_element['#access'] = $component_access;
+      $display_element += array('#access' => TRUE);
+      $display_element['#access'] = $display_element['#access'] && $component_access;
 
       // Ensure the component is added as a property.
       $display_element['#webform_component'] = $component;
@@ -2737,7 +2738,8 @@ function _webform_client_form_add_component($node, $component, $component_value,
     // Add this user-defined field to the form (with all the values that are always available).
     if ($element = webform_component_invoke($component['type'], 'render', $component, $component_value, $filter)) {
       // Set access based on the private property.
-      $element['#access'] = $component_access;
+      $element += array('#access' => TRUE);
+      $element['#access'] = $element['#access'] && $component_access;
 
       // Ensure the component is added as a property.
       $element['#webform_component'] = $component;
