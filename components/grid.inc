@@ -471,7 +471,7 @@ function _webform_edit_grid_unique_validate($element) {
     // Fewer unique values than values means that at least one value is duplicated.
     // Fewer unique values than possible values means that there is a possible choice
     // that wasn't used.
-    form_error($element, t('<em>!title</em> is not allowed to have the same answer for more than one question.', array('!title' => $element['#title'])));
+    form_error($element, t('!title is not allowed to have the same answer for more than one question.', array('!title' => $element['#title'])));
   }
 }
 

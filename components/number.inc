@@ -585,7 +585,7 @@ function _webform_validate_number($element, &$form_state) {
   if ($value != '') {
     // First check that the entered value matches the expected value.
     if (!webform_number_format_match($value, $element['#point'], $element['#separator'])) {
-      form_error($element, t('%name field value must format numbers as "@example".', array('%name' => $element['#title'], '@example' => webform_number_format(12345.6789, $element['#decimals'], $element['#point'], $element['#separator']))));
+      form_error($element, t('!name field value must format numbers as "@example".', array('!name' => $element['#title'], '@example' => webform_number_format(12345.6789, $element['#decimals'], $element['#point'], $element['#separator']))));
       return;
     }
 
@@ -604,19 +604,19 @@ function _webform_validate_number($element, &$form_state) {
           $max = $element['#min'];
         }
         if ($numeric_value > $max || $numeric_value < $min) {
-          form_error($element, t('%name field value of @value should be in the range @min to @max.', array('%name' => $element['#title'], '@value' => $value, '@min' => $element['#min'], '@max' => $element['#max'])));
+          form_error($element, t('!name field value of @value should be in the range @min to @max.', array('!name' => $element['#title'], '@value' => $value, '@min' => $element['#min'], '@max' => $element['#max'])));
         }
       }
       elseif ($element['#max'] != '' && $numeric_value > $element['#max']) {
-        form_error($element, t('%name field value must be less than @max.', array('%name' => $element['#title'], '@max' => $element['#max'])));
+        form_error($element, t('!name field value must be less than @max.', array('!name' => $element['#title'], '@max' => $element['#max'])));
       }
       elseif ($element['#min'] != '' && $numeric_value < $element['#min']) {
-        form_error($element, t('%name field value must be greater than @min.', array('%name' => $element['#title'], '@min' => $element['#min'])));
+        form_error($element, t('!name field value must be greater than @min.', array('!name' => $element['#title'], '@min' => $element['#min'])));
       }
 
       // Integer test.
       if ($element['#integer'] && !is_int($numeric_value * 1)) {
-        form_error($element, t('%name field value of @value must be an integer.', array('%name' => $element['#title'], '@value' => $value)));
+        form_error($element, t('!name field value of @value must be an integer.', array('!name' => $element['#title'], '@value' => $value)));
       }
 
       // Step test.
@@ -629,15 +629,15 @@ function _webform_validate_number($element, &$form_state) {
           $starting_number + ($element['#step'] * 3),
         );
         if ($starting_number) {
-          form_error($element, t('%name field value must be @start plus a multiple of @step. i.e. @samples, etc.', array('%name' => $element['#title'], '@start' => $element['#min'], '@step' => $element['#step'], '@samples' => implode(', ', $samples))));
+          form_error($element, t('!name field value must be @start plus a multiple of @step. i.e. @samples, etc.', array('!name' => $element['#title'], '@start' => $element['#min'], '@step' => $element['#step'], '@samples' => implode(', ', $samples))));
         }
         else {
-          form_error($element, t('%name field value must be a multiple of @step. i.e. @samples, etc.', array('%name' => $element['#title'], '@step' => $element['#step'], '@samples' => implode(', ', $samples))));
+          form_error($element, t('!name field value must be a multiple of @step. i.e. @samples, etc.', array('!name' => $element['#title'], '@step' => $element['#step'], '@samples' => implode(', ', $samples))));
         }
       }
     }
     else {
-      form_error($element, t('%name field value of @value must be numeric.', array('%name' => $element['#title'], '@value' => $value)));
+      form_error($element, t('!name field value of @value must be numeric.', array('!name' => $element['#title'], '@value' => $value)));
     }
   }
 }
