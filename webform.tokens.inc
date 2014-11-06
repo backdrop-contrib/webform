@@ -132,19 +132,6 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
             // Token not found as a prefix or exact match for this component.
             continue;   // Token loop continue.
           }
-          // Assume an exact match.
-          $modifier = NULL;
-          if (strcmp($name, $parent_token) !== 0) {
-            // Check if this matches the key plus a modifier.
-            $modifier = substr($name, strrpos($name, ':') + 1);
-            // TODO: Allow components to provide additional modifiers per
-            // type, i.e. key, day, hour, minute, etc.
-            if (strcmp($name, $parent_token . ':' . $modifier) !== 0 || !in_array($modifier, $available_modifiers)) {
-              // No match.
-              continue;   // Token loop continue.
-            }
-          }
-
           // Drill down into the renderable to find the element.
           $display_element = $submission_renderable;
           foreach ($parents as $parent) {
@@ -158,6 +145,36 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
           // Individual tokens always have access granted even if they're
           // not displayed when printing the whole renderable.
           $display_element['#access'] = TRUE;
+
+          // For grid components, see if optional option key is present.
+          $matched_token = $parent_token;
+          if ($display_element['#webform_component']['type'] === 'grid') {
+            list($option_key) = explode(':', substr($name, strlen($parent_token) + 1));
+            if (strlen($option_key) && isset($display_element[$option_key]['#value'])) {
+              // Generate a faux select component for this grid question.
+              $select_component = _webform_defaults_select();
+              $select_component['type'] = 'select';
+              $select_component['nid'] = $display_element['#webform_component']['nid'];
+              $select_component['name'] = $display_element['#grid_questions'][$option_key];
+              $select_component['extra']['items'] = $display_element['#webform_component']['extra']['options'];
+              $display_element = _webform_display_select($select_component, $display_element[$option_key]['#value'], $format);
+              $display_element['#webform_component'] = $select_component;
+              $matched_token .= ':' . $option_key;
+            }
+          }
+
+          // Assume no modifier (implied 'nolabel').
+          $modifier = NULL;
+          if (strcmp($name, $matched_token) !== 0) {
+            // Check if this matches the key plus a modifier.
+            $modifier = substr($name, strrpos($name, ':') + 1);
+            // TODO: Allow components to provide additional modifiers per
+            // type, i.e. key, day, hour, minute, etc.
+            if (strcmp($name, $matched_token . ':' . $modifier) !== 0 || !in_array($modifier, $available_modifiers)) {
+              // No match.
+              continue;   // Token loop continue.
+            }
+          }
 
           if ($modifier === 'label') {
             $replacements[$original] = webform_filter_xss($display_element['#title']);
