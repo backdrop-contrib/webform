@@ -1068,6 +1068,9 @@ function webform_results_download($node, $export_info) {
   // file directly. Delete it when complete.
   else {
     $export_name = _webform_safe_name($node->title);
+    if (!strlen($export_name)) {
+      $export_name  = t('Untitled');
+    }
     $export_info['exporter']->set_headers($export_name);
     @readfile($export_info['file_name']);  // The @ makes it silent.
     @unlink($export_info['file_name']);  // Clean up, the @ makes it silent.
