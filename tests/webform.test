@@ -766,8 +766,8 @@ class WebformTestCase extends DrupalWebTestCase {
           'empty' => TRUE,
         ),
         'error values' => array(
-          '1.5' => t('%name field value of @value must be an integer.', array('%name' => 'Integer', '@value' => '1.5')),
-          '101' => t('%name field value must be less than @max.', array('%name' => 'Integer', '@max' => '100')),
+          '1.5' => t('!name field value of @value must be an integer.', array('!name' => 'Integer', '@value' => '1.5')),
+          '101' => t('!name field value must be less than @max.', array('!name' => 'Integer', '@max' => '100')),
         ),
       ),
       'integer_range' => array(
@@ -831,7 +831,7 @@ class WebformTestCase extends DrupalWebTestCase {
           'empty' => TRUE,
         ),
         'error values' => array(
-          '-1' => t('%name field value must be greater than @min.', array('%name' => 'Decimal positive', '@min' => '0')),
+          '-1' => t('!name field value must be greater than @min.', array('!name' => 'Decimal positive', '@min' => '0')),
         ),
       ),
       'decimal_range' => array(
@@ -858,8 +858,8 @@ class WebformTestCase extends DrupalWebTestCase {
         'database values' => array('11.5'),
         'database default values' => array('1'),
         'error values' => array(
-          '2' => t('%name field value must be @start plus a multiple of @step.', array('%name' => 'Decimal range', '@start' => '1', '@step' => '1.5')),
-          '13' => t('%name field value of @value should be in the range @min to @max.', array('%name' => 'Decimal range', '@value' => '13', '@min' => '1', '@max' => '12')),
+          '2' => t('!name field value must be @start plus a multiple of @step.', array('!name' => 'Decimal range', '@start' => '1', '@step' => '1.5')),
+          '13' => t('!name field value of @value should be in the range @min to @max.', array('!name' => 'Decimal range', '@value' => '13', '@min' => '1', '@max' => '12')),
         ),
       ),
       'decimal_range_select' => array(
