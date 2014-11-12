@@ -574,7 +574,7 @@ function theme_webform_submission_resend($variables) {
     $rows[] = array(array('data' => t('This webform is currently not setup to send emails.'), 'colspan' => 3));
   }
   $output = '';
-  $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'webform-emails')));
+  $output .= theme('table', array('header' => $header, 'rows' => $rows, 'sticky' => FALSE, 'attributes' => array('id' => 'webform-emails')));
   $output .= drupal_render_children($form);
   return $output;
 }

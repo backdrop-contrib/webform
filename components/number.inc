@@ -525,7 +525,7 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE) 
     array_unshift($count, t('Count'));
     array_unshift($percent, t('% of !description', array('!description' => $description)));
 
-    $normal_distribution = theme('table', array('header' => $header, 'rows' => array($limit, $count, $percent)));
+    $normal_distribution = theme('table', array('header' => $header, 'rows' => array($limit, $count, $percent), 'sticky' => FALSE));
 
     $other[] = array(t('Range'), t('!low to !high', array('!low' => $low, '!high' => $high)));
     $other[] = array(t('Standard deviation (!sigma)', array('!sigma' => $sigma)), $stddev);

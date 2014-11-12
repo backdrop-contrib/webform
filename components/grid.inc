@@ -28,6 +28,7 @@ function _webform_defaults_grid() {
       'title_display' => 0,
       'custom_option_keys' => 0,
       'custom_question_keys' => 0,
+      'sticky' => TRUE,
       'description' => '',
       'private' => FALSE,
       'analysis' => TRUE,
@@ -134,7 +135,6 @@ function _webform_edit_grid($component) {
     );
   }
 
-
   $form['display']['optrand'] = array(
     '#type' => 'checkbox',
     '#title' => t('Randomize Options'),
@@ -148,6 +148,13 @@ function _webform_edit_grid($component) {
     '#default_value' => $component['extra']['qrand'],
     '#description' => t('Randomize the order of the questions on the side when they are displayed in the form.'),
     '#parents' => array('extra', 'qrand')
+  );
+  $form['display']['sticky'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Sticky table header'),
+    '#default_value' => $component['extra']['sticky'],
+    '#description' => t('Use a sticky (non-scrolling) table header.'),
+    '#parents' => array('extra', 'sticky')
   );
 
   $form['validation']['unique'] = array(
@@ -189,6 +196,7 @@ function _webform_render_grid($component, $value = NULL, $filter = TRUE) {
     '#grid_default' => $component['value'],
     '#optrand' => $component['extra']['optrand'],
     '#qrand' => $component['extra']['qrand'],
+    '#sticky' => $component['extra']['sticky'],
     '#theme' => 'webform_grid',
     '#theme_wrappers' => array('webform_element'),
     '#process' => array('webform_expand_grid'),
@@ -265,6 +273,7 @@ function _webform_display_grid($component, $value, $format = 'html') {
     '#format' => $format,
     '#grid_questions' => $questions,
     '#grid_options' => $options,
+    '#sticky' => $component['extra']['sticky'],
     '#theme' => 'webform_display_grid',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
     '#sorted' => TRUE,
@@ -314,7 +323,7 @@ function theme_webform_display_grid($variables) {
     }
 
     $option_count = count($header) - 1;
-    $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('webform-grid', 'webform-grid-' . $option_count))));
+    $output = theme('table', array('header' => $header, 'rows' => $rows, 'sticky' => $element['#sticky'], 'attributes' => array('class' => array('webform-grid', 'webform-grid-' . $option_count))));
   }
   else {
     $items = array();
@@ -502,5 +511,5 @@ function theme_webform_grid($variables) {
   }
 
   $option_count = count($header) - 1;
-  return theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('webform-grid', 'webform-grid-' . $option_count))));
+  return theme('table', array('header' => $header, 'rows' => $rows, 'sticky' => $element['#sticky'], 'attributes' => array('class' => array('webform-grid', 'webform-grid-' . $option_count))));
 }

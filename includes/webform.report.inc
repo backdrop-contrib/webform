@@ -628,7 +628,7 @@ function theme_webform_results_download_select_format($variables) {
   );
 
   $element['separate']['#attributes']['class'] = array();
-  $element['separate']['#description'] = theme('table', array('header' => $header, 'rows' => $rows));
+  $element['separate']['#description'] = theme('table', array('header' => $header, 'rows' => $rows, 'sticky' => FALSE));
   $element['separate']['#description'] .= t('Separate options are more suitable for building reports, graphs, and statistics in a spreadsheet application.');
   $output .= drupal_render($element['separate']);
 
@@ -641,7 +641,7 @@ function theme_webform_results_download_select_format($variables) {
   );
 
   $element['compact']['#attributes']['class'] = array();
-  $element['compact']['#description'] = theme('table', array('header' => $header, 'rows' => $rows));
+  $element['compact']['#description'] = theme('table', array('header' => $header, 'rows' => $rows, 'sticky' => FALSE));
   $element['compact']['#description'] .= t('Compact options are more suitable for importing data into other systems.');
   $output .= drupal_render($element['compact']);
 
@@ -1418,7 +1418,8 @@ function theme_webform_analysis_component_basic($variables) {
   return theme('table', array(
     'header' => $data['table_header'],
     'rows' => $data['table_rows'],
-    'class' => array('webform-analysis-table'),
+    'sticky' => FALSE,
+    'attributes' => array('class' => array('webform-analysis-table')),
   ));
 }
 
@@ -1538,7 +1539,7 @@ function theme_webform_results_analysis($variables) {
     $rows[] = array(array('data' => t('There are no submissions for this form. <a href="!url">View this form</a>.', array('!url' => url('node/' . $node->nid))), 'colspan' => 20));
   }
 
-  return theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('webform-results-analysis'))));
+  return theme('table', array('header' => $header, 'rows' => $rows, 'sticky' => FALSE, 'attributes' => array('class' => array('webform-results-analysis'))));
 }
 
 /**

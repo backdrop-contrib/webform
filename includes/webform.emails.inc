@@ -120,7 +120,7 @@ function theme_webform_emails_form($variables) {
   $rows[] = array('data' => $row_data, 'class' => array('webform-add-form'));
 
   $output = '';
-  $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'webform-emails')));
+  $output .= theme('table', array('header' => $header, 'rows' => $rows, 'sticky' => FALSE, 'attributes' => array('id' => 'webform-emails')));
   $output .= drupal_render_children($form);
   return $output;
 }
