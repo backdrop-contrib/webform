@@ -16,6 +16,26 @@ module_load_include('inc', 'webform', 'includes/webform.submissions');
 function webform_results_submissions($node, $user_filter, $pager_count) {
   global $user;
 
+  // Determine whether views or hard-coded tables should be used for the submissions table.
+  if (!webform_variable_get('webform_table')) {
+    // Load the submissions view
+    $view = webform_get_view($node, 'webform_submissions');
+    if ($user_filter) {
+      if ($user->uid) {
+        drupal_set_title(t('Submissions for %user', array('%user' => $user->name)), PASS_THROUGH);
+      }
+      else {
+        drupal_set_title(t('Your submissions'));
+        webform_disable_page_cache();
+      }
+      webform_set_breadcrumb($node);
+      return $view->preview('default', array($node->nid, $user->uid));
+    }
+    else {
+      return $view->preview('default', array($node->nid));
+    }
+  }
+
   if (isset($_GET['results']) && is_numeric($_GET['results'])) {
     $pager_count = $_GET['results'];
   }
@@ -83,6 +103,29 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
 
   return drupal_render($element);
 
+}
+
+/**
+ * Returns the most appropriate view for this webform node.
+ *
+ * Site builders can customize the view that webform uses by webform node id or
+ * by webform content type. For example, use webform_results_123 to for node
+ * id 123 or webform_results_my_content_type for a node of type my_content_type.
+ *
+ * @param object $node
+ *   Loaded webform node.
+ * @param string $view_id
+ *   machine_id of the view, such as webform_results or webform_submissions.
+ * @return object|NULL
+ *   The loaded view.
+ */
+function webform_get_view($node, $view_id) {
+  foreach (array("{$view_id}_{$node->nid}", "{$view_id}_{$node->type}", $view_id) as $id) {
+    $view = views_get_view($id);
+    if ($view) {
+      return $view;
+    }
+  }
 }
 
 /**
@@ -172,6 +215,15 @@ function template_preprocess_webform_results_submissions(&$vars) {
  * Create a table containing all submitted values for a webform node.
  */
 function webform_results_table($node, $pager_count = 0) {
+  
+  // Determine whether views or hard-coded tables should be used for the submissions table.
+  if (!webform_variable_get('webform_table')) {
+    // Load and preview the results view with a node id argument
+    $view = webform_get_view($node, 'webform_results');
+    return $view->preview('default', array($node->nid));
+  }
+
+  // Get all the submissions for the node
   if (isset($_GET['results']) && is_numeric($_GET['results'])) {
     $pager_count = $_GET['results'];
   }

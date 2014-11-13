@@ -95,6 +95,21 @@ function webform_views_data() {
     'group' => t('Webform submission data'),
     'field' => array(
       'handler' => 'webform_handler_field_submission_data',
+      'webform_expand' => FALSE,
+      'click sortable' => TRUE,
+    ),
+  );
+
+  // Expanded to generate a field for every viewable component
+  $data['webform_submissions']['webform_all_fields'] = array(
+    'title' => t('All values'),
+    'help' => t('Displays all values as submitted by a user.'),
+    'real field' => 'sid',
+    'group' => t('Webform submission data'),
+    'field' => array(
+      'handler' => 'webform_handler_field_submission_data',
+      'webform_expand' => TRUE,
+      'click sortable' => TRUE,
     ),
   );
 
@@ -107,6 +122,18 @@ function webform_views_data() {
       'field' => 'nid',
       'handler' => 'views_handler_relationship',
       'label' => t('Webform Node'),
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_node_nid',
+      'name field' => 'title', // the field to display in the summary.
+      'numeric' => TRUE,
+      'validate type' => 'nid',
     ),
   );
 
@@ -121,13 +148,16 @@ function webform_views_data() {
       'label' => t('Webform Submission User'),
     ),
     'filter' => array(
-      'handler' => 'views_handler_filter_numeric',
+      'handler' => 'views_handler_filter_user_name',
     ),
     'sort' => array(
       'handler' => 'views_handler_sort',
     ),
     'argument' => array(
       'handler' => 'views_handler_argument_numeric',
+    ),
+    'field' => array(
+      'handler' => 'views_handler_field_user',
     ),
   );
 
@@ -186,31 +216,47 @@ function webform_views_data() {
 
   // View submission link.
   $data['webform_submissions']['view_submission'] = array(
+    'title' => t('View link'),
+    'help' => t('Provide a simple link to view the submission.'),
+    'real field' => 'serial',
     'field' => array(
-      'title' => t('View link'),
-      'help' => t('Provide a simple link to view the submission.'),
       'handler' => 'webform_handler_field_submission_link',
+      'click sortable' => TRUE,
+      'real field' => 'serial',
       'link_type' => 'view',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
     ),
   );
 
   // Edit submission link.
   $data['webform_submissions']['edit_submission'] = array(
+    'title' => t('Edit link'),
+    'help' => t('Provide a simple link to edit the submission.'),
+    'real field' => 'serial',
     'field' => array(
-      'title' => t('Edit link'),
-      'help' => t('Provide a simple link to edit the submission.'),
       'handler' => 'webform_handler_field_submission_link',
+      'click sortable' => TRUE,
       'link_type' => 'edit',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
     ),
   );
 
   // Delete submission link.
   $data['webform_submissions']['delete_submission'] = array(
+    'title' => t('Delete link'),
+    'help' => t('Provide a simple link to delete the submission.'),
+    'real field' => 'serial',
     'field' => array(
-      'title' => t('Delete link'),
-      'help' => t('Provide a simple link to delete the submission.'),
       'handler' => 'webform_handler_field_submission_link',
+      'click sortable' => TRUE,
       'link_type' => 'delete',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
     ),
   );
 
@@ -363,76 +409,140 @@ function webform_views_data_alter(&$data) {
       'handler' => 'webform_handler_field_form_body',
     ),
   );
-}
 
-/**
- * Implements hook_views_handlers().
- */
-function webform_views_handlers() {
-  return array(
-    'info' => array(
-      'path' => drupal_get_path('module', 'webform') . '/views',
-    ),
-    'handlers' => array(
-      'webform_handler_field_submission_link' => array(
-        'parent' => 'views_handler_field',
-        'file' => 'webform_handler_field_submission_link.inc',
-      ),
-      'webform_handler_field_submission_data' => array(
-        'parent' => 'views_handler_field',
-        'file' => 'webform_handler_field_submission_data.inc',
-      ),
-      'webform_handler_field_submission_count' => array(
-        'parent' => 'views_handler_field',
-        'file' => 'webform_handler_field_submission_count.inc',
-      ),
-      'webform_handler_field_node_link_edit' => array(
-        'parent' => 'views_handler_field_node_link',
-      ),
-      'webform_handler_field_node_link_results' => array(
-        'parent' => 'views_handler_field_node_link',
-      ),
-      'webform_handler_field_form_body' => array(
-        'parent' => 'views_handler_field',
-        'file' => 'webform_handler_field_form_body.inc',
-      ),
-      'webform_handler_field_is_draft' => array(
-        'parent' => 'views_handler_field',
-        'file' => 'webform_handler_field_is_draft.inc',
-      ),
-      'webform_handler_filter_is_draft' => array(
-        'parent' => 'views_handler_filter_in_operator',
-        'file' => 'webform_handler_filter_is_draft.inc',
-      ),
-      'webform_handler_field_webform_status' => array(
-        'parent' => 'views_handler_field_boolean',
-        'file' => 'webform_handler_field_webform_status.inc',
-      ),
-      'webform_handler_filter_webform_status' => array(
-        'parent' => 'views_handler_filter_boolean_operator',
-        'file' => 'webform_handler_filter_webform_status.inc',
-      ),
-      'webform_handler_relationship_submission_data' => array(
-        'parent' => 'views_handler_relationship',
-        'file' => 'webform_handler_relationship_submission_data.inc',
-      ),
+  $data['views']['webform_result'] = array(
+    'title' => t('Result summary with additional tokens'),
+    'help' => t('Shows result summary, for example the items per page (and links to change the items per page).'),
+    'area' => array(
+      'handler' => 'webform_handler_area_result_pager',
     ),
   );
+
 }
 
 /**
  * Implements hook_views_plugins().
  */
 function webform_views_plugins() {
-  $plugins['row']['webform_submission'] = array(
-    'title' => t('Rendered submissions'),
-    'help' => t('Display the rendered submission'),
-    'handler' => 'webform_views_plugin_row_submission_view',
-    'base' => array('webform_submissions'),
-    'uses options' => TRUE,
-    'type' => 'normal',
+  return array(
+    'row' => array(
+      'webform_submission' => array(
+        'title' => t('Rendered submissions'),
+        'help' => t('Display the rendered submission'),
+        'handler' => 'webform_views_plugin_row_submission_view',
+        'uses options' => TRUE,
+        'type' => 'normal',
+      ),
+    ),
   );
+
   return $plugins;
+}
+
+/**
+ * Implements hook_view_pre_view().
+ */
+function webform_views_pre_view($view, $display_id, $args) {
+  $display = $view->display[$display_id];
+  $all_fields_id = _webform_view_find_id($view, $display_id, 'field', array('field' => 'webform_all_fields'));
+
+  if ($all_fields_id !== NULL &&
+      !empty($args[0]) && is_numeric($args[0]) && $args[0] > 0 &&
+      _webform_view_find_id($view, $display_id, 'argument', array('field' => 'nid', 'table' => 'webform_submissions')) !== NULL &&
+      ($node = node_load($args[0])) && isset($node->webform['components'])) {
+    // This is a view/display that needs its fields expanded. It contains the
+    // webform_all_fields field, has a nid argument to the webform_submission
+    // table that is a valid node.
+
+    // Retrieve the display's fields and remove any fields after the 'webform_all_fields' field.
+    $fields = $view->get_items('field', $display_id);
+    $prototype = $fields[$all_fields_id];
+    $field_index = array_flip(array_keys($fields));
+    $trailing_fields = array_slice($fields, $field_index[$all_fields_id] + 1, NULL, TRUE);
+    $fields = array_slice($fields, 0, $field_index[$all_fields_id], TRUE);
+
+    // Remove any fields after the webform_add_fields field.
+
+    $new_columns = array();
+    foreach ($node->webform['components'] as $component) {
+      if (webform_component_invoke($component['type'], 'table', $component, array('')) !== NULL) {
+        $new_id = 'webform_component_' . $component['cid'];
+        $new_fields = array(
+          array(
+            'id' => $new_id,
+            'field' => 'value',
+            'table' => 'webform_submissions',
+            'label' => $component['name'], // CHECK FOR XSS TODO
+            'format' => 'plain',
+            'webform_nid' => $node->nid,
+            'webform_cid' => $component['cid'],
+            'exclude' => 0,
+          ) + $prototype,
+        );
+        if (webform_component_implements($component['type'], 'view_field')) {
+          $new_fields = webform_component_invoke($component['type'], 'view_field', $component, $new_fields);
+        }
+        foreach($new_fields as $sub_id => $new_field) {
+          $field_id = $new_id . ($sub_id ? '_' . $sub_id : '');
+          $fields[$field_id] = $new_field;
+          $new_columns[$field_id] = $field_id;
+        }
+      }
+    }
+
+    // Add any trailing fields back in.
+    $fields += $trailing_fields;
+
+
+    // Store. Alas, there is no view::set_items() method.
+    $display->handler->set_option('fields', $fields);
+
+    // If this display's style is a table, add columns for click-sorting.
+    if ($display->handler->get_option('style_plugin') == 'table') {
+      $style_options = $display->handler->get_option('style_options');
+      $style_options['columns'] += $new_columns;
+      $style_prototype = isset($style_options['info'][$all_fields_id])
+                            ? $style_options['info'][$all_fields_id]
+                            : array();
+      $style_prototype += array(
+        'sortable' => 1,
+        'default_sort_order' => 'asc',
+        'align' => '',
+        'separator' => '',
+        'empty_column' => 0,
+      );
+      $style_options['info'] += array_combine($new_columns, array_fill(1, count($new_columns), $style_prototype));
+      
+      //
+      //$key_index = array_flip(array_keys($columns));
+      //$offset = isset($key_index[$id]) ? $key_index[$id] : count($columns);
+      //$columns = array_slice($columns, 0, $offset, TRUE) + $new_columns + array_slice($columns, $offset, NULL, TRUE);
+      // Drop PHP Reference.
+      $display->handler->set_option('style_options', $style_options);
+    }
+
+    // Reset field handlers cache and rebuild field handlers.
+    unset($display->handler->handlers['field']);
+    $display->handler->get_handlers('field');
+
+    // Allow other modules to alter these modifications to the view.
+    drupal_alter('webform_view', $view, $display_id, $args);
+  }
+}
+
+/**
+ * Helper; Finds an item by option.
+ */
+function _webform_view_find_id($view, $display_id, $type, $options) {
+  foreach ($view->get_items($type, $display_id) as $id => $item) {
+    foreach ($options as $option_key => $option_value) {
+      if ($item[$option_key] != $option_value) {
+        continue 2;
+      }
+    }
+    return $id;
+  }
+  return NULL;
 }
 
 /**

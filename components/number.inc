@@ -56,6 +56,17 @@ function _webform_theme_number() {
 }
 
 /**
+ * Adjusts the view field(s) that are automatically generated for number
+ * components.
+ */
+function _webform_view_field_number($component, $fields) {
+  foreach ($fields as &$field) {
+    $field['webform_datatype'] = 'number';
+  }
+  return $fields;
+}
+
+/**
  * Implements _webform_edit_component().
  */
 function _webform_edit_number($component) {

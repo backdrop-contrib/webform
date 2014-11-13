@@ -1256,6 +1256,61 @@ function _webform_csv_data_component($component, $export_options, $value) {
 }
 
 /**
+ * Adjusts the view field(s) that are automatically generated for number
+ * components.
+ *
+ * Provides each component the opportunity to adjust how this component is
+ * displayed in a view as a field in a view table. For example, a component may
+ * modify how it responds to click-sorting. Or it may add additional fields,
+ * such as a grid component having a column for each question.
+ *
+ * @param array $component
+ *   A Webform component array
+ * @param array $fields
+ *   An array of field-definition arrays. Will be passed one field definition,
+ *   which may be modified. Additional fields may be added to the array.
+ * @return array
+ *   The modified $fields array.
+ */
+function _webform_view_field_component($component, $fields) {
+  foreach ($fields as &$field) {
+    $field['webform_datatype'] = 'number';
+  }
+  return $fields;
+}
+
+/**
+ * Modify the how a view was expanded to show all the components.
+ *
+ * This alter function is only called when the view is actually modified. It
+ * provides modules an opportunity to alter the changes that webform made to
+ * the view.
+ *
+ * This hook is called from webform_views_pre_view. If another module also
+ * changes views by implementing this same views hook, the relative order of
+ * execution of the two implementations will depend upon the module weights of
+ * the two modules. Using hook_webform_view_alter instead guarantees an
+ * opportuinty to modify the view AFTER webform.
+ *
+ * @param object $view
+ *   The view object.
+ * @param string $display_id
+ *   The display_id that was expanded by webform.
+ * @param array $args
+ *   The argumentst that were passed to the view.
+ */
+function hook_webform_view_alter($view, $display_id, $args) {
+  // Don't show component with cid == 4
+  $fields = $view->get_items('field', $display_id);
+  foreach ($fields as $id => $field) {
+    if (isset($field['webform_cid']) && $field['webform_cid'] == 4) {
+      unset($fields[$id]);
+    }
+  }
+  $view->display[$display_id]->handler->set_option('fields', $fields);
+}
+
+/**
  * Modify the list of mail systems that are capable of sending HTML email.
  *
  * @param array &$systems
