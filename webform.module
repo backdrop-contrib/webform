@@ -4653,6 +4653,9 @@ function webform_email_html_capable() {
     $systems[] = 'HTMLMailSystem';
     $systems[] = 'HTMLMailSystem__SmtpMailSystem';
   }
+  if (module_exists('mailsystem')) {
+    $systems[] = 'MailsystemDelegateMailSystem';
+  }
   // Allow other modules to alter the list.
   drupal_alter('webform_html_capable_mail_systems', $systems);
 
