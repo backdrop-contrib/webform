@@ -444,6 +444,30 @@ function webform_menu_load($nid) {
 }
 
 /**
+ * Menu LOADERNAME_to_arg callback. Determines the arguments used to generate a
+ * menu link.
+ *
+ * This is implemented only to give the webform_localization modules an
+ * opportunity to link to the orignial webform from the localized one. See
+ * issue 2097277.
+ *
+ * @param string $arg
+ *   The argument supplied by the caller.
+ * @param array $map
+ *   Array of path fragments (e.g. e.g. array('node','123','edit') for
+ *   'node/123/edit').
+ * @param integer $index
+ *   Which element of $map corresponds to $arg.
+ * @return string
+ *   The $arg, modified as desired.
+ */
+function webform_menu_to_arg($arg, $map, $index) {
+  return function_exists('webform_localization_webform_menu_to_arg')
+          ? webform_localization_webform_menu_to_arg($arg, $map, $index)
+          : $arg;
+}
+
+/**
  * Menu loader callback. Load a webform submission if the given sid is a valid.
  */
 function webform_menu_submission_load($sid, $nid) {
