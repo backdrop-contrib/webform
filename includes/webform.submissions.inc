@@ -45,6 +45,7 @@ function webform_submission_create($node, $account, $form_state, $is_preview = F
   $submission = (object) array(
     'nid' => $node->nid,
     'uid' => $account->uid,
+    'sid' => NULL,
     'submitted' => REQUEST_TIME,
     'remote_addr' => ip_address(),
     'is_draft' => TRUE,
