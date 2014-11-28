@@ -1523,6 +1523,7 @@ function webform_node_update($node) {
     $inserted_eids = array_diff($current_eids, $original_eids);
 
     foreach ($all_eids as $eid) {
+      $node->webform['emails'][$eid]['nid'] = $node->nid;
       if (in_array($eid, $inserted_eids)) {
         webform_email_insert($node->webform['emails'][$eid]);
       }
@@ -1530,7 +1531,6 @@ function webform_node_update($node) {
         webform_email_delete($node, $original->webform['emails'][$eid]);
       }
       elseif ($node->webform['emails'][$eid] != $original->webform['emails'][$eid]) {
-        $node->webform['emails'][$eid]['nid'] = $node->nid;
         webform_email_update($node->webform['emails'][$eid]);
       }
     }
