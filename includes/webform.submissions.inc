@@ -660,7 +660,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     // sorting on a column that uses multiple rows for its data.
     ->distinct()
     ->addTag('webform_get_submissions_sids')
-    ->fields('ws', array('sid', 'nid', 'serial', 'submitted', 'remote_addr', 'uid', 'is_draft'));
+    ->fields('ws');
   foreach ($filters as $column => $value) {
     $pager_query->condition($column, $value);
   }
@@ -712,21 +712,13 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     $pager_query->limit($pager_count);
   }
   $result = $pager_query->execute();
+  $submissions = $result->fetchAllAssoc('sid');
 
   $sids = array();
-  foreach ($result as $row) {
-    $sids[] = $row->sid;
-    $submissions[$row->sid] = new stdClass();
-    $submissions[$row->sid]->sid = $row->sid;
-    $submissions[$row->sid]->nid = $row->nid;
-    $submissions[$row->sid]->serial = $row->serial;
-    $submissions[$row->sid]->submitted = $row->submitted;
-    $submissions[$row->sid]->remote_addr = $row->remote_addr;
-    $submissions[$row->sid]->uid = $row->uid;
-    $submissions[$row->sid]->name = $row->name;
-    $submissions[$row->sid]->is_draft = $row->is_draft;
-    $submissions[$row->sid]->preview = FALSE;
-    $submissions[$row->sid]->data = array();
+  foreach ($submissions as $sid => $submission) {
+    $sids[] = $sid;
+    $submissions[$sid]->preview = FALSE;
+    $submissions[$sid]->data = array();
   }
 
   // If there are no submissions being retrieved, return an empty array.
