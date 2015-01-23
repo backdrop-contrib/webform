@@ -4333,7 +4333,9 @@ function webform_components($include_disabled = FALSE, $reset = FALSE) {
       $components += $module_components;
     }
     drupal_alter('webform_component_info', $components);
-    ksort($components);
+    uasort($components, function($a, $b) {
+      return strnatcasecmp($a['label'], $b['label']);
+    });
   }
 
   return $include_disabled ? $components : array_diff_key($components, $disabled);
