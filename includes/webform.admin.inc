@@ -269,7 +269,7 @@ function webform_admin_type_list() {
   $webform_type_list = '';
   $webform_type_count = count($webform_types);
   foreach ($webform_types as $n => $type) {
-    $webform_type_list .= l(node_type_get_name($type), 'node/add/' . $type);
+    $webform_type_list .= l(node_type_get_name($type), 'node/add/' . str_replace('_', '-', $type));
     if ($n + 1 < $webform_type_count) {
       $webform_type_list .= $webform_type_count == 2 ? ' ' : ', ';
     }
