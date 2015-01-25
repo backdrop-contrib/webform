@@ -311,7 +311,7 @@ function webform_email_edit_form($form, $form_state, $node, $email = array(), $c
     '#type' => 'textarea',
     '#rows' => max(10, min(20, count(explode("\n", $template)))),
     '#default_value' => $template,
-    '#wysiwyg' => webform_email_html_capable() ? NULL : FALSE,
+    '#wysiwyg' => webform_variable_get('webform_email_html_capable') ? NULL : FALSE,
     '#description' => theme('webform_token_help', array('groups' => array('node', 'submission'))),
   );
 
@@ -319,14 +319,14 @@ function webform_email_edit_form($form, $form_state, $node, $email = array(), $c
     '#type' => 'checkbox',
     '#title' => t('Send e-mail as HTML'),
     '#default_value' => $email['html'],
-    '#access' => webform_email_html_capable() && !variable_get('webform_format_override', 0),
+    '#access' => webform_variable_get('webform_email_html_capable') && !variable_get('webform_format_override', 0),
   );
 
   $form['template']['attachments'] = array(
     '#type' => 'checkbox',
     '#title' => t('Include files as attachments'),
     '#default_value' => $email['attachments'],
-    '#access' => webform_email_html_capable(),
+    '#access' => webform_variable_get('webform_email_html_capable'),
   );
 
   $form['template']['components'] = array(

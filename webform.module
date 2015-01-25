@@ -4059,6 +4059,9 @@ function webform_variable_get($variable) {
     case 'webform_table':
       $result = variable_get('webform_table', FALSE);
       break;
+    case 'webform_email_html_capable':
+      $result = variable_get('webform_email_html_capable', FALSE);
+      break;
   }
   return $result;
 }
@@ -4633,57 +4636,6 @@ function webform_tt($name, $string, $langcode = NULL, $update = FALSE) {
   else {
     return $string;
   }
-}
-
-/**
- * Check if there are any HTML mail systems available for Webform to use.
- *
- * @return bool
- *   TRUE if Webform can send HTML emails, FALSE if not.
- */
-function webform_email_html_capable() {
-  $capable = &drupal_static(__FUNCTION__);
-  if (isset($capable)) {
-    return $capable;
-  }
-  // Build a list of HTML-capable mail systems.
-  $systems = array();
-  if (module_exists('mandrill')) {
-    $systems[] = 'MandrillMailSystem';
-  }
-  if (module_exists('mimemail')) {
-    $systems[] = 'MimeMailSystem';
-    $systems[] = 'MimeMailSystem__SmtpMailSystem';
-  }
-  if (module_exists('htmlmail')) {
-    $systems[] = 'HTMLMailSystem';
-    $systems[] = 'HTMLMailSystem__SmtpMailSystem';
-  }
-  if (module_exists('mailsystem')) {
-    $systems[] = 'MailsystemDelegateMailSystem';
-  }
-  // Allow other modules to alter the list.
-  drupal_alter('webform_html_capable_mail_systems', $systems);
-
-  if (!count($systems)) {
-    $capable = FALSE;
-    return FALSE;
-  }
-  $mail_systems = variable_get('mail_system', array('default-system' => 'DefaultMailSystem'));
-  // If an HTML mail system exists then we will use it for Webform emails, even
-  // if it's not already specified.
-  if (!isset($mail_systems['webform']) || !in_array($mail_systems['webform'], $systems)) {
-    // Use the system default system, if that's HTML capable.
-    if (in_array($mail_systems['default-system'], $systems)) {
-      $GLOBALS['conf']['mail_system']['webform'] = $mail_systems['default-system'];
-    }
-    // Otherwise, use the first available HTML-capable system.
-    else {
-      $GLOBALS['conf']['mail_system']['webform'] = reset($systems);
-    }
-  }
-  $capable = TRUE;
-  return TRUE;
 }
 
 /**

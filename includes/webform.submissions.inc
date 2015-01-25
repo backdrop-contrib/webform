@@ -207,7 +207,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
   $send_count = 0;
   foreach ($emails as $eid => $email) {
     // Set the HTML property based on availablity of MIME Mail.
-    $email['html'] = ($email['html'] && webform_email_html_capable());
+    $email['html'] = ($email['html'] && webform_variable_get('webform_email_html_capable'));
 
     // Pass through the theme layer if using the default template.
     if ($email['template'] == 'default') {
@@ -311,7 +311,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
         'email' => $email,
       );
 
-      if (webform_email_html_capable()) {
+      if (webform_variable_get('webform_email_html_capable')) {
         // Load attachments for the e-mail.
         $attachments = array();
         if ($email['attachments']) {

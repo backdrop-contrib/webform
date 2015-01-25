@@ -60,6 +60,13 @@ function webform_admin_settings() {
     '#description' => t('The default subject line of any e-mailed results.'),
   );
 
+  $form['email']['webform_email_html_capable']  = array(
+    '#type' => 'checkbox',
+    '#title' => t('HTML mail system'),
+    '#default_value' => webform_variable_get('webform_email_html_capable'),
+    '#description' => t('Whether the mail system configured for webform is capable of sending mail in HTML format.'),
+  );
+
   $form['email']['webform_default_format']  = array(
     '#type' => 'radios',
     '#title' => t('Format'),
@@ -69,7 +76,11 @@ function webform_admin_settings() {
     ),
     '#default_value' => variable_get('webform_default_format', 0),
     '#description' => t('The default format for new e-mail settings. Webform e-mail options take precedence over the settings for system-wide e-mails configured in MIME mail.'),
-    '#access' => webform_email_html_capable(),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="webform_email_html_capable"]' => array('checked' => TRUE),
+      ),
+    ),
   );
 
   $form['email']['webform_format_override']  = array(
@@ -81,7 +92,11 @@ function webform_admin_settings() {
     ),
     '#default_value' => variable_get('webform_format_override', 0),
     '#description' => t('Force all webform e-mails to be sent in the default format.'),
-    '#access' => webform_email_html_capable(),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="webform_email_html_capable"]' => array('checked' => TRUE),
+      ),
+    ),
   );
 
   $form['progressbar'] = array(
