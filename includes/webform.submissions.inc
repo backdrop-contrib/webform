@@ -839,7 +839,7 @@ function _webform_submission_spam_check($to, $subject, $from, $headers = array()
  */
 function webform_submission_user_limit_check($node, $account = NULL) {
   global $user;
-  $tracking_mode = variable_get('webform_tracking_mode', 'cookie');
+  $tracking_mode = webform_variable_get('webform_tracking_mode');
 
   if (!isset($account)) {
     $account = $user;

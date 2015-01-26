@@ -74,7 +74,7 @@ function webform_admin_settings() {
       0 => t('Plain text'),
       1 => t('HTML'),
     ),
-    '#default_value' => variable_get('webform_default_format', 0),
+    '#default_value' => webform_variable_get('webform_default_format'),
     '#description' => t('The default format for new e-mail settings. Webform e-mail options take precedence over the settings for system-wide e-mails configured in MIME mail.'),
     '#states' => array(
       'visible' => array(
@@ -90,7 +90,7 @@ function webform_admin_settings() {
       0 => t('Per-webform configuration of e-mail format'),
       1 => t('Send all e-mails in the default format'),
     ),
-    '#default_value' => variable_get('webform_format_override', 0),
+    '#default_value' => webform_variable_get('webform_format_override'),
     '#description' => t('Force all webform e-mails to be sent in the default format.'),
     '#states' => array(
       'visible' => array(
@@ -143,7 +143,7 @@ function webform_admin_settings() {
     '#type' => 'checkbox',
     '#checked_value' => 1,
     '#title' => t('Include webform forms in search index'),
-    '#default_value' => variable_get('webform_search_index', 1),
+    '#default_value' => webform_variable_get('webform_search_index'),
     '#description' => t('When selected, all Webform nodes will have their form components indexed by the search engine.'),
     '#access' => module_exists('search'),
   );
@@ -156,7 +156,7 @@ function webform_admin_settings() {
       'ip_address' => t('IP address only'),
       'strict' => t('Both cookie and IP address (most strict)'),
     ),
-    '#default_value' => variable_get('webform_tracking_mode', 'cookie'),
+    '#default_value' => webform_variable_get('webform_tracking_mode'),
     '#description' => t('<a href="http://www.wikipedia.org/wiki/HTTP_cookie">Cookies</a> can be used to help prevent the same user from repeatedly submitting a webform. Limiting by IP address is more effective against repeated submissions, but may result in unintentional blocking of users sharing the same address. Logged-in users are always tracked by their user ID and are not affected by this option.'),
   );
 
@@ -167,7 +167,7 @@ function webform_admin_settings() {
       'long' => t('Long format: "Example Name" &lt;name@example.com&gt;'),
       'short' => t('Short format: name@example.com'),
     ),
-    '#default_value' => variable_get('webform_email_address_format', 'long'),
+    '#default_value' => webform_variable_get('webform_email_address_format'),
     '#description' => t('Most servers support the "long" format which will allow for more friendly From addresses in e-mails sent. However many Windows-based servers are unable to send in the long format. Change this option if experiencing problems sending e-mails with Webform.'),
   );
 
@@ -201,14 +201,14 @@ function webform_admin_settings() {
       '1' => t('Select the user roles that may submit each individual webform'),
       '0' => t('Disable Webform submission access control'),
     ),
-    '#default_value' => variable_get('webform_submission_access_control', 1),
+    '#default_value' => webform_variable_get('webform_submission_access_control'),
     '#description' => t('By default, the configuration form for each webform allows the administrator to choose which roles may submit the form. You may want to allow users to always submit the form if you are using a separate node access module to control access to webform nodes themselves.'),
   );
 
   $form['advanced']['webform_email_select_max'] = array(
     '#type' => 'textfield',
     '#title' => t("Select email mapping limit"),
-    '#default_value' => variable_get('webform_email_select_max', 50),
+    '#default_value' => webform_variable_get('webform_email_select_max'),
     '#description' => t('When mapping emails addresses to a select component, limit the choice to components with less than the amount of options indicated. This is to avoid flooding the email settings form. '),
   );
 
