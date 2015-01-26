@@ -681,6 +681,7 @@ function webform_uninstall() {
   variable_del('webform_default_from_name');
   variable_del('webform_default_from_address');
   variable_del('webform_default_subject');
+  variable_del('webform_email_replyto');
   variable_del('webform_email_html_capable');
   variable_del('webform_default_format');
   variable_del('webform_format_override');

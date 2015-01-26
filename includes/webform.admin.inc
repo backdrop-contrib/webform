@@ -60,6 +60,13 @@ function webform_admin_settings() {
     '#description' => t('The default subject line of any e-mailed results.'),
   );
 
+  $form['email']['webform_email_replyto']  = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use Reply-To header'),
+    '#default_value' => webform_variable_get('webform_email_replyto'),
+    '#description' => t('Sends all e-mail from the domain of the default address above and sets the "Reply-To" header to the actual sender. Helps prevent e-mail from being flagged as spam.'),
+  );
+
   $form['email']['webform_email_html_capable']  = array(
     '#type' => 'checkbox',
     '#title' => t('HTML mail system'),

@@ -4044,6 +4044,9 @@ function webform_variable_get($variable) {
     case 'webform_default_subject':
       $result = variable_get('webform_default_subject', t('Form submission from: [node:title]'));
       break;
+    case 'webform_email_replyto':
+      $result = variable_get('webform_email_replyto', TRUE);
+      break;
     case 'webform_email_html_capable':
       $result = variable_get('webform_email_html_capable', FALSE);
       break;

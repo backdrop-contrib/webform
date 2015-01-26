@@ -243,6 +243,34 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
       $email['from'] = webform_format_email_address($email['from_address'], $email['from_name'], $node, $submission);
     }
 
+    // If requested and not already set, set Reply-To to the From and re-format From address.
+    if (webform_variable_get('webform_email_replyto') &&
+        empty($email['headers']['Reply-To']) &&
+        ($default_from_name = webform_variable_get('webform_default_from_name')) &&
+        ($default_from_address = webform_variable_get('webform_default_from_address')) &&
+        ($default_from_parts = explode('@', $default_from_address)) &&
+        count($default_from_parts) == 2 &&
+        $default_from_parts[1] &&
+        stripos($email['from'], '@' . $default_from_parts[1]) === FALSE) {
+      // Message is not already being sent from the domain of the default webform from address.
+      $email['headers']['Reply-To'] = $email['from'];
+      // Match e-mails of the form 'My Name <email@domain.com>' as follows:
+      // ^          = beginning of string
+      // "?         = optional quote
+      // ([^<]*?)   = match optional characters that aren't a < (non-greedy)
+      // "?         = optional quote
+      // SPACE*     = optional spaces
+      // (?:<(.*)>) = < matching stuff > (without the angle brakets)
+      // $          = end of string
+      preg_match('/^"?([^<]*?)"? *(?:<(.*)>)?$/', $email['from'], $matches);
+      $email['from'] = $matches && webform_variable_get('webform_email_address_format') == 'long'
+                          ? t('"!name via !site_name" <!site_mail>',
+                              array('!name' => empty($matches[1]) ? $matches[2] : $matches[1],
+                                    '!site_name' => $default_from_name,
+                                    '!site_mail' => $default_from_address))
+                          : $default_from_address;
+    }
+
     // Update the subject if set in the themed headers.
     if (isset($email['headers']['Subject'])) {
       $email['subject'] = $email['headers']['Subject'];
