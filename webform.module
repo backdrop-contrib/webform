@@ -2371,6 +2371,11 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
       );
     }
 
+    // Check whether a previous submission was truncated. The length of the client form is not
+    // estimated before submission because a) the determination may not be accurate for some
+    // webform components and b) the error will be apparent upon submission.
+    webform_input_vars_check($form, $form_state);
+
     // Recursively add components to the form. The unfiltered version of the
     // form (typically used in Form Builder), includes all components.
     foreach ($component_tree['children'] as $cid => $component) {
@@ -4889,4 +4894,132 @@ function webform_clone_node_alter(&$node, $context) {
     $defaults = webform_node_defaults();
     $node->webform['next_serial'] = $defaults['next_serial'];
   }
+}
+
+/**
+ * Check if the last form submission exceeded the servers max_input_vars
+ * limit and optionally preflight the current form to be returned in this
+ * request.
+ *
+ * @param array $form
+ *   Reference to the form, which will be changed if $parent_key is set.
+ * @param array $form_state
+ *   Form's state or NULL for no form state check.
+ * @param string parent_key
+ *   Omit to not preflight the form, or the array key for the parent of where
+ *   the preflight warning should be inserted into the form.
+ */
+function webform_input_vars_check(&$form, $form_state, $parent_key = NULL) {
+  if (isset($parent_key)) {
+    $form['#pre_render'] = array('webform_pre_render_input_vars');
+    $form['#input_var_waring_parent'] = $parent_key;
+  }
+  if (!empty($form_state['input']) && empty($form_state['input']['form_build_id'])) {
+    // A form was submitted with POST, but the form_build_id was missing. The most likely cause of this
+    // is that the POST was truncated because PHP exceeded its max_input_vars limit.
+    $subs = array(
+      '@count' => webform_count_terminals($_POST),
+      '@limit' => (int)ini_get('max_input_vars'),
+    );
+    drupal_set_message(user_access('administer site configuration')
+                          ? t('This form could not be submitted because $_POST was truncated to @count input vars.  PHP max_input_vars is @limit and needs to be increased.', $subs)
+                          : t('This form could not be submitted because it exceeds the server configuration. Contact the administrator.'),
+                      'error');
+    watchdog('webform',
+             'POST truncated to @count input vars. PHP max_input_vars is @limit. Increase max_input_vars.',
+             $subs,
+             WATCHDOG_ERROR);
+  }
+}
+
+/**
+ * Checks the number of input form elements on this page to ensure that the
+ * PHP max_input_vars limit is not exceeded.
+ *
+ * Install this function as a #pre_render function.
+ */
+function webform_pre_render_input_vars($element) {
+  // Determine the limit on input vars for this server configuration.
+  $limit = ini_get('max_input_vars');
+  if ($limit) {
+    // Estimate the number of input vars needed to see if the PHP limit has been exceeded.
+    $count = 1 + webform_count_input_vars($element); // Additional input_vars: op
+    if ($count > $limit * 0.95) {
+      $subs = array(
+        '@count' => $count,
+        '@limit' => $limit,
+      );
+      $element[$element['#input_var_waring_parent']]['input_vars_warning'] = array(
+        '#markup' => '<div class="messages warning">' .
+                     (user_access('administer site configuration')
+                        ? t('This form contains @count input elements. PHP max_input_vars is @limit and should be increased.', $subs)
+                        : t('This form may be too long to work properly. Contact the administrator.'))
+                     . '</div>',
+        '#weight' => -1,
+      );
+      watchdog('webform',
+               'Page contains @count input elements but PHP max_input_vars is only @limit. Increase max_input_vars.',
+               $subs,
+               WATCHDOG_ERROR);
+    }
+  }
+  return $element;
+}
+
+/**
+ * Counts the number of input form elements.
+ *
+ * Note that this is somewhat imprecise. The number of input vars returned in
+ * $_POST can vary with the form element. For example, a multiple-select
+ * listbox returns one input var for each selection actually made.
+ *
+ * The primary use for this count is for the conditionals page, where only
+ * select, textfield, hidden, and token elements are used. If a more accurate
+ * count for webform_client_form is needed, a mechanism to predict the number
+ * of input elements for each component type and each component instance would
+ * be needed.
+ *
+ * @param array $element
+ *   The form whose elements should be counted.
+ * @return integer
+ *   The number of elements in the form that will result in $_POST entries.
+ */
+function webform_count_input_vars($element){
+  static $input_types = array(
+    'checkbox' => 1,
+    'date' => 1,
+    'file' => 1,
+    'managed_file' => 1,
+    'password' => 1,
+    'password_confirm' => 1,
+    'radios' => 1,
+    'select' => 1,
+    'textfield' => 1,
+    'textarea' => 1,
+    'token' => 1,
+    'weight' => 1,
+    'hidden' => 1,
+    'value' => 1,
+    'webform_email' => 1,
+    'webform_number' => 1,
+  );
+  $children = array_intersect_key($element, array_flip(element_children($element)));
+  return $children
+          ? array_reduce($children, function($carry, $item) {return $carry + webform_count_input_vars($item);}, 0)
+          : (isset($element['#type']) && isset($input_types[$element['#type']]) ? $input_types[$element['#type']] : 0);
+}
+
+/**
+ * Counts terminals in an array. Useful for counting how many input_vars were
+ * returned in $_POST.
+ *
+ * @params $a
+ *   Array or array element to be counted
+ * @return integer
+ *   Number of non-array elements within $a.
+ */
+function webform_count_terminals($a) {
+  return is_array($a)
+            ? array_reduce($a, function($carry, $item) {return $carry + webform_count_terminals($item);}, 0)
+            : 1;
 }
