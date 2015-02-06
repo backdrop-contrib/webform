@@ -40,20 +40,39 @@ function webform_submission_data($node, $submitted) {
 
 /**
  * Given set of $form_state values, prepare a psuedo-submission.
+ *
+ * @param object $node
+ *   The webform node object.
+ * @param object $account
+ *   The user account that is creating this submission.
+ * @param array $form_state
+ *   The form_state containing the values for the submission
+ * @param object $prototype
+ *   An existing submission that is being previewed, if any.
+ * @return object
+ *   A new submission object, possibly for preview
  */
-function webform_submission_create($node, $account, $form_state, $is_preview = FALSE) {
-  $submission = (object) array(
-    'nid' => $node->nid,
-    'uid' => $account->uid,
-    'sid' => NULL,
-    'submitted' => REQUEST_TIME,
-    'remote_addr' => ip_address(),
-    'is_draft' => TRUE,
-    'preview' => $is_preview,
-    'serial' => NULL,
-    'data' => webform_submission_data($node, $form_state['values']['submitted']),
-  );
+function webform_submission_create($node, $account, $form_state, $is_preview = FALSE, $prototype = NULL) {
+  $data = webform_submission_data($node, $form_state['values']['submitted']);
+  if ($prototype) {
+    $submission = clone $prototype;
+    $submission->preview = $is_preview;
+    $submission->data = $data;
+  }
+  else {
+    $submission = (object) array(
+      'nid' => $node->nid,
+      'uid' => $account->uid,
+      'sid' => NULL,
+      'submitted' => REQUEST_TIME,
+      'remote_addr' => ip_address(),
+      'is_draft' => TRUE,
+      'preview' => $is_preview,
+      'serial' => NULL,
+      'data' => $data,
+    );
   drupal_alter('webform_submission_create', $submission, $node, $account, $form_state);
+  }
   return $submission;
 }
 

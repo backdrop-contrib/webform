@@ -2395,7 +2395,7 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
 
     // Add the preview if needed.
     if ($preview && $page_num === $page_count) {
-      $preview_submission = $submission ? $submission : webform_submission_create($node, $user, $form_state, TRUE);
+      $preview_submission = webform_submission_create($node, $user, $form_state, TRUE, $submission);
       $preview_message = $node->webform['preview_message'];
       $submit_button_text = empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text']);
       if (strlen(trim(strip_tags($preview_message))) === 0) {
