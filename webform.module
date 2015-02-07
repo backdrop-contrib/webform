@@ -4914,7 +4914,7 @@ function webform_input_vars_check(&$form, $form_state, $parent_key = NULL) {
     $form['#pre_render'] = array('webform_pre_render_input_vars');
     $form['#input_var_waring_parent'] = $parent_key;
   }
-  if (!empty($form_state['input']) && empty($form_state['input']['op'])) {
+  if (!empty($form_state['input']) && empty($form_state['input']['form_id'])) {
     // A form was submitted with POST, but the form_build_id was missing. The most likely cause of this
     // is that the POST was truncated because PHP exceeded its max_input_vars limit.
     $subs = array(
