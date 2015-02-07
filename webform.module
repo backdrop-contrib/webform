@@ -4914,7 +4914,7 @@ function webform_input_vars_check(&$form, $form_state, $parent_key = NULL) {
     $form['#pre_render'] = array('webform_pre_render_input_vars');
     $form['#input_var_waring_parent'] = $parent_key;
   }
-  if (!empty($form_state['input']) && empty($form_state['input']['form_build_id'])) {
+  if (!empty($form_state['input']) && empty($form_state['input']['op'])) {
     // A form was submitted with POST, but the form_build_id was missing. The most likely cause of this
     // is that the POST was truncated because PHP exceeded its max_input_vars limit.
     $subs = array(
@@ -4949,7 +4949,7 @@ function webform_pre_render_input_vars($element) {
         '@count' => $count,
         '@limit' => $limit,
       );
-      $element[$element['#input_var_waring_parent']]['input_vars_warning'] = array(
+      $warning = array(
         '#markup' => '<div class="messages warning">' .
                      (user_access('administer site configuration')
                         ? t('This form contains @count input elements. PHP max_input_vars is @limit and should be increased.', $subs)
@@ -4957,6 +4957,12 @@ function webform_pre_render_input_vars($element) {
                      . '</div>',
         '#weight' => -1,
       );
+      if ($element['#input_var_waring_parent']) {
+        $element[$element['#input_var_waring_parent']]['input_vars_warning'] = $warning;
+      }
+      else {
+        $element['input_vars_warning'] = $warning;
+      }
       watchdog('webform',
                'Page contains @count input elements but PHP max_input_vars is only @limit. Increase max_input_vars.',
                $subs,
