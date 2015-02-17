@@ -11,11 +11,40 @@ function webform_views_data() {
    * Webform table definitions.
    */
   $data['webform']['table']['group'] = t('Webform');
+  $data['webform']['table']['base'] = array(
+    'field' => 'nid',
+    'title' => t('Webform nodes'),
+    'help' => t('Nodes which have webforms.'),
+  );
   $data['webform']['table']['join'] = array(
     'node' => array(
       'left_field' => 'nid',
       'field' => 'nid',
       'type' => 'INNER',
+    ),
+  );
+
+  // NID
+  $data['webform']['nid'] = array(
+    'title' => t('Node'),
+    'help' => t('The node this webform is part of.'),
+    'relationship' => array(
+      'base' => 'node',
+      'field' => 'nid',
+      'handler' => 'views_handler_relationship',
+      'label' => t('Node for webform'),
+    ),
+    'filter' => array(
+      'handler' => 'views_handler_filter_numeric',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_node_nid',
+      'name field' => 'title', // the field to display in the summary.
+      'numeric' => TRUE,
+      'validate type' => 'nid',
     ),
   );
 
