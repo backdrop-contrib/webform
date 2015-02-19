@@ -2374,7 +2374,7 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
     // Check whether a previous submission was truncated. The length of the client form is not
     // estimated before submission because a) the determination may not be accurate for some
     // webform components and b) the error will be apparent upon submission.
-    webform_input_vars_check($form, $form_state);
+    webform_input_vars_check($form, $form_state, 'submitted');
 
     // Recursively add components to the form. The unfiltered version of the
     // form (typically used in Form Builder), includes all components.
@@ -4905,17 +4905,20 @@ function webform_clone_node_alter(&$node, $context) {
  *   Reference to the form, which will be changed if $parent_key is set.
  * @param array $form_state
  *   Form's state or NULL for no form state check.
+ * @param string $detect_key
+ *   A key that will always be present in the posted data when an actual form
+ *   submission has been made.
  * @param string parent_key
  *   Omit to not preflight the form, or the array key for the parent of where
  *   the preflight warning should be inserted into the form.
  */
-function webform_input_vars_check(&$form, $form_state, $parent_key = NULL) {
+function webform_input_vars_check(&$form, $form_state, $detect_key, $parent_key = NULL) {
   if (isset($parent_key)) {
     $form['#pre_render'] = array('webform_pre_render_input_vars');
     $form['#input_var_waring_parent'] = $parent_key;
   }
-  if (!empty($form_state['input']) && empty($form_state['input']['form_id'])) {
-    // A form was submitted with POST, but the form_build_id was missing. The most likely cause of this
+  if (!empty($form_state['input']) && key_exists($detect_key, $form_state['input']) && !key_exists('form_id', $form_state['input'])) {
+    // A form was submitted with POST, but the form_id was missing. The most likely cause of this
     // is that the POST was truncated because PHP exceeded its max_input_vars limit.
     $subs = array(
       '@count' => webform_count_terminals($_POST),
