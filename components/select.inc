@@ -553,7 +553,7 @@ function _webform_submit_select($component, $value) {
         // Checkboxes submit an integer value of 0 when unchecked. A checkbox
         // with a value of '0' is valid, so we can't use empty() here.
         if ($option_value === 0 && !$component['extra']['aslist'] && $component['extra']['multiple']) {
-          unset($value[$option_value]);
+          // Don't save unchecked values
         }
         else {
           $return[] = $option_value;
@@ -564,6 +564,11 @@ function _webform_submit_select($component, $value) {
       elseif ($component['extra']['other_option'] && module_exists('select_or_other') && $option_value != 'select_or_other') {
         $return[] = $option_value;
       }
+    }
+
+    // If no elements are selected, then save an empty string to indicate that this components should not be defaulted again
+    if (!$return) {
+      $return = array('');
     }
   }
   elseif (is_string($value)) {
