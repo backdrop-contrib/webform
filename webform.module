@@ -237,7 +237,7 @@ function webform_menu() {
     'load arguments' => array(3),
     'page callback' => 'webform_select_options_ajax',
     'access callback' => 'webform_node_update_access',
-    'access arguments' => array(1),
+    'access arguments' => array(3),
     'file' => 'components/select.inc',
     'type' => MENU_CALLBACK,
   );
