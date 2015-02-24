@@ -2272,6 +2272,11 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
     $submission = webform_get_submission($node->nid, $form_state['values']['details']['sid']);
   }
 
+  $finished = isset($submission->is_draft) ? (!$submission->is_draft) : 0;
+  $submit_button_text = $finished
+                          ? t('Save')
+                          : (empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text']));
+
   // Bind arguments to $form to make them available in theming and form_alter.
   $form['#node'] = $node;
   $form['#submission'] = $submission;
@@ -2397,7 +2402,6 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
     if ($preview && $page_num === $page_count) {
       $preview_submission = webform_submission_create($node, $user, $form_state, TRUE, $submission);
       $preview_message = $node->webform['preview_message'];
-      $submit_button_text = empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text']);
       if (strlen(trim(strip_tags($preview_message))) === 0) {
         $preview_message = t('Please review your submission. Your submission is not complete until you press the "!button" button!', array('!button' => $submit_button_text));
       }
@@ -2435,7 +2439,7 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
     );
     $form['details']['finished'] = array(
       '#type' => 'hidden',
-      '#value' => isset($submission->is_draft) ? (!$submission->is_draft) : 0,
+      '#value' => $finished,
     );
 
     // Add process functions to remove the IDs forced upon buttons and wrappers.
@@ -2481,9 +2485,7 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
     if ($page_num == $page_count) {
       $form['actions']['submit'] = array(
         '#type' => 'submit',
-        '#value' => ($form['details']['finished']['#value'])
-                        ? t('Save')
-                        : (empty($node->webform['submit_text']) ? t('Submit') : t($node->webform['submit_text'])),
+        '#value' => $submit_button_text,
         '#weight' => 10,
         '#attributes' => array(
           'class' => array('webform-submit', 'button-primary'),
