@@ -23,7 +23,8 @@ function webform_drush_command() {
       'range-latest' => 'Integer specifying the latest X submissions will be downloaded. Used if "range-type" is "latest" or no other range options are provided.',
       'range-start' => 'Alternative to "start" option. The submission ID at which to start exporting. Used if "range-type" is "range" or no other range options are provided.',
       'range-end' => 'Alternative to "end" option. The submission ID at which to end exporting. Used if "range-type" is "range" or no other range options are provided.',
-      'batch-size' => 'The size of batches in rows (default 10000). If encoutering out of memory errors, set this number lower to export fewer submissions per batch.',
+      'completion-type' => 'Submissions to be included: "finished", "draft" or "all" (default).', 
+      'batch-size' => 'The size of batches in rows (default 10000). If encountering out of memory errors, set this number lower to export fewer submissions per batch.',
       'skip-header' => 'Skip output of header rows (defaults to printing header)',
     ),
     'aliases' => array('wfx'),
@@ -49,7 +50,7 @@ function webform_drush_command() {
  */
 function drush_webform_export($nid = FALSE, $file_name = NULL, $batch_number = NULL) {
   if (!$nid) {
-    return drush_set_error('The node ID of the webform you want to export is required');
+    return drush_set_error('The node ID of the webform you want to export is required.');
   }
 
   module_load_include('inc', 'webform', 'includes/webform.submissions');
@@ -88,6 +89,12 @@ function drush_webform_export($nid = FALSE, $file_name = NULL, $batch_number = N
     else {
       $options['range']['range_type'] = 'all';
     }
+  }
+  
+  // Get the preferred completion type
+  $options['range']['completion_type'] = drush_get_option('completion-type', NULL); 
+  if (isset($options['range']['completion_type']) && !in_array($options['range']['completion_type'], array('finished', 'draft', 'all'))) {
+    return drush_set_error('Unsupported completion-type. The available options are "finished", "draft", or "all".');
   }
 
   // Set the export options.
