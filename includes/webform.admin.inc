@@ -201,6 +201,17 @@ function webform_admin_settings() {
     ),
   );
 
+  $form['advanced']['webform_export_wordwrap'] = array(
+    '#type' => 'radios',
+    '#title' => t('Export word-wrap'),
+    '#options' => array(
+      '0' => t('Only text containing return characters'),
+      '1' => t('All text'),
+    ),
+    '#default_value' => webform_variable_get('webform_export_wordwrap'),
+    '#description' => t('Some export formats, such as Microsoft Excel, support word-wrapped text cells.'),
+  );
+
   $form['advanced']['webform_submission_access_control']  = array(
     '#type' => 'radios',
     '#title' => t('Submission access control'),
