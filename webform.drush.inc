@@ -16,7 +16,7 @@ function webform_drush_command() {
       'format' => 'The exporter format to use. Out-of-the-box this may be "delimited" or "excel".',
       'delimiter' => 'Delimiter between columns (defaults to site-wide setting). This option may need to be wrapped in quotes. i.e. --delimter="\t".',
       'components' => 'Comma-separated list of components IDs to include in the export. May also include the built-in special options "serial", "sid", "time", "draft", "ip_address", "uid", and "username".',
-      'header-keys' => 'Integer 0 or 1 value. Set to 1 to print header components by their field keys instead of labels.',
+      'header-keys' => 'Integer -1 for none, 0 for label (default) or 1 for field key.',
       'select-keys' => 'Integer 0 or 1 value. Set to 1 to print select list values by their field keys instead of labels.',
       'select-format' => 'Set to "separate" (default) or "compact" to determine how select list values are exported.',
       'range-type' => 'To export a specific range of submissions, specify one of the following range types: "all", "new", "latest", or "range".',
@@ -25,7 +25,6 @@ function webform_drush_command() {
       'range-end' => 'Alternative to "end" option. The submission ID at which to end exporting. Used if "range-type" is "range" or no other range options are provided.',
       'completion-type' => 'Submissions to be included: "finished", "draft" or "all" (default).', 
       'batch-size' => 'The size of batches in rows (default 10000). If encountering out of memory errors, set this number lower to export fewer submissions per batch.',
-      'skip-header' => 'Skip output of header rows (defaults to printing header)',
     ),
     'aliases' => array('wfx'),
   );

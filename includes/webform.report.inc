@@ -410,6 +410,7 @@ function webform_results_download_form($form, &$form_state, $node) {
     '#type' => 'radios',
     '#title' => t('Column header format'),
     '#options' => array(
+      -1 => t('None'),
       0 => t('Label'),
       1 => t('Field Key'),
     ),
@@ -803,7 +804,10 @@ function webform_results_export($node, $format = 'delimited', $options = array()
   $col_count = 0;
   $headers = webform_results_download_headers($node, $options);
   foreach ($headers as $row) {
-    $exporter->add_row($handle, $row, $row_count);
+    // Output header if header_keys is non-negative. -1 means no headers.
+    if ($options['header_keys'] >= 0) {
+      $exporter->add_row($handle, $row, $row_count);
+    }
     $row_count++;
     $col_count = count($row) > $col_count ? count($row) : $col_count;
   }
@@ -1214,7 +1218,10 @@ function webform_results_batch_headers($node, $format = 'delimited', $options = 
   $row_count = 0;
   $col_count = 0;
   foreach ($headers as $row) {
-    $exporter->add_row($handle, $row, $row_count);
+    // Output header if header_keys is non-negative. -1 means no headers.
+    if ($options['header_keys'] >= 0) {
+      $exporter->add_row($handle, $row, $row_count);
+    }
     $row_count++;
     $col_count = count($row) > $col_count ? count($row) : $col_count;
   }
