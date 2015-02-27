@@ -83,7 +83,7 @@ class webform_exporter_excel_xlsx extends webform_exporter {
       }
       else {
         $output .= '<c r="' . $cell_position . '" t="inlineStr"' . (strpos($value, "\n") === FALSE ? '' : ' s="4"') . '><is><t>';
-        $output .= htmlspecialchars($value, ENT_QUOTES);
+        $output .= htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
         $output .= '</t></is></c>';
       }
 
