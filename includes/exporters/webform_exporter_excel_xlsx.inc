@@ -17,11 +17,17 @@ class webform_exporter_excel_xlsx extends webform_exporter {
     $output = '<row>';
     $utc_timezone = new DateTimeZone('UTC');
     foreach ($data as $key => $value) {
+      // Strip UTF8 characters that are not legal in XML files.
+      // See http://www.w3.org/TR/xml/#charsets
+      // See http://stackoverflow.com/questions/3466035/how-to-skip-invalid-characters-in-xml-file-using-php
+      // Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+      $value = preg_replace('/[^\x{0009}\x{000a}\x{000d}\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}]+/u', '', $value);
+
       $cell_position = $col . $row;
-      if (empty($value) && strlen($value) === 0) {
+      if (strlen($value) === 0) {
         // Skip empty cells.
       }
-      elseif (is_numeric($value)) {
+      elseif (is_numeric($value) && $value[0] !== '+') {
         $output .= '<c r="' . $cell_position . '"><v>';
         $output .= $value;
         $output .= '</v></c>';
