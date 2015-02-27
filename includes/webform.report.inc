@@ -807,8 +807,8 @@ function webform_results_export($node, $format = 'delimited', $options = array()
     // Output header if header_keys is non-negative. -1 means no headers.
     if ($options['header_keys'] >= 0) {
       $exporter->add_row($handle, $row, $row_count);
+      $row_count++;
     }
-    $row_count++;
     $col_count = count($row) > $col_count ? count($row) : $col_count;
   }
 
@@ -1221,8 +1221,8 @@ function webform_results_batch_headers($node, $format = 'delimited', $options = 
     // Output header if header_keys is non-negative. -1 means no headers.
     if ($options['header_keys'] >= 0) {
       $exporter->add_row($handle, $row, $row_count);
+      $row_count++;
     }
-    $row_count++;
     $col_count = count($row) > $col_count ? count($row) : $col_count;
   }
   $context['results']['row_count'] = $row_count;
