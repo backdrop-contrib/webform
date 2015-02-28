@@ -1053,8 +1053,9 @@ function webform_webform_results_download_submission_information_data($token, $s
     case 'webform_sid':
       return $submission->sid;
     case 'webform_time':
+      // Return timestamp in local time (not UTC).
       if (!empty($options['iso8601_date'])) {
-        return format_date($submission->submitted, 'custom', 'Y-m-d\TH:i:s', 'UTC');
+        return format_date($submission->submitted, 'custom', 'Y-m-d\TH:i:s');
       }
       else {
         return format_date($submission->submitted, 'short');
