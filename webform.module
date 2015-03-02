@@ -3400,7 +3400,7 @@ function _webform_client_form_submit_flatten($node, $fieldset, $parent = 0) {
  */
 function _webform_confirmation($node) {
   drupal_set_title($node->title);
-  webform_set_breadcrumb($node);
+  webform_set_breadcrumb($node, TRUE);
   $sid = isset($_GET['sid']) ? $_GET['sid'] : NULL;
   return theme(array('webform_confirmation_' . $node->nid, 'webform_confirmation'), array('node' => $node, 'sid' => $sid));
 }
@@ -4491,30 +4491,65 @@ function webform_disable_page_cache() {
 
 /**
  * Set the necessary breadcrumb for the page we are on.
+ *
+ * @param object $node
+ *   The loaded webform node.
+ * @param boolean|object $submission
+ *   The submission if the current page is viewing or dealing with a submission,
+ *   or TRUE to just include the webform node in the breadcrumbs (used for
+ *   the submission completion confirmation page), or NULL for no extra
+ *   processing
  */
 function webform_set_breadcrumb($node, $submission = NULL) {
-  $breadcrumb = drupal_get_breadcrumb();
+  $node_path = "node/{$node->nid}";
 
-  if (isset($node)) {
-    $webform_breadcrumb = array();
-    $webform_breadcrumb[] = empty($breadcrumb) ? l(t('Home'), '<front>') : array_shift($breadcrumb);
-    $webform_breadcrumb[] = $node_link = l($node->title, 'node/' . $node->nid);
-    if (isset($submission)) {
-      $last_link = array_shift($breadcrumb);
-      if (webform_results_access($node)) {
-        $webform_breadcrumb[] = l(t('Webform results'), 'node/' . $node->nid . '/webform-results');
+  // Set the href of the current menu item to be the node's path. This has two
+  // effects. The active trail will be to the node's prefered menu tree location,
+  // expanding the menu as appropriate. And the breadcrumbs will be set as if
+  // the current page were under the node's preferred location.
+  // Note that menu_tree_set_path() could be used to set the path for the menu,
+  // but it will not affect the breadcrumbs when the webform is not in the
+  // default menu.
+  menu_set_item(NULL, array('href' => $node_path) + menu_get_item());
+
+  if ($submission) {
+    $breadcrumb = menu_get_active_breadcrumb();
+
+    // Append the node title (or its menu name), in case it isn't in the path already.
+    $active_trail = menu_get_active_trail();
+    $last_active = end($active_trail);
+    $breadcrumb[] = $last_active['href'] === $node_path && !empty($last_active['in_active_trail'])
+                      ? l($last_active['title'], $node_path, $last_active['localized_options'])
+                      : l($node->title, $node_path);
+
+    // Setting the current menu href will cause the submission title and current
+    // tab (if not the default tab) to be added to the active path when the
+    // webform is in the default location in the menu (node/NID). The title
+    // is desirable, but the tab name (e.g. Edit or Delete) isn't.
+    if (preg_match('/href=".*"/', end($breadcrumb), $matches)) {
+      foreach ($breadcrumb as $index => $link) {
+        if (stripos($link, $matches[0]) !== FALSE) {
+          $breadcrumb = array_slice($breadcrumb, 0, $index + 1);
+          break;
+        }
       }
-      elseif (user_access('access own webform results')) {
-        $webform_breadcrumb[] = l(t('Submissions'), 'node/' . $node->nid . '/submissions');
-      }
-      if (isset($last_link) && $last_link != $node_link) {
-        $webform_breadcrumb[] = $last_link;
-      }
-    }
-    $breadcrumb = $webform_breadcrumb;
   }
 
-  drupal_set_breadcrumb($breadcrumb);
+    // If the user is dealing with a submission, then the breadcrumb should
+    // be fudged to allow them to return to a likely list of webforms.
+    // Note that this isn't necessarily where they came from, but it's the
+    // best guess available.
+    if (is_object($submission)) {
+      if (webform_results_access($node)) {
+        $breadcrumb[] = l(t('Webform results'), $node_path . '/webform-results');
+      }
+      elseif (user_access('access own webform results')) {
+        $breadcrumb[] = l(t('Submissions'), $node_path . '/submissions');
+      }
+    }
+
+    drupal_set_breadcrumb($breadcrumb);
+  }
 }
 
 /**
