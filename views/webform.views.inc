@@ -440,8 +440,8 @@ function webform_views_data_alter(&$data) {
   );
 
   $data['views']['webform_result'] = array(
-    'title' => t('Result summary with additional tokens'),
-    'help' => t('Shows result summary, for example the items per page (and links to change the items per page).'),
+    'title' => t('Result summary with an additional token to change the items/page'),
+    'help' => t('Shows result summary, for example the items per page, plus links to change the items per page.'),
     'area' => array(
       'handler' => 'webform_handler_area_result_pager',
     ),
