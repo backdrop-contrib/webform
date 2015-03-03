@@ -501,8 +501,7 @@ function webform_views_pre_view($view, $display_id, $args) {
             'id' => $new_id,
             'field' => 'value',
             'table' => 'webform_submissions',
-            'label' => $component['name'], // CHECK FOR XSS TODO
-            'format' => 'plain',
+            'label' => $component['name'],
             'webform_nid' => $node->nid,
             'webform_cid' => $component['cid'],
             'exclude' => 0,
