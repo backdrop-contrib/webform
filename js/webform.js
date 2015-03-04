@@ -343,8 +343,15 @@ Drupal.webform.stringValue = function(element, existingValue) {
       });
     }
   }
-  else if (existingValue) {
-    value = existingValue;
+  else {
+    switch ($.type(existingValue)) {
+      case 'array':
+        value = existingValue;
+        break;
+      case 'string':
+        value.push(existingValue);
+        break;
+    }
   }
 
   return value;
@@ -365,8 +372,13 @@ Drupal.webform.dateValue = function(element, existingValue) {
     return (year !== '' && month !== '' && day !== '') ? Date.UTC(year, month, day) / 1000 : false;
   }
   else {
-    var existingValue = existingValue.length ? existingValue[0].split('-') : existingValue;
-    return existingValue.length ? Date.UTC(existingValue[0], existingValue[1], existingValue[2]) / 1000 : false;
+    if ($.type(existingValue) === 'array' && existingValue.length) {
+      existingValue = existingValue[0];
+    }
+    if ($.type(existingValue) === 'string') {
+      existingValue = existingValue.split('-');
+    }
+    return existingValue.length === 3 ? Date.UTC(existingValue[0], existingValue[1], existingValue[2]) / 1000 : false;
   }
 };
 
@@ -390,8 +402,13 @@ Drupal.webform.timeValue = function(element, existingValue) {
     return (hour !== '' && minute !== '') ? Date.UTC(1970, 0, 1, hour, minute) / 1000 : false;
   }
   else {
-    var existingValue = existingValue.length ? existingValue[0].split(':') : existingValue;
-    return existingValue.length ? Date.UTC(1970, 0, 1, existingValue[0], existingValue[1]) / 1000 : false;
+    if ($.type(existingValue) === 'array' && existingValue.length) {
+      existingValue = existingValue[0];
+    }
+    if ($.type(existingValue) === 'string') {
+      existingValue = existingValue.split(':');
+    }
+    return existingValue.length >= 2 ? Date.UTC(1970, 0, 1, existingValue[0], existingValue[1]) / 1000 : false;
   }
 };
 

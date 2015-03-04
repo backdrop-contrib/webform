@@ -2364,6 +2364,9 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
       }
     }
 
+    // Allow values from other pages to be sent to browser for conditionals.
+    $form['#conditional_values'] = $input_values;
+
     if ($page_count > 1) {
       $page_labels = webform_page_labels($node, $form_state);
       $form['progressbar'] = array(
@@ -3418,7 +3421,7 @@ function template_preprocess_webform_form(&$vars) {
 
   if (!empty($vars['form']['#node']->webform['conditionals'])) {
     module_load_include('inc', 'webform', 'includes/webform.conditionals');
-    $submission_data = isset($vars['form']['#parameters'][1]['storage']['submitted']) ? $vars['form']['#parameters'][1]['storage']['submitted'] : array();
+    $submission_data = isset($vars['form']['#conditional_values']) ? $vars['form']['#conditional_values'] : array();
     $settings = webform_conditional_prepare_javascript($vars['form']['#node'], $submission_data);
     drupal_add_js(array('webform' => array('conditionals' => array('webform-client-form-' . $vars['nid'] => $settings))), 'setting');
   }
