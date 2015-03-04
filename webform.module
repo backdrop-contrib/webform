@@ -1822,11 +1822,6 @@ function webform_node_view($node, $view_mode) {
     return;
   }
 
-  // Do not include the form in the search index if indexing is disabled.
-  if (module_exists('search') && $view_mode == 'search_index' && !webform_variable_get('webform_search_index')) {
-    return;
-  }
-
   // If the webform is not set to display in this view mode, return early.
   $extra_fields = field_extra_fields_get_display('node', $node->type, $view_mode);
   if (empty($extra_fields['webform']['visible'])) {
@@ -4040,9 +4035,6 @@ function webform_variable_get($variable) {
       break;
     case 'webform_allowed_tags':
       $result = variable_get('webform_allowed_tags', array('a', 'em', 'strong', 'code', 'img'));
-      break;
-    case 'webform_search_index':
-      $result = variable_get('webform_search_index', 1);
       break;
     case 'webform_email_address_format':
       $result = variable_get('webform_email_address_format', 'long');
