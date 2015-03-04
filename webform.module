@@ -1827,6 +1827,12 @@ function webform_node_view($node, $view_mode) {
     return;
   }
 
+  // If the webform is not set to display in this view mode, return early.
+  $extra_fields = field_extra_fields_get_display('node', $node->type, $view_mode);
+  if (empty($extra_fields['webform']['visible'])) {
+    return;
+  }
+
   $submission = FALSE;
   $submission_count = 0;
   $page = node_is_page($node);
@@ -1837,7 +1843,8 @@ function webform_node_view($node, $view_mode) {
   $closed = FALSE;
   $allowed_roles = array();
 
-  // If a teaser, tell the form to load subsequent pages on the node page.
+  // If a teaser, tell the form to load subsequent pages on the node page. A
+  // special exception is made for this view mode only.
   if ($view_mode == 'teaser' && !isset($node->webform['action'])) {
     $query = array_diff_key($_GET, array('q' => ''));
     $node->webform['action'] = url('node/' . $node->nid, array('query' => $query));
