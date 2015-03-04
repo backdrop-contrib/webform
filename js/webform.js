@@ -118,8 +118,8 @@ Drupal.webform.conditionalCheck = function(e) {
 
 
   if (settings.sourceMap[triggerElementKey]) {
-    $.each(settings.sourceMap[triggerElementKey], function(n, rgid) {
-      var ruleGroup = settings.ruleGroups[rgid];
+    $.each(settings.sourceMap[triggerElementKey], function(n, rgid_key) {
+      var ruleGroup = settings.ruleGroups[rgid_key];
 
       // Perform the comparison callback and build the results for this group.
       var conditionalResult = true;
