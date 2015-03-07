@@ -158,16 +158,29 @@ Drupal.webform.conditionalCheck = function(e) {
 
       var $target = $form.find('.' + ruleGroup['target']);
       var $targetElements;
-      if (showComponent) {
-        $targetElements = $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled');
-        $.fn.prop ? $targetElements.prop('disabled', false) : $targetElements.removeAttr('disabled');
-        $target.show();
+      if (showComponent != $target.is(':visible')) {
+        if (showComponent) {
+          $targetElements = $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled');
+          $.fn.prop ? $targetElements.prop('disabled', false) : $targetElements.removeAttr('disabled');
+          $target.show();
+        }
+        else {
+          $targetElements = $target.find(':input').addClass('webform-conditional-disabled');
+          $.fn.prop ? $targetElements.prop('disabled', true) : $targetElements.attr('disabled', true);
+          $target.hide();
+        }
+        // Trigger change if not already in recurive infinite loop
+        var target = $target.get(0);
+        target.changeDepth = target.changeDepth || 0;
+        if (target.changeDepth < 10) {
+          target.changeDepth++;
+          $target.trigger('change');
+          target.changeDepth--;
+        } else {
+          alert(Drupal.t("An infinite loop was detected in this webform's conditionals. Contact the administrator."));
+        }
       }
-      else {
-        $targetElements = $target.find(':input').addClass('webform-conditional-disabled');
-        $.fn.prop ? $targetElements.prop('disabled', true) : $targetElements.attr('disabled', true);
-        $target.hide();
-      }
+
     });
   }
 
@@ -322,25 +335,27 @@ Drupal.webform.conditionalOperatorTimeAfter = function(element, existingValue, r
  */
 Drupal.webform.stringValue = function(element, existingValue) {
   var value = [];
-
   if (element) {
-    // Checkboxes and radios.
-    $(element).find('input[type=checkbox]:checked,input[type=radio]:checked').each(function() {
-      value.push(this.value);
-    });
-    // Select lists.
-    if (!value.length) {
-      var selectValue = $(element).find('select').val();
-      if (selectValue) {
-        value.push(selectValue);
-      }
-    }
-    // Simple text fields. This check is done last so that the select list in
-    // select-or-other fields comes before the "other" text field.
-    if (!value.length) {
-      $(element).find('input:not([type=checkbox],[type=radio]),textarea').each(function() {
+    var $element = $(element);
+    if ($element.is(':visible')) {
+      // Checkboxes and radios.
+      $element.find('input[type=checkbox]:checked,input[type=radio]:checked').each(function() {
         value.push(this.value);
       });
+      // Select lists.
+      if (!value.length) {
+        var selectValue = $element.find('select').val();
+        if (selectValue) {
+          value.push(selectValue);
+        }
+      }
+      // Simple text fields. This check is done last so that the select list in
+      // select-or-other fields comes before the "other" text field.
+      if (!value.length) {
+        $element.find('input:not([type=checkbox],[type=radio]),textarea').each(function() {
+          value.push(this.value);
+        });
+      }
     }
   }
   else {
@@ -353,7 +368,6 @@ Drupal.webform.stringValue = function(element, existingValue) {
         break;
     }
   }
-
   return value;
 };
 
@@ -361,15 +375,21 @@ Drupal.webform.stringValue = function(element, existingValue) {
  * Utility function to calculate a millisecond timestamp from a time field.
  */
 Drupal.webform.dateValue = function(element, existingValue) {
+  var value = false;
   if (element) {
-    var day = $(element).find('[name*=day]').val();
-    var month = $(element).find('[name*=month]').val();
-    var year = $(element).find('[name*=year]').val();
-    // Months are 0 indexed in JavaScript.
-    if (month) {
-      month--;
+    var $element = $(element);
+    if ($element.is(':visible')) {
+      var day = $element.find('[name*=day]').val();
+      var month = $element.find('[name*=month]').val();
+      var year = $element.find('[name*=year]').val();
+      // Months are 0 indexed in JavaScript.
+      if (month) {
+        month--;
+      }
+      if (year !== '' && month !== '' && day !== '') {
+        value = Date.UTC(year, month, day) / 1000;
+      }
     }
-    return (year !== '' && month !== '' && day !== '') ? Date.UTC(year, month, day) / 1000 : false;
   }
   else {
     if ($.type(existingValue) === 'array' && existingValue.length) {
@@ -378,28 +398,37 @@ Drupal.webform.dateValue = function(element, existingValue) {
     if ($.type(existingValue) === 'string') {
       existingValue = existingValue.split('-');
     }
-    return existingValue.length === 3 ? Date.UTC(existingValue[0], existingValue[1], existingValue[2]) / 1000 : false;
+    if (existingValue.length === 3) {
+      value = Date.UTC(existingValue[0], existingValue[1], existingValue[2]) / 1000;
+    }
   }
+  return value;
 };
 
 /**
  * Utility function to calculate a millisecond timestamp from a time field.
  */
 Drupal.webform.timeValue = function(element, existingValue) {
+  var value = false;
   if (element) {
-    var hour = $(element).find('[name*=hour]').val();
-    var minute = $(element).find('[name*=minute]').val();
-    var ampm = $(element).find('[name*=ampm]:checked').val();
+    var $element = $(element);
+    if ($element.is(':visible')) {
+      var hour = $element.find('[name*=hour]').val();
+      var minute = $element.find('[name*=minute]').val();
+      var ampm = $element.find('[name*=ampm]:checked').val();
 
-    // Convert to integers if set.
-    hour = (hour === '') ? hour : parseInt(hour);
-    minute = (minute === '') ? minute : parseInt(minute);
+      // Convert to integers if set.
+      hour = (hour === '') ? hour : parseInt(hour);
+      minute = (minute === '') ? minute : parseInt(minute);
 
-    if (hour !== '') {
-      hour = (hour < 12 && ampm == 'pm') ? hour + 12 : hour;
-      hour = (hour === 12 && ampm == 'am') ? 0 : hour;
+      if (hour !== '') {
+        hour = (hour < 12 && ampm == 'pm') ? hour + 12 : hour;
+        hour = (hour === 12 && ampm == 'am') ? 0 : hour;
+      }
+      if (hour !== '' && minute !== '') {
+        value = Date.UTC(1970, 0, 1, hour, minute) / 1000;
+      }
     }
-    return (hour !== '' && minute !== '') ? Date.UTC(1970, 0, 1, hour, minute) / 1000 : false;
   }
   else {
     if ($.type(existingValue) === 'array' && existingValue.length) {
@@ -408,8 +437,11 @@ Drupal.webform.timeValue = function(element, existingValue) {
     if ($.type(existingValue) === 'string') {
       existingValue = existingValue.split(':');
     }
-    return existingValue.length >= 2 ? Date.UTC(1970, 0, 1, existingValue[0], existingValue[1]) / 1000 : false;
+    if (existingValue.length >= 2) {
+      value = Date.UTC(1970, 0, 1, existingValue[0], existingValue[1]) / 1000;
+    }
   }
+  return value;
 };
 
 })(jQuery);
