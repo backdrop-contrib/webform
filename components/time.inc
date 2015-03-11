@@ -138,7 +138,7 @@ function webform_expand_time($element) {
       $timezone_name = isset($GLOBALS['user']->timezone) ? $GLOBALS['user']->timezone : 'UTC';
     }
     else {
-      $timezone_name = variable_get('date_default_timezone', 'UTC');
+      $timezone_name = config_get('system.date', 'date_default_timezone');
     }
 
     $default_values = webform_date_array(webform_strtodate('c', $element['#default_value'], $timezone_name), 'time');

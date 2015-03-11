@@ -4670,7 +4670,7 @@ function webform_strtodate($format, $string, $timezone_name = NULL) {
   }
   // If the timezone is still empty or not set, use the site timezone.
   if (empty($timezone_name) || $timezone_name == 'user') {
-    $timezone_name = variable_get('date_default_timezone', 'UTC');
+    $timezone_name = config_get('system.date', 'date_default_timezone');
   }
 
   if (!empty($timezone_name) && class_exists('DateTimeZone')) {
