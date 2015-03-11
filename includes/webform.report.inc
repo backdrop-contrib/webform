@@ -746,7 +746,7 @@ function webform_results_download_form_submit(&$form, &$form_state) {
     $batch_size = min($batch_size, 10000);
 
     // Allow a non-UI configuration to override the batch size.
-    $batch_size = variable_get('webform_export_batch_size', $batch_size);
+    $batch_size = config_get('webform.settings', 'webform_export_batch_size');
     
     $options['range']['batch_size'] = $batch_size;
   }
@@ -762,7 +762,7 @@ function webform_results_download_form_submit(&$form, &$form_state) {
  * Returns a temporary export filename.
  */
 function _webform_export_tempname() {
-  return drupal_tempnam(variable_get('webform_export_path', 'temporary://'), 'webform_');
+  return drupal_tempnam(config_get('webform.settings', 'webform_export_path'));
 }
 
 /**

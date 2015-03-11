@@ -437,8 +437,8 @@ function webform_menu_load($nid) {
     return FALSE;
   }
   $node = node_load($nid);
-  if (!isset($node->type) || !variable_get('webform_node_' . $node->type, FALSE)) {
-    return FALSE;
+  if (!isset($node->type) || !config_get('webform.settings', 'webform_node_' . $node->type, FALSE)) {
+    return FALSE;    
   }
   return $node;
 }
@@ -672,9 +672,9 @@ function webform_node_update_access($node, $account = NULL) {
 
 /**
  * Implements hook_admin_paths().
- */
+ */   
 function webform_admin_paths() {
-  if (variable_get('node_admin_theme')) {
+  if (config_get('webform.settings', 'node_admin_theme')) {
     return array(
       'node/*/webform' => TRUE,
       'node/*/webform/*' => TRUE,
@@ -1355,7 +1355,7 @@ function webform_file_download($uri) {
 function webform_node_types() {
   $types = array();
   foreach (node_type_get_names() as $type => $name) {
-    if (variable_get('webform_node_' . $type, FALSE)) {
+    if (config_get('webform.settings', 'webform_node_' . $type)) {
       $types[] = $type;
     }
   }
@@ -1373,7 +1373,7 @@ function webform_node_type_delete($info) {
  * Implements hook_node_insert().
  */
 function webform_node_insert($node) {
-  if (!variable_get('webform_node_' . $node->type, FALSE)) {
+  if (!config_get('webform.settings', 'webform_node_' . $node->type)) {
     return;
   }
 
@@ -1443,7 +1443,7 @@ function webform_node_insert($node) {
  * Implements hook_node_update().
  */
 function webform_node_update($node) {
-  if (!variable_get('webform_node_' . $node->type, FALSE)) {
+  if (!config_get('webform.settings', 'webform_node_' . $node->type)) {
     return;
   }
 
@@ -1554,7 +1554,7 @@ function webform_node_update($node) {
  * Implements hook_node_delete().
  */
 function webform_node_delete($node) {
-  if (!variable_get('webform_node_' . $node->type, FALSE)) {
+  if (!config_get('webform.settings', 'webform_node_' . $node->type)) {
     return;
   }
 
@@ -1624,7 +1624,7 @@ function webform_node_defaults() {
  * Implements hook_node_prepare().
  */
 function webform_node_prepare($node) {
-  if (variable_get('webform_node_' . $node->type, FALSE) && !isset($node->webform)) {
+  if (config_get('webform.settings', 'webform_node_' . $node->type) && !isset($node->webform)) {
     $node->webform = webform_node_defaults();
   }
 }
@@ -1750,8 +1750,8 @@ function webform_user_role_delete($role) {
  * Implements hook_form_alter().
  */
 function webform_form_alter(&$form, $form_state, $form_id) {
-  $matches = array();
-  if (isset($form['#node']->type) && $form_id == $form['#node']->type . '_node_form' && variable_get('webform_node_' . $form['#node']->type, FALSE)) {
+  $matches = array();   
+  if (isset($form['#node']->type) && $form_id == $form['#node']->type . '_node_form' && config_get('webform.settings', 'webform_node_' . $form['#node']->type)) {
     $node = $form['#node'];
     // Preserve all Webform options currently set on the node.
     $form['webform'] = array(
@@ -1787,7 +1787,7 @@ function webform_form_node_type_form_alter(&$form, $form_state) {
       '#title' => t('Enable webform functionality'),
       '#description' => t('Allows a form to be attached to content. This will add tabs for "Webform" and "Results" on all content of this type.'),
       '#weight' => 0,
-      '#default_value' => variable_get('webform_node_' . $form['#node_type']->type, FALSE),
+      '#default_value' => config_get('webform.settings', 'webform_node_' . $form['#node_type']->type),
       '#attributes' => array(
         'data-enabled-description' => t('Enabled'),
         'data-disabled-description' => t('Disabled'),
@@ -1813,7 +1813,7 @@ function webform_form_submit($form, &$form_state) {
 function webform_node_view($node, $view_mode) {
   global $user;
 
-  if (!variable_get('webform_node_' . $node->type, FALSE)) {
+  if (!config_get('webform.settings', 'webform_node_' . $node->type)) {
     return;
   }
 
@@ -1822,9 +1822,8 @@ function webform_node_view($node, $view_mode) {
     return;
   }
 
-  // If the webform is not set to display in this view mode, return early.
-  $extra_fields = field_extra_fields_get_display('node', $node->type, $view_mode);
-  if (empty($extra_fields['webform']['visible'])) {
+  // Do not include the form in the search index if indexing is disabled.
+  if (module_exists('search') && $view_mode == 'search_index' && !webform_variable_get('webform_search_index')) {
     return;
   }
 
@@ -1838,8 +1837,7 @@ function webform_node_view($node, $view_mode) {
   $closed = FALSE;
   $allowed_roles = array();
 
-  // If a teaser, tell the form to load subsequent pages on the node page. A
-  // special exception is made for this view mode only.
+  // If a teaser, tell the form to load subsequent pages on the node page.
   if ($view_mode == 'teaser' && !isset($node->webform['action'])) {
     $query = array_diff_key($_GET, array('q' => ''));
     $node->webform['action'] = url('node/' . $node->nid, array('query' => $query));
@@ -1857,7 +1855,7 @@ function webform_node_view($node, $view_mode) {
     $enabled = FALSE;
   }
   else {
-    // Check if the user's role can submit this webform.
+    // Check if the user's role can submit this webform.   
     if (webform_variable_get('webform_submission_access_control')) {
       foreach ($node->webform['roles'] as $rid) {
         $allowed_roles[$rid] = isset($user->roles[$rid]) ? TRUE : FALSE;
@@ -2015,11 +2013,11 @@ function theme_webform_view_messages($variables) {
       // No roles are allowed to submit the form.
       $message = t('Submissions for this form are closed.');
     }
-    elseif ($user->uid == 0) {
+    elseif ($user->uid == 0) {    
       // The user is anonymous, so (at least) needs to log in to view the form.
       $login = url('user/login', array('query' => drupal_get_destination()));
       $register = url('user/register', array('query' => drupal_get_destination()));
-      if (variable_get('user_register', 1) == 0) {
+      if (config_get('webform.settings', 'user_register')) {
         $message = t('You must <a href="!login">login</a> to view this form.', array('!login' => $login));
       }
       else {
@@ -2231,7 +2229,7 @@ function webform_block_save($delta = '', $edit = array()) {
   );
   // We store settings for multiple blocks in just one variable
   // so we merge the existing settings with the new ones before save.
-  variable_set('webform_blocks', array_merge($settings, $new_settings));
+  config_set('webform.settings', 'webform_blocks', array_merge($settings, $new_settings));
 }
 
 /**
@@ -2363,9 +2361,6 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
         $input_values[$cid] = is_array($data) ? $data : array($data);
       }
     }
-
-    // Allow values from other pages to be sent to browser for conditionals.
-    $form['#conditional_values'] = $input_values;
 
     if ($page_count > 1) {
       $page_labels = webform_page_labels($node, $form_state);
@@ -3421,7 +3416,7 @@ function template_preprocess_webform_form(&$vars) {
 
   if (!empty($vars['form']['#node']->webform['conditionals'])) {
     module_load_include('inc', 'webform', 'includes/webform.conditionals');
-    $submission_data = isset($vars['form']['#conditional_values']) ? $vars['form']['#conditional_values'] : array();
+    $submission_data = isset($vars['form']['#parameters'][1]['storage']['submitted']) ? $vars['form']['#parameters'][1]['storage']['submitted'] : array();
     $settings = webform_conditional_prepare_javascript($vars['form']['#node'], $submission_data);
     drupal_add_js(array('webform' => array('conditionals' => array('webform-client-form-' . $vars['nid'] => $settings))), 'setting');
   }
@@ -4031,82 +4026,85 @@ function webform_page_labels($node, $form_state = array()) {
 function webform_variable_get($variable) {
   switch ($variable) {
     case 'webform_blocks':
-      $result = variable_get('webform_blocks', array());
+      $result = config_get('webform.settings', 'webform_blocks');
       break;
     case 'webform_tracking_mode':
-      $result = variable_get('webform_tracking_mode', 'cookie');
+      $result = config_get('webform.settings', 'webform_tracking_mode');
       break;
     case 'webform_allowed_tags':
-      $result = variable_get('webform_allowed_tags', array('a', 'em', 'strong', 'code', 'img'));
+      $result = config_get('webform.settings', 'webform_allowed_tags');
+      break;
+    case 'webform_search_index':
+      $result = config_get('webform.settings', 'webform_search_index');
       break;
     case 'webform_email_address_format':
-      $result = variable_get('webform_email_address_format', 'long');
+      $result = config_get('webform.settings', 'webform_email_address_format');
       break;
     case 'webform_default_from_name':
-      $result = variable_get('webform_default_from_name', variable_get('site_name', ''));
+      $result = config_get('webform.settings', 'webform_default_from_name');
       break;
     case 'webform_default_from_address':
-      $result = variable_get('webform_default_from_address', variable_get('site_mail', ini_get('sendmail_from')));
+      $result = config_get('webform.settings', 'webform_default_from_address');
       break;
     case 'webform_default_subject':
-      $result = variable_get('webform_default_subject', t('Form submission from: [node:title]'));
+      $result = config_get('webform.settings', 'webform_default_subject');
       break;
     case 'webform_email_replyto':
-      $result = variable_get('webform_email_replyto', TRUE);
+      $result = config_get('webform.settings', 'webform_email_replyto');
       break;
     case 'webform_email_html_capable':
-      $result = variable_get('webform_email_html_capable', FALSE);
+      $result = config_get('webform.settings', 'webform_email_html_capable');
       break;
     case 'webform_default_format':
-      $result = variable_get('webform_default_format', 0);
+      $result = config_get('webform.settings', 'webform_default_format');
       break;
     case 'webform_format_override':
-      $result = variable_get('webform_format_override', 0);
+      $result = config_get('webform.settings', 'webform_format_override');
       break;
     case 'webform_email_select_max':
-      $result = variable_get('webform_email_select_max', 50);
+      $result = config_get('webform.settings', 'webform_email_select_max');
       break;
     case 'webform_node_types':
       $result = webform_node_types();
       break;
-    case 'webform_node_types_primary':
-      $result = variable_get('webform_node_types_primary', array('webform'));
+    case 'webform_node_types_primary':   
+      $result = config_get('webform.settings', 'webform_node_types_primary');
       break;
     case 'webform_export_format':
       module_load_include('inc', 'webform', 'includes/webform.export');
       $options = webform_export_list();
-      $result = variable_get('webform_export_format', 'excel');
+      $result = config_get('webform.settings', 'webform_export_format');
       $result = isset($options[$result]) ? $result : key($options);
       break;
     case 'webform_csv_delimiter':
-      $result = variable_get('webform_csv_delimiter', '\t');
+      $result = config_get('webform.settings', 'webform_csv_delimiter');
       break;
-    case 'webform_export_wordwrap':
-      $result = variable_get('webform_export_wordwrap', 0);
+    case 'webform_export_wordwrap':    
+      $result = config_get('webform.settings', 'webform_export_wordwrap');
       break;
     case 'webform_excel_legacy_exporter':
-      $result = variable_get('webform_excel_legacy_exporter', 0);
+      $result = config_get('webform.settings', 'webform_excel_legacy_exporter');
       break;
     case 'webform_progressbar_style':
-      $result = variable_get('webform_progressbar_style', array('progressbar_bar', 'progressbar_pagebreak_labels', 'progressbar_include_confirmation'));
+      $result = config_get('webform.settings', 'webform_progressbar_style');
       break;
     case 'webform_progressbar_label_first':
-      $result = variable_get('webform_progressbar_label_first', t('Start'));
+      $result = config_get('webform.settings', 'webform_progressbar_label_first');
       break;
     case 'webform_progressbar_label_confirmation':
-      $result = variable_get('webform_progressbar_label_confirmation', t('Complete'));
+      $result = config_get('webform.settings', 'webform_progressbar_label_confirmation');
       break;
     case 'webform_table':
-      $result = variable_get('webform_table', FALSE);
+      $result = config_get('webform.settings', 'webform_table');
       break;
     case 'webform_submission_access_control':
-      $result = variable_get('webform_submission_access_control', 1);
+      $result = config_get('webform.settings', 'webform_submission_access_control');
       break;
     case 'webform_update_batch_size':
-      $result = variable_get('webform_update_batch_size', 100);
+      $result = config_get('webform.settings', 'webform_update_batch_size');
       break;
     case 'webform_disabled_components':
-      $result = variable_get('webform_disabled_components', array());
+      $result = config_get('webform.settings', 'webform_disabled_components');
       break;
   }
   return $result;
@@ -4645,7 +4643,7 @@ function webform_date_string($array, $type = NULL) {
  */
 function webform_date_format($size = 'medium') {
     // Format date according to site's given format.
-    $format = variable_get('date_format_' . $size, 'D, m/d/Y - H:i');
+    $format = config_get('webform.settings', 'date_format_' . $size);
     $time = 'aABgGhHisueIOPTZ';
     $day_of_week = 'Dlw';
     $special = ',-: ';
@@ -4667,7 +4665,7 @@ function webform_strtodate($format, $string, $timezone_name = NULL) {
   global $user;
 
   // Adjust the time based on the user or site timezone.
-  if (variable_get('configurable_timezones', 1) && $timezone_name == 'user' && $user->uid) {
+  if (config_get('webform.settings', 'configurable_timezones') && $timezone_name == 'user' && $user->uid) {
     $timezone_name = isset($GLOBALS['user']->timezone) ? $GLOBALS['user']->timezone : 'UTC';
   }
   // If the timezone is still empty or not set, use the site timezone.

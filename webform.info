@@ -1,11 +1,11 @@
 ; $Id: $
 name = Webform
 description = Enables the creation of forms and questionnaires.
-core = 7.x
+backdrop = 1.x
+version = 1.x-1.x
 package = Webform
 configure = admin/config/content/webform
 php = 5.3
-dependencies[] = ctools
 dependencies[] = views
 test_dependencies[] = token
 

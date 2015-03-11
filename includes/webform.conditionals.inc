@@ -898,15 +898,14 @@ function webform_conditional_prepare_javascript($node, $submission_data) {
   );
   $operators = webform_conditional_operators();
   foreach ($node->webform['conditionals'] as $conditional) {
-    $rgid_key = 'rgid_' . $conditional['rgid'];
     // Assemble the main conditional group settings.
     if ($conditional['target_type'] == 'component') {
       $target_component = $node->webform['components'][$conditional['target']];
       $target_parents = webform_component_parent_keys($node, $target_component);
       $target_id = 'webform-component--' . str_replace('_', '-', implode('--', $target_parents));
-      $settings['ruleGroups'][$rgid_key]['target'] = $target_id;
-      $settings['ruleGroups'][$rgid_key]['andor'] = $conditional['andor'];
-      $settings['ruleGroups'][$rgid_key]['action'] = $conditional['action'];
+      $settings['ruleGroups'][$conditional['rgid']]['target'] = $target_id;
+      $settings['ruleGroups'][$conditional['rgid']]['andor'] = $conditional['andor'];
+      $settings['ruleGroups'][$conditional['rgid']]['action'] = $conditional['action'];
     }
     // Add on the list of rules to the conditional group.
     foreach ($conditional['rules'] as $rule) {
@@ -914,7 +913,6 @@ function webform_conditional_prepare_javascript($node, $submission_data) {
         $source_component = $node->webform['components'][$rule['source']];
         $source_parents = webform_component_parent_keys($node, $source_component);
         $source_id = 'webform-component--' . str_replace('_', '-', implode('--', $source_parents));
-        $rid_key = 'rid_' . $rule['rid'];
 
         // If this source has a value set, add that as a setting.
         if (isset($submission_data[$source_component['cid']])) {
@@ -932,8 +930,8 @@ function webform_conditional_prepare_javascript($node, $submission_data) {
           $callback = $operator_info['comparison prepare js'];
           $rule_settings['value'] = $callback($rule['value']);
         }
-        $settings['ruleGroups'][$rgid_key]['rules'][$rid_key] = $rule_settings;
-        $settings['sourceMap'][$source_id][$rgid_key] = $rgid_key;
+        $settings['ruleGroups'][$conditional['rgid']]['rules'][$rule['rid']] = $rule_settings;
+        $settings['sourceMap'][$source_id][$conditional['rgid']] = $conditional['rgid'];
       }
     }
   }

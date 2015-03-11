@@ -634,19 +634,36 @@ function webform_requirements($phase) {
   return $requirements;
 }
 
+
+
 /**
  * Implements hook_install().
  */
 function webform_install() {
-  module_load_include('inc', 'node', 'content_types');
+
+config_set('webform.settings', 'webform_allowed_tags', array('a', 'em', 'strong', 'code', 'img'));
+config_set('webform.settings', 'webform_default_from_name', config_get('system.core', 'site_name'));
+config_set('webform.settings', 'webform_default_from_address', config_get('system.core', 'site_mail'));
+config_set('webform.settings', 'webform_node_types_primary', array('webform'));
+config_set('webform.settings', 'webform_progressbar_style', array('progressbar_bar', 'progressbar_pagebreak_labels', 'progressbar_include_confirmation'));
+config_set('webform.settings', 'webform_disabled_components', array());
+config_set('webform.settings', 'webform_node_types', array('webform'));
+config_set('webform.settings', 'webform_disabled_components', array());
+config_set('webform.settings', 'file_directory_temp', file_directory_temp());
+
+config_set('webform.settings', 'webform_disabled_components', array());
+config_set('webform.settings', 'filter_default_format', filter_default_format());
+config_set('webform.settings', 'webform_disabled_components', array());
+
+module_load_include('inc', 'node', 'content_types');
   db_update('system')
     ->condition('name', 'webform')
     ->condition('type', 'module')
     ->fields(array('weight' => -1))
     ->execute();
 
-  // Optionally create the default webform type.
-  if (variable_get('webform_install_create_content_type', TRUE)) {
+  // Optionally create the default webform type.   
+  if (config_get('webform.settings', 'webform_install_create_content_type')) {
     $webform_type = array(
       'type' => 'webform',
       'name' => st('Webform'),
@@ -658,13 +675,13 @@ function webform_install() {
     );
     $webform_type = node_type_set_defaults($webform_type);
     node_type_save($webform_type);
-    if (variable_get('webform_install_add_body_field', FALSE)) {
+    if (config_get('webform.settings', 'webform_install_create_content_type')) {
       node_add_body_field($webform_type);
     }
     // Enable webform components by default on Webform nodes.
-    variable_set('webform_node_webform', TRUE);
+    config_set('webform.settings', 'webform_node_webform', TRUE);
     // Disable comments by default on Webform nodes.
-    variable_set('comment_webform', '0');
+    config_set('webform.settings', 'comment_webform', '0');
   }
 }
 
@@ -676,6 +693,7 @@ function webform_uninstall() {
   variable_del('webform_blocks');
   variable_del('webform_tracking_mode');
   variable_del('webform_allowed_tags');
+  variable_del('webform_search_index');
   variable_del('webform_email_address_format');
   variable_del('webform_default_from_name');
   variable_del('webform_default_from_address');
@@ -742,7 +760,7 @@ function webform_update_7301() {
     ->condition('confirmation_format', 0)
     ->execute();
   $existing_formats = db_query("SELECT format FROM {filter_format}")->fetchCol();
-  $default_format = variable_get('filter_default_format', 1);
+  $default_format = config_get('webform.settings', 'filter_default_format');
 
   // Since Webform may be updated separately from Drupal core, not all format
   // names may be numbers when running this update.
@@ -1171,12 +1189,14 @@ function _webform_update_7401_batch(&$sandbox, $patterns, $replacements, $dpatte
       'webform_default_from_name',
       'webform_default_from_address',
     );
+    
+    
     foreach ($variables as $variable) {
-      $value = variable_get($variable, NULL);
+      $value = config_get('webform.settings', $variable) || NULL;
       if ($value !== NULL) {
         $value = str_replace($patterns, $replacements, $value);
         $value = preg_replace($dpatterns, $dreplacements, $value);
-        variable_set($variable, $value);
+        config_set('webform.settings', $variable, $value);
       }
     }
   }
@@ -1528,13 +1548,13 @@ function webform_update_7405() {
 
 /**
  * Convert the "webform_use_cookies" setting to "webform_tracking_mode".
- */
+ */ 
 function webform_update_7406() {
   // Previously, we only had "strict" and "ip_address" checking. Using cookies
-  // meant cookies in addition to IP address.
-  $use_cookies = variable_get('webform_use_cookies');
+  // meant cookies in addition to IP address.  
+  $use_cookies = config_get('webform.settings', "webform_use_cookies");
   if (isset($use_cookies)) {
-    variable_set('webform_tracking_mode', $use_cookies ? 'strict' : 'ip_address');
+    config_set('webform.settings', 'webform_tracking_mode', $use_cookies ? 'strict' : 'ip_address');
     variable_del('webform_use_cookies');
   }
 }
@@ -1679,11 +1699,11 @@ function webform_update_7411(&$sandbox) {
 
 /**
  * Split webform_node_types as content type specific.
- */
+ */   
 function webform_update_7412() {
-  $types = variable_get('webform_node_types', array('webform'));
+  $types = config_get('webform.settings', "webform_node_types");
   foreach ($types as $type) {
-    variable_set('webform_node_' . $type, TRUE);
+    config_get('webform.settings', 'webform_node_' . $type, TRUE);
   }
   variable_del('webform_node_types');
 }
@@ -1917,19 +1937,9 @@ function webform_update_7421() {
   $capable = array_reduce(array('mandrill', 'mimemail', 'htmlmail'),
                           function($carry, $module) { return $carry || module_exists($module); },
                           FALSE);
-  variable_set('webform_email_html_capable', $capable);
+  config_set('webform.settings', 'webform_email_html_capable', $capable);
   return $capable
             ? t('An HTML-capable module is installed. The option to send HTML e-mail is enabled. ')
             : t('No commonly-known HTML capable module is installed. The option to send HTML e-mail is disabled.');
-}
-
-/**
- * Remove the administrator option "Include webform forms in search index" and rely on the Search Index view mode instead.
- */
-function webform_update_7422() {
-  variable_del('webform_search_index');
-  return module_exists('search')
-          ? t('Webform forms will now be included in the search index only if the Webform "field" is displayed in the "Search index" view mode.')
-          : NULL;
 }
 

@@ -48,8 +48,8 @@ function webform_options_days($component, $flat, $arguments) {
     'saturday' => t('Saturday'),
   );
 
-  // Order according to site settings for first day.
-  if ($first_day = variable_get('date_first_day', 0)) {
+  // Order according to site settings for first day
+  if ($first_day = config_get('webform.settings', 'date_first_day')) {
     $week = array_splice($days, $first_day);
     $days = array_merge($week, $days);
   }

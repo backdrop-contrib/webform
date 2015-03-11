@@ -516,7 +516,7 @@ function webform_configure_form_submit_save($form, &$form_state) {
   drupal_set_message(t('The form settings have been updated.'));
 
   $node = &$form['#node'];
-  if (!$node->webform['block'] && function_exists('block_load') && 
+  if (!$node->webform['block'] && function_exists('block_load') &&
       ($block = block_load('webform', 'client-block-' . $node->nid)) &&
       !empty($block->bid)) {
     // An existing block for this not-currently-available block was already configured.

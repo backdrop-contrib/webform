@@ -146,6 +146,15 @@ function webform_admin_settings() {
     '#weight' => 20,
   );
 
+  $form['advanced']['webform_search_index']  = array(
+    '#type' => 'checkbox',
+    '#checked_value' => 1,
+    '#title' => t('Include webform forms in search index'),
+    '#default_value' => webform_variable_get('webform_search_index'),
+    '#description' => t('When selected, all Webform nodes will have their form components indexed by the search engine.'),
+    '#access' => module_exists('search'),
+  );
+
   $form['advanced']['webform_tracking_mode']  = array(
     '#type' => 'radios',
     '#title' => t('Track anonymous users by:'),
@@ -221,9 +230,14 @@ function webform_admin_settings() {
     '#description' => t('When mapping emails addresses to a select component, limit the choice to components with less than the amount of options indicated. This is to avoid flooding the email settings form. '),
   );
 
-  $form = system_settings_form($form);
   $form['#theme'] = 'webform_admin_settings';
-  array_unshift($form['#submit'], 'webform_admin_settings_submit');
+//   array_unshift($form['#submit'], 'webform_admin_settings_submit');
+  $form['#submit'][] = 'webform_admin_settings_submit';
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
 
   return $form;
 }
@@ -232,6 +246,15 @@ function webform_admin_settings() {
  * Submit handler for the webform_admin_settings() form.
  */
 function webform_admin_settings_submit($form, &$form_state) {
+$config = config('webform.settings');
+foreach ($form_state['values'] as $key => $value)
+{
+$config->set($key, $value);
+}
+$config->save();
+backdrop_set_message(t('The configuration options have been saved.'));
+  
+  
   $disabled_components = array();
   foreach ($form_state['values']['components'] as $name => $enabled) {
     if (!$enabled) {
