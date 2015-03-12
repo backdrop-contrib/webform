@@ -141,8 +141,8 @@ class webform_exporter_excel_xlsx extends webform_exporter {
     $zip_uri = _webform_export_tempname();
 
     // ZipArchive does not support stream wrappers, convert to filesystem path.
-    $zip_filepath = drupal_realpath($zip_uri);
-    $file_filepath = drupal_realpath($file_uri);
+    $zip_filepath = backdrop_realpath($zip_uri);
+    $file_filepath = backdrop_realpath($file_uri);
     $zip = new ZipArchive;
     if ($zip->open($zip_filepath, ZipArchive::CREATE) === TRUE) {
       // Create a bare-bones Office Open XML format directory structure. This is
@@ -175,10 +175,10 @@ class webform_exporter_excel_xlsx extends webform_exporter {
   }
 
   function set_headers($filename) {
-    drupal_add_http_header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    drupal_add_http_header('Content-Disposition', "attachment; filename=$filename.xlsx");
-    drupal_add_http_header('Pragma', 'public');
-    drupal_add_http_header('Cache-Control', 'max-age=0');
+    backdrop_add_http_header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    backdrop_add_http_header('Content-Disposition', "attachment; filename=$filename.xlsx");
+    backdrop_add_http_header('Pragma', 'public');
+    backdrop_add_http_header('Cache-Control', 'max-age=0');
   }
 
   /**

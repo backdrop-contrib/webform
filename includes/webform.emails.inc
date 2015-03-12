@@ -99,9 +99,9 @@ function theme_webform_emails_form($variables) {
     foreach (element_children($form['emails']) as $eid) {
       // Add each component to a table row.
       $rows[] = array(
-        drupal_render($form['emails'][$eid]['email']),
-        drupal_render($form['emails'][$eid]['subject']),
-        drupal_render($form['emails'][$eid]['from']),
+        backdrop_render($form['emails'][$eid]['email']),
+        backdrop_render($form['emails'][$eid]['subject']),
+        backdrop_render($form['emails'][$eid]['from']),
         l(t('Edit'), 'node/' . $node->nid . '/webform/emails/' . $eid),
         l(t('Clone'), 'node/' . $node->nid . '/webform/emails/' . $eid . '/clone'),
         l(t('Delete'), 'node/' . $node->nid . '/webform/emails/' . $eid . '/delete'),
@@ -114,14 +114,14 @@ function theme_webform_emails_form($variables) {
 
   // Add a row containing form elements for a new item.
   $row_data = array(
-    array('colspan' => 3, 'data' => drupal_render($form['add'])),
-    array('colspan' => 3, 'data' => drupal_render($form['add_button'])),
+    array('colspan' => 3, 'data' => backdrop_render($form['add'])),
+    array('colspan' => 3, 'data' => backdrop_render($form['add_button'])),
   );
   $rows[] = array('data' => $row_data, 'class' => array('webform-add-form'));
 
   $output = '';
   $output .= theme('table', array('header' => $header, 'rows' => $rows, 'sticky' => FALSE, 'attributes' => array('id' => 'webform-emails')));
-  $output .= drupal_render_children($form);
+  $output .= backdrop_render_children($form);
   return $output;
 }
 
@@ -136,15 +136,15 @@ function theme_webform_email_add_form($variables) {
   $form['email_custom']['#attributes']['class'][] = 'webform-set-active';
   $form['email_custom']['#theme_wrappers'] = array();
   $form['email_option']['custom']['#theme_wrappers'] = array('webform_inline_radio');
-  $form['email_option']['custom']['#title'] = t('Address: !email', array('!email' => drupal_render($form['email_custom'])));
+  $form['email_option']['custom']['#title'] = t('Address: !email', array('!email' => backdrop_render($form['email_custom'])));
 
   // Render the component value.
   $form['email_component']['#theme_wrappers'] = array();
   $form['email_component']['#attributes']['class'][] = 'webform-set-active';
   $form['email_option']['component']['#theme_wrappers'] = array('webform_inline_radio');
-  $form['email_option']['component']['#title'] = t('Component value: !component', array('!component' => drupal_render($form['email_component'])));
+  $form['email_option']['component']['#title'] = t('Component value: !component', array('!component' => backdrop_render($form['email_component'])));
 
-  return drupal_render_children($form);
+  return backdrop_render_children($form);
 }
 
 /**
@@ -377,7 +377,7 @@ function theme_webform_email_edit_form($variables) {
       $form[$field . '_' . $option]['#attributes']['class'][] = 'webform-set-active';
       $form[$field . '_' . $option]['#theme_wrappers'] = array();
       $form[$field . '_option'][$option]['#theme_wrappers'] = array('webform_inline_radio');
-      $form[$field . '_option'][$option]['#title'] = t('!title: !field', array('!title' => $form[$field . '_option'][$option]['#title'], '!field' => drupal_render($form[$field . '_' . $option])));
+      $form[$field . '_option'][$option]['#title'] = t('!title: !field', array('!title' => $form[$field . '_option'][$option]['#title'], '!field' => backdrop_render($form[$field . '_' . $option])));
     }
     if (isset($form[$field . '_option']['#options']['default'])) {
       $form[$field]['#theme_wrappers'] = array();
@@ -386,10 +386,10 @@ function theme_webform_email_edit_form($variables) {
   }
 
   $details = '';
-  $details .= drupal_render($form['subject_option']);
-  $details .= drupal_render($form['from_address_option']);
-  $details .= drupal_render($form['from_address_mapping']);
-  $details .= drupal_render($form['from_name_option']);
+  $details .= backdrop_render($form['subject_option']);
+  $details .= backdrop_render($form['from_address_option']);
+  $details .= backdrop_render($form['from_address_mapping']);
+  $details .= backdrop_render($form['from_name_option']);
   $form['details'] = array(
     '#type' => 'fieldset',
     '#title' => t('E-mail header details'),
@@ -408,7 +408,7 @@ function theme_webform_email_edit_form($variables) {
   // Re-sort the elements since we added the details fieldset.
   $form['#sorted'] = FALSE;
   $children = element_children($form, TRUE);
-  return drupal_render_children($form, $children);
+  return backdrop_render_children($form, $children);
 }
 
 /**
@@ -426,7 +426,7 @@ function theme_webform_email_component_mapping($variables) {
       'data' => theme('form_element_label', array('element' => $element[$key])),
       'class' => array('webform-email-option'),
     );
-    $row[] = drupal_render($element[$key]);
+    $row[] = backdrop_render($element[$key]);
     $rows[] = $row;
   }
 
@@ -570,15 +570,15 @@ function webform_email_edit_form_submit($form, &$form_state) {
   $email['excluded_components'] = $excluded;
 
   if ($form_state['values']['clone']) {
-    drupal_set_message(t('Email settings cloned.'));
+    backdrop_set_message(t('Email settings cloned.'));
     $form_state['values']['eid'] = webform_email_clone($email);
   }
   elseif (empty($form_state['values']['eid'])) {
-    drupal_set_message(t('Email settings added.'));
+    backdrop_set_message(t('Email settings added.'));
     $form_state['values']['eid'] = webform_email_insert($email);
   }
   else {
-    drupal_set_message(t('Email settings updated.'));
+    backdrop_set_message(t('Email settings updated.'));
     webform_email_update($email);
   }
 
@@ -624,7 +624,7 @@ function webform_email_delete_form_submit($form, &$form_state) {
   $node = $form_state['values']['node'];
   $email = $form_state['values']['email'];
   webform_email_delete($node, $email);
-  drupal_set_message(t('E-mail settings deleted.'));
+  backdrop_set_message(t('E-mail settings deleted.'));
 
   // Check if this webform still contains any information.
   unset($node->webform['emails'][$email['eid']]);
@@ -685,7 +685,7 @@ function webform_email_insert($email) {
 
   $email['excluded_components'] = implode(',', $email['excluded_components']);
   $email['extra'] = empty($email['extra']) ? '' : serialize($email['extra']);
-  $success = drupal_write_record('webform_emails', $email);
+  $success = backdrop_write_record('webform_emails', $email);
 
   return $success ? $email['eid'] : FALSE;
 }
@@ -711,7 +711,7 @@ function webform_email_clone($email) {
 function webform_email_update($email) {
   $email['excluded_components'] = implode(',', $email['excluded_components']);
   $email['extra'] = empty($email['extra']) ? '' : serialize($email['extra']);
-  return drupal_write_record('webform_emails', $email, array('nid', 'eid'));
+  return backdrop_write_record('webform_emails', $email, array('nid', 'eid'));
 }
 
 /**

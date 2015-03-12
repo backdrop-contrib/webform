@@ -88,7 +88,7 @@ class webform_views_plugin_row_submission_view extends views_plugin_row {
       $build['#theme'] = $themes;
 
       // Render built submission, and if unsanitized plain text is used, make it safe for display.
-      $render = drupal_render($build);
+      $render = backdrop_render($build);
       return $format == 'html' ? $render : nl2br(check_plain($render));
     }
   }

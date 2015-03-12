@@ -282,7 +282,7 @@ function theme_webform_admin_settings($variables) {
     $row[] = $form['components'][$key]['#description'];
     $form['components'][$key]['#title'] = NULL;
     $form['components'][$key]['#description'] = NULL;
-    $row[] = array('data' => drupal_render($form['components'][$key]), 'align' => 'center');
+    $row[] = array('data' => backdrop_render($form['components'][$key]), 'align' => 'center');
     $rows[] = $row;
   }
   $header = array(t('Name'), t('Description'), array('data' => t('Enabled'), 'class' => array('checkbox')));
@@ -294,7 +294,7 @@ function theme_webform_admin_settings($variables) {
     '#rows' => $rows,
   );
 
-  return drupal_render_children($form);
+  return backdrop_render_children($form);
 }
 
 /**

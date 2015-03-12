@@ -5,21 +5,21 @@
 
 (function ($) {
 
-Drupal.behaviors.webform = Drupal.behaviors.webform || {};
+Backdrop.behaviors.webform = Backdrop.behaviors.webform || {};
 
-Drupal.behaviors.webform.attach = function(context) {
+Backdrop.behaviors.webform.attach = function(context) {
   // Calendar datepicker behavior.
-  Drupal.webform.datepicker(context);
+  Backdrop.webform.datepicker(context);
 
   // Conditional logic.
-  if (Drupal.settings.webform && Drupal.settings.webform.conditionals) {
-    Drupal.webform.conditional(context);
+  if (Backdrop.settings.webform && Backdrop.settings.webform.conditionals) {
+    Backdrop.webform.conditional(context);
   }
 };
 
-Drupal.webform = Drupal.webform || {};
+Backdrop.webform = Backdrop.webform || {};
 
-Drupal.webform.datepicker = function(context) {
+Backdrop.webform.datepicker = function(context) {
   $('div.webform-datepicker').each(function() {
     var $webformDatepicker = $(this);
     var $calendar = $webformDatepicker.find('input.webform-calendar');
@@ -88,17 +88,17 @@ Drupal.webform.datepicker = function(context) {
   });
 };
 
-Drupal.webform.conditional = function(context) {
+Backdrop.webform.conditional = function(context) {
   // Add the bindings to each webform on the page.
-  $.each(Drupal.settings.webform.conditionals, function(formKey, settings) {
+  $.each(Backdrop.settings.webform.conditionals, function(formKey, settings) {
     var $form = $('.' + formKey + ':not(.webform-conditional-processed)');
     $form.each(function(index, currentForm) {
       var $currentForm = $(currentForm);
       $currentForm.addClass('webform-conditional-processed');
-      $currentForm.bind('change', { 'settings': settings }, Drupal.webform.conditionalCheck);
+      $currentForm.bind('change', { 'settings': settings }, Backdrop.webform.conditionalCheck);
 
       // Trigger all the elements that cause conditionals on this form.
-      $.each(Drupal.settings.webform.conditionals[formKey]['sourceMap'], function(elementKey) {
+      $.each(Backdrop.settings.webform.conditionals[formKey]['sourceMap'], function(elementKey) {
         $currentForm.find('.' + elementKey).find('input,select,textarea').filter(':first').trigger('change');
       });
     })
@@ -110,7 +110,7 @@ Drupal.webform.conditional = function(context) {
  *
  * This event is bound to the entire form, not individual fields.
  */
-Drupal.webform.conditionalCheck = function(e) {
+Backdrop.webform.conditionalCheck = function(e) {
   var $triggerElement = $(e.target).closest('.webform-component');
   var $form = $triggerElement.closest('form');
   var triggerElementKey = $triggerElement.attr('class').match(/webform-component--[^ ]+/)[0];
@@ -128,7 +128,7 @@ Drupal.webform.conditionalCheck = function(e) {
         var elementKey = rule['source'];
         var element = $form.find('.' + elementKey)[0];
         var existingValue = settings.values[elementKey] ? settings.values[elementKey] : null;
-        conditionalResults.push(window['Drupal']['webform'][rule.callback](element, existingValue, rule['value'] ));
+        conditionalResults.push(window['Backdrop']['webform'][rule.callback](element, existingValue, rule['value'] ));
       });
 
       // Filter out false values.
@@ -173,9 +173,9 @@ Drupal.webform.conditionalCheck = function(e) {
 
 };
 
-Drupal.webform.conditionalOperatorStringEqual = function(element, existingValue, ruleValue) {
+Backdrop.webform.conditionalOperatorStringEqual = function(element, existingValue, ruleValue) {
   var returnValue = false;
-  var currentValue = Drupal.webform.stringValue(element, existingValue);
+  var currentValue = Backdrop.webform.stringValue(element, existingValue);
   $.each(currentValue, function(n, value) {
     if (value.toLowerCase() === ruleValue.toLowerCase()) {
       returnValue = true;
@@ -185,9 +185,9 @@ Drupal.webform.conditionalOperatorStringEqual = function(element, existingValue,
   return returnValue;
 };
 
-Drupal.webform.conditionalOperatorStringNotEqual = function(element, existingValue, ruleValue) {
+Backdrop.webform.conditionalOperatorStringNotEqual = function(element, existingValue, ruleValue) {
   var found = false;
-  var currentValue = Drupal.webform.stringValue(element, existingValue);
+  var currentValue = Backdrop.webform.stringValue(element, existingValue);
   $.each(currentValue, function(n, value) {
     if (value.toLowerCase() === ruleValue.toLowerCase()) {
       found = true;
@@ -196,9 +196,9 @@ Drupal.webform.conditionalOperatorStringNotEqual = function(element, existingVal
   return !found;
 };
 
-Drupal.webform.conditionalOperatorStringContains = function(element, existingValue, ruleValue) {
+Backdrop.webform.conditionalOperatorStringContains = function(element, existingValue, ruleValue) {
   var returnValue = false;
-  var currentValue = Drupal.webform.stringValue(element, existingValue);
+  var currentValue = Backdrop.webform.stringValue(element, existingValue);
   $.each(currentValue, function(n, value) {
     if (value.toLowerCase().indexOf(ruleValue.toLowerCase()) > -1) {
       returnValue = true;
@@ -208,9 +208,9 @@ Drupal.webform.conditionalOperatorStringContains = function(element, existingVal
   return returnValue;
 };
 
-Drupal.webform.conditionalOperatorStringDoesNotContain = function(element, existingValue, ruleValue) {
+Backdrop.webform.conditionalOperatorStringDoesNotContain = function(element, existingValue, ruleValue) {
   var found = false;
-  var currentValue = Drupal.webform.stringValue(element, existingValue);
+  var currentValue = Backdrop.webform.stringValue(element, existingValue);
   $.each(currentValue, function(n, value) {
     if (value.toLowerCase().indexOf(ruleValue.toLowerCase()) > -1) {
       found = true;
@@ -219,9 +219,9 @@ Drupal.webform.conditionalOperatorStringDoesNotContain = function(element, exist
   return !found;
 };
 
-Drupal.webform.conditionalOperatorStringBeginsWith = function(element, existingValue, ruleValue) {
+Backdrop.webform.conditionalOperatorStringBeginsWith = function(element, existingValue, ruleValue) {
   var returnValue = false;
-  var currentValue = Drupal.webform.stringValue(element, existingValue);
+  var currentValue = Backdrop.webform.stringValue(element, existingValue);
   $.each(currentValue, function(n, value) {
     if (value.toLowerCase().indexOf(ruleValue.toLowerCase()) === 0) {
       returnValue = true;
@@ -231,9 +231,9 @@ Drupal.webform.conditionalOperatorStringBeginsWith = function(element, existingV
   return returnValue;
 };
 
-Drupal.webform.conditionalOperatorStringEndsWith = function(element, existingValue, ruleValue) {
+Backdrop.webform.conditionalOperatorStringEndsWith = function(element, existingValue, ruleValue) {
   var returnValue = false;
-  var currentValue = Drupal.webform.stringValue(element, existingValue);
+  var currentValue = Backdrop.webform.stringValue(element, existingValue);
   $.each(currentValue, function(n, value) {
     if (value.toLowerCase().lastIndexOf(ruleValue.toLowerCase()) === value.length - ruleValue.length) {
       returnValue = true;
@@ -243,8 +243,8 @@ Drupal.webform.conditionalOperatorStringEndsWith = function(element, existingVal
   return returnValue;
 };
 
-Drupal.webform.conditionalOperatorStringEmpty = function(element, existingValue, ruleValue) {
-  var currentValue = Drupal.webform.stringValue(element, existingValue);
+Backdrop.webform.conditionalOperatorStringEmpty = function(element, existingValue, ruleValue) {
+  var currentValue = Backdrop.webform.stringValue(element, existingValue);
   var returnValue = true;
   $.each(currentValue, function(n, value) {
     if (value !== '') {
@@ -255,72 +255,72 @@ Drupal.webform.conditionalOperatorStringEmpty = function(element, existingValue,
   return returnValue;
 };
 
-Drupal.webform.conditionalOperatorStringNotEmpty = function(element, existingValue, ruleValue) {
-  return !Drupal.webform.conditionalOperatorStringEmpty(element, existingValue, ruleValue);
+Backdrop.webform.conditionalOperatorStringNotEmpty = function(element, existingValue, ruleValue) {
+  return !Backdrop.webform.conditionalOperatorStringEmpty(element, existingValue, ruleValue);
 };
 
-Drupal.webform.conditionalOperatorNumericEqual = function(element, existingValue, ruleValue) {
+Backdrop.webform.conditionalOperatorNumericEqual = function(element, existingValue, ruleValue) {
   // See float comparison: http://php.net/manual/en/language.types.float.php
-  var currentValue = Drupal.webform.stringValue(element, existingValue);
+  var currentValue = Backdrop.webform.stringValue(element, existingValue);
   var epsilon = 0.000001;
   // An empty string does not match any number.
   return currentValue[0] === '' ? false : (Math.abs(parseFloat(currentValue[0]) - parseFloat(ruleValue)) < epsilon);
 };
 
-Drupal.webform.conditionalOperatorNumericNotEqual = function(element, existingValue, ruleValue) {
+Backdrop.webform.conditionalOperatorNumericNotEqual = function(element, existingValue, ruleValue) {
   // See float comparison: http://php.net/manual/en/language.types.float.php
-  var currentValue = Drupal.webform.stringValue(element, existingValue);
+  var currentValue = Backdrop.webform.stringValue(element, existingValue);
   var epsilon = 0.000001;
   // An empty string does not match any number.
   return currentValue[0] === '' ? true : (Math.abs(parseFloat(currentValue[0]) - parseFloat(ruleValue)) >= epsilon);
 };
 
-Drupal.webform.conditionalOperatorNumericGreaterThan = function(element, existingValue, ruleValue) {
-  var currentValue = Drupal.webform.stringValue(element, existingValue);
+Backdrop.webform.conditionalOperatorNumericGreaterThan = function(element, existingValue, ruleValue) {
+  var currentValue = Backdrop.webform.stringValue(element, existingValue);
   return parseFloat(currentValue[0]) > parseFloat(ruleValue);
 };
 
-Drupal.webform.conditionalOperatorNumericLessThan = function(element, existingValue, ruleValue) {
-  var currentValue = Drupal.webform.stringValue(element, existingValue);
+Backdrop.webform.conditionalOperatorNumericLessThan = function(element, existingValue, ruleValue) {
+  var currentValue = Backdrop.webform.stringValue(element, existingValue);
   return parseFloat(currentValue[0]) < parseFloat(ruleValue);
 };
 
-Drupal.webform.conditionalOperatorDateEqual = function(element, existingValue, ruleValue) {
-  var currentValue = Drupal.webform.dateValue(element, existingValue);
+Backdrop.webform.conditionalOperatorDateEqual = function(element, existingValue, ruleValue) {
+  var currentValue = Backdrop.webform.dateValue(element, existingValue);
   return currentValue === ruleValue;
 };
 
-Drupal.webform.conditionalOperatorDateBefore = function(element, existingValue, ruleValue) {
-  var currentValue = Drupal.webform.dateValue(element, existingValue);
+Backdrop.webform.conditionalOperatorDateBefore = function(element, existingValue, ruleValue) {
+  var currentValue = Backdrop.webform.dateValue(element, existingValue);
   return (currentValue !== false) && currentValue < ruleValue;
 };
 
-Drupal.webform.conditionalOperatorDateAfter = function(element, existingValue, ruleValue) {
-  var currentValue = Drupal.webform.dateValue(element, existingValue);
+Backdrop.webform.conditionalOperatorDateAfter = function(element, existingValue, ruleValue) {
+  var currentValue = Backdrop.webform.dateValue(element, existingValue);
   return (currentValue !== false) && currentValue > ruleValue;
 };
 
-Drupal.webform.conditionalOperatorTimeEqual = function(element, existingValue, ruleValue) {
-  var currentValue = Drupal.webform.timeValue(element, existingValue);
+Backdrop.webform.conditionalOperatorTimeEqual = function(element, existingValue, ruleValue) {
+  var currentValue = Backdrop.webform.timeValue(element, existingValue);
   return currentValue === ruleValue;
 };
 
-Drupal.webform.conditionalOperatorTimeBefore = function(element, existingValue, ruleValue) {
+Backdrop.webform.conditionalOperatorTimeBefore = function(element, existingValue, ruleValue) {
   // Date and time operators intentionally exclusive for "before".
-  var currentValue = Drupal.webform.timeValue(element, existingValue);
+  var currentValue = Backdrop.webform.timeValue(element, existingValue);
   return (currentValue !== false) && (currentValue < ruleValue);
 };
 
-Drupal.webform.conditionalOperatorTimeAfter = function(element, existingValue, ruleValue) {
+Backdrop.webform.conditionalOperatorTimeAfter = function(element, existingValue, ruleValue) {
   // Date and time operators intentionally inclusive for "after".
-  var currentValue = Drupal.webform.timeValue(element, existingValue);
+  var currentValue = Backdrop.webform.timeValue(element, existingValue);
   return (currentValue !== false) && (currentValue >= ruleValue);
 };
 
 /**
  * Utility function to get a string value from a select/radios/text/etc. field.
  */
-Drupal.webform.stringValue = function(element, existingValue) {
+Backdrop.webform.stringValue = function(element, existingValue) {
   var value = [];
 
   if (element) {
@@ -353,7 +353,7 @@ Drupal.webform.stringValue = function(element, existingValue) {
 /**
  * Utility function to calculate a millisecond timestamp from a time field.
  */
-Drupal.webform.dateValue = function(element, existingValue) {
+Backdrop.webform.dateValue = function(element, existingValue) {
   if (element) {
     var day = $(element).find('[name*=day]').val();
     var month = $(element).find('[name*=month]').val();
@@ -373,7 +373,7 @@ Drupal.webform.dateValue = function(element, existingValue) {
 /**
  * Utility function to calculate a millisecond timestamp from a time field.
  */
-Drupal.webform.timeValue = function(element, existingValue) {
+Backdrop.webform.timeValue = function(element, existingValue) {
   if (element) {
     var hour = $(element).find('[name*=hour]').val();
     var minute = $(element).find('[name*=minute]').val();

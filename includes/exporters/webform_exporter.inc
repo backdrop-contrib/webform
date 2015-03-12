@@ -60,9 +60,9 @@ class webform_exporter {
    *   The name of the file being downloaded. e.g. export.xls.
    */
   function set_headers($filename) {
-    drupal_add_http_header('Content-Type', 'application/force-download');
-    drupal_add_http_header('Pragma', 'public');
-    drupal_add_http_header('Cache-Control', 'max-age=0');
+    backdrop_add_http_header('Content-Type', 'application/force-download');
+    backdrop_add_http_header('Pragma', 'public');
+    backdrop_add_http_header('Cache-Control', 'max-age=0');
   }
 
   /**

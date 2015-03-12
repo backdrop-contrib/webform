@@ -71,7 +71,7 @@ function webform_submission_create($node, $account, $form_state, $is_preview = F
       'serial' => NULL,
       'data' => $data,
     );
-  drupal_alter('webform_submission_create', $submission, $node, $account, $form_state);
+  backdrop_alter('webform_submission_create', $submission, $node, $account, $form_state);
   }
   return $submission;
 }
@@ -94,7 +94,7 @@ function webform_submission_update($node, $submission) {
   }
 
   // Update the main submission info.
-  drupal_write_record('webform_submissions', $submission, 'sid');
+  backdrop_write_record('webform_submissions', $submission, 'sid');
 
   // If is draft, only delete data for components submitted, to
   // preserve any data from form pages not visited in this submission.
@@ -144,7 +144,7 @@ function webform_submission_insert($node, $submission) {
     if (empty($submission->serial)) {
       $submission->serial = _webform_submission_serial_next_value($node->nid);
     }
-    drupal_write_record('webform_submissions', $submission);
+    backdrop_write_record('webform_submissions', $submission);
     $is_new = TRUE;
   }
 
@@ -157,7 +157,7 @@ function webform_submission_insert($node, $submission) {
         'no' => $delta,
         'data' => is_null($value) ? '' : $value,
       );
-      drupal_write_record('webform_submitted_data', $data);
+      backdrop_write_record('webform_submitted_data', $data);
     }
   }
 
@@ -344,7 +344,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
       // Verify that this submission is not attempting to send any spam hacks.
       if (_webform_submission_spam_check($address, $email['subject'], $email['from'], $email['headers'])) {
         watchdog('webform', 'Possible spam attempt from @remote_addr' . "<br />\n" . nl2br(htmlentities($email['message'])), array('@remote_add' => ip_address()));
-        drupal_set_message(t('Illegal information. Data not submitted.'), 'error');
+        backdrop_set_message(t('Illegal information. Data not submitted.'), 'error');
         return FALSE;
       }
 
@@ -389,7 +389,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
       }
 
       // Mail the submission.
-      $message = drupal_mail('webform', 'submission', $address, $language, $mail_params, $email['from']);
+      $message = backdrop_mail('webform', 'submission', $address, $language, $mail_params, $email['from']);
       if ($message['result']) {
         $send_count++;
       }
@@ -415,7 +415,7 @@ function webform_submission_delete_form($form, $form_state, $node, $submission) 
   webform_set_breadcrumb($node, $submission);
 
   // Set the correct page title.
-  drupal_set_title(webform_submission_title($node, $submission));
+  backdrop_set_title(webform_submission_title($node, $submission));
 
   // Keep the NID and SID in the same location as the webform_client_form().
   // This helps mollom identify the same fields when deleting a submission.
@@ -438,7 +438,7 @@ function webform_submission_delete_form_submit($form, &$form_state) {
   $node = node_load($form_state['values']['details']['nid']);
   $submission = webform_get_submission($form_state['values']['details']['nid'], $form_state['values']['details']['sid']);
   webform_submission_delete($node, $submission);
-  drupal_set_message(t('Submission deleted.'));
+  backdrop_set_message(t('Submission deleted.'));
 
   // If no destination query was supplied in the URL (e.g. Edit tab), redirect
   // to the most-privledged destination.
@@ -463,15 +463,15 @@ function webform_submission_page($node, $submission, $format) {
   webform_set_breadcrumb($node, $submission);
 
   // Set the correct page title.
-  drupal_set_title(webform_submission_title($node, $submission));
+  backdrop_set_title(webform_submission_title($node, $submission));
 
   if ($format == 'form') {
-    $output = drupal_get_form('webform_client_form_' . $node->nid, $node, $submission);
+    $output = backdrop_get_form('webform_client_form_' . $node->nid, $node, $submission);
   }
   else {
     $renderable = webform_submission_render($node, $submission, NULL, $format);
-    $renderable['#attached']['css'][] = drupal_get_path('module', 'webform') . '/css/webform.css';
-    $output = drupal_render($renderable);
+    $renderable['#attached']['css'][] = backdrop_get_path('module', 'webform') . '/css/webform.css';
+    $output = backdrop_render($renderable);
   }
 
   // Determine the mode in which we're displaying this submission.
@@ -584,14 +584,14 @@ function webform_submission_resend_submit($form, &$form_state) {
   }
   $sent_count = webform_submission_send_mail($node, $submission, $emails);
   if ($sent_count) {
-    drupal_set_message(format_plural($sent_count,
+    backdrop_set_message(format_plural($sent_count,
       'Successfully re-sent submission #@sid to 1 recipient.',
       'Successfully re-sent submission #@sid to @count recipients.',
       array('@sid' => $submission->sid)
     ));
   }
   else {
-    drupal_set_message(t('No e-mails were able to be sent due to a server error.'), 'error');
+    backdrop_set_message(t('No e-mails were able to be sent due to a server error.'), 'error');
   }
 }
 
@@ -612,9 +612,9 @@ function theme_webform_submission_resend($variables) {
     foreach (element_children($form['emails']) as $eid) {
       // Add each component to a table row.
       $rows[] = array(
-        drupal_render($form['resend'][$eid]),
-        drupal_render($form['emails'][$eid]['email']),
-        drupal_render($form['emails'][$eid]['subject']),
+        backdrop_render($form['resend'][$eid]),
+        backdrop_render($form['emails'][$eid]['email']),
+        backdrop_render($form['emails'][$eid]['subject']),
       );
     }
   }
@@ -623,7 +623,7 @@ function theme_webform_submission_resend($variables) {
   }
   $output = '';
   $output .= theme('table', array('header' => $header, 'rows' => $rows, 'sticky' => FALSE, 'attributes' => array('id' => 'webform-emails')));
-  $output .= drupal_render_children($form);
+  $output .= backdrop_render_children($form);
   return $output;
 }
 
@@ -665,7 +665,7 @@ function webform_submission_render($node, $submission, $email, $format, $exclude
     }
   }
 
-  drupal_alter('webform_submission_render', $renderable);
+  backdrop_alter('webform_submission_render', $renderable);
   return $renderable;
 }
 
@@ -730,7 +730,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     foreach ($header as $header_item) {
       $metadata_columns[] = $header_item['data'];
     }
-    $sort = drupal_get_query_parameters();
+    $sort = backdrop_get_query_parameters();
     // Sort by submitted data column if order is set but not in $metadata_columns.
     if (isset($sort['order']) && !in_array($sort['order'], $metadata_columns, TRUE)) {
       // Default if sort is unset or invalid.
@@ -818,7 +818,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
  *   An integer value of the number of submissions.
  */
 function webform_get_submission_count($nid, $uid = NULL, $is_draft = 0) {
-  $counts = &drupal_static(__FUNCTION__);
+  $counts = &backdrop_static(__FUNCTION__);
 
   if (!isset($counts[$nid][$uid])) {
     $query = db_select('webform_submissions', 'ws')
@@ -852,7 +852,7 @@ function webform_get_submission_count($nid, $uid = NULL, $is_draft = 0) {
  * Fetch a specified submission for a webform node.
  */
 function webform_get_submission($nid, $sid) {
-  $submissions = &drupal_static(__FUNCTION__, array());
+  $submissions = &backdrop_static(__FUNCTION__, array());
 
   // Load the submission if needed.
   if (!isset($submissions[$sid])) {

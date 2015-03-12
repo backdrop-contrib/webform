@@ -1,8 +1,8 @@
 (function ($) {
-  Drupal.behaviors.webformContentTypes = {
+  Backdrop.behaviors.webformContentTypes = {
     attach: function (context) {
       // Provide the vertical tab summaries.
-      $('fieldset#edit-webform', context).drupalSetSummary(function(context) {
+      $('fieldset#edit-webform', context).backdropSetSummary(function(context) {
         var vals = [];
         $('input[type=checkbox]', context).each(function() {
           if (this.checked && this.attributes['data-enabled-description']) {

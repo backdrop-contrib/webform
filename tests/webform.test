@@ -5,7 +5,7 @@
  * Webform module tests.
  */
 
-class WebformTestCase extends DrupalWebTestCase {
+class WebformTestCase extends BackdropWebTestCase {
   private $_webform_node;
   private $_webform_components;
   public $webform_users;
@@ -74,7 +74,7 @@ class WebformTestCase extends DrupalWebTestCase {
     );
 
     foreach ($permissions as $user_key => $role_permissions) {
-      $this->webform_users[$user_key] = $this->drupalCreateUser($role_permissions);
+      $this->webform_users[$user_key] = $this->backdropCreateUser($role_permissions);
       $this->webform_users[$user_key]->gender = array(LANGUAGE_NONE => array(array('value' => 'Female')));
       user_save($this->webform_users[$user_key]);
     }
@@ -933,7 +933,7 @@ class WebformTestCase extends DrupalWebTestCase {
       $settings['webform']['components'][$cid]['pid'] = 0;
     }
 
-    $this->_webform_node = $this->drupalCreateNode($settings);
+    $this->_webform_node = $this->backdropCreateNode($settings);
 
     return $this->_webform_node;
   }
@@ -975,7 +975,7 @@ class WebformTestCase extends DrupalWebTestCase {
    * Utility function to print out the current page being tested.
    */
   function webformPrintPage() {
-    $this->verbose($this->drupalGetContent());
+    $this->verbose($this->backdropGetContent());
   }
 }
 
@@ -1002,7 +1002,7 @@ class WebformGeneralTestCase extends WebformTestCase {
       'title' => 'Test webform, no components',
       'type' => 'webform',
     );
-    $node = $this->drupalCreateNode($settings);
+    $node = $this->backdropCreateNode($settings);
 
     // Because this is a "webform" type node, it should have an entry in the
     // database even though it's using the default settings.
@@ -1026,7 +1026,7 @@ config_set('webform.settings', 'webform_node_page', TRUE);
       'title' => 'Test webform-enabled page',
       'type' => 'page',
     );
-    $node = $this->drupalCreateNode($settings);
+    $node = $this->backdropCreateNode($settings);
 
     // Because this is a webform-enabled type node but does not yet have any
     // components, it should not have an entry in the database because it is

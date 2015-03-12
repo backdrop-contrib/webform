@@ -14,7 +14,7 @@ CONTENTS OF THIS FILE
 INTRODUCTION
 ------------
 
-This module adds a webform content type to your Drupal site.
+This module adds a webform content type to your Backdrop site.
 A webform can be a questionnaire, contact or request form. These can be used
 by visitor to make contact or to enable a more complex survey than polls
 provide. Submissions from a webform are saved in a database table and
@@ -56,7 +56,7 @@ INSTALLATION
    https://drupal.org/documentation/install/modules-themes/modules-7
    for further information.
 
-1. Copy the entire webform directory the Drupal sites/all/modules directory.
+1. Copy the entire webform directory the Backdrop modules directory.
 
 2. Login as an administrator. Enable the module in the "Administer" -> "Functionality"
 
@@ -129,7 +129,7 @@ Current Maintainers on Drupal:
 - torotil <https://www.drupal.org/u/torotil>
 
 Supporting organizations:
-This Drupal module is supported by the hosted survey-solution website Webform.com and Lullabot.
+This Backdrop module is supported by the hosted survey-solution website Webform.com and Lullabot.
 
 Ported to Backdrop by:
  - biolithic <https://github.com/biolithic>

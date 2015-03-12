@@ -37,7 +37,7 @@ class WebformConditionalsTestCase extends WebformTestCase {
    * Test that required fields with no default value can't be submitted as-is.
    */
   function testWebformConditionals() {
-    $this->drupalLogin($this->webform_users['admin']);
+    $this->backdropLogin($this->webform_users['admin']);
     $this->webformReset();
 
     $test_components = $this->testWebformComponents();
@@ -54,7 +54,7 @@ class WebformConditionalsTestCase extends WebformTestCase {
       }
     }
 
-    $this->drupalLogout();
+    $this->backdropLogout();
   }
 
   /**
@@ -116,7 +116,7 @@ class WebformConditionalsTestCase extends WebformTestCase {
     $components[] = $textfield;
 
     $settings['webform']['components'] = $components;
-    $node = $this->drupalCreateNode($settings);
+    $node = $this->backdropCreateNode($settings);
     $node = node_load($node->nid); // Needed to get a complete object.
 
     // We now have a new test node. First try checking same-page conditionals.
@@ -146,7 +146,7 @@ class WebformConditionalsTestCase extends WebformTestCase {
 
     // Submit our test data.
     $edit = $this->testWebformPost(array($component['form_key'] => $input_values));
-    $this->drupalPost('node/' . $node->nid, $edit, 'Next Page >', array(), array(), 'webform-client-form-' . $node->nid);
+    $this->backdropPost('node/' . $node->nid, $edit, 'Next Page >', array(), array(), 'webform-client-form-' . $node->nid);
 
     // Ensure we reached the second page for matched conditionals.
     $message = t('Conditional same-page skipping of validation passed for "%form_key": %input_values @conditional_string be @operator %match_string', array('%form_key' => $component['form_key'], '%input_values' => $input_string, '@conditional_string' => $conditional_string, '@operator' => $operator, '%match_string' => $match_string));
@@ -166,7 +166,7 @@ class WebformConditionalsTestCase extends WebformTestCase {
 
     // Re-submit the form again, this time checking for the field on the
     // second page.
-    $this->drupalPost('node/' . $node->nid, $edit, 'Next Page >', array(), array(), 'webform-client-form-' . $node->nid);
+    $this->backdropPost('node/' . $node->nid, $edit, 'Next Page >', array(), array(), 'webform-client-form-' . $node->nid);
     $string_match = 'name="submitted[' . $textfield['form_key'] . ']"';
 
     // Ensure that the field is properly hidden based on a match.

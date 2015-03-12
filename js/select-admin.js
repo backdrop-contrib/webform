@@ -6,40 +6,40 @@
 
 (function ($) {
 
-Drupal.behaviors.webformSelectLoadOptions = {};
-Drupal.behaviors.webformSelectLoadOptions.attach = function(context) {
-  settings = Drupal.settings;
+Backdrop.behaviors.webformSelectLoadOptions = {};
+Backdrop.behaviors.webformSelectLoadOptions.attach = function(context) {
+  settings = Backdrop.settings;
 
   $('#edit-extra-options-source', context).change(function() {
     var url = settings.webform.selectOptionsUrl + '/' + this.value;
     $.ajax({
       url: url,
-      success: Drupal.webform.selectOptionsLoad,
+      success: Backdrop.webform.selectOptionsLoad,
       dataType: 'json'
     });
   });
 }
 
-Drupal.webform = Drupal.webform || {};
+Backdrop.webform = Backdrop.webform || {};
 
-Drupal.webform.selectOptionsOriginal = false;
-Drupal.webform.selectOptionsLoad = function(result) {
-  if (Drupal.optionsElement) {
+Backdrop.webform.selectOptionsOriginal = false;
+Backdrop.webform.selectOptionsLoad = function(result) {
+  if (Backdrop.optionsElement) {
     if (result.options) {
       // Save the current select options the first time a new list is chosen.
-      if (Drupal.webform.selectOptionsOriginal === false) {
-        Drupal.webform.selectOptionsOriginal = $(Drupal.optionElements[result.elementId].manualOptionsElement).val();
+      if (Backdrop.webform.selectOptionsOriginal === false) {
+        Backdrop.webform.selectOptionsOriginal = $(Backdrop.optionElements[result.elementId].manualOptionsElement).val();
       }
-      $(Drupal.optionElements[result.elementId].manualOptionsElement).val(result.options);
-      Drupal.optionElements[result.elementId].disable();
-      Drupal.optionElements[result.elementId].updateWidgetElements();
+      $(Backdrop.optionElements[result.elementId].manualOptionsElement).val(result.options);
+      Backdrop.optionElements[result.elementId].disable();
+      Backdrop.optionElements[result.elementId].updateWidgetElements();
     }
     else {
-      Drupal.optionElements[result.elementId].enable();
-      if (Drupal.webform.selectOptionsOriginal) {
-        $(Drupal.optionElements[result.elementId].manualOptionsElement).val(Drupal.webform.selectOptionsOriginal);
-        Drupal.optionElements[result.elementId].updateWidgetElements();
-        Drupal.webform.selectOptionsOriginal = false;
+      Backdrop.optionElements[result.elementId].enable();
+      if (Backdrop.webform.selectOptionsOriginal) {
+        $(Backdrop.optionElements[result.elementId].manualOptionsElement).val(Backdrop.webform.selectOptionsOriginal);
+        Backdrop.optionElements[result.elementId].updateWidgetElements();
+        Backdrop.webform.selectOptionsOriginal = false;
       }
     }
   }

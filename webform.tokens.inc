@@ -111,7 +111,7 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
           break;
         case 'values':
           $submission_renderable = webform_submission_render($node, $submission, $email, $format, $excluded_components);
-          $replacements[$original] = drupal_render($submission_renderable);
+          $replacements[$original] = backdrop_render($submission_renderable);
           break;
       }
     }

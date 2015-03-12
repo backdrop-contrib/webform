@@ -188,7 +188,7 @@ function webform_expand_date($element) {
     );
   }
 
-  // Let Drupal do it's normal expansion.
+  // Let Backdrop do it's normal expansion.
   $element = form_process_date($element);
 
   // Set default values.
@@ -228,7 +228,7 @@ function webform_expand_date($element) {
   elseif ($element['#start_date'] || $element['#end_date']) {
     $start_year = $element['#start_date'] ? webform_strtodate('Y', $element['#start_date']) : webform_strtodate('Y', '-2 years');
     $end_year = $element['#end_date'] ? webform_strtodate('Y', $element['#end_date']) : webform_strtodate('Y', '+2 years');
-    $element['year']['#options'] = array('' => t('Year')) + drupal_map_assoc(range($start_year, $end_year));
+    $element['year']['#options'] = array('' => t('Year')) + backdrop_map_assoc(range($start_year, $end_year));
   }
 
   return $element;
@@ -270,7 +270,7 @@ function theme_webform_date($variables) {
 
   $output = '';
   $output .= '<div class="' . implode(' ', $class) . '">';
-  $output .= drupal_render_children($element);
+  $output .= backdrop_render_children($element);
   $output .= isset($calendar) ? $calendar : '';
   $output .= '</div>';
 

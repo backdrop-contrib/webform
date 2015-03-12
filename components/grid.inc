@@ -505,7 +505,7 @@ function theme_webform_grid($variables) {
     foreach (element_children($radios) as $key) {
       $radios[$key]['#title'] = $question_element['#title'] . ' - ' . $radios[$key]['#title'];
       $radios[$key]['#title_display'] = 'invisible';
-      $row[] = array('data' => drupal_render($radios[$key]), 'class' => array('checkbox', 'webform-grid-option'));
+      $row[] = array('data' => backdrop_render($radios[$key]), 'class' => array('checkbox', 'webform-grid-option'));
     }
     $rows[] = $row;
   }

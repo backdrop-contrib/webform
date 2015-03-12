@@ -20,14 +20,14 @@ function webform_webform_exporters() {
       'title' => t('Delimited text'),
       'description' => t('A plain text file delimited by commas, tabs, or other characters.'),
       'handler' => 'webform_exporter_delimited',
-      'file' => drupal_get_path('module', 'webform') . '/includes/exporters/webform_exporter_delimited.inc',
+      'file' => backdrop_get_path('module', 'webform') . '/includes/exporters/webform_exporter_delimited.inc',
       'weight' => 10,
     ),
     'excel' => array(
       'title' => t('Microsoft Excel'),
       'description' => t('A file readable by Microsoft Excel.'),
       'handler' => 'webform_exporter_excel_xlsx',
-      'file' => drupal_get_path('module', 'webform') . '/includes/exporters/webform_exporter_excel_xlsx.inc',
+      'file' => backdrop_get_path('module', 'webform') . '/includes/exporters/webform_exporter_excel_xlsx.inc',
       'weight' => -1,
       // Tells the options to use consistent dates instead of user-defined
       // formats.
@@ -40,7 +40,7 @@ function webform_webform_exporters() {
       'title' => t('Microsoft Excel (older versions)'),
       'description' => t('A file readable by older versions of Microsoft Excel.'),
       'handler' => 'webform_exporter_excel_delimited',
-      'file' => drupal_get_path('module', 'webform') . '/includes/exporters/webform_exporter_excel_delimited.inc',
+      'file' => backdrop_get_path('module', 'webform') . '/includes/exporters/webform_exporter_excel_delimited.inc',
       'weight' => 0,
     ),
   );
@@ -76,7 +76,7 @@ function webform_export_fetch_definition($format = NULL) {
   static $cache;
   if (!isset($cache)) {
     $cache = module_invoke_all('webform_exporters');
-    drupal_alter('webform_exporters', $cache);
+    backdrop_alter('webform_exporters', $cache);
     foreach ($cache as $key => $exporter) {
       $cache[$key] += array('weight' => 0);
       $cache[$key]['name'] = $key; // Used in sorting.

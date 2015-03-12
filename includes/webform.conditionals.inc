@@ -35,7 +35,7 @@ function webform_conditionals_form($form, &$form_state, $node) {
   $form['#node'] = $node;
 
   $form['#attached']['library'][] = array('webform', 'admin');
-  $form['#attached']['css'][] = drupal_get_path('module', 'webform') . '/css/webform.css';
+  $form['#attached']['css'][] = backdrop_get_path('module', 'webform') . '/css/webform.css';
 
   // Wrappers used for AJAX addition/removal.
   $form['conditionals']['#theme'] = 'webform_conditional_groups';
@@ -196,7 +196,7 @@ function webform_conditionals_form_submit($form, &$form_state) {
     $conditionals[$rgid] = $conditional;
     // Warn if there are multiple conditionals targetting the same component.
     if (isset($targets[$conditional['target']])) {
-      drupal_set_message(t('More than one conditional hides or shows component "@name". Only the most-recently evaluated conditional will determine whether "@name" is displayed.',
+      backdrop_set_message(t('More than one conditional hides or shows component "@name". Only the most-recently evaluated conditional will determine whether "@name" is displayed.',
                            array('@name' => $node->webform['components'][$conditional['target']]['name'])), 'warning', FALSE);
     }
     $targets[$conditional['target']] = TRUE;
@@ -204,7 +204,7 @@ function webform_conditionals_form_submit($form, &$form_state) {
 
   $node->webform['conditionals'] = $conditionals;
   node_save($node);
-  drupal_set_message(t('Conditionals for %title saved.', array('%title' => $node->title)));
+  backdrop_set_message(t('Conditionals for %title saved.', array('%title' => $node->title)));
 }
 
 /**
@@ -216,7 +216,7 @@ function webform_conditionals_ajax($form, $form_state) {
   $form['conditionals'][$new_rgid]['#ajax_added'] = TRUE;
 
   $commands = array('#type' => 'ajax');
-  $commands['#commands'][] = ajax_command_before('.webform-conditional-new-row', drupal_render($form['conditionals'][$new_rgid]));
+  $commands['#commands'][] = ajax_command_before('.webform-conditional-new-row', backdrop_render($form['conditionals'][$new_rgid]));
   $commands['#commands'][] = ajax_command_restripe('#webform-conditionals-table');
   return $commands;
 }
@@ -226,9 +226,9 @@ function webform_conditionals_ajax($form, $form_state) {
  */
 function theme_webform_conditional_groups($variables) {
   $element = $variables['element'];
-  drupal_add_tabledrag('webform-conditionals-table', 'order', 'sibling', 'webform-conditional-weight');
-  drupal_add_js('Drupal.theme.prototype.tableDragChangedMarker = function() { return ""; }', 'inline');
-  drupal_add_js('Drupal.theme.prototype.tableDragChangedWarning = function() { return "<span>&nbsp;</span>"; }', 'inline');
+  backdrop_add_tabledrag('webform-conditionals-table', 'order', 'sibling', 'webform-conditional-weight');
+  backdrop_add_js('Backdrop.theme.prototype.tableDragChangedMarker = function() { return ""; }', 'inline');
+  backdrop_add_js('Backdrop.theme.prototype.tableDragChangedWarning = function() { return "<span>&nbsp;</span>"; }', 'inline');
 
   $output = '<table id="webform-conditionals-table"><tbody>';
   $element_children = element_children($element, TRUE);
@@ -241,18 +241,18 @@ function theme_webform_conditional_groups($variables) {
       }
       $even_odd = ($index + 1) % 2 ? 'odd' : 'even';
       $element[$key]['weight']['#attributes']['class'] = array('webform-conditional-weight');
-      $data = '<div class="webform-conditional-new">' . $data . t('Add a new condition: ') . drupal_render($element[$key]['new']) . '</div>';
+      $data = '<div class="webform-conditional-new">' . $data . t('Add a new condition: ') . backdrop_render($element[$key]['new']) . '</div>';
       $output .= '<tr class="webform-conditional-new-row ' . $even_odd . '">';
       $output .= '<td>' . $data . '</td>';
-      $output .= '<td>' . drupal_render($element[$key]['weight']) . '</td>';
+      $output .= '<td>' . backdrop_render($element[$key]['weight']) . '</td>';
       $output .= '</tr>';
     }
     else {
-      $output .= drupal_render($element[$key]);
+      $output .= backdrop_render($element[$key]);
     }
   }
   $output .= '</tbody></table>';
-  $output .= drupal_render_children($element);
+  $output .= backdrop_render_children($element);
 
   return $output;
 }
@@ -264,7 +264,7 @@ function theme_webform_conditional_group_row($variables) {
   $element = $variables['element'];
 
   $element['weight']['#attributes']['class'] = array('webform-conditional-weight');
-  $weight = drupal_render($element['weight']);
+  $weight = backdrop_render($element['weight']);
   $classes = array('draggable');
   if (!empty($element['#even_odd'])) {
     $classes[] = $element['#even_odd'];
@@ -275,7 +275,7 @@ function theme_webform_conditional_group_row($variables) {
 
   $output = '';
   $output .= '<tr class="' . implode(' ', $classes) . '">';
-  $output .= '<td>' . drupal_render_children($element) . '</td>';
+  $output .= '<td>' . backdrop_render_children($element) . '</td>';
   $output .= '<td>' . $weight . '</td>';
   $output .= '</tr>';
 
@@ -291,7 +291,7 @@ function _webform_conditional_expand($element) {
     'andor' => 'and',
   );
 
-  $wrapper_id = drupal_clean_css_identifier(implode('-', $element['#parents'])) . '-ajax';
+  $wrapper_id = backdrop_clean_css_identifier(implode('-', $element['#parents'])) . '-ajax';
   $element['#prefix'] = '<div id="' . $wrapper_id . '">';
   $element['#suffix'] = '</div>';
 
@@ -431,7 +431,7 @@ function _webform_conditional_expand_value_forms($node, $add_to_page = TRUE) {
 
   if (!isset($value_forms_added) && $add_to_page) {
     $value_forms_added = TRUE;
-    drupal_add_js(array('webform' => array('conditionalValues' => $data)), 'setting');
+    backdrop_add_js(array('webform' => array('conditionalValues' => $data)), 'setting');
   }
 
   return $data;
@@ -507,7 +507,7 @@ function webform_conditional_element_ajax($form, $form_state) {
     $element = $element[$key];
   }
 
-  return drupal_render($element['conditional']);
+  return backdrop_render($element['conditional']);
 }
 
 /**
@@ -527,9 +527,9 @@ function theme_webform_conditional($variables) {
     $element['rules'][$rid]['value']['#title_display'] = 'none';
     $element['rules'][$rid]['andor']['#title_display'] = 'none';
 
-    $source = '<div class="webform-conditional-source">' . drupal_render($element['rules'][$rid]['source']) . '</div>';
-    $operator = '<div class="webform-conditional-operator">' . drupal_render($element['rules'][$rid]['operator']) . '</div>';
-    $value = '<div class="webform-conditional-value">' . drupal_render($element['rules'][$rid]['value']) . '</div>';
+    $source = '<div class="webform-conditional-source">' . backdrop_render($element['rules'][$rid]['source']) . '</div>';
+    $operator = '<div class="webform-conditional-operator">' . backdrop_render($element['rules'][$rid]['operator']) . '</div>';
+    $value = '<div class="webform-conditional-value">' . backdrop_render($element['rules'][$rid]['value']) . '</div>';
 
     $source_phrase = t('!source !operator !value', array(
       '!source' => $source,
@@ -544,14 +544,14 @@ function theme_webform_conditional($variables) {
 
     if (isset($element['rules'][$rid]['andor'])) {
       $output .= '<div class="webform-conditional-andor webform-container-inline">';
-      $output .= drupal_render($element['rules'][$rid]['andor']);
+      $output .= backdrop_render($element['rules'][$rid]['andor']);
       $output .= '</div>';
     }
 
     if (isset($element['rules'][$rid]['add']) || isset($element['rules'][$rid]['remove'])) {
       $output .= '<span class="webform-conditional-operations webform-container-inline">';
-      $output .= drupal_render($element['rules'][$rid]['remove']);
-      $output .= drupal_render($element['rules'][$rid]['add']);
+      $output .= backdrop_render($element['rules'][$rid]['remove']);
+      $output .= backdrop_render($element['rules'][$rid]['add']);
       $output .= '</span>';
     }
 
@@ -562,8 +562,8 @@ function theme_webform_conditional($variables) {
   $element['action']['#title_display'] = 'none';
   $element['target']['#title_display'] = 'none';
 
-  $action = '<div class="webform-conditional-action">' . drupal_render($element['action']) . '</div>';
-  $target = '<div class="webform-conditional-target">' . drupal_render($element['target']) . '</div>';
+  $action = '<div class="webform-conditional-action">' . backdrop_render($element['action']) . '</div>';
+  $target = '<div class="webform-conditional-target">' . backdrop_render($element['target']) . '</div>';
 
   $target_phrase = t('then !action !target', array(
     '!action' => $action,
@@ -587,7 +587,7 @@ function webform_conditional_operators() {
 
   if (!isset($operators)) {
     $operators = module_invoke_all('webform_conditional_operator_info');
-    drupal_alter('webform_conditional_operators', $operators);
+    backdrop_alter('webform_conditional_operators', $operators);
   }
 
   return $operators;
@@ -797,7 +797,7 @@ function webform_conditional_form_select($node) {
         '#options' => $options,
         '#parents' => array(),
       );
-      $forms[$cid] = drupal_render($element);
+      $forms[$cid] = backdrop_render($element);
     }
   }
   $count++;
@@ -817,7 +817,7 @@ function webform_conditional_form_date($node) {
     '#type' => 'textfield',
     '#name' => 'webform-conditional-date-' . $count++,
   );
-  return drupal_render($element);
+  return backdrop_render($element);
 }
 
 /**
@@ -833,7 +833,7 @@ function webform_conditional_form_time($node) {
     '#type' => 'textfield',
     '#name' => 'webform-conditional-time-' . $count++,
   );
-  return drupal_render($element);
+  return backdrop_render($element);
 }
 
 /**
@@ -851,12 +851,12 @@ function webform_conditional_load($rgid, $nid) {
  * Insert a conditional rule group into the database.
  */
 function webform_conditional_insert($conditional) {
-  drupal_write_record('webform_conditional', $conditional);
+  backdrop_write_record('webform_conditional', $conditional);
   foreach ($conditional['rules'] as $rid => $rule) {
     $rule['nid'] = $conditional['nid'];
     $rule['rgid'] = $conditional['rgid'];
     $rule['rid'] = $rid;
-    drupal_write_record('webform_conditional_rules', $rule);
+    backdrop_write_record('webform_conditional_rules', $rule);
   }
 }
 

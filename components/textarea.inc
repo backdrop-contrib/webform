@@ -167,7 +167,7 @@ function _webform_display_textarea($component, $value, $format = 'html') {
 function theme_webform_display_textarea($variables) {
   $element = $variables['element'];
   $output = $element['#format'] == 'html' ? nl2br(check_plain($element['#value'])) : $element['#value'];
-  if (drupal_strlen($output) > 80) {
+  if (backdrop_strlen($output) > 80) {
     $output = ($element['#format'] == 'html') ? '<div class="webform-long-answer">' . $output . '</div>' : $output;
   }
   return $output !== '' ? $output : ' ';
@@ -192,7 +192,7 @@ function _webform_analysis_textarea($component, $sids = array()) {
 
   $result = $query->execute();
   foreach ($result as $data) {
-    if (drupal_strlen(trim($data['data'])) > 0) {
+    if (backdrop_strlen(trim($data['data'])) > 0) {
       $nonblanks++;
       $wordcount += str_word_count(trim($data['data']));
     }

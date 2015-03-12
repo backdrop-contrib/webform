@@ -15,12 +15,12 @@
  */
 ?>
 <div class="webform-analysis">
-  <?php print drupal_render($analysis['form']['help']); ?>
+  <?php print backdrop_render($analysis['form']['help']); ?>
 
   <div class="webform-analysis-data">
-    <?php print drupal_render($analysis['data']); ?>
+    <?php print backdrop_render($analysis['data']); ?>
   </div>
-  <?php print drupal_render($analysis['form']); ?>
+  <?php print backdrop_render($analysis['form']); ?>
   <?php /* Print out any remaining part of the renderable. */ ?>
-  <?php print drupal_render_children($analysis); ?>
+  <?php print backdrop_render_children($analysis); ?>
 </div>

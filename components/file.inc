@@ -75,8 +75,8 @@ function _webform_edit_file($component) {
       '#theme_wrappers' => array('form_element'),
       '#title' => t('Allowed file extensions'),
       '#attached' => array(
-        'js' => array(drupal_get_path('module', 'webform') . '/js/webform-admin.js'),
-        'css' => array(drupal_get_path('module', 'webform') . '/css/webform-admin.css'),
+        'js' => array(backdrop_get_path('module', 'webform') . '/js/webform-admin.js'),
+        'css' => array(backdrop_get_path('module', 'webform') . '/css/webform-admin.css'),
       ),
       '#type' => 'webform_file_extensions',
       '#weight' => 2,
@@ -89,7 +89,7 @@ function _webform_edit_file($component) {
     $form['validation']['extensions']['types']['webimages'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Web images'),
-      '#options' => drupal_map_assoc($types),
+      '#options' => backdrop_map_assoc($types),
       '#default_value' => array_intersect($current_types, $types),
     );
 
@@ -97,7 +97,7 @@ function _webform_edit_file($component) {
     $form['validation']['extensions']['types']['desktopimages'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Desktop images'),
-      '#options' => drupal_map_assoc($types),
+      '#options' => backdrop_map_assoc($types),
       '#default_value' => array_intersect($current_types, $types),
     );
 
@@ -105,7 +105,7 @@ function _webform_edit_file($component) {
     $form['validation']['extensions']['types']['documents'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Documents'),
-      '#options' => drupal_map_assoc($types),
+      '#options' => backdrop_map_assoc($types),
       '#default_value' => array_intersect($current_types, $types),
     );
 
@@ -113,7 +113,7 @@ function _webform_edit_file($component) {
     $form['validation']['extensions']['types']['media'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Media'),
-      '#options' => drupal_map_assoc($types),
+      '#options' => backdrop_map_assoc($types),
       '#default_value' => array_intersect($current_types, $types),
     );
 
@@ -121,7 +121,7 @@ function _webform_edit_file($component) {
     $form['validation']['extensions']['types']['archives'] = array(
       '#type' => 'checkboxes',
       '#title' => t('Archives'),
-      '#options' => drupal_map_assoc($types),
+      '#options' => backdrop_map_assoc($types),
       '#default_value' => array_intersect($current_types, $types),
     );
 
@@ -250,7 +250,7 @@ function _webform_edit_file_extensions_validate($element, &$form_state) {
   // Additional types.
   $additional_extensions = explode(',', $element['addextensions']['#value']);
   foreach ($additional_extensions as $extension) {
-    $clean_extension = drupal_strtolower(trim($extension));
+    $clean_extension = backdrop_strtolower(trim($extension));
     if (!empty($clean_extension) && !in_array($clean_extension, $extensions)) {
       $extensions[] = $clean_extension;
     }
@@ -274,7 +274,7 @@ function theme_webform_edit_file_extensions($variables) {
       $select_link = ' <a href="#" class="webform-select-link webform-select-link-' . $filtergroup . '">(' . t('select') . ')</a>';
       $row[] = $element['types'][$filtergroup]['#title'];
       $row[] = array('data' => $select_link, 'width' => 40);
-      $row[] = array('data' => drupal_render_children($element['types'][$filtergroup]), 'class' => array('webform-file-extensions', 'webform-select-group-' . $filtergroup));
+      $row[] = array('data' => backdrop_render_children($element['types'][$filtergroup]), 'class' => array('webform-file-extensions', 'webform-select-group-' . $filtergroup));
       $rows[] = array('data' => $row);
       unset($element['types'][$filtergroup]);
     }
@@ -285,7 +285,7 @@ function theme_webform_edit_file_extensions($variables) {
   $title = $element['addextensions']['#title'];
   $element['addextensions']['#title'] = NULL;
   $row[] = array('data' => $title, 'colspan' => 2);
-  $row[] = drupal_render($element['addextensions']);
+  $row[] = backdrop_render($element['addextensions']);
   $rows[] = $row;
 
   $header = array(array('data' => t('Category'), 'colspan' => '2'), array('data' => t('Types')));
@@ -298,7 +298,7 @@ function theme_webform_edit_file_extensions($variables) {
     '#attributes' => array('class' => array('webform-file-extensions')),
   );
 
-  return drupal_render_children($element);
+  return backdrop_render_children($element);
 }
 
 /**

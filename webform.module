@@ -99,7 +99,7 @@ function webform_menu() {
   // Admin Settings.
   $items['admin/config/content/webform'] = array(
     'title' => 'Webform settings',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('webform_admin_settings'),
     'access callback' => 'user_access',
     'access arguments' => array('administer site configuration'),
@@ -149,7 +149,7 @@ function webform_menu() {
   );
   $items['node/%webform_menu/webform/conditionals'] = array(
     'title' => 'Conditionals',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('webform_conditionals_form', 1),
     'access callback' => 'webform_node_update_access',
     'access arguments' => array(1),
@@ -159,7 +159,7 @@ function webform_menu() {
   );
   $items['node/%webform_menu/webform/configure'] = array(
     'title' => 'Form settings',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('webform_configure_form', 1),
     'access callback' => 'webform_node_update_access',
     'access arguments' => array(1),
@@ -171,7 +171,7 @@ function webform_menu() {
   // Node e-mail forms.
   $items['node/%webform_menu/webform/emails'] = array(
     'title' => 'E-mails',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('webform_emails_form', 1),
     'access callback' => 'webform_node_update_access',
     'access arguments' => array(1),
@@ -206,7 +206,7 @@ function webform_menu() {
   // Node component forms.
   $items['node/%webform_menu/webform/components/%webform_menu_component'] = array(
     'load arguments' => array(1, 5),
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('webform_component_edit_form', 1, 4, FALSE),
     'access callback' => 'webform_node_update_access',
     'access arguments' => array(1),
@@ -215,7 +215,7 @@ function webform_menu() {
   );
   $items['node/%webform_menu/webform/components/%webform_menu_component/clone'] = array(
     'load arguments' => array(1, 5),
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('webform_component_edit_form', 1, 4, TRUE),
     'access callback' => 'webform_node_update_access',
     'access arguments' => array(1),
@@ -224,7 +224,7 @@ function webform_menu() {
   );
   $items['node/%webform_menu/webform/components/%webform_menu_component/delete'] = array(
     'load arguments' => array(1, 5),
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('webform_component_delete_form', 1, 4),
     'access callback' => 'webform_node_update_access',
     'access arguments' => array(1),
@@ -300,7 +300,7 @@ function webform_menu() {
   );
   $items['node/%webform_menu/webform-results/download'] = array(
     'title' => 'Download',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('webform_results_download_form', 1),
     'access callback' => 'webform_results_access',
     'access arguments' => array(1),
@@ -319,7 +319,7 @@ function webform_menu() {
   );
   $items['node/%webform_menu/webform-results/clear'] = array(
     'title' => 'Clear',
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('webform_results_clear_form', 1),
     'access callback' => 'webform_results_clear_access',
     'access arguments' => array(1),
@@ -375,7 +375,7 @@ function webform_menu() {
   $items['node/%webform_menu/submission/%webform_menu_submission/delete'] = array(
     'title' => 'Delete',
     'load arguments' => array(1),
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('webform_submission_delete_form', 1, 3),
     'access callback' => 'webform_submission_access',
     'access arguments' => array(1, 3, 'delete'),
@@ -386,7 +386,7 @@ function webform_menu() {
   $items['node/%webform_menu/submission/%webform_menu_submission/resend'] = array(
     'title' => 'Resend e-mails',
     'load arguments' => array(1),
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('webform_submission_resend', 1, 3),
     'access callback' => 'webform_results_access',
     'access arguments' => array(1),
@@ -404,7 +404,7 @@ function webform_menu() {
       'access arguments' => array('access devel information'),
       'type' => MENU_LOCAL_TASK,
       'file' => 'devel.pages.inc',
-      'file path' => drupal_get_path('module', 'devel'),
+      'file path' => backdrop_get_path('module', 'devel'),
       'weight' => 100,
     );
     $items['node/%webform_menu/submission/%webform_menu_submission/devel/load'] = array(
@@ -420,7 +420,7 @@ function webform_menu() {
         'access arguments' => array('access devel information'),
         'type' => MENU_LOCAL_TASK,
         'file' => 'token.pages.inc',
-        'file path' => drupal_get_path('module', 'token'),
+        'file path' => backdrop_get_path('module', 'token'),
         'weight' => 5,
       );
     }
@@ -557,7 +557,7 @@ function webform_confirmation_page_access($node) {
     // match the hash in the query string.
     elseif ((int) $user->uid === 0 && (int) $submission->uid === 0) {
       $hash_query = !empty($_GET['token']) ? $_GET['token'] : NULL;
-      $hash = md5($submission->submitted . $submission->sid . drupal_get_private_key());
+      $hash = md5($submission->submitted . $submission->sid . backdrop_get_private_key());
       if ($hash_query === $hash) {
         return TRUE;
       }
@@ -923,7 +923,7 @@ function webform_theme() {
  * Implements hook_library().
  */
 function webform_library() {
-  $module_path = drupal_get_path('module', 'webform');
+  $module_path = backdrop_get_path('module', 'webform');
 
   // Webform administration.
   $libraries['admin'] = array(
@@ -945,7 +945,7 @@ function webform_library() {
  * Implements hook_element_info().
  */
 function webform_element_info() {
-  // A few of our components need to be defined here because Drupal does not
+  // A few of our components need to be defined here because Backdrop does not
   // provide these components natively. Because this hook fires on every page
   // load (even on non-webform pages), we don't put this in the component .inc
   // files because of the unnecessary loading that it would require.
@@ -1172,7 +1172,7 @@ function webform_webform_select_options_info() {
  */
 function webform_webform_submission_actions($node, $submission) {
   $actions = array();
-  $destination = drupal_get_destination();
+  $destination = backdrop_get_destination();
 
   if (module_exists('print_pdf') && user_access('access PDF version')) {
     $actions['printpdf'] = array(
@@ -1193,7 +1193,7 @@ function webform_webform_submission_actions($node, $submission) {
     $actions['resend'] = array(
       'title' => t('Resend e-mails'),
       'href' => 'node/' . $node->nid . '/submission/' . $submission->sid . '/resend',
-      'query' => drupal_get_destination(),
+      'query' => backdrop_get_destination(),
     );
   }
 
@@ -1231,7 +1231,7 @@ function webform_webform_submission_presave($node, &$submission) {
   if ($has_file_components) {
     // If we're updating a submission, build a list of previous files.
     if (isset($submission->sid)) {
-      drupal_static_reset('webform_get_submission');
+      backdrop_static_reset('webform_get_submission');
       $old_submission = webform_get_submission($node->nid, $submission->sid);
 
       foreach ($node->webform['components'] as $cid => $component) {
@@ -1401,7 +1401,7 @@ function webform_node_insert($node) {
   $webform_record['preview_excluded_components'] = implode(',', $webform_record['preview_excluded_components']);
 
   // Insert the webform.
-  $node->webform['record_exists'] = (bool) drupal_write_record('webform', $webform_record);
+  $node->webform['record_exists'] = (bool) backdrop_write_record('webform', $webform_record);
 
   // Insert the components into the database. Used with clone.module.
   if (isset($node->webform['components']) && !empty($node->webform['components'])) {
@@ -1464,7 +1464,7 @@ function webform_node_update($node) {
   $webform_record['preview_excluded_components'] = implode(',', $webform_record['preview_excluded_components']);
 
   // Update the webform entry.
-  drupal_write_record('webform', $webform_record, array('nid'));
+  backdrop_write_record('webform', $webform_record, array('nid'));
 
   // Compare the webform components and don't do anything if it's not needed.
   $original = $node->original;
@@ -1616,7 +1616,7 @@ function webform_node_defaults() {
     'components' => array(),
     'conditionals' => array(),
   );
-  drupal_alter('webform_node_defaults', $defaults);
+  backdrop_alter('webform_node_defaults', $defaults);
   return $defaults;
 }
 
@@ -1779,7 +1779,7 @@ function webform_form_node_type_form_alter(&$form, $form_state) {
       '#group' => 'additional_settings',
       '#weight' => 10,
       '#attached' => array(
-        'js' => array(drupal_get_path('module', 'webform') . '/js/node-type-form.js'),
+        'js' => array(backdrop_get_path('module', 'webform') . '/js/node-type-form.js'),
       ),
     );
     $form['webform']['webform_node'] = array(
@@ -1803,7 +1803,7 @@ function webform_form_node_type_form_alter(&$form, $form_state) {
  * fires after the hook_submit() function above.
  */
 function webform_form_submit($form, &$form_state) {
-  drupal_set_message(t('The new webform %title has been created. Add new fields to your webform with the form below.', array('%title' => $form_state['values']['title'])));
+  backdrop_set_message(t('The new webform %title has been created. Add new fields to your webform with the form below.', array('%title' => $form_state['values']['title'])));
   $form_state['redirect'] = 'node/' . $form_state['nid'] . '/webform/components';
 }
 
@@ -1879,7 +1879,7 @@ function webform_node_view($node, $view_mode) {
   }
 
   // Check if this page is cached or not.
-  $cached = drupal_page_is_cacheable();
+  $cached = backdrop_page_is_cacheable();
 
   // Check if the user can add another submission based on the individual submission limit.
   if ($node->webform['submit_limit'] != -1) { // -1: Submissions are never throttled.
@@ -1921,13 +1921,13 @@ function webform_node_view($node, $view_mode) {
   // Avoid building the same form twice on the same page request (which can
   // happen if the webform is displayed in a panel or block) because this
   // causes multistep forms to build incorrectly the second time.
-  $cached_forms = &drupal_static(__FUNCTION__, array());
+  $cached_forms = &backdrop_static(__FUNCTION__, array());
   if (isset($cached_forms[$node->nid])) {
     $form = $cached_forms[$node->nid];
   }
   // If this is the first time, generate the form array.
   else {
-    $form = drupal_get_form('webform_client_form_' . $node->nid, $node, $submission, $is_draft);
+    $form = backdrop_get_form('webform_client_form_' . $node->nid, $node, $submission, $is_draft);
     $cached_forms[$node->nid] = $form;
   }
 
@@ -1967,7 +1967,7 @@ function webform_node_view($node, $view_mode) {
 function theme_webform_view($variables) {
   // Only show the form if this user is allowed access.
   if ($variables['webform']['#enabled']) {
-    return drupal_render($variables['webform']['#form']);
+    return backdrop_render($variables['webform']['#form']);
   }
 }
 
@@ -2015,8 +2015,8 @@ function theme_webform_view_messages($variables) {
     }
     elseif ($user->uid == 0) {    
       // The user is anonymous, so (at least) needs to log in to view the form.
-      $login = url('user/login', array('query' => drupal_get_destination()));
-      $register = url('user/register', array('query' => drupal_get_destination()));
+      $login = url('user/login', array('query' => backdrop_get_destination()));
+      $register = url('user/register', array('query' => backdrop_get_destination()));
       if (config_get('webform.settings', 'user_register')) {
         $message = t('You must <a href="!login">login</a> to view this form.', array('!login' => $login));
       }
@@ -2064,7 +2064,7 @@ function theme_webform_view_messages($variables) {
   }
 
   if ($page && isset($message)) {
-    drupal_set_message($message, $type, FALSE);
+    backdrop_set_message($message, $type, FALSE);
   }
 }
 
@@ -2092,7 +2092,7 @@ function webform_block_info() {
     foreach ($result as $data) {
       $blocks['client-block-' . $data->nid] = array(
         'info' => t('Webform: !title', array('!title' => $data->title)),
-        'cache' => DRUPAL_NO_CACHE,
+        'cache' => BACKDROP_NO_CACHE,
       );
     }
   }
@@ -2114,7 +2114,7 @@ function webform_block_view($delta = '') {
   );
 
   // Get the node ID from delta.
-  $nid = drupal_substr($delta, strrpos($delta, '-') + 1);
+  $nid = backdrop_substr($delta, strrpos($delta, '-') + 1);
 
   // Load node in current language.
   if (module_exists('translation')) {
@@ -2164,7 +2164,7 @@ function webform_block_view($delta = '') {
   // a renderable so that if the block is empty it is hidden.
   $block = array(
     'subject' => check_plain($node->title),
-    'content' => drupal_render($content),
+    'content' => backdrop_render($content),
   );
   return $block;
 }
@@ -2258,8 +2258,8 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
 
   // Attach necessary JavaScript and CSS.
   $form['#attached'] = array(
-    'css' => array(drupal_get_path('module', 'webform') . '/css/webform.css'),
-    'js' => array(drupal_get_path('module', 'webform') . '/js/webform.js'),
+    'css' => array(backdrop_get_path('module', 'webform') . '/css/webform.css'),
+    'js' => array(backdrop_get_path('module', 'webform') . '/js/webform.js'),
   );
   form_load_include($form_state, 'inc', 'webform', 'includes/webform.components');
   form_load_include($form_state, 'inc', 'webform', 'includes/webform.submissions');
@@ -2748,7 +2748,7 @@ function _webform_client_form_add_component($node, $component, $component_value,
       _webform_component_classes($display_element, $component);
 
       // Allow modules to modify a "display only" webform component.
-      drupal_alter('webform_component_display', $display_element, $component);
+      backdrop_alter('webform_component_display', $display_element, $component);
 
       // The form_builder() function usually adds #parents and #id for us, but
       // because these are not marked for #input, we need to add them manually.
@@ -2758,7 +2758,7 @@ function _webform_client_form_add_component($node, $component, $component_value,
         $display_element['#parents'] = $parents;
       }
       if (!isset($display_element['#id'])) {
-        $display_element['#id'] = drupal_clean_css_identifier('edit-' . implode('-', $display_element['#parents']));
+        $display_element['#id'] = backdrop_clean_css_identifier('edit-' . implode('-', $display_element['#parents']));
       }
 
       // Add the element into the proper parent in the display.
@@ -2787,13 +2787,13 @@ function _webform_client_form_add_component($node, $component, $component_value,
       _webform_component_classes($element, $component);
 
       // Allow modules to modify a webform component that is going to be render in a form.
-      drupal_alter('webform_component_render', $element, $component);
+      backdrop_alter('webform_component_render', $element, $component);
 
       // Add the element into the proper parent in the form.
       $parent_fieldset[$component['form_key']] = $element;
     }
     else {
-      drupal_set_message(t('The webform component @type is not able to be displayed', array('@type' => $component['type'])));
+      backdrop_set_message(t('The webform component @type is not able to be displayed', array('@type' => $component['type'])));
     }
   }
 
@@ -2904,9 +2904,9 @@ function webform_client_form_validate($form, &$form_state) {
 }
 
 /**
- * Recursive validation function to trigger normal Drupal validation.
+ * Recursive validation function to trigger normal Backdrop validation.
  *
- * This function imitates _form_validate in Drupal's form.inc, only it sets
+ * This function imitates _form_validate in Backdrop's form.inc, only it sets
  * a different property to ensure that validation has occurred.
  */
 function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL, $input_values = NULL) {
@@ -2940,8 +2940,8 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
       }
 
       // Verify that the value is not longer than #maxlength.
-      if (isset($elements['#maxlength']) && drupal_strlen($elements['#value']) > $elements['#maxlength']) {
-        form_error($elements, t('!name cannot be longer than %max characters but is currently %length characters long.', array('!name' => empty($elements['#title']) ? $elements['#parents'][0] : $elements['#title'], '%max' => $elements['#maxlength'], '%length' => drupal_strlen($elements['#value']))));
+      if (isset($elements['#maxlength']) && backdrop_strlen($elements['#value']) > $elements['#maxlength']) {
+        form_error($elements, t('!name cannot be longer than %max characters but is currently %length characters long.', array('!name' => empty($elements['#title']) ? $elements['#parents'][0] : $elements['#title'], '%max' => $elements['#maxlength'], '%length' => backdrop_strlen($elements['#value']))));
       }
 
       if (isset($elements['#options']) && isset($elements['#value'])) {
@@ -2994,7 +2994,7 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
  * without realizing that the form hasn't been submitted.
  *
  * THEORY OF OPERATION:
- * The Drupal 7 Form API lacks an easy way to rebuild the form in the event of
+ * The Backdrop 7 Form API lacks an easy way to rebuild the form in the event of
  * validation errors. The opertions is thus:
  *
  * 1) The form is first displayed. If it is an existing draft,
@@ -3295,7 +3295,7 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Check if this form is sending an email.
   if (!$is_draft && !$form_state['values']['details']['finished']) {
-    drupal_static_reset('webform_get_submission');
+    backdrop_static_reset('webform_get_submission');
     $submission = webform_get_submission($node->webform['nid'], $sid);
     webform_submission_send_mail($node, $submission);
   }
@@ -3325,7 +3325,7 @@ function webform_client_form_submit($form, &$form_state) {
   elseif ($redirect_url == '<confirmation>') {
     $query = array('sid' => $sid);
     if ((int) $user->uid === 0) {
-      $query['token'] = md5($submission->submitted . $submission->sid . drupal_get_private_key());
+      $query['token'] = md5($submission->submitted . $submission->sid . backdrop_get_private_key());
     }
     $redirect = array('node/' . $node->nid . '/done', array('query' => $query));
   }
@@ -3337,11 +3337,11 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Show a message if manually set.
   if (isset($message)) {
-    drupal_set_message(webform_replace_tokens($message, $node, NULL, NULL, TRUE));
+    backdrop_set_message(webform_replace_tokens($message, $node, NULL, NULL, TRUE));
   }
   // If redirecting and we have a confirmation message, show it as a message.
   elseif (!$is_draft && !$external_url && (!empty($redirect_url) && $redirect_url != '<confirmation>') && !empty($confirmation)) {
-    drupal_set_message(check_markup(webform_replace_tokens($confirmation, $node), $node->webform['confirmation_format'], '', TRUE));
+    backdrop_set_message(check_markup(webform_replace_tokens($confirmation, $node), $node->webform['confirmation_format'], '', TRUE));
   }
 
   $form_state['redirect'] = $redirect;
@@ -3397,7 +3397,7 @@ function _webform_client_form_submit_flatten($node, $fieldset, $parent = 0) {
  * Prints the confirmation message after a successful submission.
  */
 function _webform_confirmation($node) {
-  drupal_set_title($node->title);
+  backdrop_set_title($node->title);
   webform_set_breadcrumb($node, TRUE);
   $sid = isset($_GET['sid']) ? $_GET['sid'] : NULL;
   return theme(array('webform_confirmation_' . $node->nid, 'webform_confirmation'), array('node' => $node, 'sid' => $sid));
@@ -3418,7 +3418,7 @@ function template_preprocess_webform_form(&$vars) {
     module_load_include('inc', 'webform', 'includes/webform.conditionals');
     $submission_data = isset($vars['form']['#parameters'][1]['storage']['submitted']) ? $vars['form']['#parameters'][1]['storage']['submitted'] : array();
     $settings = webform_conditional_prepare_javascript($vars['form']['#node'], $submission_data);
-    drupal_add_js(array('webform' => array('conditionals' => array('webform-client-form-' . $vars['nid'] => $settings))), 'setting');
+    backdrop_add_js(array('webform' => array('conditionals' => array('webform-client-form-' . $vars['nid'] => $settings))), 'setting');
   }
 
 }
@@ -3456,7 +3456,7 @@ function template_preprocess_webform_confirmation(&$vars) {
  */
 function template_preprocess_webform_progressbar(&$vars) {
   // Add CSS used by the progress bar.
-  drupal_add_css(drupal_get_path('module', 'webform') . '/css/webform.css');
+  backdrop_add_css(backdrop_get_path('module', 'webform') . '/css/webform.css');
 
   $vars['progressbar_page_number'] = $vars['node']->webform['progressbar_page_number'];
   $vars['progressbar_percent'] = $vars['node']->webform['progressbar_percent'];
@@ -3492,7 +3492,7 @@ function webform_element_title_display($element) {
 /**
  * A Form API #pre_render function that removes the ID from an element.
  *
- * Drupal forcibly adds IDs to all form elements, including those that do not
+ * Backdrop forcibly adds IDs to all form elements, including those that do not
  * need them for any reason, such as the actions wrapper or submit buttons. We
  * use this process function wherever we wish to remove an ID from an element.
  * Because #states and #ajax require IDs, they are only removed if the states
@@ -3568,7 +3568,7 @@ function template_preprocess_webform_element(&$variables) {
 function theme_webform_element($variables) {
   $element = $variables['element'];
 
-  $output = '<div ' . drupal_attributes($element['#wrapper_attributes']) . '>' . "\n";
+  $output = '<div ' . backdrop_attributes($element['#wrapper_attributes']) . '>' . "\n";
   $prefix = isset($element['#field_prefix']) ? '<span class="field-prefix">' . webform_filter_xss($element['#field_prefix']) . '</span> ' : '';
   $suffix = isset($element['#field_suffix']) ? ' <span class="field-suffix">' . webform_filter_xss($element['#field_suffix']) . '</span>' : '';
 
@@ -3623,7 +3623,7 @@ function theme_webform_element_text($variables) {
     if ($is_group) {
       $output .= '==' . $element['#title'] . '==';
     }
-    elseif (!in_array(drupal_substr($element['#title'], -1), array('?', ':', '!', '%', ';', '@'))) {
+    elseif (!in_array(backdrop_substr($element['#title'], -1), array('?', ':', '!', '%', ';', '@'))) {
       $output .= $element['#title'] . ':';
     }
     else {
@@ -3633,7 +3633,7 @@ function theme_webform_element_text($variables) {
 
   // Wrap long values at 65 characters, allowing for a few fieldset indents.
   // It's common courtesy to wrap at 75 characters in e-mails.
-  if ($is_group && drupal_strlen($value) > 65) {
+  if ($is_group && backdrop_strlen($value) > 65) {
     $value = wordwrap($value, 65, "\n");
     $lines = explode("\n", $value);
     foreach ($lines as $key => $line) {
@@ -3744,7 +3744,7 @@ function theme_webform_inline_radio_label($variables) {
    }
 
   // The leading whitespace helps visually separate fields from inline labels.
-  return ' <label' . drupal_attributes($attributes) . '>' . $t('!title !required', array('!title' => $title, '!required' => $required)) . "</label>\n";
+  return ' <label' . backdrop_attributes($attributes) . '>' . $t('!title !required', array('!title' => $title, '!required' => $required)) . "</label>\n";
 }
 
 /**
@@ -3766,7 +3766,7 @@ function theme_webform_inline_radio_label($variables) {
  */
 function theme_webform_mail_headers($variables) {
   $headers = array(
-    'X-Mailer' => 'Drupal Webform (PHP/' . phpversion() . ')',
+    'X-Mailer' => 'Backdrop Webform (PHP/' . phpversion() . ')',
   );
   return $headers;
 }
@@ -3797,7 +3797,7 @@ function _webform_fetch_draft_sid($nid, $uid) {
         'nid' => $nid,
         'uid' => $uid,
       );
-      drupal_alter('webform_draft', $sid, $context);
+      backdrop_alter('webform_draft', $sid, $context);
     }
   }
   return $sid;
@@ -3863,11 +3863,11 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
  *   If replacing submission-level tokens, the submission for which tokens will
  *   be created.
  * @return array
- *   An array of path and url() options, suitable for a redirect or drupal_goto.
+ *   An array of path and url() options, suitable for a redirect or backdrop_goto.
  */
 function webform_replace_url_tokens($redirect_url, $node = NULL, $submission = NULL) {
   // Parse the url into its components.
-  $parsed_redirect_url = drupal_parse_url($redirect_url);
+  $parsed_redirect_url = backdrop_parse_url($redirect_url);
   // Replace tokens in each component.
   $parsed_redirect_url['path'] = webform_replace_tokens($parsed_redirect_url['path'], $node, $submission);
   if (!empty($parsed_redirect_url['query'])) {
@@ -3884,7 +3884,7 @@ function webform_replace_url_tokens($redirect_url, $node = NULL, $submission = N
       $parsed_redirect_url['#webform_external'] = FALSE;
     }
   }
-  // Return an array suitable for a form redirect or drupal_goto.
+  // Return an array suitable for a form redirect or backdrop_goto.
   return array($parsed_redirect_url['path'], $parsed_redirect_url);
 }
 
@@ -4021,7 +4021,7 @@ function webform_page_labels($node, $form_state = array()) {
 }
 
 /**
- * Retrieve a Drupal variable with the appropriate default value.
+ * Retrieve a Backdrop variable with the appropriate default value.
  */
 function webform_variable_get($variable) {
   switch ($variable) {
@@ -4166,7 +4166,7 @@ function _webform_safe_name($name) {
       $new);
   }
 
-  $new = drupal_strtolower($new);
+  $new = backdrop_strtolower($new);
   $new = preg_replace('/[^a-z0-9_]/', '', $new);
   return $new;
 }
@@ -4279,7 +4279,7 @@ function webform_format_email_subject($subject, $node = NULL, $submission = NULL
         $display = $display_function($component, $value, 'text');
         $display['#theme_wrappers'] = array();
         $display['#webform_component'] = $component;
-        $subject = str_replace("\n", ' ', drupal_render($display));
+        $subject = str_replace("\n", ' ', backdrop_render($display));
       }
       else {
         $subject = $value;
@@ -4379,7 +4379,7 @@ function webform_components($include_disabled = FALSE, $reset = FALSE) {
       }
       $components += $module_components;
     }
-    drupal_alter('webform_component_info', $components);
+    backdrop_alter('webform_component_info', $components);
     uasort($components, function($a, $b) {
       return strnatcasecmp($a['label'], $b['label']);
     });
@@ -4470,21 +4470,21 @@ function webform_conditional_expand($element) {
  * Add class and wrapper class attributes to an element.
  */
 function _webform_component_classes(&$element, $component) {
-  if (isset($component['extra']['css_classes']) && drupal_strlen($component['extra']['css_classes'])) {
+  if (isset($component['extra']['css_classes']) && backdrop_strlen($component['extra']['css_classes'])) {
     $element['#attributes']['class'] = isset($element['#attributes']['class']) ? $element['#attributes']['class'] : array();
     $element['#attributes']['class'] = array_merge($element['#attributes']['class'], explode(' ' , $component['extra']['css_classes']));
   }
-  if (isset($component['extra']['wrapper_classes']) && drupal_strlen($component['extra']['wrapper_classes'])) {
+  if (isset($component['extra']['wrapper_classes']) && backdrop_strlen($component['extra']['wrapper_classes'])) {
     $element['#wrapper_attributes']['class'] = isset($element['#wrapper_attributes']['class']) ? $element['#wrapper_attributes']['class'] : array();
     $element['#wrapper_attributes']['class'] = array_merge($element['#wrapper_attributes']['class'], explode(' ' , $component['extra']['wrapper_classes']));
   }
 }
 
 /**
- * Disable the Drupal page cache.
+ * Disable the Backdrop page cache.
  */
 function webform_disable_page_cache() {
-  drupal_page_is_cacheable(FALSE);
+  backdrop_page_is_cacheable(FALSE);
 }
 
 /**
@@ -4546,7 +4546,7 @@ function webform_set_breadcrumb($node, $submission = NULL) {
       }
     }
 
-    drupal_set_breadcrumb($breadcrumb);
+    backdrop_set_breadcrumb($breadcrumb);
   }
 }
 
@@ -4723,7 +4723,7 @@ function webform_tt($name, $string, $langcode = NULL, $update = FALSE) {
 function webform_views_api() {
   return array(
     'api' => 3.0,
-    'path' => drupal_get_path('module', 'webform') . '/views',
+    'path' => backdrop_get_path('module', 'webform') . '/views',
   );
 }
 
@@ -4731,7 +4731,7 @@ function webform_views_api() {
  * Implements hook_views_default_views().
  */
 function webform_views_default_views() {
-  $path = './' . drupal_get_path('module', 'webform') . '/views/default_views/*.inc';
+  $path = './' . backdrop_get_path('module', 'webform') . '/views/default_views/*.inc';
   $views = array();
   foreach (glob($path) as $views_filename) {
     require_once($views_filename);
@@ -4787,7 +4787,7 @@ function webform_mollom_form_list() {
 function webform_mollom_form_info($form_id) {
   module_load_include('inc', 'webform', 'includes/webform.components');
 
-  $nid = drupal_substr($form_id, 20);
+  $nid = backdrop_substr($form_id, 20);
   $node = node_load($nid);
   $form_info = array(
     'title' => t('@name form', array('@name' => $node->title)),
@@ -4925,7 +4925,7 @@ function _webform_submission_serial_next_value_used($nid) {
  *   - 'original_node' : The original fully loaded node object being cloned.
  *
  * @see clone_node_save()
- * @see drupal_alter()
+ * @see backdrop_alter()
  */
 function webform_clone_node_alter(&$node, $context) {
   if (isset($node->webform)) {
@@ -4962,7 +4962,7 @@ function webform_input_vars_check(&$form, $form_state, $detect_key, $parent_key 
       '@count' => webform_count_terminals($_POST),
       '@limit' => (int)ini_get('max_input_vars'),
     );
-    drupal_set_message(user_access('administer site configuration')
+    backdrop_set_message(user_access('administer site configuration')
                           ? t('This form could not be submitted because $_POST was truncated to @count input vars.  PHP max_input_vars is @limit and needs to be increased.', $subs)
                           : t('This form could not be submitted because it exceeds the server configuration. Contact the administrator.'),
                       'error');

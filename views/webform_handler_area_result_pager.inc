@@ -83,7 +83,7 @@ class webform_handler_area_result_pager extends views_handler_area_result {
       unset($label); // Drop PHP reference
 
       // Include CSS needed for 'selected' class.
-      drupal_add_library('webform', 'admin');
+      backdrop_add_library('webform', 'admin');
     }
     return $sanitized_options ? t('Show !links results per page.', array('!links' => implode(' | ', $sanitized_options))) : '';
   }

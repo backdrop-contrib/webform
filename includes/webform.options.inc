@@ -61,7 +61,7 @@ function webform_options_days($component, $flat, $arguments) {
  * Options list containing country names.
  */
 function webform_options_countries($component, $flat, $arguments) {
-  include_once DRUPAL_ROOT . '/includes/locale.inc';
+  include_once BACKDROP_ROOT . '/includes/locale.inc';
   return country_get_list();
 }
 

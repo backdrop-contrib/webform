@@ -124,7 +124,7 @@ function _webform_edit_number($component) {
   $form['display']['decimals'] = array(
     '#type' => 'select',
     '#title' => t('Decimal places'),
-    '#options' => array('' => t('Automatic')) + drupal_map_assoc(range(0, 10)),
+    '#options' => array('' => t('Automatic')) + backdrop_map_assoc(range(0, 10)),
     '#description' => t('Automatic will display up to @count decimals places if needed. A value of "2" is common to format currency amounts.', array('@count' => '4')),
     '#default_value' => $component['extra']['decimals'],
     '#weight' => 2,
@@ -266,7 +266,7 @@ function theme_webform_number($variables) {
   }
   _form_set_class($element, array('form-text', 'form-number'));
 
-  return '<input' . drupal_attributes($element['#attributes']) . ' />';
+  return '<input' . backdrop_attributes($element['#attributes']) . ' />';
 }
 
 /**
@@ -333,7 +333,7 @@ function _webform_render_number($component, $value = NULL, $filter = TRUE) {
     $element['#options'] = _webform_number_select_options($component);
 
     // Add default options if using a select list with no default. This trigger's
-    // Drupal 7's adding of the option for us. See form_process_select().
+    // Backdrop's adding of the option for us. See form_process_select().
     if ($component['extra']['type'] == 'select' && $element['#default_value'] === '') {
       $element['#empty_value'] = '';
     }
@@ -578,7 +578,7 @@ function _webform_csv_data_number($component, $export_options, $value) {
 }
 
 /**
- * A Drupal Form API Validation function. Validates the entered values from
+ * A Backdrop Form API Validation function. Validates the entered values from
  * number components on the client-side form.
  *
  * @param $element

@@ -172,7 +172,7 @@ function webform_configure_form($form, &$form_state, $node) {
   );
   $user_roles = user_roles();
   foreach ($user_roles as $rid => $rname) {
-    if ($rid == DRUPAL_ANONYMOUS_RID || $rid == DRUPAL_AUTHENTICATED_RID) {
+    if ($rid == BACKDROP_ANONYMOUS_RID || $rid == BACKDROP_AUTHENTICATED_RID) {
       continue;
     }
     $user_roles[$rid] = webform_tt("user:rid:$rid:name", $rname);
@@ -513,7 +513,7 @@ function webform_configure_form_submit($form, &$form_state) {
  */
 function webform_configure_form_submit_save($form, &$form_state) {
   node_save($form['#node']);
-  drupal_set_message(t('The form settings have been updated.'));
+  backdrop_set_message(t('The form settings have been updated.'));
 
   $node = &$form['#node'];
   if (!$node->webform['block'] && function_exists('block_load') &&
@@ -534,7 +534,7 @@ function webform_configure_form_submit_save($form, &$form_state) {
       ->condition('module', 'webform')
       ->condition('delta', $block->delta)
       ->execute();
-    drupal_set_message(t('The block %info was deleted.', array('%info' => t('Webform: !title', array('!title' => $node->title)))));
+    backdrop_set_message(t('The block %info was deleted.', array('%info' => t('Webform: !title', array('!title' => $node->title)))));
     cache_clear_all();
   }
 }
@@ -553,9 +553,9 @@ function theme_webform_advanced_redirection_form($variables) {
   $form['redirect']['confirmation']['#theme_wrappers'] = array('webform_inline_radio');
   $form['redirect']['url']['#theme_wrappers'] = array('webform_inline_radio');
   $form['redirect']['none']['#theme_wrappers'] = array('webform_inline_radio');
-  $form['redirect']['url']['#title'] = t('Custom URL: !redirect_url', array('!redirect_url' => drupal_render($form['redirect_url'])));
+  $form['redirect']['url']['#title'] = t('Custom URL: !redirect_url', array('!redirect_url' => backdrop_render($form['redirect_url'])));
 
-  return drupal_render_children($form);
+  return backdrop_render_children($form);
 }
 
 /**
@@ -573,7 +573,7 @@ function theme_webform_advanced_submit_limit_form($variables) {
   $form['enforce_limit']['yes']['#theme_wrappers'] = array('webform_inline_radio');
   $form['enforce_limit']['yes']['#title'] = t('Limit each user to !count submission(s) !timespan', array('!count' => drupal_render($form['submit_limit']), '!timespan' => drupal_render($form['submit_interval'])));
 
-  return drupal_render_children($form);
+  return backdrop_render_children($form);
 }
 
 /**
@@ -589,7 +589,7 @@ function theme_webform_advanced_total_submit_limit_form($variables) {
 
   $form['enforce_total_limit']['no']['#theme_wrappers'] = array('webform_inline_radio');
   $form['enforce_total_limit']['yes']['#theme_wrappers'] = array('webform_inline_radio');
-  $form['enforce_total_limit']['yes']['#title'] = t('Limit to !count total submission(s) !timespan', array('!count' => drupal_render($form['total_submit_limit']), '!timespan' => drupal_render($form['total_submit_interval'])));
+  $form['enforce_total_limit']['yes']['#title'] = t('Limit to !count total submission(s) !timespan', array('!count' => backdrop_render($form['total_submit_limit']), '!timespan' => backdrop_render($form['total_submit_interval'])));
 
-  return drupal_render_children($form);
+  return backdrop_render_children($form);
 }

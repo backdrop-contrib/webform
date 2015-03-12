@@ -222,7 +222,7 @@ function hook_webform_submission_actions($node, $submission) {
     $actions['myaction'] = array(
       'title' => t('Do my action'),
       'href' => 'node/' . $node->nid . '/submission/' . $submission->sid . '/myaction',
-      'query' => drupal_get_destination(),
+      'query' => backdrop_get_destination(),
     );
   }
 
@@ -353,7 +353,7 @@ function hook_webform_component_delete($component) {
  * Analysis tab on the Webform.
  *
  * @param array $analysis
- *   A Drupal renderable array, passed by reference, containing the entire
+ *   A Backdrop renderable array, passed by reference, containing the entire
  *   contents of the analysis page. This typically will contain the following
  *   two major keys:
  *   - form: The form for configuring the shown analysis.
@@ -1064,12 +1064,12 @@ function _webform_theme_component() {
     'webform_grid' => array(
       'render element' => 'element',
       'file' => 'components/grid.inc',
-      'path' => drupal_get_path('module', 'webform'),
+      'path' => backdrop_get_path('module', 'webform'),
     ),
     'webform_display_grid' => array(
       'render element' => 'element',
       'file' => 'components/grid.inc',
-      'path' => drupal_get_path('module', 'webform'),
+      'path' => backdrop_get_path('module', 'webform'),
     ),
   );
 }

@@ -22,10 +22,10 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
     $view = webform_get_view($node, 'webform_submissions');
     if ($user_filter) {
       if ($user->uid) {
-        drupal_set_title(t('Submissions for %user', array('%user' => $user->name)), PASS_THROUGH);
+        backdrop_set_title(t('Submissions for %user', array('%user' => $user->name)), PASS_THROUGH);
       }
       else {
-        drupal_set_title(t('Your submissions'));
+        backdrop_set_title(t('Your submissions'));
         webform_disable_page_cache();
       }
       return $view->preview('default', array($node->nid, $user->uid));
@@ -42,10 +42,10 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
   $header = theme('webform_results_submissions_header', array('node' => $node));
   if ($user_filter) {
     if ($user->uid) {
-      drupal_set_title(t('Submissions for %user', array('%user' => $user->name)), PASS_THROUGH);
+      backdrop_set_title(t('Submissions for %user', array('%user' => $user->name)), PASS_THROUGH);
     }
     else {
-      drupal_set_title(t('Your submissions'));
+      backdrop_set_title(t('Your submissions'));
       webform_disable_page_cache();
     }
     $submissions = webform_get_submissions(array('nid' => $node->nid, 'uid' => $user->uid), $header, $pager_count);
@@ -72,7 +72,7 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
     $row[] = l(t('View'), "node/$node->nid/submission/$sid");
     $operation_count = 1;
     // No need to call this multiple times, just reference this in a variable.
-    $destination = drupal_get_destination();
+    $destination = backdrop_get_destination();
     if (webform_submission_access($node, $submission, 'edit', $user)) {
       $row[] = l(t('Edit'), "node/$node->nid/submission/$sid/edit", array('query' => $destination));
       $operation_count++;
@@ -99,7 +99,7 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
   $element['table']['#rows'] = $rows;
   $element['table']['#operation_total'] = $operation_total;
 
-  return drupal_render($element);
+  return backdrop_render($element);
 
 }
 
@@ -262,7 +262,7 @@ function theme_webform_results_table_header($variables) {
  *   The number of results to be shown per page.
  */
 function theme_webform_results_table($variables) {
-  drupal_add_library('webform', 'admin');
+  backdrop_add_library('webform', 'admin');
 
   $node = $variables['node'];
   $components = $variables['components'];
@@ -336,7 +336,7 @@ function webform_results_clear($nid) {
  *   ID of node for which to clear submissions.
  */
 function webform_results_clear_form($form, $form_state, $node) {
-  drupal_set_title(t('Clear Form Submissions'));
+  backdrop_set_title(t('Clear Form Submissions'));
 
   $form = array();
   $form['nid'] = array('#type' => 'value', '#value' => $node->nid);
@@ -350,7 +350,7 @@ function webform_results_clear_form_submit($form, &$form_state) {
   $node = node_load($form_state['values']['nid']);
   $title = $node->title;
   $message = t('Webform %title entries cleared.', array('%title' => $title));
-  drupal_set_message($message);
+  backdrop_set_message($message);
   watchdog('webform', $message);
   $form_state['redirect'] = 'node/' . $form_state['values']['nid'] . '/webform-results';
 }
@@ -362,7 +362,7 @@ function webform_results_download_form($form, &$form_state, $node) {
   module_load_include('inc', 'webform', 'includes/webform.export');
   module_load_include('inc', 'webform', 'includes/webform.components');
 
-  $form['#attached']['js'][] = drupal_get_path('module', 'webform') . '/js/webform-admin.js';
+  $form['#attached']['js'][] = backdrop_get_path('module', 'webform') . '/js/webform-admin.js';
 
   // If an export is waiting to be downloaded, redirect the user there after
   // the page has finished loading.
@@ -620,7 +620,7 @@ function webform_results_download_range_after_build($element, &$form_state) {
  * Theme the output of the export range fieldset.
  */
 function theme_webform_results_download_range($variables) {
-  drupal_add_library('webform', 'admin');
+  backdrop_add_library('webform', 'admin');
 
   $element = $variables['element'];
   $download_info = $element['#webform_download_info'];
@@ -645,7 +645,7 @@ function theme_webform_results_download_range($variables) {
   $element['latest']['#attributes']['class'][] = 'webform-set-active';
   $element['latest']['#theme_wrappers'] = array();
   $element['range_type']['latest']['#theme_wrappers'] = array('webform_inline_radio');
-  $element['range_type']['latest']['#title'] = t('Only the latest !number submissions', array('!number' => drupal_render($element['latest'])));
+  $element['range_type']['latest']['#title'] = t('Only the latest !number submissions', array('!number' => backdrop_render($element['latest'])));
 
   // Render Start-End submissions option.
   $element['start']['#attributes']['class'][] = 'webform-set-active';
@@ -653,19 +653,19 @@ function theme_webform_results_download_range($variables) {
   $element['start']['#theme_wrappers'] = array();
   $element['end']['#theme_wrappers'] = array();
   $element['range_type']['range_serial']['#theme_wrappers'] = array('webform_inline_radio');
-  $element['range_type']['range_serial']['#title'] = t('All submissions starting from: !start and optionally to: !end', array('!start' => drupal_render($element['start']), '!end' => drupal_render($element['end'])));
+  $element['range_type']['range_serial']['#title'] = t('All submissions starting from: !start and optionally to: !end', array('!start' => backdrop_render($element['start']), '!end' => backdrop_render($element['end'])));
 
-  $last_serial = $download_info['serial'] ? $download_info['serial'] : drupal_placeholder(t('none'));
+  $last_serial = $download_info['serial'] ? $download_info['serial'] : backdrop_placeholder(t('none'));
   $element['range_type']['range_serial']['#description'] = '(' . t('Last downloaded end submission number: !serial.', array('!serial' => $last_serial)) . ')';
 
-  return drupal_render_children($element);
+  return backdrop_render_children($element);
 }
 
 /**
  * Theme the output of the select list format radio buttons.
  */
 function theme_webform_results_download_select_format($variables) {
-  drupal_add_library('webform', 'admin');
+  backdrop_add_library('webform', 'admin');
 
   $element = $variables['element'];
   $output = '';
@@ -681,7 +681,7 @@ function theme_webform_results_download_select_format($variables) {
   $element['separate']['#attributes']['class'] = array();
   $element['separate']['#description'] = theme('table', array('header' => $header, 'rows' => $rows, 'sticky' => FALSE));
   $element['separate']['#description'] .= t('Separate options are more suitable for building reports, graphs, and statistics in a spreadsheet application.');
-  $output .= drupal_render($element['separate']);
+  $output .= backdrop_render($element['separate']);
 
   // Build an example table for the compact option.
   $header = array(t('My select list'));
@@ -694,7 +694,7 @@ function theme_webform_results_download_select_format($variables) {
   $element['compact']['#attributes']['class'] = array();
   $element['compact']['#description'] = theme('table', array('header' => $header, 'rows' => $rows, 'sticky' => FALSE));
   $element['compact']['#description'] .= t('Compact options are more suitable for importing data into other systems.');
-  $output .= drupal_render($element['compact']);
+  $output .= backdrop_render($element['compact']);
 
   return $output;
 }
@@ -762,7 +762,7 @@ function webform_results_download_form_submit(&$form, &$form_state) {
  * Returns a temporary export filename.
  */
 function _webform_export_tempname() {
-  return drupal_tempnam(config_get('webform.settings', 'webform_export_path'));
+  return backdrop_tempnam(config_get('webform.settings', 'webform_export_path'));
 }
 
 /**
@@ -869,7 +869,7 @@ function webform_results_export_batch($node, $format = 'delimited', $options = a
     'title' => t('Exporting submissions'),
     'init_message' => t('Creating export file'),
     'error_message' => t('The export file could not be created because an error occurred.'),
-    'file' => drupal_get_path('module', 'webform') . '/includes/webform.report.inc',
+    'file' => backdrop_get_path('module', 'webform') . '/includes/webform.report.inc',
   );
 }
 
@@ -913,7 +913,7 @@ function webform_results_download_headers($node, $options) {
       if (webform_component_feature($component['type'], 'csv')) {
         $component_header = (array) webform_component_invoke($component['type'], 'csv_headers', $component, $options);
         // Allow modules to modify the component CSV header.
-        drupal_alter('webform_csv_header', $component_header, $component);
+        backdrop_alter('webform_csv_header', $component_header, $component);
 
         // Merge component CSV header to overall CSV header
         $header[0] = array_merge($header[0], (array) $component_header[0]);
@@ -969,7 +969,7 @@ function webform_results_download_rows($node, $options, $serial_start = 0) {
     foreach (array_keys($submission_information) as $token) {
       $cell = module_invoke_all('webform_results_download_submission_information_data', $token, $submission, $options, $serial_start, $row_count);
       $context = array('token' => $token, 'submission' => $submission, 'options' => $options, 'serial_start' => $serial_start, 'row_count' => $row_count);
-      drupal_alter('webform_results_download_submission_information_data', $cell, $context);
+      backdrop_alter('webform_results_download_submission_information_data', $cell, $context);
       // implode() to ensure everything from a single value goes into one column, even if more than one module responds to this item.
       $row[] = implode(', ', $cell);
     }
@@ -983,7 +983,7 @@ function webform_results_download_rows($node, $options, $serial_start = 0) {
           $data = webform_component_invoke($component['type'], 'csv_data', $component, $options, $raw_data);
 
           // Allow modules to modify the CSV data.
-          drupal_alter('webform_csv_data', $data, $component, $submission);
+          backdrop_alter('webform_csv_data', $data, $component, $submission);
 
           if (is_array($data)) {
             $row = array_merge($row, array_values($data));
@@ -1013,7 +1013,7 @@ function webform_results_download_rows($node, $options, $serial_start = 0) {
  */
 function webform_results_download_submission_information($node, $options = array()) {
   $submission_information = module_invoke_all('webform_results_download_submission_information_info');
-  drupal_alter('webform_results_download_submission_information_info', $submission_information);
+  backdrop_alter('webform_results_download_submission_information_info', $submission_information);
 
   if (isset($options['components'])) {
     foreach ($submission_information as $key => $label) {
@@ -1338,10 +1338,10 @@ function webform_results_batch_results($node, $format, $options, &$context) {
 function webform_results_batch_finished($success, $results, $operations) {
   if ($success) {
     $download_url = url('node/' . $results['node']->nid . '/webform-results/download-file');
-    drupal_set_message(t('Export creation complete. Your download should begin now. If it does not start, <a href="!href">download the file here</a>. This file may only be downloaded once.', array('!href' => $download_url)));
+    backdrop_set_message(t('Export creation complete. Your download should begin now. If it does not start, <a href="!href">download the file here</a>. This file may only be downloaded once.', array('!href' => $download_url)));
   }
   else {
-    drupal_set_message(t('An error occurred while generating the export file.'));
+    backdrop_set_message(t('An error occurred while generating the export file.'));
     if (isset($results['file_name']) && is_file($results['file_name'])) {
       @unlink($results['file_name']);
     }
@@ -1375,7 +1375,7 @@ function webform_results_analysis($node, $sids = array(), $analysis_component = 
 
   // If showing all components, display selection form.
   if (!$analysis_component) {
-    $analysis['form'] = drupal_get_form('webform_analysis_components_form', $node);
+    $analysis['form'] = backdrop_get_form('webform_analysis_components_form', $node);
   }
 
   // Add all the components to the analysis renderable array.
@@ -1384,7 +1384,7 @@ function webform_results_analysis($node, $sids = array(), $analysis_component = 
     // Do component specific call.
     $component = $node->webform['components'][$cid];
     if ($data = webform_component_invoke($component['type'], 'analysis', $component, $sids, isset($analysis_component))) {
-      drupal_alter('webform_analysis_component_data', $data, $node, $component);
+      backdrop_alter('webform_analysis_component_data', $data, $node, $component);
       $analysis['data'][$cid] = array(
         '#theme' => array('webform_analysis_component__' . $node->nid . '__' . $cid, 'webform_analysis_component__' . $node->nid, 'webform_analysis_component'),
         '#node' => $node,
@@ -1399,8 +1399,8 @@ function webform_results_analysis($node, $sids = array(), $analysis_component = 
     }
   }
 
-  drupal_alter('webform_analysis', $analysis);
-  return drupal_render($analysis);
+  backdrop_alter('webform_analysis', $analysis);
+  return backdrop_render($analysis);
 }
 
 /**

@@ -52,7 +52,7 @@ function _webform_edit_select($component) {
   $form = array(
     '#attached' => array(
       'js' => array(
-        drupal_get_path('module', 'webform') . '/js/select-admin.js' => array('preprocess' => FALSE),
+        backdrop_get_path('module', 'webform') . '/js/select-admin.js' => array('preprocess' => FALSE),
         array('data' => array('webform' => array('selectOptionsUrl' => url('webform/ajax/options/' . $component['nid']))), 'type' => 'setting'),
       ),
     ),
@@ -287,7 +287,7 @@ function _webform_edit_validate_set_aslist($options, &$form_state) {
     foreach ($options as $option) {
       if (is_array($option)) {
         $form_state['values']['extra']['aslist'] = 1;
-        drupal_set_message(t('The component %name has automatically been set to display as a listbox in order to support option groups.', array('%name' => $form_state['values']['name'])), 'warning');
+        backdrop_set_message(t('The component %name has automatically been set to display as a listbox in order to support option groups.', array('%name' => $form_state['values']['name'])), 'warning');
         break;
       }
     }
@@ -324,7 +324,7 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
   }
 
   // Add default options if using a select list with no default. This trigger's
-  // Drupal 7's adding of the option for us. See @form_process_select().
+  // Backdrop's adding of the option for us. See @form_process_select().
   if ($component['extra']['aslist'] && !$component['extra']['multiple'] && $default_value === '') {
     $element['#empty_value'] = '';
   }
@@ -434,7 +434,7 @@ function webform_expand_select_or_other($element) {
   $element['other']['#validated'] = TRUE;
   $element['other']['#webform_validated'] = FALSE;
 
-  // The Drupal FAPI does not support #title_display inline so we need to move
+  // The Backdrop FAPI does not support #title_display inline so we need to move
   // to a supported value here to be compatible with select_or_other.
   $element['select']['#title_display'] = $element['#title_display'] === 'inline' ? 'before' : $element['#title_display'];
 
@@ -849,7 +849,7 @@ function webform_select_options_ajax($source_name = '') {
     'options' => $options,
   );
 
-  drupal_json_output($return);
+  backdrop_json_output($return);
 }
 
 /**
@@ -902,7 +902,7 @@ function _webform_select_options_info() {
       }
       $info = array_merge($info, $additions);
     }
-    drupal_alter('webform_select_options_info', $info);
+    backdrop_alter('webform_select_options_info', $info);
   }
   return $info;
 }

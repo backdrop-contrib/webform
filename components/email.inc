@@ -190,11 +190,11 @@ function theme_webform_email($variables) {
   }
   _form_set_class($element, array('form-text', 'form-email'));
 
-  return '<input' . drupal_attributes($element['#attributes']) . ' />';
+  return '<input' . backdrop_attributes($element['#attributes']) . ' />';
 }
 
 /**
- * A Drupal Form API Validation function. Validates the entered values from
+ * A Backdrop Form API Validation function. Validates the entered values from
  * email components on the client-side form.
  *
  * @param $form_element
@@ -259,7 +259,7 @@ function _webform_analysis_email($component, $sids = array()) {
 
   $result = $query->execute();
   foreach ($result as $data) {
-    if (drupal_strlen(trim($data['data'])) > 0) {
+    if (backdrop_strlen(trim($data['data'])) > 0) {
       $nonblanks++;
       $wordcount += str_word_count(trim($data['data']));
     }

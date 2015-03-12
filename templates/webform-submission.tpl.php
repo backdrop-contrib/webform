@@ -16,4 +16,4 @@
  */
 ?>
 
-<?php print drupal_render_children($renderable); ?>
+<?php print backdrop_render_children($renderable); ?>

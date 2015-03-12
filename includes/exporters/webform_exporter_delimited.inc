@@ -41,7 +41,7 @@ class webform_exporter_delimited extends webform_exporter {
       $content_type = 'text/csv';
     }
 
-    drupal_add_http_header('Content-Type', $content_type);
-    drupal_add_http_header('Content-Disposition', "attachment; filename=$filename.$extension");
+    backdrop_add_http_header('Content-Type', $content_type);
+    backdrop_add_http_header('Content-Disposition', "attachment; filename=$filename.$extension");
   }
 }

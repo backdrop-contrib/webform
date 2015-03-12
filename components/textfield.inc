@@ -230,7 +230,7 @@ function _webform_analysis_textfield($component, $sids = array()) {
 
   $result = $query->execute();
   foreach ($result as $data) {
-    if (drupal_strlen(trim($data['data'])) > 0) {
+    if (backdrop_strlen(trim($data['data'])) > 0) {
       $nonblanks++;
       $wordcount += str_word_count(trim($data['data']));
     }

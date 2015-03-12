@@ -37,37 +37,37 @@ class WebformSubmissionTestCase extends WebformTestCase {
    * Test sending a submission and check database integrity.
    */
   function testWebformSubmission() {
-    $this->drupalLogin($this->webform_users['admin']);
+    $this->backdropLogin($this->webform_users['admin']);
     $this->webformReset();
     $this->webformSubmissionExecute('sample');
-    $this->drupalLogout();
+    $this->backdropLogout();
   }
 
   /**
    * Test a submission that uses default values, and check database integrity.
    */
   function testWebformSubmissionDefault() {
-    $this->drupalLogin($this->webform_users['admin']);
+    $this->backdropLogin($this->webform_users['admin']);
     $this->webformReset();
     $this->webformSubmissionExecute('default');
-    $this->drupalLogout();
+    $this->backdropLogout();
   }
 
   /**
    * Test validation errors on each component that has specialized validation.
    */
   function testWebformSubmissionValidate() {
-    $this->drupalLogin($this->webform_users['admin']);
+    $this->backdropLogin($this->webform_users['admin']);
     $this->webformReset();
     $this->webformSubmissionValidateExecute();
-    $this->drupalLogout();
+    $this->backdropLogout();
   }
 
   /**
    * Test that required fields with no default value can't be submitted as-is.
    */
   function testWebformSubmissionRequiredComponents() {
-    $this->drupalLogin($this->webform_users['admin']);
+    $this->backdropLogin($this->webform_users['admin']);
     $this->webformReset();
 
     // Create the Webform test node, and set all components to be required
@@ -85,14 +85,14 @@ class WebformSubmissionTestCase extends WebformTestCase {
     // be made required, and date fields, which default to the current date
     // when no default value is provided; therefore, we don't expect a message
     // for those.)
-    $this->drupalPost('node/' . $node->nid, array(), 'Submit', array(), array(), 'webform-client-form-' . $node->nid);
+    $this->backdropPost('node/' . $node->nid, array(), 'Submit', array(), array(), 'webform-client-form-' . $node->nid);
     foreach ($node->webform['components'] as $component) {
       if ($component['type'] != 'hidden' && $component['type'] != 'date') {
         $this->assertText(t('!name field is required.', array('!name' => $component['name'])));
       }
     }
 
-    $this->drupalLogout();
+    $this->backdropLogout();
   }
 
   /**
@@ -102,7 +102,7 @@ class WebformSubmissionTestCase extends WebformTestCase {
    *   The values to be submitted to the webform. Either "sample" or "default".
    */
   function webformSubmissionExecute($value_type = 'sample') {
-    $path = drupal_get_path('module', 'webform');
+    $path = backdrop_get_path('module', 'webform');
     module_load_include('inc', 'webform', 'includes/webform.submissions');
 
     // Create a new Webform test node.
@@ -111,11 +111,11 @@ class WebformSubmissionTestCase extends WebformTestCase {
 
     // Visit the node page with the "foo=bar" query, to test
     // [current-page:query:?] default values.
-    $this->drupalGet('node/' . $node->nid, array('query' => array('foo' => 'bar')));
+    $this->backdropGet('node/' . $node->nid, array('query' => array('foo' => 'bar')));
     $this->assertText($node->title, t('Webform node created and accessible at !url', array('!url' => 'node/' . $node->nid)), t('Webform'));
 
     // Submit our test data.
-    $this->drupalPost(NULL, $submission_values, 'Submit', array(), array(), 'webform-client-form-' . $node->nid);
+    $this->backdropPost(NULL, $submission_values, 'Submit', array(), array(), 'webform-client-form-' . $node->nid);
 
     // Confirm that the submission has been created.
     $this->assertText($node->webform['confirmation'], t('Confirmation message "@confirmation" received.', array('@confirmation' => $node->webform['confirmation'])), t('Webform'));
@@ -126,7 +126,7 @@ class WebformSubmissionTestCase extends WebformTestCase {
     $sid = $matches[1];
 
     // Pull in the database submission and check the values.
-    drupal_static_reset('webform_get_submission');
+    backdrop_static_reset('webform_get_submission');
     $actual_submission = webform_get_submission($node->nid, $sid);
 
     $component_info = $this->testWebformComponents();
@@ -147,14 +147,14 @@ class WebformSubmissionTestCase extends WebformTestCase {
    *   The values to be submitted to the webform. Either "sample" or "default".
    */
   function webformSubmissionValidateExecute() {
-    $path = drupal_get_path('module', 'webform');
+    $path = backdrop_get_path('module', 'webform');
     module_load_include('inc', 'webform', 'includes/webform.submissions');
 
     // Create a new Webform test node.
     $node = $this->testWebformForm();
 
     // Visit the node page.
-    $this->drupalGet('node/' . $node->nid);
+    $this->backdropGet('node/' . $node->nid);
 
     foreach ($this->testWebformComponents() as $key => $component_info) {
       if (isset($component_info['error values'])) {
@@ -163,7 +163,7 @@ class WebformSubmissionTestCase extends WebformTestCase {
           $submission_values["submitted[$key]"] = $value;
 
           // Submit our test data.
-          $this->drupalPost('node/' . $node->nid, $submission_values, 'Submit', array(), array(), 'webform-client-form-' . $node->nid);
+          $this->backdropPost('node/' . $node->nid, $submission_values, 'Submit', array(), array(), 'webform-client-form-' . $node->nid);
 
           // Confirm that the validation error occurred and the submission did not save.
           $this->assertRaw($error_message, t('Validation message properly thrown: "%message".', array('%message' => $error_message)), t('Webform'));

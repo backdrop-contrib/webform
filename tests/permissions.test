@@ -43,17 +43,17 @@ class WebformPermissionsTestCase extends WebformTestCase {
     node_save($node);
 
     // Test that the authenticated user is able to access.
-    $this->drupalLogin($this->webform_users['userAccess']);
-    $this->drupalGet('node/' . $node->nid);
+    $this->backdropLogin($this->webform_users['userAccess']);
+    $this->backdropGet('node/' . $node->nid);
     $this->assertText($node->title, t('Webform node created and accessible to authenticated users at !url', array('!url' => 'node/' . $node->nid)), t('Webform'));
 
     // Confirm that the submission has been created.
-    $this->drupalPost(NULL, array(), 'Submit');
+    $this->backdropPost(NULL, array(), 'Submit');
     $this->assertText($node->webform['confirmation'], t('Confirmation message "@confirmation" received.', array('@confirmation' => $node->webform['confirmation'])), t('Webform'));
-    $this->drupalLogout();
+    $this->backdropLogout();
 
     // The anonymous user should not be able to submit.
-    $this->drupalGet('node/' . $node->nid);
+    $this->backdropGet('node/' . $node->nid);
 
     // Note: Should be: You must <a href="!login">login</a> or <a href="!register">register</a> to view this form.
     // Something in SimpleTest isn't handling the string correctly.
