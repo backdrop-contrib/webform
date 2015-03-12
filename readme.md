@@ -34,6 +34,15 @@ KNOWN ISSUES
 
 None yet.
 
+This line exists:
+if (config_get('webform.settings', 'webform_install_create_content_type'))
+
+in file webform.install
+
+Because of https://github.com/backdrop-contrib/webform/issues/1
+and
+https://www.drupal.org/node/1263584
+
 
 REQUIREMENTS
 ------------
