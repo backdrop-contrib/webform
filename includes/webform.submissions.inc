@@ -282,12 +282,14 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
       // (?:<(.*)>) = < matching stuff > (without the angle brakets)
       // $          = end of string
       preg_match('/^"?([^<]*?)"? *(?:<(.*)>)?$/', $email['from'], $matches);
-      $email['from'] = $matches && webform_variable_get('webform_email_address_format') == 'long'
-                          ? t('"!name via !site_name" <!site_mail>',
-                              array('!name' => empty($matches[1]) ? $matches[2] : $matches[1],
-                                    '!site_name' => $default_from_name,
-                                    '!site_mail' => $default_from_address))
-                          : $default_from_address;
+      $email['from'] = $default_from_address;
+      if ($matches && webform_variable_get('webform_email_address_format') == 'long') {
+        $from_name = t('!name via !site_name',
+                        array('!name' => empty($matches[1]) ? $matches[2] : $matches[1],
+                              '!site_name' => $default_from_name));
+        $from_name = implode(' ', array_map('mime_header_encode', explode(' ', $from_name)));
+        $email['from'] = '"' . $from_name . '" <' . $email['from'] . '>';
+      }
     }
 
     // Update the subject if set in the themed headers.
