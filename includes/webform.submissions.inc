@@ -529,7 +529,22 @@ function webform_submission_resend($form, $form_state, $node, $submission) {
   $form['#submission'] = $submission;
 
   foreach ($node->webform['emails'] as $eid => $email) {
-    $email_addresses = array_filter(explode(',', check_plain($email['email'])));
+
+    // Replace the "email" field content with chosen email mapping.
+    if (isset($email['extra']['email_mapping']) && !empty($submission->data[$email['email']])) {
+      $component_emails = array();
+      foreach ($submission->data[$email['email']] as $email_value) {
+        if (isset($email['extra']['email_mapping'][$email_value])) {
+          $component_emails[] = $email['extra']['email_mapping'][$email_value];
+        }
+      }
+      $email_list = implode(',', $component_emails);
+    }
+    else {
+      $email_list = $email['email'];
+    }
+
+    $email_addresses = array_filter(explode(',', check_plain($email_list)));
     foreach ($email_addresses as $key => $email_address) {
       $email_addresses[$key] = webform_format_email_address($email_address, NULL, $node, $submission, FALSE);
     }
