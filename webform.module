@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * This module provides a simple way to create forms and questionnaires.
  *
  * The initial development of this module was sponsered by ÅF Industri AB, Open
@@ -562,7 +563,8 @@ function webform_confirmation_page_access($node) {
         return TRUE;
       }
     }
-  } else {
+  }
+  else {
     // No submission exists (such as auto-deleted by another module, such as
     // webform_clear), just ensure that the user has access to view the node page.
     if (node_access('view', $node)) {
@@ -3160,7 +3162,7 @@ function webform_client_form_pages($form, &$form_state) {
         if ($component['type'] == 'pagebreak') {
           if ($forward
                ? ($component['page_num'] > $form_state['storage']['page_num'])
-               : ($component['page_num'] <= $form_state['storage']['page_num'])){
+               : ($component['page_num'] <= $form_state['storage']['page_num'])) {
             $previous_pagebreak = $component;
           }
         }
@@ -3179,7 +3181,7 @@ function webform_client_form_pages($form, &$form_state) {
                 }
               }
               else {
-                $page_num = max (1, $page_num);
+                $page_num = max(1, $page_num);
               }
             }
             $form_state['storage']['page_num'] = $page_num;
@@ -3854,7 +3856,7 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
   if ($email) {
     $token_data['webform-email'] = $email;
   }
-  return token_replace($string, $token_data, array('clear' => true, 'sanitize' => $sanitize));
+  return token_replace($string, $token_data, array('clear' => TRUE, 'sanitize' => $sanitize));
 }
 
 /**
@@ -5033,7 +5035,7 @@ function webform_pre_render_input_vars($element) {
  * @return integer
  *   The number of elements in the form that will result in $_POST entries.
  */
-function webform_count_input_vars($element){
+function webform_count_input_vars($element) {
   static $input_types = array(
     'checkbox' => 1,
     'date' => 1,
