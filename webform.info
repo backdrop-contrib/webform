@@ -10,6 +10,8 @@ dependencies[] = views
 test_dependencies[] = token
 
 ; Files that contain classes:
+files[] = includes/webform.webformconditionals.inc
+
 files[] = includes/exporters/webform_exporter_delimited.inc
 files[] = includes/exporters/webform_exporter_excel_delimited.inc
 files[] = includes/exporters/webform_exporter_excel_xlsx.inc
