@@ -1900,7 +1900,9 @@ function webform_update_7418() {
  * Add an index on submitted data.
  */
 function webform_update_7419() {
-  db_add_index('webform_submitted_data', 'data', array(array('data', 64)));
+  if (!db_index_exists('webform_submitted_data', 'data')) {
+    db_add_index('webform_submitted_data', 'data', array(array('data', 64)));
+  }
 }
 
 /**
