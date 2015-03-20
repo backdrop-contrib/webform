@@ -165,7 +165,7 @@ Drupal.webform.doCondition = function($form, settings, rgid_key) {
 
   var $target = $form.find('.' + ruleGroup['target']);
   var $targetElements;
-  if (showComponent != $target.is(':visible')) {
+  if (showComponent != Drupal.webform.isVisible($target)) {
     if (showComponent) {
       $targetElements = $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled');
       $.fn.prop ? $targetElements.prop('disabled', false) : $targetElements.removeAttr('disabled');
@@ -324,13 +324,23 @@ Drupal.webform.conditionalOperatorTimeAfter = function(element, existingValue, r
 };
 
 /**
+ * Utility to return current visibility. Uses actual visibility, except for
+ * hidden components which use the applied disabled class.
+ */
+Drupal.webform.isVisible = function($element) {
+  return $element.hasClass('webform-component-hidden')
+            ? !$element.find('input').first().hasClass('webform-conditional-disabled')
+            : $element.is(':visible');
+}
+
+/**
  * Utility function to get a string value from a select/radios/text/etc. field.
  */
 Drupal.webform.stringValue = function(element, existingValue) {
   var value = [];
   if (element) {
     var $element = $(element);
-    if ($element.is(':visible')) {
+    if (Drupal.webform.isVisible($element)) {
       // Checkboxes and radios.
       $element.find('input[type=checkbox]:checked,input[type=radio]:checked').each(function() {
         value.push(this.value);
