@@ -2047,7 +2047,6 @@ function theme_webform_view_messages($variables) {
     else {
       $message = t('You may not submit another entry at this time.');
     }
-    $type = 'error';
   }
   elseif ($total_limit_exceeded && !$cached) {
     if ($node->webform['total_submit_interval'] == -1 && $node->webform['total_submit_limit'] > 1) {
@@ -2056,7 +2055,6 @@ function theme_webform_view_messages($variables) {
     else {
       $message = t('You may not submit another entry at this time.');
     }
-    $type = 'error';
   }
 
   // If the user has submitted before, give them a link to their submissions.
