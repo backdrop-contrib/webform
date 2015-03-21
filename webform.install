@@ -561,7 +561,7 @@ function webform_schema() {
     'indexes' => array(
       'nid' => array('nid'),
       'sid_nid' => array('sid', 'nid'),
-      'data' => array(array('data', 64)),
+      // For all but MS SQL Server databases, 64-character index is created on the data column after the schema is installed.
     ),
   );
 
@@ -665,6 +665,12 @@ function webform_install() {
     variable_set('webform_node_webform', TRUE);
     // Disable comments by default on Webform nodes.
     variable_set('comment_webform', '0');
+  }
+
+  // Note: MS SQL Server does not support size-limited indexes and the column
+  // type (text) is too big to fit inside index size limits.
+  if (!db_index_exists('webform_submitted_data', 'data') && db_driver() != 'sqlsrv') {
+    db_add_index('webform_submitted_data', 'data', array(array('data', 64)));
   }
 }
 
@@ -1900,7 +1906,9 @@ function webform_update_7418() {
  * Add an index on submitted data.
  */
 function webform_update_7419() {
-  if (!db_index_exists('webform_submitted_data', 'data')) {
+  // Note: MS SQL Server does not support size-limited indexes and the column
+  // type (text) is too big to fit inside index size limits.
+  if (!db_index_exists('webform_submitted_data', 'data') && db_driver() != 'sqlsrv') {
     db_add_index('webform_submitted_data', 'data', array(array('data', 64)));
   }
 }
