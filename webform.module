@@ -2890,6 +2890,10 @@ function webform_client_form_validate($form, &$form_state) {
     // Prevalidation failed. The form cannot be submitted. Do not attemp futher validation.
     return;
   }
+  if ($form_state['webform']['preview']) {
+    // Form has already passed validation and is on the preview page.
+    return;
+  }
 
   module_load_include('inc', 'webform', 'includes/webform.submissions');
   $node = $form['#node'];
