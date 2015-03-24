@@ -3308,7 +3308,7 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Strip out empty tags added by WYSIWYG editors if needed.
   $confirmation = strlen(trim(strip_tags($node->webform['confirmation']))) ? $node->webform['confirmation'] : '';
-  $confirmation = webform_replace_tokens($confirmation, $node, $submission, NULL, TRUE);
+  $confirmation = webform_replace_tokens($confirmation, $node, $submission);
 
   // Check confirmation and redirect_url fields.
   $message = NULL;
@@ -3343,11 +3343,11 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Show a message if manually set.
   if (isset($message)) {
-    drupal_set_message(webform_replace_tokens($message, $node, NULL, NULL, TRUE));
+    drupal_set_message($message);
   }
   // If redirecting and we have a confirmation message, show it as a message.
   elseif (!$is_draft && !$external_url && (!empty($redirect_url) && $redirect_url != '<confirmation>') && !empty($confirmation)) {
-    drupal_set_message(check_markup(webform_replace_tokens($confirmation, $node), $node->webform['confirmation_format'], '', TRUE));
+    drupal_set_message(check_markup($confirmation, $node->webform['confirmation_format'], '', TRUE));
   }
 
   $form_state['redirect'] = $redirect;
@@ -3870,7 +3870,7 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
   if ($email) {
     $token_data['webform-email'] = $email;
   }
-  return token_replace($string, $token_data, array('clear' => TRUE, 'sanitize' => $sanitize));
+  return token_replace($string, $token_data, array('clear' => FALSE, 'sanitize' => $sanitize));
 }
 
 /**
