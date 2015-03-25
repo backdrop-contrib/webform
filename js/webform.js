@@ -174,6 +174,20 @@ Drupal.webform.doCondition = function($form, settings, rgid_key) {
           }
         }
         break;
+      case 'require':
+        var $requiredSpan = $target.find('.form-required, .form-optional').first();
+        if (actionResult != $requiredSpan.hasClass('form-required')) {
+          // Rather than hide the required tag, remove it so that other jQuery can respond via Drupal behaviors.
+          Drupal.detachBehaviors($requiredSpan);
+          if (actionResult) {
+            $requiredSpan.replaceWith('<span class="form-required" title="' + Drupal.t('This field is required.') + '">*</span>');
+          }
+          else {
+            $requiredSpan.replaceWith('<span class="form-optional"></span>');
+          }
+          Drupal.attachBehaviors($requiredSpan);
+        }
+        break;
     }
   });
 }

@@ -27,6 +27,7 @@ class WebformConditionals {
   protected $pageMap;
   protected $childrenMap;
   protected $visibilityMap;
+  protected $requiredMap;
 
   public $errors;
 
@@ -300,10 +301,14 @@ class WebformConditionals {
       array_walk_recursive($this->visibilityMap, function (&$status) {
         $status = WebformConditionals::componentShown;
       });
+      // Create an empty required map
+      $this->requiredMap = array_fill(1, count($this->pageMap), array());
+
     } else {
       array_walk($this->visibilityMap[$page_num], function (&$status) {
         $status = WebformConditionals::componentShown;
       });
+      $this->requiredMap[$page_num] = array();
     }
 
     module_load_include('inc', 'webform', 'includes/webform.conditionals');
@@ -365,14 +370,17 @@ class WebformConditionals {
 
         foreach ($conditional['actions'] as $action) {
           $action_result = $action['invert'] ? !$conditional_result : $conditional_result;
+          $target = $action['target'];
+          $page_num = $components[$target]['page_num'];
           switch ($action['action']) {
             case 'show':
               if (!$action_result) {
-                $target = $action['target'];
-                $page_num = $components[$target]['page_num'];
                 $this->visibilityMap[$page_num][$target] = in_array($page_num, $source_page_nums) ? self::componentDependent : self::componentHidden;
                 $this->deleteFamily($input_values, $target, $this->visibilityMap[$page_num]);
               }
+              break;
+            case 'require':
+              $this->requiredMap[$page_num][$target] = $action_result;
               break;
           }
         }
@@ -391,8 +399,7 @@ class WebformConditionals {
    * Assumes that the conditionals have already been executed on the given page.
    *
    * @param integer $cid
-   *   The component id of the component whose visibilty is being sought, or 0
-   *   for the entire page.
+   *   The component id of the component whose visibilty is being sought.
    * @param integer $page_num
    *   The page number that the component is on.
    * @return integer
@@ -433,4 +440,26 @@ class WebformConditionals {
     return $result;
   }
 
- }
+  /**
+   * Returns whether a given component is always required, always opption, or
+   * unchanged by conditional logic.
+   *
+   * Assumes that the conditionals have already been executed on the given page.
+   *
+   * @param integer $cid
+   *   The component id of the component whose required state is being sought
+   * @param integer $page_num
+   *   The page number that the component is on.
+   * @return integer
+   *   self::componentHidden, ...Shown, or ...Dependent.
+   */
+  function componentRequired($cid, $page_num) {
+    if (!$this->requiredMap) {
+      // The conditionals have not yet been executed on a submission.
+      $this->executeConditionals(array(), 0);
+      watchdog('drivingevals', 'WebformConditionals::componentRequired called prior to evaluating a submission.', 'error');
+    }
+    return isset($this->requiredMap[$page_num][$cid]) ? $this->requiredMap[$page_num][$cid] : NULL;
+  }
+
+}

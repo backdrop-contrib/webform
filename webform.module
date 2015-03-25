@@ -2775,17 +2775,23 @@ function webform_client_form_validate($form, &$form_state) {
  * a different property to ensure that validation has occurred.
  */
 function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL, $input_values = NULL) {
-  // Webform-specific enhancement, only validate the field if it was used in
-  // this submission. This both skips validation on the field and sets the value
-  // of the field to NULL, preventing any dangerous input.
   if (isset($input_values) && isset($elements['#webform_component'])) {
+    $sorter = webform_get_conditional_sorter($form_state['complete form']['#node']);
+    $cid = $elements['#webform_component']['cid'];
+    $page_num = $form_state['values']['details']['page_num'];
+    // Webform-specific enhancement, only validate the field if it was used in this submission.
+    // This both skips validation on the field and sets the value of the field to NULL, preventing any dangerous input.
     // Short-circuit validation for a hidden component (hidden by rules dependent upon component on previous pages),
     // or a component this is dependent upon values on the current page, but is hidden based upon their current values.
-    if (webform_get_conditional_sorter($form_state['complete form']['#node'])
-          ->componentVisibility($elements['#webform_component']['cid'],
-                                $form_state['values']['details']['page_num']) != WebformConditionals::componentShown) {
+    if ($sorter->componentVisibility($cid, $page_num) != WebformConditionals::componentShown) {
       form_set_value($elements, NULL, $form_state);
       return;
+    }
+
+    // Check for changes in requires status made by conditionals.
+    $required = $sorter->componentRequired($cid, $page_num);
+    if (isset($required)) {
+      $elements['#required'] = $required;
     }
   }
 
@@ -2796,7 +2802,7 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
     }
   }
   // Validate the current input.
-  if (isset($elements['#webform_validated']) && $elements['#webform_validated'] == FALSE) {
+  if (isset($elements['#webform_validated']) && !$elements['#webform_validated']) {
     if (isset($elements['#needs_validation'])) {
       // Make sure a value is passed when the field is required.
       // A simple call to empty() will not cut it here as some fields, like

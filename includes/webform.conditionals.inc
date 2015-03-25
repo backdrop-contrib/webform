@@ -73,6 +73,7 @@ function webform_conditionals_form($form, &$form_state, $node) {
       '#sources' => $source_list,
       '#actions' => array(
         'show' => t('shown'),
+        'require' => t('required'),
       ),
       '#targets' => $target_list,
       '#parents' => array('conditionals', $rgid),
