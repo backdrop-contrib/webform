@@ -283,7 +283,7 @@ class WebformConditionals {
     module_load_include('inc', 'webform', 'includes/webform.conditionals');
     
     $components = $this->node->webform['components'];
-    $conditionals = array_values($this->node->webform['conditionals']);
+    $conditionals = $this->node->webform['conditionals'];
     $operators = webform_conditional_operators();
 
 
