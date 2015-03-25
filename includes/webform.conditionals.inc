@@ -935,9 +935,11 @@ function webform_conditional_prepare_javascript($node, $submission_data, $page_n
         $rid_key = 'rid_' . $rule['rid'];
 
         // If this source has a value set, add that as a setting.
+        // NULL or array(NULL) should be sent as an empty array to simplify the jQuery.
         if (isset($submission_data[$source_component['cid']])) {
           $source_value = $submission_data[$source_component['cid']];
-          $settings['values'][$source_id] = is_array($source_value) ? $source_value : array($source_value);
+          $source_value = is_array($source_value) ? $source_value : array($source_value);
+          $settings['values'][$source_id] = $source_value === array(NULL) ? array() : $source_value;
         }
 
         $conditional_type = webform_component_property($source_component['type'], 'conditional_type');
