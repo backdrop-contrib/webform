@@ -72,8 +72,7 @@ function webform_conditionals_form($form, &$form_state, $node) {
       '#nid' => $node->nid,
       '#sources' => $source_list,
       '#actions' => array(
-        'hide' => t('hide'),
-        'show' => t('show'),
+        'show' => t('shown'),
       ),
       '#targets' => $target_list,
       '#parents' => array('conditionals', $rgid),
@@ -385,18 +384,27 @@ function _webform_conditional_expand($element) {
   unset($element['rules'][$rid]['andor']);
 
   foreach ($element['#default_value']['actions'] as $aid => $action) {
+    $element['actions'][$aid]['target'] = array(
+      '#type' => 'select',
+      '#title' => t('Target'),
+      '#options' => $element['#targets'],
+      '#default_value' => $element['#default_value']['actions'][$aid]['target'],
+    );
+    $element['actions'][$aid]['invert'] = array(
+      '#type' => 'select',
+      '#title' => t('Is/Isn\'t'),
+      '#options' => array(
+        '0' => t('is'),
+        '1' => t('isn\'t'),
+      ),
+      '#default_value' => $element['#default_value']['actions'][$aid]['invert'],
+    );
     $element['actions'][$aid]['action'] = array(
       '#type' => 'select',
       '#title' => t('Action'),
       '#options' => $element['#actions'],
       '#default_value' => $element['#default_value']['actions'][$aid]['action'],
 
-    );
-    $element['actions'][$aid]['target'] = array(
-      '#type' => 'select',
-      '#title' => t('Target'),
-      '#options' => $element['#targets'],
-      '#default_value' => $element['#default_value']['actions'][$aid]['target'],
     );
     $element['actions'][$aid]['remove'] = array(
       '#type' => 'submit',
@@ -619,14 +627,17 @@ function theme_webform_conditional($variables) {
   foreach (element_children($element['actions']) as $aid) {
     // Hide labels.
     $element['actions'][$aid]['target']['#title_display'] = 'none';
+    $element['actions'][$aid]['invert']['#title_display'] = 'none';
     $element['actions'][$aid]['action']['#title_display'] = 'none';
 
     $target = '<div class="webform-conditional-target">' . drupal_render($element['actions'][$aid]['target']) . '</div>';
+    $invert = '<div class="webform-conditional-invert">' . drupal_render($element['actions'][$aid]['invert']) . '</div>';
     $action = '<div class="webform-conditional-action">' . drupal_render($element['actions'][$aid]['action']) . '</div>';
 
-    $target_phrase = t('then !action !target', array(
-      '!action' => $action,
+    $target_phrase = t('then !target !invert !action ', array(
       '!target' => $target,
+      '!invert' => $invert,
+      '!action' => $action,
     ));
 
     $output .= '<div class="webform-conditional-action">';
@@ -1005,7 +1016,7 @@ function webform_conditional_prepare_javascript($node, $submission_data, $page_n
         $aid_key = 'aid_' . $action['aid'];
         $action_settings = array(
           'target' => 'webform-component--' . str_replace('_', '-', implode('--', $target_parents)),
-          'invert' => $action['invert'],
+          'invert' => (int)$action['invert'],
           'action' => $action['action'],
           'argument' => $action['argument'],
         );

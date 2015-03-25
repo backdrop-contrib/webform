@@ -364,19 +364,17 @@ class WebformConditionals {
                                   : count($filtered_results) === count($conditional_results);
 
         foreach ($conditional['actions'] as $action) {
-          $action_result = $conditional_result;
-          // Flip the result of the action is to hide.
-          if ($action['action'] == 'hide') {
-            $action_result = !$action_result;
+          $action_result = $action['invert'] ? !$conditional_result : $conditional_result;
+          switch ($action['action']) {
+            case 'show':
+              if (!$action_result) {
+                $target = $action['target'];
+                $page_num = $components[$target]['page_num'];
+                $this->visibilityMap[$page_num][$target] = in_array($page_num, $source_page_nums) ? self::componentDependent : self::componentHidden;
+                $this->deleteFamily($input_values, $target, $this->visibilityMap[$page_num]);
+              }
+              break;
           }
-
-          if (!$action_result) {
-            $target = $action['target'];
-            $page_num = $components[$target]['page_num'];
-            $this->visibilityMap[$page_num][$target] = in_array($page_num, $source_page_nums) ? self::componentDependent : self::componentHidden;
-            $this->deleteFamily($input_values, $target, $this->visibilityMap[$page_num]);
-          }
-
         }
 
 

@@ -136,10 +136,10 @@ class WebformConditionalsTestCase extends WebformTestCase {
       'andor' => 'and',
       'actions' => array(
         0 => array(
-          'action' => 'hide',
+          'action' => 'show',
           'target' => NULL, // Target set individually.
           'target_type' => 'component',
-          'invert' => FALSE,
+          'invert' => '1',
           'argument' => NULL,
         ),
       ),

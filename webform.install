@@ -2093,3 +2093,15 @@ function webform_update_7423() {
   return t('Webform database tables were successfully adjusted to allow more than one action for each conditional.');
 }
 
+/**
+ * Convert conditional actions of "hide" to "isn't shown".
+ */
+function webform_update_7424() {
+  $count = db_update('webform_conditional_actions')
+    ->fields(array('action' => 'show', 'invert' => 1))
+    ->condition('action', 'hide')
+    ->execute();
+  return format_plural($count,
+                       '1 "hide" conditional converted to "isn\'t" shown.',
+                       '@count conditionals converted to "isn\'t" shown.');
+}

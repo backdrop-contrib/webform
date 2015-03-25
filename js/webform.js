@@ -155,30 +155,26 @@ Drupal.webform.doCondition = function($form, settings, rgid_key) {
   }
 
   $.each(ruleGroup['actions'], function(aid, action) {
-    // Flip the result of the action is to hide.
-    var showComponent;
-    if (action['action'] == 'hide') {
-      showComponent = !conditionalResult;
-    }
-    else {
-      showComponent = conditionalResult;
-    }
-
     var $target = $form.find('.' + action['target']);
-    var $targetElements;
-    if (showComponent != Drupal.webform.isVisible($target)) {
-      if (showComponent) {
-        $targetElements = $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled');
-        $.fn.prop ? $targetElements.prop('disabled', false) : $targetElements.removeAttr('disabled');
-        $target.show();
-      }
-      else {
-        $targetElements = $target.find(':input').addClass('webform-conditional-disabled');
-        $.fn.prop ? $targetElements.prop('disabled', true) : $targetElements.attr('disabled', true);
-        $target.hide();
-      }
+    var actionResult = action['invert'] ? !conditionalResult : conditionalResult;
+    // Flip the result of the action is to hide.
+    switch (action['action']) {
+      case 'show':
+        var $targetElements;
+        if (actionResult != Drupal.webform.isVisible($target)) {
+          if (actionResult) {
+            $targetElements = $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled');
+            $.fn.prop ? $targetElements.prop('disabled', false) : $targetElements.removeAttr('disabled');
+            $target.show();
+          }
+          else {
+            $targetElements = $target.find(':input').addClass('webform-conditional-disabled');
+            $.fn.prop ? $targetElements.prop('disabled', true) : $targetElements.attr('disabled', true);
+            $target.hide();
+          }
+        }
+        break;
     }
-
   });
 }
 
