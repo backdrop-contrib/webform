@@ -283,22 +283,7 @@ function webform_schema() {
         'default' => 0,
       ),
       'andor' => array(
-        'description' => 'Whether to AND or OR the actions in this group. All actions within the same crid should have the same andor value.',
-        'type' => 'varchar',
-        'length' => 128,
-      ),
-      'action' => array(
-        'description' => 'The action to be performed on the target. Typically "show" or "hide" for targets of type "component", and "send" for targets of type "email".',
-        'type' => 'varchar',
-        'length' => 128,
-      ),
-      'target_type' => array(
-        'description' => 'The type of target to be affected. Either "component" or "email". Indicates what type of ID the "target" column contains.',
-        'type' => 'varchar',
-        'length' => 128,
-      ),
-      'target' => array(
-        'description' => 'The ID of the target to be affected. Typically a component ID.',
+        'description' => 'Whether to AND or OR the actions in this group. All actions within the same rgid should have the same andor value.',
         'type' => 'varchar',
         'length' => 128,
       ),
@@ -363,6 +348,63 @@ function webform_schema() {
       ),
     ),
     'primary key' => array('nid', 'rgid', 'rid'),
+  );
+
+  $schema['webform_conditional_actions'] = array(
+    'description' => 'Holds information about conditional actions.',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'The node identifier of a webform.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'rgid' => array(
+        'description' => 'The rule group identifier for this group of rules.',
+        'type' => 'int',
+        'size' => 'small',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'aid' => array(
+        'description' => 'The rule identifier for this conditional action.',
+        'type' => 'int',
+        'size' => 'small',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'target_type' => array(
+        'description' => 'The type of target to be affected. Currently always "component". Indicates what type of ID the "target" column contains.',
+        'type' => 'varchar',
+        'length' => 128,
+      ),
+      'target' => array(
+        'description' => 'The ID of the target to be affected. Typically a component ID.',
+        'type' => 'varchar',
+        'length' => 128,
+      ),
+      'invert' => array(
+        'description' => 'If inverted, execute when rule(s) are false.',
+        'type' => 'int',
+        'size' => 'small',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'action' => array(
+        'description' => 'The action to be performed on the target.',
+        'type' => 'varchar',
+        'length' => 128,
+      ),
+      'argument' => array(
+        'description' => 'Optional argument for action.',
+        'type' => 'text',
+      ),
+    ),
+    'primary key' => array('nid', 'rgid', 'aid'),
   );
 
   $schema['webform_emails'] = array(
@@ -1958,5 +2000,96 @@ function webform_update_7422() {
   return module_exists('search')
           ? t('Webform forms will now be included in the search index only if the Webform "field" is displayed in the "Search index" view mode.')
           : NULL;
+}
+
+/**
+ * Convert conditionals to be able to support multiple actions per conditional. Backup your database before proceeding. WARNING: Sites with many, many conditionals should execute this update via drush to avoid a PHP timeout.
+ */
+function webform_update_7423() {
+  // Create webform_condtional_actions table.
+  // The table might already exist if this update previously timed-out
+  if (!db_table_exists('webform_conditional_actions')) {
+    $schema['webform_conditional_actions'] = array(
+      'description' => 'Holds information about conditional actions.',
+      'fields' => array(
+        'nid' => array(
+          'description' => 'The node identifier of a webform.',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'rgid' => array(
+          'description' => 'The rule group identifier for this group of rules.',
+          'type' => 'int',
+          'size' => 'small',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'aid' => array(
+          'description' => 'The rule identifier for this conditional action.',
+          'type' => 'int',
+          'size' => 'small',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'target_type' => array(
+          'description' => 'The type of target to be affected. Currently always "component". Indicates what type of ID the "target" column contains.',
+          'type' => 'varchar',
+          'length' => 128,
+        ),
+        'target' => array(
+          'description' => 'The ID of the target to be affected. Typically a component ID.',
+          'type' => 'varchar',
+          'length' => 128,
+        ),
+        'invert' => array(
+          'description' => 'If inverted, execute when rule(s) are false.',
+          'type' => 'int',
+          'size' => 'small',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+          'default' => 0,
+        ),
+        'action' => array(
+          'description' => 'The action to be performed on the target.',
+          'type' => 'varchar',
+          'length' => 128,
+        ),
+        'argument' => array(
+          'description' => 'Optional argument for action.',
+          'type' => 'text',
+        ),
+      ),
+      'primary key' => array('nid', 'rgid', 'aid'),
+    );
+    db_create_table('webform_conditional_actions', $schema['webform_conditional_actions']);
+  }
+
+  // In a site with many, many conditionals, the db_insert may timeout. Start a transaction to ensure atomic action.
+  $tx = db_transaction();
+  // Copy target information from existing webform_conditional table to new webfrom_condtional_actions table.
+  db_insert('webform_conditional_actions')
+    ->from(db_select('webform_conditional', 'c')
+              ->fields('c', array('nid', 'rgid', 'action', 'target_type', 'target'))
+              ->orderBy('nid')->orderBy('rgid'))
+    ->execute();
+
+  // Commit the insert
+  unset($tx);
+
+  // Remove unneeded columns from webform_conditional.
+  foreach (array('action', 'target_type', 'target') as $fieldname) {
+    if (db_field_exists('webform_conditional', $fieldname)) {
+      db_drop_field('webform_conditional', $fieldname);
+    }
+  }
+
+  // Rebuild the registry because this point release contains a new class: WebformConditionals.
+  registry_rebuild();
+  
+  return t('Webform database tables were successfully adjusted to allow more than one action for each conditional.');
 }
 

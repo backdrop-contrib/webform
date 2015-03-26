@@ -1571,6 +1571,7 @@ function webform_node_delete($node) {
   db_delete('webform_component')->condition('nid', $node->nid)->execute();
   db_delete('webform_conditional')->condition('nid', $node->nid)->execute();
   db_delete('webform_conditional_rules')->condition('nid', $node->nid)->execute();
+  db_delete('webform_conditional_actions')->condition('nid', $node->nid)->execute();
   db_delete('webform_emails')->condition('nid', $node->nid)->execute();
   db_delete('webform_roles')->condition('nid', $node->nid)->execute();
   db_delete('webform_submissions')->condition('nid', $node->nid)->execute();
@@ -1734,6 +1735,15 @@ function webform_node_load($nodes, $types) {
         ->execute();
       foreach ($rules as $rule) {
         $nodes[$nid]->webform['conditionals'][$rule->rgid]['rules'][$rule->rid] = (array) $rule;
+      }
+      $actions = db_select('webform_conditional_actions')
+        ->fields('webform_conditional_actions')
+        ->condition('nid', $nid)
+        ->orderBy('rgid')
+        ->orderBy('aid')
+        ->execute();
+      foreach ($actions as $action) {
+        $nodes[$nid]->webform['conditionals'][$action->rgid]['actions'][$action->aid] = (array) $action;
       }
     }
   }
@@ -2577,8 +2587,11 @@ function _webform_client_form_rule_check($node, $component, $page_num, $input_va
   if (!isset($target_maps[$node->nid])) {
     $target_map = array();
     foreach ($node->webform['conditionals'] as $conditional) {
-      if ($conditional['target_type'] == 'component') {
-        $target_map[$conditional['target']][] = $conditional;
+      foreach ($conditional['actions'] as $action) {
+        if ($action['target_type'] == 'component') {
+          // Create a conditional for this one target
+          $target_map[$action['target']][] = array('actions' => array($action)) + $conditional;
+        }
       }
     }
     $target_maps[$node->nid] = $target_map;
@@ -2683,8 +2696,8 @@ function _webform_client_form_rule_check($node, $component, $page_num, $input_va
         $conditional_result = count($filtered_results) === count($conditional_results);
       }
 
-      // Flip the result of the action is to hide.
-      if ($conditional['action'] == 'hide') {
+      // Flip the result if the action is to hide.
+      if ($conditional['actions'][0]['action'] == 'hide') {
         $show_component = !$conditional_result;
       }
       else {

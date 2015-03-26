@@ -154,29 +154,32 @@ Drupal.webform.doCondition = function($form, settings, rgid_key) {
     conditionalResult = filteredResults.length === conditionalResults.length;
   }
 
-  // Flip the result of the action is to hide.
-  var showComponent;
-  if (ruleGroup['action'] == 'hide') {
-    showComponent = !conditionalResult;
-  }
-  else {
-    showComponent = conditionalResult;
-  }
-
-  var $target = $form.find('.' + ruleGroup['target']);
-  var $targetElements;
-  if (showComponent != Drupal.webform.isVisible($target)) {
-    if (showComponent) {
-      $targetElements = $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled');
-      $.fn.prop ? $targetElements.prop('disabled', false) : $targetElements.removeAttr('disabled');
-      $target.show();
+  $.each(ruleGroup['actions'], function(aid, action) {
+    // Flip the result of the action is to hide.
+    var showComponent;
+    if (action['action'] == 'hide') {
+      showComponent = !conditionalResult;
     }
     else {
-      $targetElements = $target.find(':input').addClass('webform-conditional-disabled');
-      $.fn.prop ? $targetElements.prop('disabled', true) : $targetElements.attr('disabled', true);
-      $target.hide();
+      showComponent = conditionalResult;
     }
-  }
+
+    var $target = $form.find('.' + action['target']);
+    var $targetElements;
+    if (showComponent != Drupal.webform.isVisible($target)) {
+      if (showComponent) {
+        $targetElements = $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled');
+        $.fn.prop ? $targetElements.prop('disabled', false) : $targetElements.removeAttr('disabled');
+        $target.show();
+      }
+      else {
+        $targetElements = $target.find(':input').addClass('webform-conditional-disabled');
+        $.fn.prop ? $targetElements.prop('disabled', true) : $targetElements.attr('disabled', true);
+        $target.hide();
+      }
+    }
+
+  });
 }
 
 Drupal.webform.conditionalOperatorStringEqual = function(element, existingValue, ruleValue) {

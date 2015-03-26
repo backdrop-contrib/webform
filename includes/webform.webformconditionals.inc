@@ -54,12 +54,14 @@ class WebformConditionals {
     // Generate a component to condional map for conditional targets.
     $cid_to_target_rgid = array();
     foreach ($conditionals as $rgid => $conditional) {
-      $target_id = $conditional['target'];
-      $cid_to_target_rgid[$target_id][$rgid] = $rgid;
-      if (count($cid_to_target_rgid[$target_id]) == 2) {
-        $component = $components[$target_id];
-        $errors[$component['page_num']][] = t('More than one conditional hides or shows component "@name".',
-                                              array('@name' => $component['name']));
+      foreach ($conditional['actions'] as $aid => $action) {
+        $target_id = $action['target'];
+        $cid_to_target_rgid[$target_id][$rgid] = $rgid;
+        if (count($cid_to_target_rgid[$target_id]) == 2) {
+          $component = $components[$target_id];
+          $errors[$component['page_num']][] = t('More than one conditional hides or shows component "@name".',
+                                                array('@name' => $component['name']));
+        }
       }
     }
 
@@ -333,14 +335,19 @@ class WebformConditionals {
                                   ? count($filtered_results) > 0
                                   : count($filtered_results) === count($conditional_results);
 
-        // Flip the result of the action is to hide.
-        if ($conditional['action'] == 'hide') {
-          $conditional_result = !$conditional_result;
+        foreach ($conditional['actions'] as $action) {
+          $action_result = $conditional_result;
+          // Flip the result of the action is to hide.
+          if ($action['action'] == 'hide') {
+            $action_result = !$action_result;
+          }
+
+          if (!$action_result) {
+            $this->deleteFamily($input_values, $action['target']);
+          }
+
         }
 
-        if (!$conditional_result) {
-          $this->deleteFamily($input_values, $conditional['target']);
-        }
 
       } // End conditinal loop
     } // End page loop

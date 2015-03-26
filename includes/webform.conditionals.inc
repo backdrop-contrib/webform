@@ -24,9 +24,9 @@ function webform_conditionals_form($form, &$form_state, $node) {
   else {
     $conditionals = $node->webform['conditionals'];
   }
-  // Empty out any conditionals that have no rules.
+  // Empty out any conditionals that have no rules or actions.
   foreach ($conditionals as $rgid => $conditional) {
-    if (empty($conditional['rules'])) {
+    if (empty($conditional['rules']) || empty($conditional['actions'])) {
       unset($conditionals[$rgid]);
     }
   }
@@ -146,8 +146,14 @@ function webform_conditionals_form_add($form, &$form_state) {
       ),
     ),
     'andor' => 'and',
-    'action' => 'hide',
-    'target' => NULL,
+    'actions' => array(
+      array(
+        'target' => NULL,
+        'invert' => NULL,
+        'action' => NULL,
+        'argument' => NULL,
+      ),
+    ),
     'weight' => $weight + 1,
   );
   $form_state['rebuild'] = TRUE;
@@ -169,9 +175,23 @@ function webform_conditionals_form_validate($form, &$form_state) {
   foreach ($form_state['complete form']['conditionals'] as $conditional_key => $element) {
     if (substr($conditional_key, 0, 1) !== '#' && $conditional_key !== 'new') {
       $conditional = $element['conditional'];
+      $targets = array();
+      foreach ($conditional['actions'] as $action_key => $action) {
+        if (substr($action_key, 0, 1) !== '#') {
+          $target_id = $action['target']['#value'];
+          if (isset($targets[$target_id])) {
+            form_set_error('conditionals][' . $conditional_key . '][actions][' . $action_key . '][target',
+                           t('A conditional cannot show or hide a component more than once. (%target).',
+                             array('%target' => $action['target']['#options'][$action['target']['#value']])));
+          }
+          $targets[$target_id] = $target_id;
+        }
+      }
       foreach ($conditional['rules'] as $rule_key => $rule) {
-        if (substr($rule_key, 0, 1) !== '#' && $rule['source']['#value'] === $conditional['target']['#value']) {
-          form_set_error('conditionals][' . $conditional_key . '][rules][' . $rule_key . '][source', t('The subject of the conditional cannot be the same as the component that is shown or hidden (%target).', array('%target' => $components[$conditional['target']['#value']]['name'])));
+        if (substr($rule_key, 0, 1) !== '#' && in_array($rule['source']['#value'], $targets)) {
+          form_set_error('conditionals][' . $conditional_key . '][rules][' . $rule_key . '][source',
+                         t('The subject of the conditional cannot be the same as the component that is shown or hidden (%target).',
+                         array('%target' => $components[$rule['source']['#value']]['name'])));
         }
       }
     }
@@ -192,18 +212,18 @@ function webform_conditionals_form_submit($form, &$form_state) {
   unset($form_state['values']['conditionals']['new']);
 
   $conditionals = array();
-  $targets = array();
 
   // Fill in missing properties for each value so that it can save properly.
   // TODO: Remove hard-coded source and target type.
   foreach ($form_state['values']['conditionals'] as $rgid => $conditional) {
     $conditional['rgid'] = $rgid;
-    $conditional['target_type'] = 'component';
     foreach ($conditional['rules'] as $rid => $rule) {
       $conditional['rules'][$rid]['source_type'] = 'component';
     }
+    foreach ($conditional['actions'] as $aid => $action) {
+      $conditional['actions'][$aid]['target_type'] = 'component';
+    }
     $conditionals[$rgid] = $conditional;
-    $targets[$conditional['target']] = TRUE;
   }
 
   $node->webform['conditionals'] = $conditionals;
@@ -364,18 +384,47 @@ function _webform_conditional_expand($element) {
   // Remove the last and/or.
   unset($element['rules'][$rid]['andor']);
 
-  $element['action'] = array(
-    '#type' => 'select',
-    '#title' => t('Action'),
-    '#options' => $element['#actions'],
-    '#default_value' => $element['#default_value']['action'],
-  );
-  $element['target'] = array(
-    '#type' => 'select',
-    '#title' => t('Operator'),
-    '#options' => $element['#targets'],
-    '#default_value' => $element['#default_value']['target'],
-  );
+  foreach ($element['#default_value']['actions'] as $aid => $action) {
+    $element['actions'][$aid]['action'] = array(
+      '#type' => 'select',
+      '#title' => t('Action'),
+      '#options' => $element['#actions'],
+      '#default_value' => $element['#default_value']['actions'][$aid]['action'],
+
+    );
+    $element['actions'][$aid]['target'] = array(
+      '#type' => 'select',
+      '#title' => t('Target'),
+      '#options' => $element['#targets'],
+      '#default_value' => $element['#default_value']['actions'][$aid]['target'],
+    );
+    $element['actions'][$aid]['remove'] = array(
+      '#type' => 'submit',
+      '#value' => t('-'),
+      '#submit' => array('webform_conditional_element_remove'),
+      '#name' => implode('_', $element['#parents']) . '_actions_' . $aid . '_remove',
+      '#attributes' => array('class' => array('webform-conditional-action-remove')),
+      '#ajax' => array(
+        'progress' => 'none',
+        'callback' => 'webform_conditional_element_ajax',
+        'wrapper' => $wrapper_id,
+        'event' => 'click',
+      ),
+    );
+    $element['actions'][$aid]['add'] = array(
+      '#type' => 'submit',
+      '#value' => t('+'),
+      '#submit' => array('webform_conditional_element_add'),
+      '#name' => implode('_', $element['#parents']) . '_actions_' . $aid . '_add',
+      '#attributes' => array('class' => array('webform-conditional-action-add')),
+      '#ajax' => array(
+        'progress' => 'none',
+        'callback' => 'webform_conditional_element_ajax',
+        'wrapper' => $wrapper_id,
+        'event' => 'click',
+      ),
+    );
+  }
 
   return $element;
 }
@@ -471,13 +520,13 @@ function webform_conditional_element_add($form, &$form_state) {
 }
 
 /**
- * Submit handler for webform_conditional elements to remove a rule.
+ * Submit handler for webform_conditional elements to remove a rule or action.
  */
 function webform_conditional_element_remove($form, &$form_state) {
   $button = $form_state['clicked_button'];
   $parents = $button['#parents'];
   $action = array_pop($parents);
-  $current_rid = array_pop($parents);
+  $current_id = array_pop($parents);
 
   // Recurse through the form values until we find the root Webform conditional.
   $parent_values = &$form_state['values'];
@@ -487,8 +536,8 @@ function webform_conditional_element_remove($form, &$form_state) {
     }
   }
 
-  // Remove this rule from the list of conditionals.
-  unset($parent_values[$current_rid]);
+  // Remove this rule or action from the list of conditionals.
+  unset($parent_values[$current_id]);
 
   $form_state['rebuild'] = TRUE;
 }
@@ -508,6 +557,10 @@ function webform_conditional_element_ajax($form, $form_state) {
 
   $element = $form;
   foreach ($parents as $key) {
+    if (!isset($element[$key])) {
+      // The entire conditional has been removed
+      return '';
+    }
     $element = $element[$key];
   }
 
@@ -563,20 +616,33 @@ function theme_webform_conditional($variables) {
   }
 
   // Hide labels.
-  $element['action']['#title_display'] = 'none';
-  $element['target']['#title_display'] = 'none';
+  foreach (element_children($element['actions']) as $aid) {
+    // Hide labels.
+    $element['actions'][$aid]['target']['#title_display'] = 'none';
+    $element['actions'][$aid]['action']['#title_display'] = 'none';
 
-  $action = '<div class="webform-conditional-action">' . drupal_render($element['action']) . '</div>';
-  $target = '<div class="webform-conditional-target">' . drupal_render($element['target']) . '</div>';
+    $target = '<div class="webform-conditional-target">' . drupal_render($element['actions'][$aid]['target']) . '</div>';
+    $action = '<div class="webform-conditional-action">' . drupal_render($element['actions'][$aid]['action']) . '</div>';
 
-  $target_phrase = t('then !action !target', array(
-    '!action' => $action,
-    '!target' => $target,
-  ));
+    $target_phrase = t('then !action !target', array(
+      '!action' => $action,
+      '!target' => $target,
+    ));
 
-  $output .= '<div class="webform-container-inline">';
-  $output .= $target_phrase;
-  $output .= '</div>';
+    $output .= '<div class="webform-conditional-action">';
+    $output .= '<div class="webform-container-inline webform-conditional-condition">';
+    $output .= $target_phrase;
+    $output .= '</div>';
+
+    if (isset($element['actions'][$aid]['add']) || isset($element['actions'][$aid]['remove'])) {
+      $output .= '<span class="webform-conditional-operations webform-container-inline">';
+      $output .= drupal_render($element['actions'][$aid]['remove']);
+      $output .= drupal_render($element['actions'][$aid]['add']);
+      $output .= '</span>';
+    }
+
+    $output .= '</div>';
+  }
 
   $output .= '</div>';
 
@@ -862,6 +928,12 @@ function webform_conditional_insert($conditional) {
     $rule['rid'] = $rid;
     drupal_write_record('webform_conditional_rules', $rule);
   }
+  foreach ($conditional['actions'] as $aid => $action) {
+    $action['nid'] = $conditional['nid'];
+    $action['rgid'] = $conditional['rgid'];
+    $action['aid'] = $aid;
+    drupal_write_record('webform_conditional_actions', $action);
+  }
 }
 
 /**
@@ -881,6 +953,10 @@ function webform_conditional_delete($node, $conditional) {
     ->condition('rgid', $conditional['rgid'])
     ->execute();
   db_delete('webform_conditional_rules')
+    ->condition('nid', $node->nid)
+    ->condition('rgid', $conditional['rgid'])
+    ->execute();
+  db_delete('webform_conditional_actions')
     ->condition('nid', $node->nid)
     ->condition('rgid', $conditional['rgid'])
     ->execute();
@@ -918,14 +994,23 @@ function webform_conditional_prepare_javascript($node, $submission_data, $page_n
     $conditional = $conditionals[$conditional_spec['rgid']];
     $rgid_key = 'rgid_' . $conditional['rgid'];
     // Assemble the main conditional group settings.
-    if ($conditional['target_type'] == 'component') {
-      $target_component = $components[$conditional['target']];
-      $target_parents = webform_component_parent_keys($node, $target_component);
-      $settings['ruleGroups'][$rgid_key] = array(
-        'target' => 'webform-component--' . str_replace('_', '-', implode('--', $target_parents)),
-        'andor' => $conditional['andor'],
-        'action' => $conditional['action'],
-      );
+
+    $settings['ruleGroups'][$rgid_key] = array(
+      'andor' => $conditional['andor'],
+    );
+    foreach ($conditional['actions'] as $action) {
+      if ($action['target_type'] == 'component') {
+        $target_component = $components[$action['target']];
+        $target_parents = webform_component_parent_keys($node, $target_component);
+        $aid_key = 'aid_' . $action['aid'];
+        $action_settings = array(
+          'target' => 'webform-component--' . str_replace('_', '-', implode('--', $target_parents)),
+          'invert' => $action['invert'],
+          'action' => $action['action'],
+          'argument' => $action['argument'],
+        );
+        $settings['ruleGroups'][$rgid_key]['actions'][$aid_key] = $action_settings;
+      }
     }
     // Add on the list of rules to the conditional group.
     foreach ($conditional['rules'] as $rule) {

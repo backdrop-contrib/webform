@@ -143,7 +143,13 @@ Drupal.webform.conditionalAdmin = function(context) {
     }
   });
 
+  // Add event handlers to delete the entire row if the last rule or action is removed.
   $context.find('.webform-conditional-rule-remove:not(.webform-conditional-processed)').bind('click', function() {
+    this.webformRemoveClass = '.webform-conditional-rule-remove';
+    window.setTimeout($.proxy(Drupal.webform.conditionalRemove, this), 100);
+  }).addClass('webform-conditional-processed');
+  $context.find('.webform-conditional-action-remove:not(.webform-conditional-processed)').bind('click', function() {
+    this.webformRemoveClass = '.webform-conditional-action-remove';
     window.setTimeout($.proxy(Drupal.webform.conditionalRemove, this), 100);
   }).addClass('webform-conditional-processed');
 
@@ -167,8 +173,8 @@ Drupal.webform.conditionalAdmin = function(context) {
  */
 Drupal.webform.conditionalRemove = function() {
   // See if there are any remaining rules in this element.
-  var ruleCount = $(this).parents('.webform-conditional:first').find('.webform-conditional-rule-remove').length;
-  if (ruleCount <= 1) {
+  var rowCount = $(this).parents('.webform-conditional:first').find(this.webformRemoveClass).length;
+  if (rowCount <= 1) {
     var $tableRow = $(this).parents('tr:first');
     var $table = $('#webform-conditionals-table');
     if ($tableRow.length && $table.length) {
