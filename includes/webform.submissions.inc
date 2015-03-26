@@ -674,9 +674,10 @@ function webform_submission_render($node, $submission, $email, $format, $exclude
   // Make sure at least one field is available
   if (isset($component_tree['children'])) {
     // Recursively add components to the form.
-    $input_values = $submission->data;
+    $sorter = webform_get_conditional_sorter($node);
+    $input_values = $sorter->executeConditionals($submission->data);
     foreach ($component_tree['children'] as $cid => $component) {
-      if (_webform_client_form_rule_check($node, $component, $component['page_num'], $input_values, $format)) {
+      if ($sorter->componentVisibility($cid, $component['page_num']) == webformConditionals::componentShown) {
         _webform_client_form_add_component($node, $component, NULL, $renderable, $renderable, $input_values, $format);
       }
     }

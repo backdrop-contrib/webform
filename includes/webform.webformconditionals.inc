@@ -9,12 +9,24 @@
  * Performs analysis and topological sorting on the conditionals.
  */
 class WebformConditionals {
+
+  // Define constants for the result of an analysis of the conditionals on
+  // a page for a given set of input values. Determines whether the component
+  // is always hidden, always shown, or may or may not be shown depending upon
+  // other values on the same page. In the last case, the component needs to be
+  // rendered on the page because at least one source component is on the same
+  // page. The field will be hidden with JavaScript.
+  const componentHidden = 0;
+  const componentShown = 1;
+  const componentDependent = 2;
+
   protected static $conditionals = array();
 
   protected $node;
   protected $topologicalOrder;
   protected $pageMap;
   protected $childrenMap;
+  protected $visibilityMap;
 
   public $errors;
 
@@ -263,13 +275,14 @@ class WebformConditionals {
   /**
    * Deletes the value of the given component, plus any descendents.
    */
-  protected function deleteFamily(&$input_values, $parent_id) {
+  protected function deleteFamily(&$input_values, $parent_id, &$page_visiblity_page) {
     if (isset($input_values[$parent_id])) {
       $input_values[$parent_id] = NULL;
     }
     if (isset($this->childrenMap[$parent_id])) {
       foreach ($this->childrenMap[$parent_id] as $child_id) {
-        $this->deleteFamily($input_values, $child_id);
+        $page_visiblity_page[$child_id] = $page_visiblity_page[$parent_id];
+        $this->deleteFamily($input_values, $child_id, $page_visiblity_page);
       }
     }
   }
@@ -281,6 +294,17 @@ class WebformConditionals {
   function executeConditionals($input_values, $page_num = 0) {
     $this->getOrder();
     $this->getChildrenMap();
+    if (!$this->visibilityMap || $page_num == 0) {
+      // Create a new visitibily map, with all components shown.
+      $this->visibilityMap = $this->pageMap;
+      array_walk_recursive($this->visibilityMap, function (&$status) {
+        $status = WebformConditionals::componentShown;
+      });
+    } else {
+      array_walk($this->visibilityMap[$page_num], function (&$status) {
+        $status = WebformConditionals::componentShown;
+      });
+    }
 
     module_load_include('inc', 'webform', 'includes/webform.conditionals');
     
@@ -296,6 +320,7 @@ class WebformConditionals {
         
         $conditional = $conditionals[$conditional_spec['rgid']];
         $conditional_result = TRUE;
+        $source_page_nums = array();
 
         // Execute each comparison callback.
         $conditional_results = array();
@@ -327,6 +352,9 @@ class WebformConditionals {
           // Perform the comparison callback and build the results for this group.
           $comparison_callback = $operator_info[$rule['operator']]['comparison callback'];
           $conditional_results[] = $comparison_callback($source_values, $rule['value']);
+
+          // Record page number to later determine any intra-page dependency on this source.
+          $source_page_nums[$source_component['page_num']] = $source_component['page_num'];
         }
 
         // Calculate the and/or result.
@@ -343,7 +371,10 @@ class WebformConditionals {
           }
 
           if (!$action_result) {
-            $this->deleteFamily($input_values, $action['target']);
+            $target = $action['target'];
+            $page_num = $components[$target]['page_num'];
+            $this->visibilityMap[$page_num][$target] = in_array($page_num, $source_page_nums) ? self::componentDependent : self::componentHidden;
+            $this->deleteFamily($input_values, $target, $this->visibilityMap[$page_num]);
           }
 
         }
@@ -353,6 +384,55 @@ class WebformConditionals {
     } // End page loop
 
     return $input_values;
+  }
+
+  /**
+   * Returns whether a given component is always hidden, always shown, or might
+   * be shown depending upon other sources on the same page.
+   *
+   * Assumes that the conditionals have already been executed on the given page.
+   *
+   * @param integer $cid
+   *   The component id of the component whose visibilty is being sought, or 0
+   *   for the entire page.
+   * @param integer $page_num
+   *   The page number that the component is on.
+   * @return integer
+   *   self::componentHidden, ...Shown, or ...Dependent.
+   */
+  function componentVisibility($cid, $page_num) {
+    if (!$this->visibilityMap) {
+      // The conditionals have not yet been executed on a submission.
+      $this->executeConditionals(array(), 0);
+      watchdog('drivingevals', 'WebformConditionals::componentVisibility called prior to evaluating a submission.', 'error');
+    }
+    return isset($this->visibilityMap[$page_num][$cid]) ? $this->visibilityMap[$page_num][$cid] : self::componentShown;
+  }
+
+  /**
+   * Returns whether a given page should be displayed. This requires any
+   * conditional for the page itself to be shown, plus at least one component
+   * within the page must be shown too. The first and preview pages are always
+   * shown, however.
+   *
+   * @param integer $page_num
+   *   The page number that the component is on.
+   * @return integer
+   *   self::componentHidden or  ...Shown.
+   */
+  function pageVisibility($page_num) {
+    $result = self::componentHidden;
+    if ($page_num == 1 || empty($this->visibilityMap[$page_num])) {
+      $result = self::componentShown;
+    } elseif (($page_map = $this->pageMap[$page_num]) && $this->componentVisibility(reset($page_map), $page_num)) {
+      while ($cid = next($page_map)) {
+        if ($this->componentVisibility($cid, $page_num) != self::componentHidden) {
+          $result = self::componentShown;
+          break;
+        }
+      }
+    }
+    return $result;
   }
 
  }

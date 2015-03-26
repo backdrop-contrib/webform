@@ -2376,11 +2376,15 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
       }
     }
 
+    // Generate conditional topological order & report any errors.
+    $sorter = webform_get_conditional_sorter($node);
+    $sorter->reportErrors();
+
+    // Excecute the condtionals on the current input values
+    $input_values = $sorter->executeConditionals($input_values);
+
     // Allow values from other pages to be sent to browser for conditionals.
     $form['#conditional_values'] = $input_values;
-
-    // Generate conditional topological order & report any errors.
-    webform_get_conditional_sorter($node)->reportErrors();
 
     if ($page_count > 1) {
       $page_labels = webform_page_labels($node, $form_state);
@@ -2406,7 +2410,7 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
         $next_page_labels[$component['page_num'] - 1] = !empty($component['extra']['next_page_label']) ? t($component['extra']['next_page_label']) : t('Next Page >');
         $prev_page_labels[$component['page_num']] = !empty($component['extra']['prev_page_label']) ? t($component['extra']['prev_page_label']) : t('< Previous Page');
       }
-      if ($filter == FALSE || _webform_client_form_rule_check($node, $component, $page_num, $input_values)) {
+      if (!$filter || $sorter->componentVisibility($cid, $page_num)) {
         $component_value = isset($input_values[$cid]) ? $input_values[$cid] : NULL;
         _webform_client_form_add_component($node, $component, $component_value, $form['submitted'], $form, $input_values, 'form', $page_num, $filter);
       }
@@ -2549,176 +2553,6 @@ function webform_client_form_process($form, $form_state) {
   return $form;
 }
 
-/**
- * Check if a component should be displayed on the current page.
- *
- * @param $node
- *   The full node object.
- * @param $component
- *   The target component that is being checked if it should be shown.
- * @param $page_num
- *   The page number of the component that is being checked. If the number "0"
- *   is passed in, the component visibility is checked regardless of its page
- *   number.
- * @param $input_values
- *   An array of all the values in the form used for comparison. Values from
- *   $form_state['values']['submitted'] or $submission->data may be used.
- * @param $format
- *   The format the component will be displayed in. May be one of the following:
- *   - form: Show in an editable form.
- *   - html: Show in HTML results.
- *   - text: Show in plain text.
- *
- * @return
- *   A Webform constant of one of the following:
- *   - WEBFORM_CONDITIONAL_EXCLUDE (0): The component should be hidden.
- *   - WEBFORM_CONDITIONAL_INCLUDE (1): The component should be shown.
- *   - WEBFORM_CONDITIONAL_SAME_PAGE (2): The component should be hidden, but
- *       needs to be rendered on the page because at least one source component
- *       is on the same page. The field will be hidden with JavaScript. This
- *       constant is only used if the $format parameter is "form".
- */
-function _webform_client_form_rule_check($node, $component, $page_num, $input_values, $format = 'form') {
-  // Hold a static map of target CID to conditionals for lookup efficiency.
-  static $target_maps = array();
-  static $is_shown = array();
-  static $cyclic_component = array();
-
-  if (!isset($target_maps[$node->nid])) {
-    $target_map = array();
-    foreach ($node->webform['conditionals'] as $conditional) {
-      foreach ($conditional['actions'] as $action) {
-        if ($action['target_type'] == 'component') {
-          // Create a conditional for this one target
-          $target_map[$action['target']][] = array('actions' => array($action)) + $conditional;
-        }
-      }
-    }
-    $target_maps[$node->nid] = $target_map;
-  }
-  else {
-    $target_map = $target_maps[$node->nid];
-  }
-
-  // Short cut the rest of this function if the answer has already been calculated
-  if (isset($is_shown[$node->nid][$page_num][$component['cid']])) {
-    return $is_shown[$node->nid][$page_num][$component['cid']];
-  }
-
-  // Short cut the rest of this function if no conditionals are defined.
-  if (empty($target_map)) {
-    return WEBFORM_CONDITIONAL_INCLUDE;
-  }
-
-  // Check the rules for this entire page. Note individual page breaks are
-  // checked down below in the individual component rule checks.
-  $show_page = TRUE;
-  if ($component['page_num'] > 1 && $component['type'] != 'pagebreak') {
-    foreach ($node->webform['components'] as $cid => $page_component) {
-      if ($page_component['type'] == 'pagebreak' && $page_component['page_num'] == $page_num) {
-        $show_page = _webform_client_form_rule_check($node, $page_component, $page_num, $input_values, $format);
-        break;
-      }
-    }
-  }
-
-  // Check any parents' visibility rules.
-  $show_parent = $show_page;
-  if ($show_parent && $component['pid'] && isset($node->webform['components'][$component['pid']])) {
-    $parent_component = $node->webform['components'][$component['pid']];
-    $show_parent = _webform_client_form_rule_check($node, $parent_component, $page_num, $input_values, $format);
-  }
-
-  // Check the individual component rules.
-  $show_component = $show_parent;
-  if ($show_component && ($page_num == 0 || $component['page_num'] == $page_num) && isset($target_map[$component['cid']])) {
-    module_load_include('inc', 'webform', 'includes/webform.conditionals');
-    $operators = webform_conditional_operators();
-    $conditionals = $target_map[$component['cid']];
-    foreach ($conditionals as $conditional) {
-      $conditional_result = TRUE;
-
-      // Execute each comparison callback.
-      $conditional_results = array();
-      foreach ($conditional['rules'] as $rule) {
-        // TODO: Support other source types besides components?
-        if ($rule['source_type'] !== 'component') {
-          continue;
-        }
-        $source_component = $node->webform['components'][$rule['source']];
-        $source_cid = $source_component['cid'];
-
-        // If destined for form output, and a source component is on the same
-        // page as the current page, we are unable to tell if the target
-        // component is needed, so we return the same page constant, which
-        // evaluates to TRUE (a value of 2), if the component would otherwise
-        // be hidden.
-        if ($format === 'form' && $source_component['page_num'] == $page_num) {
-          if (in_array($component['cid'], $cyclic_component)) {
-            // Cyclic dependency detected. Assume intrapage_dependent.
-            return WEBFORM_CONDITIONAL_INCLUDE;
-          }
-          array_push($cyclic_component, $component['cid']);
-          if (_webform_client_form_rule_check($node, $source_component, $page_num, $input_values, $format)) {
-            $intrapage_dependent = TRUE;
-          }
-          array_pop($cyclic_component);
-        }
-
-        $source_values = array();
-        if (isset($input_values[$source_cid])) {
-          $component_value = $input_values[$source_cid];
-          // For select_or_other components, use only the select values because $source_values must not be a nested array.
-          // During preview, the array is already flattened.
-          if ($source_component['type'] === 'select' &&
-              !empty($source_component['extra']['other_option']) &&
-              isset($component_value['select'])) {
-            $component_value = $component_value['select'];
-          }
-          $source_values = is_array($component_value) ? $component_value : array($component_value);
-        }
-
-        // Determine the operator and callback.
-        $conditional_type = webform_component_property($source_component['type'], 'conditional_type');
-        $operator_info = $operators[$conditional_type];
-
-        // Perform the comparison callback and build the results for this group.
-        $comparison_callback = $operator_info[$rule['operator']]['comparison callback'];
-        $conditional_results[] = $comparison_callback($source_values, $rule['value']);
-      }
-
-      // Calculate the and/or result.
-      $filtered_results = array_filter($conditional_results);
-      if ($conditional['andor'] === 'or') {
-        $conditional_result = count($filtered_results) > 0;
-      }
-      else {
-        $conditional_result = count($filtered_results) === count($conditional_results);
-      }
-
-      // Flip the result if the action is to hide.
-      if ($conditional['actions'][0]['action'] == 'hide') {
-        $show_component = !$conditional_result;
-      }
-      else {
-        $show_component = $conditional_result;
-      }
-      if (!$show_component && isset($intrapage_dependent)) {
-        $show_component = WEBFORM_CONDITIONAL_SAME_PAGE;
-      }
-    }
-  }
-
-  // Convert the result to our defined constants.
-  if (is_bool($show_component)) {
-    $show_component = $show_component ? WEBFORM_CONDITIONAL_INCLUDE : WEBFORM_CONDITIONAL_EXCLUDE;
-  }
-
-  // Remember whether this item is shown on this page
-  $is_shown[$node->nid][$page_num][$component['cid']] = $show_component;
-
-  return $show_component;
-}
 
 /**
  * Add a component to a renderable array. Called recursively for fieldsets.
@@ -2828,9 +2662,10 @@ function _webform_client_form_add_component($node, $component, $component_value,
   }
 
   if (isset($component['children']) && is_array($component['children'])) {
+    $sorter = webform_get_conditional_sorter($node);
     foreach ($component['children'] as $scid => $subcomponent) {
       $subcomponent_value = isset($input_values[$scid]) ? $input_values[$scid] : NULL;
-      if (_webform_client_form_rule_check($node, $subcomponent, $page_num, $input_values, $format)) {
+      if ($sorter->componentVisibility($scid, $subcomponent['page_num'])) {
         _webform_client_form_add_component($node, $subcomponent, $subcomponent_value, $parent_fieldset[$component['form_key']], $form, $input_values, $format, $page_num, $filter);
       }
     }
@@ -2944,8 +2779,11 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
   // this submission. This both skips validation on the field and sets the value
   // of the field to NULL, preventing any dangerous input.
   if (isset($input_values) && isset($elements['#webform_component'])) {
-    $needs_validation = _webform_client_form_rule_check($form_state['complete form']['#node'], $elements['#webform_component'], 0, $input_values);
-    if (!$needs_validation) {
+    // Short-circuit validation for a hidden component (hidden by rules dependent upon component on previous pages),
+    // or a component this is dependent upon values on the current page, but is hidden based upon their current values.
+    if (webform_get_conditional_sorter($form_state['complete form']['#node'])
+          ->componentVisibility($elements['#webform_component']['cid'],
+                                $form_state['values']['details']['page_num']) != WebformConditionals::componentShown) {
       form_set_value($elements, NULL, $form_state);
       return;
     }
@@ -3146,7 +2984,7 @@ function webform_client_form_pages($form, &$form_state) {
       $forward = 1;
     }
     elseif (end($form_state['clicked_button']['#parents']) == 'previous') {
-      $forward = 0;
+      $forward = -1;
     }
     $current_page = $form_state['storage']['page_num'];
 
@@ -3157,62 +2995,17 @@ function webform_client_form_pages($form, &$form_state) {
       //    3) the preview page, forcing its display if the form would unexpectedly submit, or
       //    4) page 1 even if empty, if no other previous page would be shown
       $preview_page_num = $form_state['storage']['page_count'] + (int)!$form_state['webform']['preview'];
-      $page_zero = array(
-        array(
-          'type' => 'faux',
-          'page_num' => 0,
-        ),
-        array(
-          'type' => 'pagebreak',
-          'page_num' => 1,
-        ),
-      );
-      $page_preview = array(
-        array(
-          'type' => 'pagebreak',
-          'page_num' => $preview_page_num,
-        ),
-         array(
-          'type' => 'faux',
-          'page_num' => $preview_page_num,
-        ),
-      );
-      $components = array_merge($page_zero, $node->webform['components'], $page_preview);
-      if (!$forward) {
-        $components = array_reverse($components);
+      $page_num = $current_page;
+      do {
+        $page_num += $forward;
+      } while (!webform_get_conditional_sorter($node)->pageVisibility($page_num));
+      if (!$form_state['webform']['preview'] && $page_num == $preview_page_num) {
+        // Force a preview to avert an unintended submission via Next.
+        $form_state['webform']['preview'] = TRUE;
+        $form_state['storage']['preview'] = TRUE;
+        $form_state['storage']['page_count']++;
       }
-      foreach ($components as $component) {
-        if ($component['type'] == 'pagebreak') {
-          if ($forward
-               ? ($component['page_num'] > $form_state['storage']['page_num'])
-               : ($component['page_num'] <= $form_state['storage']['page_num'])) {
-            $previous_pagebreak = $component;
-          }
-        }
-        elseif (isset($previous_pagebreak)) {
-          // If a component is shown on this page, advance to this page.
-          $page_num = $previous_pagebreak['page_num'] + $forward - 1;
-          if ($component['page_num'] == $page_num &&
-              ($component['type'] == 'faux' || _webform_client_form_rule_check($node, $component, $page_num, $form_state['values']['submitted']) == WEBFORM_CONDITIONAL_INCLUDE)) {
-            if ($component['type'] == 'faux') {
-              if ($forward) {
-                if (!$form_state['webform']['preview']) {
-                  // Force a preview to avert an unintended submission via Next.
-                  $form_state['webform']['preview'] = TRUE;
-                  $form_state['storage']['preview'] = TRUE;
-                  $form_state['storage']['page_count']++;
-                }
-              }
-              else {
-                $page_num = max(1, $page_num);
-              }
-            }
-            $form_state['storage']['page_num'] = $page_num;
-            break; // LOOP EXIT
-          }
-        }
-      }
-
+      $form_state['storage']['page_num'] = $page_num;
     }
 
     // The form is done if the page number is greater than the page count.
