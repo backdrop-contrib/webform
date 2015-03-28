@@ -345,12 +345,15 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE) {
  * Implements _webform_submit_component().
  */
 function _webform_submit_file($component, $value) {
-  if (is_array($value)) {
-    return !empty($value['fid']) ? $value['fid'] : '';
+  $fid = is_array($value)
+            ? (!empty($value['fid']) ? $value['fid'] : '')
+            : (!empty($value) ? $value : '');
+  // Extend access to this file, even if the submission has not been saved yet. This may happen when
+  // previewing a private file which was selected but not explicitly uploaded, and then previewed.
+  if ($fid) {
+    $_SESSION['webform_files'][$fid] = $fid;
   }
-  else {
-    return !empty($value) ? $value : '';
-  }
+  return $fid;
 }
 
 /**
