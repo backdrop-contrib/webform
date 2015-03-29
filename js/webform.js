@@ -98,9 +98,7 @@ Drupal.webform.conditional = function(context) {
       $currentForm.bind('change', { 'settings': settings }, Drupal.webform.conditionalCheck);
 
       // Trigger all the elements that cause conditionals on this form.
-      $.each(Drupal.settings.webform.conditionals[formKey]['ruleGroups'], function(rgid_key, rule_group) {
-        Drupal.webform.doCondition($form, settings, rgid_key);
-      });
+      Drupal.webform.doConditions($form, settings);
     })
   });
 };
@@ -116,80 +114,108 @@ Drupal.webform.conditionalCheck = function(e) {
   var triggerElementKey = $triggerElement.attr('class').match(/webform-component--[^ ]+/)[0];
   var settings = e.data.settings;
   if (settings.sourceMap[triggerElementKey]) {
-    $.each(settings.ruleGroups, function(rgid_key, rule_group) {
-      Drupal.webform.doCondition($form, settings, rgid_key);
-    });
+    Drupal.webform.doConditions($form, settings);
   }
 };
 
 /**
- * Processes one condition.
+ * Processes all conditional.
  */
-Drupal.webform.doCondition = function($form, settings, rgid_key) {
-  var ruleGroup = settings.ruleGroups[rgid_key];
+Drupal.webform.doConditions = function($form, settings) {
+  // Track what has be set/shown for each target component.
+  var targetLocked = [];
 
-  // Perform the comparison callback and build the results for this group.
-  var conditionalResult = true;
-  var conditionalResults = [];
-  $.each(ruleGroup['rules'], function(m, rule) {
-    var elementKey = rule['source'];
-    var element = $form.find('.' + elementKey)[0];
-    var existingValue = settings.values[elementKey] ? settings.values[elementKey] : null;
-    conditionalResults.push(window['Drupal']['webform'][rule.callback](element, existingValue, rule['value'] ));
-  });
+  $.each(settings.ruleGroups, function(rgid_key, rule_group) {
+    var ruleGroup = settings.ruleGroups[rgid_key];
 
-  // Filter out false values.
-  var filteredResults = [];
-  for (var i = 0; i < conditionalResults.length; i++) {
-    if (conditionalResults[i]) {
-      filteredResults.push(conditionalResults[i]);
+    // Perform the comparison callback and build the results for this group.
+    var conditionalResult = true;
+    var conditionalResults = [];
+    $.each(ruleGroup['rules'], function(m, rule) {
+      var elementKey = rule['source'];
+      var element = $form.find('.' + elementKey)[0];
+      var existingValue = settings.values[elementKey] ? settings.values[elementKey] : null;
+      conditionalResults.push(window['Drupal']['webform'][rule.callback](element, existingValue, rule['value'] ));
+    });
+
+    // Filter out false values.
+    var filteredResults = [];
+    for (var i = 0; i < conditionalResults.length; i++) {
+      if (conditionalResults[i]) {
+        filteredResults.push(conditionalResults[i]);
+      }
     }
-  }
 
-  // Calculate the and/or result.
-  if (ruleGroup['andor'] === 'or') {
-    conditionalResult = filteredResults.length > 0;
-  }
-  else {
-    conditionalResult = filteredResults.length === conditionalResults.length;
-  }
-
-  $.each(ruleGroup['actions'], function(aid, action) {
-    var $target = $form.find('.' + action['target']);
-    var actionResult = action['invert'] ? !conditionalResult : conditionalResult;
-    // Flip the result of the action is to hide.
-    switch (action['action']) {
-      case 'show':
-        var $targetElements;
-        if (actionResult != Drupal.webform.isVisible($target)) {
-          if (actionResult) {
-            $targetElements = $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled');
-            $.fn.prop ? $targetElements.prop('disabled', false) : $targetElements.removeAttr('disabled');
-            $target.show();
-          }
-          else {
-            $targetElements = $target.find(':input').addClass('webform-conditional-disabled');
-            $.fn.prop ? $targetElements.prop('disabled', true) : $targetElements.attr('disabled', true);
-            $target.hide();
-          }
-        }
-        break;
-      case 'require':
-        var $requiredSpan = $target.find('.form-required, .form-optional').first();
-        if (actionResult != $requiredSpan.hasClass('form-required')) {
-          // Rather than hide the required tag, remove it so that other jQuery can respond via Drupal behaviors.
-          Drupal.detachBehaviors($requiredSpan);
-          if (actionResult) {
-            $requiredSpan.replaceWith('<span class="form-required" title="' + Drupal.t('This field is required.') + '">*</span>');
-          }
-          else {
-            $requiredSpan.replaceWith('<span class="form-optional"></span>');
-          }
-          Drupal.attachBehaviors($requiredSpan);
-        }
-        break;
+    // Calculate the and/or result.
+    if (ruleGroup['andor'] === 'or') {
+      conditionalResult = filteredResults.length > 0;
     }
-  });
+    else {
+      conditionalResult = filteredResults.length === conditionalResults.length;
+    }
+
+    $.each(ruleGroup['actions'], function(aid, action) {
+      var $target = $form.find('.' + action['target']);
+      var actionResult = action['invert'] ? !conditionalResult : conditionalResult;
+      switch (action['action']) {
+        case 'show':
+          if (actionResult != Drupal.webform.isVisible($target)) {
+            var $targetElements = actionResult
+                                    ? $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled')
+                                    : $target.find(':input').addClass('webform-conditional-disabled');
+            $targetElements.webformProp('disabled', !actionResult);
+            $target.toggle();
+            if (!actionResult) {
+              // Record that the target was hidden.
+              targetLocked[action['target']] = 'hide';
+            }
+          }
+          break;
+        case 'require':
+          var $requiredSpan = $target.find('.form-required, .form-optional').first();
+          if (actionResult != $requiredSpan.hasClass('form-required')) {
+            // Rather than hide the required tag, remove it so that other jQuery can respond via Drupal behaviors.
+            Drupal.detachBehaviors($requiredSpan);
+            if (actionResult) {
+              $requiredSpan.replaceWith('<span class="form-required" title="' + Drupal.t('This field is required.') + '">*</span>');
+            }
+            else {
+              $requiredSpan.replaceWith('<span class="form-optional"></span>');
+            }
+            Drupal.attachBehaviors($requiredSpan);
+          }
+          break;
+        case 'set':
+          var isLocked = targetLocked[action['target']];
+          var $texts = $target.find("input:text,textarea,input[type='email']");
+          var $selects = $target.find('select,select option,input:radio,input:checkbox');
+          if (actionResult) {
+            var multiple = $.map(action['argument'].split(','), $.trim);
+            $selects.webformVal(multiple);
+            $texts.val([action['argument']]);
+            // A special case is made for markup. It is sanitized with filter_xss_admin on the server.
+            // otherwise text() should be used to avoid an XSS vulnerability. text() however would
+            // preclude the use of tags like <strong> or <a>
+            $target.filter('.webform-component-markup').html(action['argument']);
+          }
+          if (!isLocked) {
+            // If not previously hidden or set, disable the element readonly or readonly-like behavior.
+            $selects.webformProp('disabled', actionResult);
+            $texts.webformProp('readonly', actionResult);
+            targetLocked[action['target']] = actionResult ? 'set' : false;
+          }
+          break;
+      }
+    }); // End look on each action for one conditional
+  }); // End loop on each conditional
+}
+
+/**
+ * Event handler to prevent propogation of events, typically click for disabling
+ * radio and checkboxes.
+ */
+Drupal.webform.stopEvent = function() {
+  return false;
 }
 
 Drupal.webform.conditionalOperatorStringEqual = function(element, existingValue, ruleValue) {
@@ -459,5 +485,37 @@ Drupal.webform.timeValue = function(element, existingValue) {
   }
   return value;
 };
+
+/**
+ * Make a prop shim for jQuery < 1.9.
+ */
+$.fn.webformProp = function(name, value) {
+  if (value) {
+    $.fn.prop ? this.prop(name, true) : this.attr(name, true);
+  }
+  else {
+    $.fn.prop ? this.prop(name, false) : this.removeAttr(name);
+  }
+  return this;
+}
+
+/**
+ * Make a multi-valued val() function for setting checkboxes, radios, and select
+ * elements.
+ */
+$.fn.webformVal = function(values) {
+  this.each(function() {
+    var $this = $(this);
+    var value = $this.val();
+    var on = $.inArray($this.val(), values) != -1;
+    if (this.nodeName == 'OPTION') {
+      $this.webformProp('selected', on ? value : false);
+    }
+    else {
+      $this.val(on ? [value] : false);
+    }
+  });
+  return this;
+}
 
 })(jQuery);

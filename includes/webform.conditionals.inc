@@ -74,6 +74,7 @@ function webform_conditionals_form($form, &$form_state, $node) {
       '#actions' => array(
         'show' => t('shown'),
         'require' => t('required'),
+        'set' => t('set to'),
       ),
       '#targets' => $target_list,
       '#parents' => array('conditionals', $rgid),
@@ -171,7 +172,9 @@ function webform_conditionals_form_validate($form, &$form_state) {
     return;
   }
 
-  $components = $form['#node']->webform['components'];
+  $node = $form['#node'];
+  $components = $node->webform['components'];
+  $component_options = webform_component_options();
   foreach ($form_state['complete form']['conditionals'] as $conditional_key => $element) {
     if (substr($conditional_key, 0, 1) !== '#' && $conditional_key !== 'new') {
       $conditional = $element['conditional'];
@@ -179,10 +182,19 @@ function webform_conditionals_form_validate($form, &$form_state) {
       foreach ($conditional['actions'] as $action_key => $action) {
         if (substr($action_key, 0, 1) !== '#') {
           $target_id = $action['target']['#value'];
+          $target_name = $action['target']['#options'][$action['target']['#value']];
           if (isset($targets[$target_id])) {
             form_set_error('conditionals][' . $conditional_key . '][actions][' . $action_key . '][target',
                            t('A conditional cannot show or hide a component more than once. (%target).',
-                             array('%target' => $action['target']['#options'][$action['target']['#value']])));
+                             array('%target' => $target_name)));
+          }
+          $component_type = $node->webform['components'][$action['target']['#value']]['type'];
+          if (!webform_conditional_action_able($component_type, $action['action']['#value'])) {
+            form_set_error('conditionals][' . $conditional_key . '][actions][' . $action_key . '][action',
+                           t('A component of type %type can\'t be %action. (%target)',
+                             array(
+                                   '%action' => $action['action']['#options'][$action['action']['#value']],
+                                   '%type' => $component_options[$component_type])));
           }
           $targets[$target_id] = $target_id;
         }
@@ -405,7 +417,12 @@ function _webform_conditional_expand($element) {
       '#title' => t('Action'),
       '#options' => $element['#actions'],
       '#default_value' => $element['#default_value']['actions'][$aid]['action'],
-
+    );
+    $element['actions'][$aid]['argument'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Argument'),
+      '#size' => 30,
+      '#default_value' => $element['#default_value']['actions'][$aid]['argument'],
     );
     $element['actions'][$aid]['remove'] = array(
       '#type' => 'submit',
@@ -630,15 +647,18 @@ function theme_webform_conditional($variables) {
     $element['actions'][$aid]['target']['#title_display'] = 'none';
     $element['actions'][$aid]['invert']['#title_display'] = 'none';
     $element['actions'][$aid]['action']['#title_display'] = 'none';
+    $element['actions'][$aid]['argument']['#title_display'] = 'none';
 
     $target = '<div class="webform-conditional-target">' . drupal_render($element['actions'][$aid]['target']) . '</div>';
     $invert = '<div class="webform-conditional-invert">' . drupal_render($element['actions'][$aid]['invert']) . '</div>';
     $action = '<div class="webform-conditional-action">' . drupal_render($element['actions'][$aid]['action']) . '</div>';
+    $argument = '<div class="webform-conditional-argument">' . drupal_render($element['actions'][$aid]['argument']) . '</div>';
 
-    $target_phrase = t('then !target !invert !action ', array(
+    $target_phrase = t('then !target !invert !action !argument', array(
       '!target' => $target,
       '!invert' => $invert,
       '!action' => $action,
+      '!argument' => $argument,
     ));
 
     $output .= '<div class="webform-conditional-action">';
@@ -1019,7 +1039,7 @@ function webform_conditional_prepare_javascript($node, $submission_data, $page_n
           'target' => 'webform-component--' . str_replace('_', '-', implode('--', $target_parents)),
           'invert' => (int)$action['invert'],
           'action' => $action['action'],
-          'argument' => $action['argument'],
+          'argument' => $components[$action['target']]['type'] == 'markup' ? filter_xss_admin($action['argument']) : $action['argument'],
         );
         $settings['ruleGroups'][$rgid_key]['actions'][$aid_key] = $action_settings;
       }
@@ -1058,6 +1078,23 @@ function webform_conditional_prepare_javascript($node, $submission_data, $page_n
   }
 
   return $settings;
+}
+
+/**
+ * Determine whether a component type is capable of a given conditional action.
+ */
+function webform_conditional_action_able($component_type, $action) {
+  switch ($action) {
+    case 'show':
+      return TRUE;
+      // break;
+    case 'require':
+      return webform_component_feature($component_type, 'required');
+      // break;
+    default:
+      return webform_component_feature($component_type, "conditional_action_$action");
+      // break;
+  }
 }
 
 /**

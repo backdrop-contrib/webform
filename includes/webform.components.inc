@@ -952,6 +952,7 @@ function webform_component_feature($type, $feature) {
     'title_display' => TRUE,
     'title_inline' => TRUE,
     'conditional' => TRUE,
+    'conditional_action_set' => FALSE,
     'spam_analysis' => FALSE,
     'group' => FALSE,
     'attachment' => FALSE,

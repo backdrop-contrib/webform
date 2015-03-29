@@ -999,6 +999,7 @@ function webform_webform_component_info() {
       'features' => array(
         'email_address' => TRUE,
         'spam_analysis' => TRUE,
+        'conditional_action_set' => TRUE,
       ),
     ),
     'fieldset' => array(
@@ -1039,6 +1040,7 @@ function webform_webform_component_info() {
         'private' => FALSE,
         'wrapper_classes' => FALSE,
         'css_classes' => FALSE,
+        'conditional_action_set' => TRUE,
       ),
     ),
     'markup' => array(
@@ -1056,6 +1058,7 @@ function webform_webform_component_info() {
         'private' => FALSE,
         'wrapper_classes' => FALSE,
         'css_classes' => FALSE,
+        'conditional_action_set' => TRUE,
       ),
       'file' => 'components/markup.inc',
     ),
@@ -1092,6 +1095,7 @@ function webform_webform_component_info() {
         'default_value' => FALSE,
         'email_address' => TRUE,
         'email_name' => TRUE,
+        'conditional_action_set' => TRUE,
       ),
       'conditional_type' => 'select',
     ),
@@ -1101,6 +1105,7 @@ function webform_webform_component_info() {
       'file' => 'components/textarea.inc',
       'features' => array(
         'spam_analysis' => TRUE,
+        'conditional_action_set' => TRUE,
       ),
     ),
     'textfield' => array(
@@ -1110,6 +1115,7 @@ function webform_webform_component_info() {
       'features' => array(
         'email_name' => TRUE,
         'spam_analysis' => TRUE,
+        'conditional_action_set' => TRUE,
       ),
     ),
     'time' => array(

@@ -141,6 +141,10 @@ Drupal.webform.conditionalAdmin = function(context) {
     if ($target.is('.webform-conditional-andor select')) {
       Drupal.webform.conditionalAndOrChange.apply(e.target);
     }
+
+    if ($target.is('.webform-conditional-action select')) {
+      Drupal.webform.conditionalActionChange.apply(e.target);
+    }
   });
 
   // Add event handlers to delete the entire row if the last rule or action is removed.
@@ -156,6 +160,9 @@ Drupal.webform.conditionalAdmin = function(context) {
   // Trigger default handlers on the source element, this in turn will trigger
   // the operator handlers.
   $context.find('.webform-conditional-source select').trigger('change');
+
+  // Trigger defaults handlers on the action element.
+  $context.find('.webform-conditional-action select').trigger('change');
 
   // When adding a new table row, make it draggable and hide the weight column.
   if ($context.is('tr.ajax-new-content') && $context.find('.webform-conditional').length === 1) {
@@ -275,6 +282,28 @@ Drupal.webform.conditionalOperatorChange = function() {
  */
 Drupal.webform.conditionalAndOrChange = function() {
   $(this).parents('.webform-conditional:first').find('.webform-conditional-andor select').val(this.value);
+}
+
+/**
+ * Event callback to show argument only for appropriate actions.
+ */
+Drupal.webform.conditionalActionChange = function() {
+  var action = $(this).val();
+  var $argument = $(this).parents('.webform-conditional:first').find('.webform-conditional-argument input');
+  var isShown = $argument.is(':visible');
+  switch (action) {
+    case 'show':
+    case 'require':
+      if (isShown) {
+        $argument.hide();
+      }
+      break;
+    case 'set':
+      if (!isShown) {
+        $argument.show();
+      }
+      break;
+  }
 }
 
 /**

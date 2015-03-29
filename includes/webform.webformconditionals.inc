@@ -66,20 +66,24 @@ class WebformConditionals {
 
     // Generate a component to condional map for conditional targets.
     $cid_to_target_rgid = array();
+    $cid_hidden = array();
     foreach ($conditionals as $rgid => $conditional) {
       foreach ($conditional['actions'] as $aid => $action) {
         $target_id = $action['target'];
         $cid_to_target_rgid[$target_id][$rgid] = $rgid;
-        if (count($cid_to_target_rgid[$target_id]) == 2) {
-          $component = $components[$target_id];
-          $errors[$component['page_num']][] = t('More than one conditional hides or shows component "@name".',
-                                                array('@name' => $component['name']));
+        if ($action['action'] == 'show') {
+          $cid_hidden[$target_id] = isset($cid_hidden[$target_id]) ? $cid_hidden[$target_id] + 1 : 1;
+          if ($cid_hidden[$target_id] == 2) {
+            $component = $components[$target_id];
+            $errors[$component['page_num']][] = t('More than one conditional hides or shows component "@name".',
+                                                  array('@name' => $component['name']));
+          }
         }
       }
     }
 
     // Generate T-Orders for each page
-    $new_entry = array('in' => array(), 'out' => array(), 'rgid' => -1);
+    $new_entry = array('in' => array(), 'out' => array(), 'rgid' => array());
     $page_num = 0;
     // If the first component is a page break, then no component is on page 1. Create empty arrays for page 1.
     $sorted = array(1 => array());
@@ -113,7 +117,7 @@ class WebformConditionals {
           if (!isset($nodes[$cid])) {
             $nodes[$cid] = $new_entry;
           }
-          $nodes[$cid]['rgid'] = $rgid;
+          $nodes[$cid]['rgid'][$rgid] = $rgid;
           foreach ($conditional['rules'] as $rule) {
             if ($rule['source_type'] == 'component') {
               $source_id = $rule['source'];
@@ -166,12 +170,15 @@ class WebformConditionals {
           // If the node represents an actual conditional, it can now be added
           // to the end of the sorted order because anything it depends upon has
           // already been calcuated.
-          if ($nodes[$id]['rgid'] >= 0) {
-            $sorted[$page_num][] = array(
-              'cid' => $id,
-              'rgid' => $nodes[$id]['rgid'],
-              'name' => $components[$id]['name'],
-            );
+          if ($nodes[$id]['rgid']) {
+            foreach ($nodes[$id]['rgid'] as $rgid) {
+              $sorted[$page_num][] = array(
+                'cid' => $id,
+                'rgid' => $rgid,
+                'name' => $components[$id]['name'],
+              );
+
+            }
           }
 
           // Any other nodes that depend upon this node may now have their dependency
@@ -316,7 +323,7 @@ class WebformConditionals {
     $components = $this->node->webform['components'];
     $conditionals = $this->node->webform['conditionals'];
     $operators = webform_conditional_operators();
-
+    $targetLocked = array();
 
     $first_page = $page_num ? $page_num : 1;
     $last_page = $page_num ? $page_num : count($this->topologicalOrder);
@@ -377,10 +384,16 @@ class WebformConditionals {
               if (!$action_result) {
                 $this->visibilityMap[$page_num][$target] = in_array($page_num, $source_page_nums) ? self::componentDependent : self::componentHidden;
                 $this->deleteFamily($input_values, $target, $this->visibilityMap[$page_num]);
+                $targetLocked[$target] = TRUE;
               }
               break;
             case 'require':
               $this->requiredMap[$page_num][$target] = $action_result;
+              break;
+            case 'set':
+              if ($action_result && empty($targetLocked[$target]) && $components[$target]['type'] != 'markup') {
+                $input_values[$target] = $action['argument'];
+              }
               break;
           }
         }
