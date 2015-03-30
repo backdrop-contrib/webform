@@ -2671,7 +2671,9 @@ function _webform_client_form_add_component($node, $component, $component_value,
     $sorter = webform_get_conditional_sorter($node);
     foreach ($component['children'] as $scid => $subcomponent) {
       $subcomponent_value = isset($input_values[$scid]) ? $input_values[$scid] : NULL;
-      if ($sorter->componentVisibility($scid, $subcomponent['page_num'])) {
+      // Include if always shown, or for forms, also if currently hidden but might be shown due to conditionals.
+      $visibility = $sorter->componentVisibility($scid, $subcomponent['page_num']);
+      if ($visibility == WebformConditionals::componentShown || ($format == 'form' && $visibility)) {
         _webform_client_form_add_component($node, $subcomponent, $subcomponent_value, $parent_fieldset[$component['form_key']], $form, $input_values, $format, $page_num, $filter);
       }
     }
