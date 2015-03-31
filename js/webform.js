@@ -304,6 +304,28 @@ Drupal.webform.conditionalOperatorStringNotEmpty = function(element, existingVal
   return !Drupal.webform.conditionalOperatorStringEmpty(element, existingValue, ruleValue);
 };
 
+Drupal.webform.conditionalOperatorSelectGreaterThan = function(element, existingValue, ruleValue) {
+  var currentValue = Drupal.webform.stringValue(element, existingValue);
+  return Drupal.webform.compare_select(currentValue[0], ruleValue, element) > 0;
+};
+
+Drupal.webform.conditionalOperatorSelectGreaterThanEqual = function(element, existingValue, ruleValue) {
+  var currentValue = Drupal.webform.stringValue(element, existingValue);
+  var comparison = Drupal.webform.compare_select(currentValue[0], ruleValue, element);
+  return comparison > 0 || comparison === 0;
+};
+
+Drupal.webform.conditionalOperatorSelectLessThan = function(element, existingValue, ruleValue) {
+  var currentValue = Drupal.webform.stringValue(element, existingValue);
+  return Drupal.webform.compare_select(currentValue[0], ruleValue, element) < 0;
+};
+
+Drupal.webform.conditionalOperatorSelectLessThanEqual = function(element, existingValue, ruleValue) {
+  var currentValue = Drupal.webform.stringValue(element, existingValue);
+  var comparison = Drupal.webform.compare_select(currentValue[0], ruleValue, element);
+  return comparison < 0 || comparison === 0;
+};
+
 Drupal.webform.conditionalOperatorNumericEqual = function(element, existingValue, ruleValue) {
   // See float comparison: http://php.net/manual/en/language.types.float.php
   var currentValue = Drupal.webform.stringValue(element, existingValue);
@@ -325,9 +347,19 @@ Drupal.webform.conditionalOperatorNumericGreaterThan = function(element, existin
   return parseFloat(currentValue[0]) > parseFloat(ruleValue);
 };
 
+Drupal.webform.conditionalOperatorNumericGreaterThanEqual = function(element, existingValue, ruleValue) {
+  return Drupal.webform.conditionalOperatorNumericGreaterThan(element, existingValue, ruleValue) ||
+         Drupal.webform.conditionalOperatorNumericEqual(element, existingValue, ruleValue);
+};
+
 Drupal.webform.conditionalOperatorNumericLessThan = function(element, existingValue, ruleValue) {
   var currentValue = Drupal.webform.stringValue(element, existingValue);
   return parseFloat(currentValue[0]) < parseFloat(ruleValue);
+};
+
+Drupal.webform.conditionalOperatorNumericLessThanEqual = function(element, existingValue, ruleValue) {
+  return Drupal.webform.conditionalOperatorNumericLessThan(element, existingValue, ruleValue) ||
+         Drupal.webform.conditionalOperatorNumericEqual(element, existingValue, ruleValue);
 };
 
 Drupal.webform.conditionalOperatorDateEqual = function(element, existingValue, ruleValue) {
@@ -335,9 +367,18 @@ Drupal.webform.conditionalOperatorDateEqual = function(element, existingValue, r
   return currentValue === ruleValue;
 };
 
+Drupal.webform.conditionalOperatorDateNotEqual = function(element, existingValue, ruleValue) {
+  return !Drupal.webform.conditionalOperatorDateEqual(element, existingValue, ruleValue);
+};
+
 Drupal.webform.conditionalOperatorDateBefore = function(element, existingValue, ruleValue) {
   var currentValue = Drupal.webform.dateValue(element, existingValue);
   return (currentValue !== false) && currentValue < ruleValue;
+};
+
+Drupal.webform.conditionalOperatorDateBeforeEqual = function(element, existingValue, ruleValue) {
+  var currentValue = Drupal.webform.dateValue(element, existingValue);
+  return (currentValue !== false) && (currentValue < ruleValue || currentValue === ruleValue);
 };
 
 Drupal.webform.conditionalOperatorDateAfter = function(element, existingValue, ruleValue) {
@@ -345,9 +386,18 @@ Drupal.webform.conditionalOperatorDateAfter = function(element, existingValue, r
   return (currentValue !== false) && currentValue > ruleValue;
 };
 
+Drupal.webform.conditionalOperatorDateAfterEqual = function(element, existingValue, ruleValue) {
+  var currentValue = Drupal.webform.dateValue(element, existingValue);
+  return (currentValue !== false) && (currentValue > ruleValue || currentValue === ruleValue);
+};
+
 Drupal.webform.conditionalOperatorTimeEqual = function(element, existingValue, ruleValue) {
   var currentValue = Drupal.webform.timeValue(element, existingValue);
   return currentValue === ruleValue;
+};
+
+Drupal.webform.conditionalOperatorTimeNotEqual = function(element, existingValue, ruleValue) {
+  return !Drupal.webform.conditionalOperatorTimeEqual(element, existingValue, ruleValue);
 };
 
 Drupal.webform.conditionalOperatorTimeBefore = function(element, existingValue, ruleValue) {
@@ -356,11 +406,57 @@ Drupal.webform.conditionalOperatorTimeBefore = function(element, existingValue, 
   return (currentValue !== false) && (currentValue < ruleValue);
 };
 
+Drupal.webform.conditionalOperatorTimeBeforeEqual = function(element, existingValue, ruleValue) {
+  // Date and time operators intentionally exclusive for "before".
+  var currentValue = Drupal.webform.timeValue(element, existingValue);
+  return (currentValue !== false) && (currentValue < ruleValue || currentValue === ruleValue);
+};
+
 Drupal.webform.conditionalOperatorTimeAfter = function(element, existingValue, ruleValue) {
   // Date and time operators intentionally inclusive for "after".
   var currentValue = Drupal.webform.timeValue(element, existingValue);
-  return (currentValue !== false) && (currentValue >= ruleValue);
+  return (currentValue !== false) && (currentValue > ruleValue);
 };
+
+Drupal.webform.conditionalOperatorTimeAfterEqual = function(element, existingValue, ruleValue) {
+  // Date and time operators intentionally inclusive for "after".
+  var currentValue = Drupal.webform.timeValue(element, existingValue);
+  return (currentValue !== false) && (currentValue > ruleValue || currentValue === ruleValue);
+};
+
+/**
+ * Utility function to compare values of a select component.
+ * @param string a
+ *   First select option key to compare
+ * @param string b
+ *   Second select option key to compare
+ * @param array options
+ *   Associative array where the a and b are within the keys
+ * @return integer based upon position of $a and $b in $options
+ *   -N if $a above (<) $b
+ *   0 if $a = $b
+ *   +N if $a is below (>) $b
+ */
+Drupal.webform.compare_select = function(a, b, element) {
+  var optionList = [];
+  $('option,input:radio,input:checkbox', element).each(function() {
+    optionList.push($(this).val());
+  })
+  var a_position = optionList.indexOf(a);
+  var b_position = optionList.indexOf(b);
+  if (a_position < 0 && b_position < 0) {
+    return null;
+  }
+  else if (a_position < 0) {
+    return 1;
+  }
+  else if (b_position < 0) {
+    return -1;
+  }
+  else {
+    return a_position - b_position;
+  }
+}
 
 /**
  * Utility to return current visibility. Uses actual visibility, except for

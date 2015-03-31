@@ -41,15 +41,18 @@ class WebformConditionalsTestCase extends WebformTestCase {
     $this->webformReset();
 
     $test_components = $this->testWebformComponents();
+    $test_specs = array(
+      'match conditional values' => TRUE,
+      'mismatch conditional values' => FALSE,
+    );
+    // Test each component, processing all 'match conditional values' for TRUE
+    // and all 'mismatch conditional values for FALSE.
     foreach ($test_components as $key => $component_info) {
-      if (isset($component_info['match conditional values'])) {
-        foreach ($component_info['match conditional values'] as $operator => $match_value) {
-          $this->webformTestConditionalComponent($component_info['component'], $component_info['sample values'], $operator, $match_value, TRUE);
-        }
-      }
-      if (isset($component_info['mismatch conditional values'])) {
-        foreach ($component_info['mismatch conditional values'] as $operator => $mismatch_value) {
-          $this->webformTestConditionalComponent($component_info['component'], $component_info['sample values'], $operator, $mismatch_value, FALSE);
+      foreach ($test_specs as $values_key => $result) {
+        if (isset($component_info[$values_key])) {
+          foreach ($component_info[$values_key] as $operator => $match_value) {
+            $this->webformTestConditionalComponent($component_info['component'], $component_info['sample values'], $operator, $match_value, $result);
+          }
         }
       }
     }

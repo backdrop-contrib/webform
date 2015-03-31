@@ -347,7 +347,7 @@ function _webform_conditional_expand($element) {
     $element['rules'][$rid]['value'] = array(
       '#type' => 'textfield',
       '#title' => t('Value'),
-      '#size' => 30,
+      '#size' => 20,
       '#default_value' => $element['#default_value']['rules'][$rid]['value'],
     );
     $element['rules'][$rid]['remove'] = array(
@@ -421,7 +421,7 @@ function _webform_conditional_expand($element) {
     $element['actions'][$aid]['argument'] = array(
       '#type' => 'textfield',
       '#title' => t('Argument'),
-      '#size' => 30,
+      '#size' => 20,
       '#default_value' => $element['#default_value']['actions'][$aid]['argument'],
     );
     $element['actions'][$aid]['remove'] = array(
@@ -776,15 +776,25 @@ function _webform_conditional_operator_info() {
     'comparison callback' => 'webform_conditional_operator_numeric_not_equal',
     'js comparison callback' => 'conditionalOperatorNumericNotEqual',
   );
+  $operators['numeric']['less_than'] = array(
+    'label' => t('is less than'),
+    'comparison callback' => 'webform_conditional_operator_numeric_less_than',
+    'js comparison callback' => 'conditionalOperatorNumericLessThan',
+  );
+  $operators['numeric']['less_than_equal'] = array(
+    'label' => t('is less than or equal'),
+    'comparison callback' => 'webform_conditional_operator_numeric_less_than_equal',
+    'js comparison callback' => 'conditionalOperatorNumericLessThanEqual',
+  );
   $operators['numeric']['greater_than'] = array(
     'label' => t('is greater than'),
     'comparison callback' => 'webform_conditional_operator_numeric_greater_than',
     'js comparison callback' => 'conditionalOperatorNumericGreaterThan',
   );
-  $operators['numeric']['less_than'] = array(
-    'label' => t('is less than'),
-    'comparison callback' => 'webform_conditional_operator_numeric_less_than',
-    'js comparison callback' => 'conditionalOperatorNumericLessThan',
+  $operators['numeric']['greater_than_equal'] = array(
+    'label' => t('is greater than or equal'),
+    'comparison callback' => 'webform_conditional_operator_numeric_greater_than_equal',
+    'js comparison callback' => 'conditionalOperatorNumericGreaterThanEqual',
   );
   $operators['numeric']['empty'] = array(
     'label' => t('is blank'),
@@ -812,6 +822,30 @@ function _webform_conditional_operator_info() {
     'js comparison callback' => 'conditionalOperatorStringNotEqual',
     'form callback' => 'webform_conditional_form_select',
   );
+  $operators['select']['less_than'] = array(
+    'label' => t('is before'),
+    'comparison callback' => 'webform_conditional_operator_select_less_than',
+    'js comparison callback' => 'conditionalOperatorSelectLessThan',
+    'form callback' => 'webform_conditional_form_select',
+  );
+  $operators['select']['less_than_equal'] = array(
+    'label' => t('is or is before'),
+    'comparison callback' => 'webform_conditional_operator_select_less_than_equal',
+    'js comparison callback' => 'conditionalOperatorSelectLessThanEqual',
+    'form callback' => 'webform_conditional_form_select',
+  );
+  $operators['select']['greater_than'] = array(
+    'label' => t('is after'),
+    'comparison callback' => 'webform_conditional_operator_select_greater_than',
+    'js comparison callback' => 'conditionalOperatorSelectGreaterThan',
+    'form callback' => 'webform_conditional_form_select',
+  );
+  $operators['select']['greater_than_equal'] = array(
+    'label' => t('is or is after'),
+    'comparison callback' => 'webform_conditional_operator_select_greater_than_equal',
+    'js comparison callback' => 'conditionalOperatorSelectGreaterThanEqual',
+    'form callback' => 'webform_conditional_form_select',
+  );
   $operators['select']['empty'] = array(
     'label' => t('is empty'),
     'comparison callback' => 'webform_conditional_operator_string_empty',
@@ -833,6 +867,13 @@ function _webform_conditional_operator_info() {
     'js comparison callback' => 'conditionalOperatorDateEqual',
     'form callback' => 'webform_conditional_form_date',
   );
+  $operators['date']['not_equal'] = array(
+    'label' => t('is not on'),
+    'comparison callback' => 'webform_conditional_operator_datetime_not_equal',
+    'comparison prepare js' => 'webform_conditional_prepare_date_js',
+    'js comparison callback' => 'conditionalOperatorDateNotEqual',
+    'form callback' => 'webform_conditional_form_date',
+  );
   $operators['date']['before'] = array(
     'label' => t('is before'),
     'comparison callback' => 'webform_conditional_operator_datetime_before',
@@ -840,11 +881,25 @@ function _webform_conditional_operator_info() {
     'js comparison callback' => 'conditionalOperatorDateBefore',
     'form callback' => 'webform_conditional_form_date',
   );
+  $operators['date']['before_equal'] = array(
+    'label' => t('is on or before'),
+    'comparison callback' => 'webform_conditional_operator_datetime_before_equal',
+    'comparison prepare js' => 'webform_conditional_prepare_date_js',
+    'js comparison callback' => 'conditionalOperatorDateBeforeEqual',
+    'form callback' => 'webform_conditional_form_date',
+  );
   $operators['date']['after'] = array(
     'label' => t('is after'),
     'comparison callback' => 'webform_conditional_operator_datetime_after',
     'comparison prepare js' => 'webform_conditional_prepare_date_js',
     'js comparison callback' => 'conditionalOperatorDateAfter',
+    'form callback' => 'webform_conditional_form_date',
+  );
+  $operators['date']['after_equal'] = array(
+    'label' => t('is on or after'),
+    'comparison callback' => 'webform_conditional_operator_datetime_after_equal',
+    'comparison prepare js' => 'webform_conditional_prepare_date_js',
+    'js comparison callback' => 'conditionalOperatorDateAfterEqual',
     'form callback' => 'webform_conditional_form_date',
   );
 
@@ -856,6 +911,13 @@ function _webform_conditional_operator_info() {
     'js comparison callback' => 'conditionalOperatorTimeEqual',
     'form callback' => 'webform_conditional_form_time',
   );
+  $operators['time']['not_equal'] = array(
+    'label' => t('is not at'),
+    'comparison callback' => 'webform_conditional_operator_datetime_not_equal',
+    'comparison prepare js' => 'webform_conditional_prepare_time_js',
+    'js comparison callback' => 'conditionalOperatorTimeNotEqual',
+    'form callback' => 'webform_conditional_form_time',
+  );
   $operators['time']['before'] = array(
     'label' => t('is before'),
     'comparison callback' => 'webform_conditional_operator_datetime_before',
@@ -863,11 +925,25 @@ function _webform_conditional_operator_info() {
     'js comparison callback' => 'conditionalOperatorTimeBefore',
     'form callback' => 'webform_conditional_form_time',
   );
+  $operators['time']['before_equal'] = array(
+    'label' => t('is at or before'),
+    'comparison callback' => 'webform_conditional_operator_datetime_before_equal',
+    'comparison prepare js' => 'webform_conditional_prepare_time_js',
+    'js comparison callback' => 'conditionalOperatorTimeBeforeEqual',
+    'form callback' => 'webform_conditional_form_time',
+  );
   $operators['time']['after'] = array(
     'label' => t('is after'),
     'comparison callback' => 'webform_conditional_operator_datetime_after',
     'comparison prepare js' => 'webform_conditional_prepare_time_js',
     'js comparison callback' => 'conditionalOperatorTimeAfter',
+    'form callback' => 'webform_conditional_form_time',
+  );
+  $operators['time']['after_equal'] = array(
+    'label' => t('is at or after'),
+    'comparison callback' => 'webform_conditional_operator_datetime_after_equal',
+    'comparison prepare js' => 'webform_conditional_prepare_time_js',
+    'js comparison callback' => 'conditionalOperatorTimeAfterEqual',
     'form callback' => 'webform_conditional_form_time',
   );
 
@@ -1205,6 +1281,36 @@ function webform_conditional_operator_string_not_empty($input_values, $rule_valu
 }
 
 /**
+ * Conditional callback for select comparisons.
+ */
+function webform_conditional_operator_select_less_than($input_values, $rule_value, $component) {
+  return empty($input_values) ? FALSE : webform_compare_select($input_values[0], $rule_value, _webform_select_options($component, TRUE)) < 0;
+}
+
+/**
+ * Conditional callback for select comparisons.
+ */
+function webform_conditional_operator_select_less_than_equal($input_values, $rule_value, $component) {
+  $comparison = empty($input_values) ? NULL : webform_compare_select($input_values[0], $rule_value, _webform_select_options($component, TRUE));
+  return $comparison < 0 || $comparison === 0;
+}
+
+/**
+ * Conditional callback for select comparisons.
+ */
+function webform_conditional_operator_select_greater_than($input_values, $rule_value, $component) {
+  return empty($input_values) ? FALSE : webform_compare_select($input_values[0], $rule_value, _webform_select_options($component, TRUE)) > 0;
+}
+
+/**
+ * Conditional callback for select comparisons.
+ */
+function webform_conditional_operator_select_greater_than_equal($input_values, $rule_value, $component) {
+  $comparison = empty($input_values) ? NULL : webform_compare_select($input_values[0], $rule_value, _webform_select_options($component, TRUE));
+  return $comparison > 0 || $comparison === 0;
+}
+
+/**
  * Conditional callback for numeric comparisons.
  */
 function webform_conditional_operator_numeric_equal($input_values, $rule_value) {
@@ -1221,6 +1327,21 @@ function webform_conditional_operator_numeric_not_equal($input_values, $rule_val
 /**
  * Conditional callback for numeric comparisons.
  */
+function webform_conditional_operator_numeric_less_than($input_values, $rule_value) {
+  return empty($input_values) ? FALSE : webform_compare_floats($input_values[0], $rule_value) < 0;
+}
+
+/**
+ * Conditional callback for numeric comparisons.
+ */
+function webform_conditional_operator_numeric_less_than_equal($input_values, $rule_value) {
+  $comparison = empty($input_values) ? NULL : webform_compare_floats($input_values[0], $rule_value);
+  return $comparison < 0 || $comparison === 0;
+}
+
+/**
+ * Conditional callback for numeric comparisons.
+ */
 function webform_conditional_operator_numeric_greater_than($input_values, $rule_value) {
   return empty($input_values) ? FALSE : webform_compare_floats($input_values[0], $rule_value) > 0;
 }
@@ -1228,8 +1349,9 @@ function webform_conditional_operator_numeric_greater_than($input_values, $rule_
 /**
  * Conditional callback for numeric comparisons.
  */
-function webform_conditional_operator_numeric_less_than($input_values, $rule_value) {
-  return empty($input_values) ? FALSE : webform_compare_floats($input_values[0], $rule_value) < 0;
+function webform_conditional_operator_numeric_greater_than_equal($input_values, $rule_value) {
+  $comparison = empty($input_values) ? NULL : webform_compare_floats($input_values[0], $rule_value);
+  return $comparison > 0 || $comparison === 0;
 }
 
 /**
@@ -1243,9 +1365,24 @@ function webform_conditional_operator_datetime_equal($input_values, $rule_value)
 /**
  * Conditional callback for date and time comparisons.
  */
+function webform_conditional_operator_datetime_not_equal($input_values, $rule_value) {
+  return !webform_conditional_operator_datetime_equal($input_values, $rule_value);
+}
+
+/**
+ * Conditional callback for date and time comparisons.
+ */
 function webform_conditional_operator_datetime_after($input_values, $rule_value) {
   $input_values = webform_conditional_value_datetime($input_values);
   return empty($input_values) ? FALSE : webform_strtotime($input_values[0]) > webform_strtotime($rule_value);
+}
+
+/**
+ * Conditional callback for date and time comparisons.
+ */
+function webform_conditional_operator_datetime_after_equal($input_values, $rule_value) {
+  return webform_conditional_operator_datetime_after($input_values, $rule_value) ||
+         webform_conditional_operator_datetime_equal($input_values, $rule_value);
 }
 
 /**
@@ -1257,6 +1394,14 @@ function webform_conditional_operator_datetime_before($input_values, $rule_value
 }
 
 /**
+ * Conditional callback for date and time comparisons.
+ */
+function webform_conditional_operator_datetime_before_equal($input_values, $rule_value) {
+  return webform_conditional_operator_datetime_before($input_values, $rule_value) ||
+         webform_conditional_operator_datetime_equal($input_values, $rule_value);
+}
+
+/**
  * Utility function to convert incoming time and dates into strings.
  */
 function webform_conditional_value_datetime($input_values) {
@@ -1265,4 +1410,35 @@ function webform_conditional_value_datetime($input_values) {
   // Convert dates into a string.
   $input_values = isset($input_values['month']) ? array(webform_date_string($input_values, 'date')) : $input_values;
   return $input_values;
+}
+
+/**
+ * Utility function to compare values of a select component.
+ * @param string $a
+ *   First select option key to compare
+ * @param string $b
+ *   Second select option key to compare
+ * @param array $options
+ *   Associative array where the $a and $b are within the keys
+ * @return integer based upon position of $a and $b in $options
+ *   -N if $a above (<) $b
+ *   0 if $a = $b
+ *   +N if $a is below (>) $b
+ */
+function webform_compare_select($a, $b, $options) {
+  $options_array = array_keys($options);
+  $a_position = array_search($a, $options_array, TRUE);
+  $b_position = array_search($b, $options_array, TRUE);
+  if ($a_position === FALSE && $a_position === FALSE) {
+    return NULL;
+  }
+  elseif ($a_position === FALSE) {
+    return 1;
+  }
+  elseif ($b_position === FALSE) {
+    return -1;
+  }
+  else {
+    return $a_position - $b_position;
+  }
 }

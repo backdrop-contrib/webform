@@ -363,7 +363,7 @@ class WebformConditionals {
 
           // Perform the comparison callback and build the results for this group.
           $comparison_callback = $operator_info[$rule['operator']]['comparison callback'];
-          $conditional_results[] = $comparison_callback($source_values, $rule['value']);
+          $conditional_results[] = $comparison_callback($source_values, $rule['value'], $source_component);
 
           // Record page number to later determine any intra-page dependency on this source.
           $source_page_nums[$source_component['page_num']] = $source_component['page_num'];
