@@ -2433,11 +2433,9 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
       if (strlen(trim(strip_tags($preview_message))) === 0) {
         $preview_message = t('Please review your submission. Your submission is not complete until you press the "!button" button!', array('!button' => $submit_button_text));
       }
-      $preview_message = webform_replace_tokens($preview_message, $node, $preview_submission);
-      $preview_message = check_markup($preview_message, $node->webform['preview_message_format']);
       $form['preview_message'] = array(
         '#type' => 'markup',
-        '#markup' => $preview_message,
+        '#markup' => webform_replace_tokens($preview_message, $node, $preview_submission, NULL, $node->webform['preview_message_format']),
       );
 
       $form['preview'] = webform_submission_render($node, $preview_submission, NULL, 'html', $node->webform['preview_excluded_components']);
@@ -3128,7 +3126,6 @@ function webform_client_form_submit($form, &$form_state) {
 
   // Strip out empty tags added by WYSIWYG editors if needed.
   $confirmation = strlen(trim(strip_tags($node->webform['confirmation']))) ? $node->webform['confirmation'] : '';
-  $confirmation = webform_replace_tokens($confirmation, $node, $submission);
 
   // Check confirmation and redirect_url fields.
   $message = NULL;
@@ -3167,7 +3164,7 @@ function webform_client_form_submit($form, &$form_state) {
   }
   // If redirecting and we have a confirmation message, show it as a message.
   elseif (!$is_draft && !$external_url && (!empty($redirect_url) && $redirect_url != '<confirmation>') && !empty($confirmation)) {
-    drupal_set_message(check_markup($confirmation, $node->webform['confirmation_format'], '', TRUE));
+    drupal_set_message(webform_replace_tokens($confirmation, $node, $submission, NULL, $node->webform['confirmation_format']));
   }
 
   $form_state['redirect'] = $redirect;
@@ -3255,23 +3252,24 @@ function template_preprocess_webform_form(&$vars) {
  * Prepare for theming of the webform submission confirmation.
  */
 function template_preprocess_webform_confirmation(&$vars) {
-  $confirmation = check_markup($vars['node']->webform['confirmation'], $vars['node']->webform['confirmation_format'], '', TRUE);
+  $node = $vars['node'];
+  // Strip out empty tags added by WYSIWYG editors if needed.
+  $confirmation = $node->webform['confirmation'];
+  $confirmation = strlen(trim(strip_tags($confirmation))) ? $confirmation : '';
 
   // Replace tokens.
   module_load_include('inc', 'webform', 'includes/webform.submissions');
-  $submission = webform_get_submission($vars['node']->nid, $vars['sid']);
-  $confirmation = webform_replace_tokens($confirmation, $vars['node'], $submission, NULL, TRUE);
+  $submission = webform_get_submission($node->nid, $vars['sid']);
+  $vars['confirmation_message'] = webform_replace_tokens($confirmation, $node, $submission, NULL, $node->webform['confirmation_format']);
 
-  // Strip out empty tags added by WYSIWYG editors if needed.
-  $vars['confirmation_message'] = strlen(trim(strip_tags($confirmation))) ? $confirmation : '';
 
   // Progress bar.
   $vars['progressbar'] = '';
-  $page_labels = webform_page_labels($vars['node']);
+  $page_labels = webform_page_labels($node);
   $page_count = count($page_labels);
-  if ($vars['node']->webform['progressbar_include_confirmation'] && $page_count > 2) {
+  if ($node->webform['progressbar_include_confirmation'] && $page_count > 2) {
     $vars['progressbar'] = theme('webform_progressbar', array(
-      'node' => $vars['node'],
+      'node' => $node,
       'page_num' => $page_count,
       'page_count' => $page_count,
       'page_labels' => $page_labels,
@@ -3668,15 +3666,17 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
  *   If replacing tokens within the context of an e-mail, the Webform e-mail
  *   settings array.
  * @param $sanitize
- *   Boolean value indicating if the results will be displayed as HTML output.
- *   This will be passed to token_replace(). If FALSE, the contents returned
- *   will be unsanitized. This will also result in all Webform submission tokens
- *   being returned as plain-text, without HTML markup, in preparation for
- *   e-mailing or other text-only purposes (default values, etc.)
+ *   Boolean or format name value indicating if the results will be displayed as
+ *   HTML output. If FALSE, the contents returned will be unsanitized. This will
+ *   also result in all Webform submission tokens being returned as plain-text,
+ *   without HTML markup, in preparation for e-mailing or other text-only
+ *   purposes (default values, etc.). If TRUE, the tokens only are sanitized by
+ *   token_replace. Otherwise $sanitize is the machine name of an import filter
+ *   to be used with check_markup().
  */
 function webform_replace_tokens($string, $node = NULL, $submission = NULL, $email = NULL, $sanitize = FALSE) {
   // Don't do any filtering if the string is empty.
-  if (strlen(trim($string)) == 0) {
+  if (!strlen(trim($string))) {
     return $string;
   }
 
@@ -3690,7 +3690,50 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
   if ($email) {
     $token_data['webform-email'] = $email;
   }
-  return token_replace($string, $token_data, array('clear' => FALSE, 'sanitize' => $sanitize));
+  $clear = is_bool($sanitize);
+  $string = token_replace($string, $token_data, array('clear' => $clear, 'sanitize' => $sanitize === TRUE));
+  if (!$clear) {
+    $string = webform_clear_tokens(check_markup($string, $sanitize));
+  }
+  return $string;
+}
+
+/**
+ * Removes tokens from string.
+ *
+ * Call this function in cases where you need to remove unreplaced tokens but
+ * can't call webform_replace_tokens() with the option $clear = TRUE.
+ *
+ * In some cases the function token_replace() in webform_replace_tokens() needs
+ * to be called with the option 'clear' => FALSE, to not remove input filters.
+ * For security reasons webform_replace_tokens() is called before
+ * check_markup(), where input filters get replaced. Tokens won't be replaced if
+ * there is no value provided. These tokens i.e. [current-page:query:*] needs to
+ * be removed to not show up in the output.
+ *
+ * @param string $text
+ *   The text to have its tokens removed.
+ * @see token_replace()
+ */
+function webform_clear_tokens($text) {
+  if (empty($text)) {
+    return $text;
+  }
+
+  $text_tokens = token_scan($text);
+  if (empty($text_tokens)) {
+    return $text;
+  }
+
+  $replacements = array();
+  foreach ($text_tokens as $type => $tokens) {
+    $replacements += array_fill_keys($tokens, '');
+  }
+
+  $tokens = array_keys($replacements);
+  $values = array_values($replacements);
+
+  return str_replace($tokens, $values, $text);
 }
 
 /**
