@@ -957,6 +957,7 @@ function webform_component_feature($type, $feature) {
     'group' => FALSE,
     'attachment' => FALSE,
     'private' => TRUE,
+    'placeholder' => FALSE,
     'wrapper_classes' => TRUE,
     'css_classes' => TRUE,
     'views_range' => FALSE,

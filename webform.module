@@ -999,6 +999,7 @@ function webform_webform_component_info() {
       'features' => array(
         'email_address' => TRUE,
         'spam_analysis' => TRUE,
+        'placeholder' => TRUE,
         'conditional_action_set' => TRUE,
       ),
     ),
@@ -1105,6 +1106,7 @@ function webform_webform_component_info() {
       'file' => 'components/textarea.inc',
       'features' => array(
         'spam_analysis' => TRUE,
+        'placeholder' => TRUE,
         'conditional_action_set' => TRUE,
       ),
     ),
@@ -1115,6 +1117,7 @@ function webform_webform_component_info() {
       'features' => array(
         'email_name' => TRUE,
         'spam_analysis' => TRUE,
+        'placeholder' => TRUE,
         'conditional_action_set' => TRUE,
       ),
     ),
@@ -2642,6 +2645,12 @@ function _webform_client_form_add_component($node, $component, $component_value,
       // property. Add it for Form Builder compatibility.
       if (webform_component_feature($component['type'], 'private')) {
         $element['#webform_private'] = $component['extra']['private'];
+      }
+
+      // The 'placeholder' option is in some components, but it's not a real
+      // property. Add it for Form Builder compatibility.
+      if (webform_component_feature($component['type'], 'placeholder')) {
+        $element['#webform_placeholder'] = $component['extra']['placeholder'];
       }
 
       // Add custom CSS classes to the field and wrapper.
