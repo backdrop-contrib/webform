@@ -151,7 +151,7 @@ function _webform_edit_file($component) {
       '#type' => 'textfield',
       '#title' => t('Upload directory'),
       '#default_value' => $component['extra']['directory'],
-      '#description' => t('You may optionally specify a sub-directory to store your files.'),
+      '#description' => t('You may optionally specify a sub-directory to store your files.') . ' ' . theme('webform_token_help'),
       '#weight' => 5,
       '#field_prefix' => 'webform/',
     );
@@ -215,15 +215,15 @@ function _webform_edit_file_check_directory($element) {
   $directory = $element['extra']['directory']['#value'];
 
   $destination_dir = file_stream_wrapper_uri_normalize($scheme . '://webform/' . $directory);
+  $tokenized_dir = drupal_strtolower(webform_replace_tokens($destination_dir, $element['#node']));
 
   // Sanity check input to prevent use parent (../) directories.
-  if (preg_match('/\.\.[\/\\\]/', $destination_dir . '/')) {
-    form_error($element['extra']['directory'], t('The save directory %directory is not valid.', array('%directory' => $directory)));
+  if (preg_match('/\.\.[\/\\\]/', $tokenized_dir . '/')) {
+    form_error($element['extra']['directory'], t('The save directory %directory is not valid.', array('%directory' => $tokenized_dir)));
   }
   else {
-    $destination_success = file_prepare_directory($destination_dir, FILE_CREATE_DIRECTORY);
-    if (!$destination_success) {
-      form_error($element['extra']['directory'], t('The save directory %directory could not be created. Check that the webform files directory is writable.', array('%directory' => $directory)));
+    if (!file_prepare_directory($tokenized_dir, FILE_CREATE_DIRECTORY)) {
+      form_error($element['extra']['directory'], t('The save directory %directory could not be created. Check that the webform files directory is writable.', array('%directory' => $tokenized_dir)));
     }
   }
 
@@ -326,7 +326,7 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE) {
       'file_validate_extensions' => array(implode(' ', $component['extra']['filtering']['types'])),
     ),
     '#pre_render' => array_merge(element_info_property('managed_file', '#pre_render'), array('webform_file_allow_access')),
-    '#upload_location' => $component['extra']['scheme'] . '://webform/' . $component['extra']['directory'],
+    '#upload_location' => $component['extra']['scheme'] . '://webform/' . drupal_strtolower(webform_replace_tokens($component['extra']['directory'], $node)),
     '#progress_indicator' => $component['extra']['progress_indicator'],
     '#description' => $filter ? webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#weight' => $component['weight'],
