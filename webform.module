@@ -4256,7 +4256,7 @@ function _webform_components_tree_sort($tree) {
  * Get a list of all available component definitions.
  */
 function webform_components($include_disabled = FALSE, $reset = FALSE) {
-  static $components, $disabled;
+  static $components, $enabled;
 
   if (!isset($components) || $reset) {
     $components = array();
@@ -4273,9 +4273,10 @@ function webform_components($include_disabled = FALSE, $reset = FALSE) {
     uasort($components, function($a, $b) {
       return strnatcasecmp($a['label'], $b['label']);
     });
+    $enabled = array_diff_key($components, $disabled);
   }
 
-  return $include_disabled ? $components : array_diff_key($components, $disabled);
+  return $include_disabled ? $components : $enabled;
 }
 
 /**

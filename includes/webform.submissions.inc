@@ -842,7 +842,6 @@ function webform_get_submission_count($nid, $uid = NULL, $is_draft = 0) {
     $query = db_select('webform_submissions', 'ws')
       ->addTag('webform_get_submission_count')
       ->condition('ws.nid', $nid);
-    $arguments = array($nid);
     if ($uid !== NULL) {
       $query->condition('ws.uid', $uid);
     }
