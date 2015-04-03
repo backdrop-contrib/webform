@@ -348,7 +348,9 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE) {
       'file_validate_extensions' => array(implode(' ', $component['extra']['filtering']['types'])),
     ),
     '#pre_render' => array_merge(element_info_property('managed_file', '#pre_render'), array('webform_file_allow_access')),
-    '#upload_location' => $component['extra']['scheme'] . '://webform/' . drupal_strtolower(webform_replace_tokens($component['extra']['directory'], $node)),
+    '#upload_location' => $component['extra']['scheme'] . '://webform/' . ($filter
+                                                                              ? drupal_strtolower(webform_replace_tokens($component['extra']['directory'], $node))
+                                                                              : $component['extra']['directory']),
     '#progress_indicator' => $component['extra']['progress_indicator'],
     '#description' => $filter ? webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#weight' => $component['weight'],
