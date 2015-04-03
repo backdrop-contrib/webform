@@ -50,7 +50,13 @@ function webform_token_info() {
   );
   $info['tokens']['submission']['values'] = array(
     'name' => t('Webform submission values'),
-    'description' => t('Webform tokens from submitted data. Replace the "?" with the "field key", including any parent field keys separated by colons. You may append ":label" for just the label or ":withlabel" for both the label and value together. Append ":key" for just the key in a key|label pair.'),
+    'description' => t('<div>Webform tokens from submitted data. Replace the "?" with the "field key", including any parent field keys separated by colons. You can append:</div><ul>' .
+                       '<li>the question key for just that one question (grid components).</li>' .
+                       '<li>the option key for just that one option (grid and select components).' .
+                       '<li>":nolabel" for the value without the label (the default)</li>' .
+                       '<li>":label" for just the label.</li>' .
+                       '<li>":withlabel" for both the label and value together.</li>' .
+                       '<li>":key" for just the key in a key|label pair (grid and select components).</li></ul>'),
     'dynamic' => TRUE,
   );
 
@@ -151,19 +157,29 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
           // not displayed when printing the whole renderable.
           $display_element['#access'] = TRUE;
 
-          // For grid components, see if optional option key is present.
+          // For grid components, see if optional question key is present.
           $matched_token = $parent_token;
           if ($display_element['#webform_component']['type'] === 'grid') {
-            list($option_key) = explode(':', substr($name, strlen($parent_token) + 1));
-            if (strlen($option_key) && isset($display_element[$option_key]['#value'])) {
+            list($question_key) = explode(':', substr($name, strlen($matched_token) + 1));
+            if (strlen($question_key) && isset($display_element[$question_key]['#value'])) {
               // Generate a faux select component for this grid question.
               $select_component = _webform_defaults_select();
               $select_component['type'] = 'select';
               $select_component['nid'] = $display_element['#webform_component']['nid'];
-              $select_component['name'] = $display_element['#grid_questions'][$option_key];
+              $select_component['name'] = $display_element['#grid_questions'][$question_key];
               $select_component['extra']['items'] = $display_element['#webform_component']['extra']['options'];
-              $display_element = _webform_display_select($select_component, $display_element[$option_key]['#value'], $format);
+              $display_element = _webform_display_select($select_component, $display_element[$question_key]['#value'], $format);
               $display_element['#webform_component'] = $select_component;
+              $matched_token .= ':' . $question_key;
+            }
+          }
+
+          // For select components, see if the optional option key is present.
+          if ($display_element['#webform_component']['type'] === 'select') {
+            list($option_key) = explode(':', substr($name, strlen($matched_token) + 1));
+            if (strlen($option_key) && strpos("\n" . $display_element['#webform_component']['extra']['items'], "\n" . $option_key . '|') !== FALSE) {
+              // Return only this specified option and no other values.
+              $display_element['#value'] = array_intersect($display_element['#value'], array($option_key));
               $matched_token .= ':' . $option_key;
             }
           }
