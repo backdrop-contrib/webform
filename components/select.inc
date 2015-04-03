@@ -20,6 +20,7 @@ function _webform_defaults_select() {
       'items' => '',
       'multiple' => NULL,
       'aslist' => NULL,
+      'empty_option' => '',
       'optrand' => 0,
       'other_option' => NULL,
       'other_text' => t('Other...'),
@@ -176,6 +177,22 @@ function _webform_edit_select($component) {
     '#description' => t('Check this option if you want the select component to be displayed as a select list box instead of radio buttons or checkboxes. Option groups (nested options) are only supported with listbox components.'),
     '#parents' => array('extra', 'aslist'),
   );
+  $form['display']['empty_option'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Empty option'),
+    '#default_value' => $component['extra']['empty_option'],
+    '#size' => 60,
+    '#maxlength' => 255,
+    '#description' => t('The list item to show when no default is provided. Leave blank for "- None -" or "- Select -".'),
+    '#parents' => array('extra', 'empty_option'),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="extra[aslist]"]' => array('checked' => TRUE),
+        ':input[name="extra[multiple]"]' => array('checked' => FALSE),
+        ':input[name="value"]' => array('filled' => FALSE),
+      ),
+    ),
+  );
   $form['display']['optrand'] = array(
     '#type' => 'checkbox',
     '#title' => t('Randomize options'),
@@ -327,6 +344,7 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
   // Drupal 7's adding of the option for us. See @form_process_select().
   if ($component['extra']['aslist'] && !$component['extra']['multiple'] && $default_value === '') {
     $element['#empty_value'] = '';
+    $element['#empty_option'] = $component['extra']['empty_option'];
   }
 
   // Set the component options.
