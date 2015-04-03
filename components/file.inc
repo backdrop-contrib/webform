@@ -21,6 +21,7 @@ function _webform_defaults_file() {
         'addextensions' => '',
         'size' => '2 MB',
       ),
+      'rename' => '',
       'scheme' => 'public',
       'directory' => '',
       'progress_indicator' => 'throbber',
@@ -156,6 +157,15 @@ function _webform_edit_file($component) {
       '#field_prefix' => 'webform/',
     );
 
+    $form['extra']['rename'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Rename files'),
+      '#default_value' => $component['extra']['rename'],
+      '#description' => t('You may optionally use tokens to create a pattern used to rename files upon submission. Omit the extension; it will be added automatically.').' '.theme('webform_token_help', array('groups' => array('node', 'submission'))),
+      '#weight' => 6,
+      '#element_validate' => array('_webform_edit_file_rename_validate'),
+    );
+
     $form['display']['progress_indicator'] = array(
       '#type' => 'radios',
       '#title' => t('Progress indicator'),
@@ -185,6 +195,18 @@ function _webform_edit_file($component) {
     */
 
     return $form;
+}
+
+/**
+ * A Form API element validate function to ensure that the rename string is
+ * either empty or contains at least one token.
+ */
+function _webform_edit_file_rename_validate($element, &$form_state, $form) {
+  $rename = trim($form_state['values']['extra']['rename']);
+  form_set_value($element, $rename, $form_state);
+  if (strlen($rename) && !count(token_scan($rename))) {
+    form_error($element, t('To create unique file names, use at least one token in the file name pattern.'));
+  }
 }
 
 /**
@@ -539,6 +561,63 @@ function webform_file_usage_adjust($submission) {
     foreach ($files as $file) {
       file_usage_delete($file, 'webform', 'submission', $submission->sid);
       file_delete($file);
+    }
+  }
+}
+
+/**
+ * Rename any files which are eligible for renaming, if this submission is being
+ * submitted for the first time.
+ */
+function webform_file_rename($node, $submission) {
+  if (isset($submission->file_usage)) {
+    foreach ($submission->file_usage['renameable'] as $cid => $fids) {
+      foreach ($fids as $fid) {
+        webform_file_process_rename($node, $submission, $node->webform['components'][$cid], $fid);
+      }
+    }
+  }
+}
+
+
+/**
+ * Renames the uploaded file name using tokens.
+ *
+ * @param $node
+ *   The webform node object.
+ * @param $submission
+ *   The webform submission object.
+ * @param $component
+ *   Component settings array for which fid is going to be processed.
+ * @param $fid
+ *   A file id to be processed.
+ */
+function webform_file_process_rename($node, $submission, $component, $fid) {
+  $file = webform_get_file($fid);
+
+  if ($file) {
+    // Get the destination uri.
+    $destination_dir = $component['extra']['scheme'] . '://webform/' . drupal_strtolower(webform_replace_tokens($component['extra']['directory'], $node));
+    $destination_dir = file_stream_wrapper_uri_normalize($destination_dir);
+
+    // Get the file extension.
+    $info = pathinfo($file->uri);
+    $extension = $info['extension'];
+
+    // Prepare new file name without extension.
+    $new_file_name = webform_replace_tokens($component['extra']['rename'], $node, $submission, NULL, TRUE);
+    $new_file_name = trim($new_file_name);
+    $new_file_name = _webform_transliterate($new_file_name);
+    $new_file_name = str_replace('/', '_', $new_file_name);
+    $new_file_name = preg_replace('/[^a-zA-Z0-9_\- ]/', '', $new_file_name);
+    if (strlen($new_file_name)) {
+      // Prepare the new uri with new filename.
+      $destination = "$destination_dir/$new_file_name.$extension";
+
+      // Compare the uri and Rename the file name.
+      if ($file->uri != $destination) {
+        file_move($file, $destination, FILE_EXISTS_RENAME);
+      }
     }
   }
 }

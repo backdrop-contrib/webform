@@ -1224,6 +1224,7 @@ function webform_webform_submission_presave($node, &$submission) {
   $has_file_components = FALSE;
   $new_fids = array();
   $old_fids = array();
+  $renameable = array();
 
   foreach ($node->webform['components'] as $cid => $component) {
     if ($component['type'] == 'file') {
@@ -1232,6 +1233,9 @@ function webform_webform_submission_presave($node, &$submission) {
         foreach ($submission->data[$cid] as $key => $value) {
           if (empty($value)) {
             unset($submission->data[$cid][$key]);
+          }
+          if (strlen($component['extra']['rename'])) {
+            $renameable[$cid][] = $value;
           }
         }
         $new_fids = array_merge($new_fids, $submission->data[$cid]);
@@ -1254,13 +1258,20 @@ function webform_webform_submission_presave($node, &$submission) {
       }
     }
 
+    // Only rename files if this is the first time the submission is being saved as finished.
+    if ($submission->is_draft || (isset($old_submission) && !$old_submission->is_draft)) {
+      $renameable = array();
+    }
+
     // Save the list of added or removed files so we can add usage in
     // hook_webform_submission_insert() or _update().
     $submission->file_usage = array(
       // Diff the old against new to determine what files were deleted.
       'deleted_fids' => array_diff($old_fids, $new_fids),
       // Diff the new files against old to determine new uploads.
-      'added_fids' => array_diff($new_fids, $old_fids)
+      'added_fids' => array_diff($new_fids, $old_fids),
+      // A list of files which need renaming with tokens.
+      'renameable' => $renameable,
     );
   }
 }
@@ -1272,6 +1283,7 @@ function webform_webform_submission_insert($node, $submission) {
   if (isset($submission->file_usage)) {
     webform_component_include('file');
     webform_file_usage_adjust($submission);
+    webform_file_rename($node, $submission);
   }
 }
 
@@ -1282,6 +1294,7 @@ function webform_webform_submission_update($node, $submission) {
   if (isset($submission->file_usage)) {
     webform_component_include('file');
     webform_file_usage_adjust($submission);
+    webform_file_rename($node, $submission);
   }
 }
 
@@ -4041,24 +4054,29 @@ function theme_webform_token_help($variables) {
   return render($help);
 }
 
+/**
+ * Convert a name into an identifier that is safe for machine names, classes,
+ * and other ASCII uses.
+ */
 function _webform_safe_name($name) {
   $new = trim($name);
-
-  // If transliteration is available, use it to convert names to ASCII.
-  if (function_exists('transliteration_get')) {
-    $new = transliteration_get($new, '');
-    $new = str_replace(array(' ', '-', '/'), array('_', '_', '_'), $new);
-  }
-  else {
-    $new = str_replace(
-      array(' ', '-', '/', '€', 'ƒ', 'Š', 'Ž', 'š', 'ž', 'Ÿ', '¢', '¥', 'µ', 'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'à', 'á', 'â', 'ã', 'ä', 'å', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', 'Œ',  'œ',  'Æ',  'Ð',  'Þ',  'ß',  'æ',  'ð',  'þ'),
-      array('_', '_', '_', 'E', 'f', 'S', 'Z', 's', 'z', 'Y', 'c', 'Y', 'u', 'A', 'A', 'A', 'A', 'A', 'A', 'C', 'E', 'E', 'E', 'E', 'I', 'I', 'I', 'I', 'N', 'O', 'O', 'O', 'O', 'O', 'O', 'U', 'U', 'U', 'U', 'Y', 'a', 'a', 'a', 'a', 'a', 'a', 'c', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'n', 'o', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'y', 'y', 'OE', 'oe', 'AE', 'DH', 'TH', 'ss', 'ae', 'dh', 'th'),
-      $new);
-  }
-
+  $new = _webform_transliterate($new);
+  $new = str_replace(array(' ', '-', '/'), array('_', '_', '_'), $new);
   $new = drupal_strtolower($new);
   $new = preg_replace('/[^a-z0-9_]/', '', $new);
   return $new;
+}
+
+/**
+ * Transliterate common non-English characters to 7-bit ASCII.
+ */
+function _webform_transliterate($name) {
+  // If transliteration is available, use it to convert names to ASCII.
+  return function_exists('transliteration_get')
+            ? transliteration_get($name, '')
+            : str_replace(array('€', 'ƒ', 'Š', 'Ž', 'š', 'ž', 'Ÿ', '¢', '¥', 'µ', 'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'à', 'á', 'â', 'ã', 'ä', 'å', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', 'Œ',  'œ',  'Æ',  'Ð',  'Þ',  'ß',  'æ',  'ð',  'þ'),
+                          array('E', 'f', 'S', 'Z', 's', 'z', 'Y', 'c', 'Y', 'u', 'A', 'A', 'A', 'A', 'A', 'A', 'C', 'E', 'E', 'E', 'E', 'I', 'I', 'I', 'I', 'N', 'O', 'O', 'O', 'O', 'O', 'O', 'U', 'U', 'U', 'U', 'Y', 'a', 'a', 'a', 'a', 'a', 'a', 'c', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'n', 'o', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'y', 'y', 'OE', 'oe', 'AE', 'DH', 'TH', 'ss', 'ae', 'dh', 'th'),
+                          $name);
 }
 
 /**
