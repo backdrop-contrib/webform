@@ -2071,10 +2071,12 @@ function webform_update_7423() {
   // In a site with many, many conditionals, the db_insert may timeout. Start a transaction to ensure atomic action.
   $tx = db_transaction();
   // Copy target information from existing webform_conditional table to new webfrom_condtional_actions table.
+  $select = db_select('webform_conditional', 'c')
+    ->fields('c', array('nid', 'rgid', 'action', 'target_type', 'target'))
+    ->orderBy('nid')->orderBy('rgid');
+  $select->addExpression("''", 'argument');
   db_insert('webform_conditional_actions')
-    ->from(db_select('webform_conditional', 'c')
-              ->fields('c', array('nid', 'rgid', 'action', 'target_type', 'target'))
-              ->orderBy('nid')->orderBy('rgid'))
+    ->from($select)
     ->execute();
 
   // Commit the insert
