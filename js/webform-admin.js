@@ -46,6 +46,7 @@ Drupal.webform.setActive = function(context) {
   }
 };
 
+// Upldate e-mail templates between default and custom.
 Drupal.webform.updateTemplate = function(context) {
   var defaultTemplate = $('#edit-templates-default').val();
   var $templateSelect = $('#webform-template-fieldset select#edit-template-option', context);
@@ -210,12 +211,15 @@ Drupal.webform.conditionalSourceChange = function() {
   var $newList = $originalList.filter('optgroup[label=' + dataType + ']');
   var newHTML = $newList[0].innerHTML;
 
-  // Update the options and fire the change event handler on the list to update the value field,
-  // only if the options have changed. This avoids resetting existing selections.
+  // Update the options and fire the change event handler on the list to update
+  // the value field, only if the options have changed. This avoids resetting
+  // existing selections.
   if (newHTML != $operator.html()) {
     $operator.html(newHTML);
-    $operator.trigger('change');
   }
+  // Trigger the change in case the source component changed from one select
+  // component to another.
+  $operator.trigger('change');
 
 }
 
@@ -232,6 +236,7 @@ Drupal.webform.conditionalOperatorChange = function() {
 
   // Given the dataType and operator, we can determine the form key.
   var formKey = Drupal.settings.webform.conditionalValues.operators[dataType][operator]['form'];
+  var formSource = typeof Drupal.settings.webform.conditionalValues.forms[formKey] == 'undefined' ? false : source;
 
   // On initial request, save the default field as printed on the original page.
   if (!$value[0]['webformConditionalOriginal']) {
@@ -239,13 +244,15 @@ Drupal.webform.conditionalOperatorChange = function() {
     originalValue = $value.find('input:first').val();
   }
   // On changes to an existing operator, check if the form key is different
-  // before bothering with replacing the form with an identical version.
-  else if ($value[0]['webformConditionalFormKey'] == formKey) {
+  // (and any per-source form, such as a select option list) before replacing
+  // the form with an identical version.
+  else if ($value[0]['webformConditionalFormKey'] == formKey && $value[0]['webformConditionalFormSource'] == formSource) {
     return;
   }
 
   // Store the current form key for checking the next time the operator changes.
   $value[0]['webformConditionalFormKey'] = formKey;
+  $value[0]['webformConditionalFormSource'] = formSource;
 
   // If using the default (a textfield), restore the original field.
   if (formKey === 'default') {
@@ -255,17 +262,14 @@ Drupal.webform.conditionalOperatorChange = function() {
   else if (formKey === false) {
     $value[0].innerHTML = '&nbsp;';
   }
-  // Lastly check if there is a specialized form for this source and operator.
+  // If there is a per-source form for this operator (e.g. option lists), use
+  // the specialized value form.
+  else if (typeof Drupal.settings.webform.conditionalValues.forms[formKey] == 'object') {
+    $value[0].innerHTML = Drupal.settings.webform.conditionalValues.forms[formKey][source];
+  }
+  // Otherwise all the sources use a generic field (e.g. a text field).
   else {
-    // If there is a per-source form for this operator (e.g. option lists), use
-    // the specialized value form.
-    if (typeof Drupal.settings.webform.conditionalValues.forms[formKey] == 'object') {
-      $value[0].innerHTML = Drupal.settings.webform.conditionalValues.forms[formKey][source];
-    }
-    // Otherwise all the sources use a generic field (e.g. a text field).
-    else {
-      $value[0].innerHTML = Drupal.settings.webform.conditionalValues.forms[formKey];
-    }
+    $value[0].innerHTML = Drupal.settings.webform.conditionalValues.forms[formKey];
   }
 
   // Set the name attribute to match the original placeholder field.
