@@ -271,7 +271,8 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
         count($default_from_parts) == 2 &&
         $default_from_parts[1] &&
         stripos($email['from'], '@' . $default_from_parts[1]) === FALSE) {
-      // Message is not already being sent from the domain of the default webform from address.
+      // Message is not already being sent from the domain of the default
+      // webform from address.
       $email['headers']['Reply-To'] = $email['from'];
       // Match e-mails of the form 'My Name <email@domain.com>' as follows:
       // ^          = beginning of string
@@ -701,22 +702,42 @@ function webform_submission_render($node, $submission, $email, $format, $exclude
  *   Optional. The number of submissions to include in the results.
  */
 function webform_get_submissions($filters = array(), $header = NULL, $pager_count = 0) {
-  $submissions = array();
+  return webform_get_submissions_load(webform_get_submissions_query($filters, $header, $pager_count));
+}
 
+/**
+ * Returns an unexecuted webform_submissions query on for the arguments.
+ *
+ * This is an internal routine and not intended for use by other modules.
+ *
+ * @param $filters
+ *   An array of filters to apply to this query. Usually in the format
+ *   array('nid' => $nid, 'uid' => $uid). A single integer may also be passed
+ *   in, which will be equivalent to specifying a $nid filter. 'sid' may also
+ *   be included, either as a single sid or an array of sid's.
+ * @param $header
+ *   If the results of this fetch will be used in a sortable
+ *   table, pass the array header of the table.
+ * @param $pager_count
+ *   Optional. The number of submissions to include in the results.
+ */
+function webform_get_submissions_query($filters = array(), $header = NULL, $pager_count = 0) {
   if (!is_array($filters)) {
     $filters = array('ws.nid' => $filters);
   }
 
-  // UID filters need to be against a specific table.
-  if (isset($filters['uid'])) {
-    $filters['u.uid'] = $filters['uid'];
-    unset($filters['uid']);
+  // Qualify all filters with a table alias. ws.* is assumed, except for u.uid.
+  foreach ($filters as $column => $value) {
+    if (strpos($column, '.') === FALSE) {
+      $filters[($column == 'uid' ? 'u.' : 'ws.') . $column] = $value;
+      unset($filters[$column]);
+    }
   }
 
   // If the sid is specified, but there are none, force the query to fail
   // rather than query on an empty array
-  if (isset($filters['sid']) && empty($filters['sid'])) {
-    $filters['sid'] = 0;
+  if (isset($filters['ws.sid']) && empty($filters['ws.sid'])) {
+    $filters['ws.sid'] = 0;
   }
 
   // Build the list of submissions and load their basic information.
@@ -726,6 +747,8 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     ->distinct()
     ->addTag('webform_get_submissions_sids')
     ->fields('ws');
+
+  // Add each filter.
   foreach ($filters as $column => $value) {
     $pager_query->condition($column, $value);
   }
@@ -736,10 +759,10 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
   if (isset($filters['u.uid']) && $filters['u.uid'] === 0) {
     if (!empty($_SESSION['webform_submission'])) {
       $anonymous_sids = array_keys($_SESSION['webform_submission']);
-      $pager_query->condition('sid', $anonymous_sids, 'IN');
+      $pager_query->condition('ws.sid', $anonymous_sids, 'IN');
     }
     else {
-      $pager_query->condition('sid', 0);
+      $pager_query->condition('ws.sid', 0);
     }
   }
 
@@ -749,7 +772,8 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
       $metadata_columns[] = $header_item['data'];
     }
     $sort = drupal_get_query_parameters();
-    // Sort by submitted data column if order is set but not in $metadata_columns.
+    // Sort by submitted data column if order is set but not in
+    // $metadata_columns.
     if (isset($sort['order']) && !in_array($sort['order'], $metadata_columns, TRUE)) {
       // Default if sort is unset or invalid.
       if (!isset($sort['sort']) || !in_array($sort['sort'], array('asc', 'desc'), TRUE)) {
@@ -758,7 +782,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
       $pager_query->leftJoin('webform_component', 'wc', 'ws.nid = wc.nid AND wc.name = :form_key', array('form_key' => $sort['order']));
       $pager_query->leftJoin('webform_submitted_data', 'wsd', 'wc.nid = wsd.nid AND ws.sid = wsd.sid AND wc.cid = wsd.cid');
       $pager_query->orderBy('wsd.data', $sort['sort']);
-      $pager_query->orderBy('sid', 'ASC');
+      $pager_query->orderBy('ws.sid', 'ASC');
     }
     // Sort by metadata column.
     else {
@@ -768,7 +792,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     }
   }
   else {
-    $pager_query->orderBy('sid', 'ASC');
+    $pager_query->orderBy('ws.sid', 'ASC');
   }
 
   if ($pager_count) {
@@ -776,19 +800,50 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
     $pager_query = $pager_query->extend('PagerDefault');
     $pager_query->limit($pager_count);
   }
+  return $pager_query;
+}
+
+/**
+ * Retrieve and load the submissions for the specified submissions query.
+ *
+ * This is an internal routine and not intended for use by other modules.
+ *
+ * @params object $pager_query
+ *   A select or extended select query containing the needed fields:
+ *     webform_submissions: all fields
+ *     user: name
+ * @return array
+ *   An array of loaded webform submissions.
+ */
+function webform_get_submissions_load($pager_query) {
+  // If the "$pager_query" is actually an unextended select query, then instead
+  // of querying the webform_submissions_data table with a pontentially huge
+  // array of sids in an IN clause, use the select query directy as this will
+  // be much faster. Extended queries don't work in join clauses. The query
+  // is assumed to include the sid.
+  if ($pager_query instanceof SelectQuery) {
+    $submissions_query = clone $pager_query;
+  }
+
+  // Extract any filter on node id to use in an optimization below
+  foreach ($pager_query->conditions() as $index => $condition) {
+    if ($index !== '#conjunction' && $condition['operator'] === '=' && ($condition['field'] === 'nid' || $condition['field'] === 'ws.nid')) {
+      $nid = $condition['value'];
+      break;
+    }
+  }
+
   $result = $pager_query->execute();
   $submissions = $result->fetchAllAssoc('sid');
 
-  $sids = array();
-  foreach ($submissions as $sid => $submission) {
-    $sids[] = $sid;
-    $submissions[$sid]->preview = FALSE;
-    $submissions[$sid]->data = array();
+  // If there are no submissions being retrieved, return an empty array.
+  if (!$submissions) {
+    return $submissions;
   }
 
-  // If there are no submissions being retrieved, return an empty array.
-  if (empty($sids)) {
-    return $submissions;
+  foreach ($submissions as $sid => $submission) {
+    $submissions[$sid]->preview = FALSE;
+    $submissions[$sid]->data = array();
   }
 
   // Query the required submission data.
@@ -796,15 +851,24 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
   $query
     ->addTag('webform_get_submissions_data')
     ->fields('sd', array('sid', 'cid', 'no', 'data'))
-    ->condition('sd.sid', $sids, 'IN')
     ->orderBy('sd.sid', 'ASC')
     ->orderBy('sd.cid', 'ASC')
     ->orderBy('sd.no', 'ASC');
 
+  if (isset($submissions_query)) {
+    // If available, prefer joining on the subquery as it is much faster than an
+    // IN clause on a large array. A subquery with the IN operator doesn't work
+    // when the subquery has a LIMIT clause, requiring an inner join instead.
+    $query->innerJoin($submissions_query, 'ws2', 'sd.sid = ws2.sid');
+  }
+  else {
+    $query->condition('sd.sid',  array_keys($submissions), 'IN');
+  }
+
   // By adding the NID to this query we allow MySQL to use the primary key on
   // in webform_submitted_data for sorting (nid_sid_cid_no).
-  if (isset($filters['nid'])) {
-    $query->condition('sd.nid', $filters['nid']);
+  if (isset($nid)) {
+    $query->condition('sd.nid', $nid);
   }
 
   $result = $query->execute();
@@ -937,7 +1001,8 @@ function webform_submission_user_limit_check($node, $account = NULL) {
     $query->condition('remote_addr', ip_address());
   }
 
-  // Fetch all the entries from the database within the submit interval with this username and IP.
+  // Fetch all the entries from the database within the submit interval with
+  // this username and IP.
   $num_submissions_database = 0;
   if ($account->uid !== 0 || $tracking_mode === 'ip_address' || $tracking_mode === 'strict') {
     $num_submissions_database = $query->countQuery()->execute()->fetchField();

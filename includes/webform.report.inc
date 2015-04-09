@@ -16,7 +16,8 @@ module_load_include('inc', 'webform', 'includes/webform.submissions');
 function webform_results_submissions($node, $user_filter, $pager_count) {
   global $user;
 
-  // Determine whether views or hard-coded tables should be used for the submissions table.
+  // Determine whether views or hard-coded tables should be used for the
+  // submissions table.
   if (!webform_variable_get('webform_table')) {
     // Load the submissions view
     $view = webform_get_view($node, 'webform_submissions');
@@ -213,8 +214,9 @@ function template_preprocess_webform_results_submissions(&$vars) {
  * Create a table containing all submitted values for a webform node.
  */
 function webform_results_table($node, $pager_count = 0) {
-  
-  // Determine whether views or hard-coded tables should be used for the submissions table.
+
+  // Determine whether views or hard-coded tables should be used for the
+  // submissions table.
   if (!webform_variable_get('webform_table')) {
     // Load and preview the results view with a node id argument
     $view = webform_get_view($node, 'webform_results');
@@ -502,19 +504,19 @@ function webform_results_download_form($form, &$form_state, $node) {
     '#maxlength' => 8,
   );
 
-  // If drafts are allowed, provide options to filter download based on draft status.
-  if ($node->webform['allow_draft'] || $node->webform['auto_save']) {
-    $form['range']['completion_type'] = array(
-      '#type' => 'radios',
-      '#title' => t('Included submissions'),
-      '#default_value' => 'all',
-      '#options' => array(
-        'all' => t('Finished and draft submissions'),
-        'finished' => t('Finished submissions only'),
-        'draft' => t('Drafts only'),
-      ),
-    );
-  }
+  // If drafts are allowed, provide options to filter download based on draft
+  // status.
+  $form['range']['completion_type'] = array(
+    '#type' => 'radios',
+    '#title' => t('Included submissions'),
+    '#default_value' => 'all',
+    '#options' => array(
+      'all' => t('Finished and draft submissions'),
+      'finished' => t('Finished submissions only'),
+      'draft' => t('Drafts only'),
+    ),
+    '#access' => ($node->webform['allow_draft'] || $node->webform['auto_save']),
+  );
 
   // By default results are downloaded. User can override this value if
   // programmatically submitting this form.
@@ -585,12 +587,21 @@ function webform_results_download_range_validate($element, $form_state) {
           }
         }
       }
-      // Check that the range will return something at all.
-      $form_state['values']['sids'] = webform_download_sids($form_state['values']['node']->nid, array('range_type' => $element['range_type']['#value'], 'start' => $element['start']['#value'], 'end' => $element['end']['#value']));
-      if (empty($form_state['values']['sids'])) {
-        form_error($element['start'], t('The specified range will not return any results.'));
-      }
       break;
+  }
+
+  // Check that the range will return something at all.
+  $range_options = array(
+    'range_type' => $element['range_type']['#value'],
+    'start' => $element['start']['#value'],
+    'end' => $element['end']['#value'],
+    'latest' => $element['latest']['#value'],
+    'completion_type' => $element['completion_type']['#value'],
+    'batch_size' => 1,
+    'batch_number' => 0,
+  );
+  if (!webform_download_sids_count($form_state['values']['node']->nid, $range_options)) {
+    form_error($element['range_type'], t('The specified range will not return any results.'));
   }
 
 }
@@ -602,16 +613,13 @@ function webform_results_download_range_after_build($element, &$form_state) {
   $node = $form_state['values']['node'];
 
   // Build a list of counts of new and total submissions.
-  $count = webform_get_submission_count($node->nid, NULL, NULL);
-  $sids = webform_download_sids($node->nid, array('range_type' => 'new'));
-
   $last_download = webform_download_last_download_info($node->nid);
 
   $element['#webform_download_info']['sid'] = $last_download ? $last_download['sid'] : 0;
   $element['#webform_download_info']['serial'] = $last_download ? $last_download['serial'] : NULL;
   $element['#webform_download_info']['requested'] = $last_download ? $last_download['requested'] : $node->created;
-  $element['#webform_download_info']['total'] = $count;
-  $element['#webform_download_info']['new'] = count($sids);
+  $element['#webform_download_info']['total'] = webform_get_submission_count($node->nid, NULL, NULL);
+  $element['#webform_download_info']['new'] = webform_download_sids_count($node->nid, array('range_type' => 'new'));
 
   return $element;
 }
@@ -720,15 +728,6 @@ function webform_results_download_form_submit(&$form, &$form_state) {
   $options += $defaults;
   $options['range'] += $defaults['range'];
 
-  // Use a pre-built list of SIDs provided by validate handlers (if any).
-  if (isset($form_state['values']['sids'])) {
-    $options['sids'] = $form_state['values']['sids'];
-  }
-  // Retrieve the list of required SIDs.
-  elseif ($options['range']['range_type'] != 'all') {
-    $options['sids'] = webform_download_sids($node->nid, $options['range']);
-  }
-
   // Determine an appropriate batch size based on the form and server specs.
   if (!isset($options['range']['batch_size'])) {
     // Start the batch size at 50,000 per batch, but divide by number of
@@ -742,12 +741,12 @@ function webform_results_download_form_submit(&$form, &$form_state) {
     $memory_modifier = max(1, ($memory_limit - (64 * $mb)) / (32 * $mb));
     $batch_size = ceil($batch_size * $memory_modifier);
 
-    // For time reasons, limit the batch size to 10,000.
-    $batch_size = min($batch_size, 10000);
+    // For time reasons, limit the batch size to 5,000.
+    $batch_size = min($batch_size, 5000);
 
     // Allow a non-UI configuration to override the batch size.
     $batch_size = variable_get('webform_export_batch_size', $batch_size);
-    
+
     $options['range']['batch_size'] = $batch_size;
   }
 
@@ -772,6 +771,9 @@ function _webform_export_tempname() {
  * should be used to generate a file over multiple requests.
  *
  * @see webform_results_export_batch()
+ *
+ * @deprecated This function is schedule to be removed in webform 7.x-5.x. Use
+ * the batch opertions instead.
  *
  * @return array|null
  *   The array of export info or null if the file could not be opened.
@@ -828,7 +830,7 @@ function webform_results_export($node, $format = 'delimited', $options = array()
   $export_info['file_name'] = $file_name;
   $export_info['row_count'] = $row_count;
   $export_info['col_count'] = $col_count;
-  $export_info['last_sid'] = $sid;
+  $export_info['last_sid'] = end($submissions) ? key($submissions) : NULL;
   $export_info['exporter'] = $exporter;
 
   return $export_info;
@@ -930,6 +932,8 @@ function webform_results_download_headers($node, $options) {
 /**
  * Returns rows of downloadable webform data.
  *
+ * @deprecated This function is scheduled to be removed in webform 7.x-5.x.
+ *
  * @param $node
  *   The webform node on which to generate the analysis.
  * @param array $options
@@ -944,8 +948,6 @@ function webform_results_download_headers($node, $options) {
  *   by the super-global $_GET['page'] variable.
  */
 function webform_results_download_rows($node, $options, $serial_start = 0) {
-  module_load_include('inc', 'webform', 'includes/webform.components');
-
   // Get all the required submissions for the download.
   $filters['nid'] = $node->nid;
   if (isset($options['sids'])){
@@ -956,11 +958,37 @@ function webform_results_download_rows($node, $options, $serial_start = 0) {
   }
 
   $submissions = webform_get_submissions($filters, NULL);
+
+  return webform_results_download_rows_process($node, $options, $serial_start, $submissions);
+}
+
+/**
+ * Processes the submissions to be downloaded into exported rows.
+ *
+ * This is an internal routine and not intended for use by other modules.
+ *
+ * @param $node
+ *   The webform node on which to generate the analysis.
+ * @param array $options
+ *   A list of options that define the output format. These are generally passed
+ *   through from the GUI interface.
+ * @param $serial_start
+ *   The starting position for the Serial column in the output.
+ * @param array $submissions
+ *   An associative array of loaded submissions, indexed by sid.
+ *
+ * @return $rows
+ *   An array of rows built according to the provided $serial_start and
+ *   $pager_count variables. Note that the current page number is determined
+ *   by the super-global $_GET['page'] variable.
+ */
+function webform_results_download_rows_process($node, $options, $serial_start, $submissions) {
+  module_load_include('inc', 'webform', 'includes/webform.components');
+
   $submission_information = webform_results_download_submission_information($node, $options);
 
   // Generate a row for each submission.
   $row_count = 0;
-  $sid = 0;
   $rows = array();
   foreach ($submissions as $sid => $submission) {
     $row_count++;
@@ -971,7 +999,8 @@ function webform_results_download_rows($node, $options, $serial_start = 0) {
       $cell = module_invoke_all('webform_results_download_submission_information_data', $token, $submission, $options, $serial_start, $row_count);
       $context = array('token' => $token, 'submission' => $submission, 'options' => $options, 'serial_start' => $serial_start, 'row_count' => $row_count);
       drupal_alter('webform_results_download_submission_information_data', $cell, $context);
-      // implode() to ensure everything from a single value goes into one column, even if more than one module responds to this item.
+      // implode() to ensure everything from a single value goes into one
+      // column, even if more than one module responds to this item.
       $row[] = implode(', ', $cell);
     }
 
@@ -1133,17 +1162,14 @@ function webform_results_download($node, $export_info) {
   }
 
   // Update user last downloaded sid if required.
-  if ((isset($export_info['options']['sids']) || $export_info['options']['range']['range_type'] != 'range') && !empty($export_info['last_sid'])) {
-    // Delete existing record.
-    db_delete('webform_last_download')
-      ->condition('nid', $node->nid)
-      ->condition('uid', $user->uid)
-      ->execute();
-    // Write new record.
-    db_insert('webform_last_download')
-      ->fields(array(
+  if (!in_array($export_info['options']['range']['range_type'], array('range', 'range_serial')) && !empty($export_info['last_sid'])) {
+    // Insert a new record or update an existing record.
+    db_merge('webform_last_download')
+      ->key(array(
         'nid' => $node->nid,
         'uid' => $user->uid,
+      ))
+      ->fields(array(
         'sid' => $export_info['last_sid'],
         'requested' => REQUEST_TIME,
       ))
@@ -1236,19 +1262,30 @@ function webform_results_batch_headers($node, $format = 'delimited', $options = 
 function webform_results_batch_rows($node, $format = 'delimited', $options = array(), &$context) {
   module_load_include('inc', 'webform', 'includes/webform.export');
 
+  // Initialize the sandbox if this is the first execution of the batch
+  // operation.
   if (!isset($context['sandbox']['batch_number'])) {
     $context['sandbox']['batch_number'] = 0;
-    $sids = isset($options['sids']) ? $options['sids'] : webform_download_sids($node->nid, $options['range']);
-    $context['sandbox']['sid_count'] = count($sids);
+    $context['sandbox']['sid_count'] = webform_download_sids_count($node->nid, $options['range']);
     $context['sandbox']['batch_max'] = max(1, ceil($context['sandbox']['sid_count'] / $options['range']['batch_size']));
     $context['sandbox']['serial'] = 0;
     $context['sandbox']['last_sid'] = 0;
   }
+
   // Retrieve the submissions for this batch process.
   $options['range']['batch_number'] = $context['sandbox']['batch_number'];
-  $sids = isset($options['sids']) ? $options['sids'] : webform_download_sids($node->nid, $options['range']);
-  $options['sids'] = $sids;
-  $rows = webform_results_download_rows($node, $options, $context['sandbox']['serial']);
+
+  $query = webform_download_sids_query($node->nid, $options['range']);
+
+  // Join to the users table to include user name in results, as required by
+  // webform_results_download_rows_process.
+  $query->leftJoin('users', 'u', 'u.uid = ws.uid');
+  $query->fields('u', array('name'));
+  $query->fields('ws');
+
+  $submissions = webform_get_submissions_load($query);
+
+  $rows = webform_results_download_rows_process($node, $options, $context['sandbox']['serial'], $submissions);
 
   // Write these submissions to the file.
   $exporter = webform_export_create_handler($format, $options);
@@ -1260,8 +1297,9 @@ function webform_results_batch_rows($node, $format = 'delimited', $options = arr
     $exporter->add_row($handle, $row, $context['results']['row_count']);
     $context['results']['row_count']++;
   }
-  $context['sandbox']['serial'] += count($sids);
-  $context['sandbox']['last_sid'] = end($sids);
+
+  $context['sandbox']['serial'] += count($submissions);
+  $context['sandbox']['last_sid'] = end($submissions) ? key($submissions) : NULL;
   $context['sandbox']['batch_number']++;
 
   @fclose($handle);
@@ -1603,10 +1641,46 @@ function theme_webform_results_analysis($variables) {
 
 /**
  * Given a set of range options, retrieve a set of SIDs for a webform node.
+ *
+ * @deprecated This function is scheduled to be removed int webform 7.x-5.x.
+ * Use webform_download_sids_query() instead.
+ *
  */
 function webform_download_sids($nid, $range_options, $uid = NULL) {
-  $query = db_select('webform_submissions', 'ws')
+  return webform_download_sids_query($nid, $range_options, $uid)
     ->fields('ws', array('sid'))
+    ->execute()
+    ->fetchCol();
+}
+
+/**
+ * Retrieves a count the number of matching submissions.
+ *
+ */
+function webform_download_sids_count($nid, $range_options, $uid = NULL) {
+  return webform_download_sids_query($nid, $range_options, $uid)
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+}
+
+/**
+ * Given a set of range options, return an unexecuted select query.
+ *
+ * The query will have no fields as they should be added by the caller as
+ * desired.
+ *
+ * @param integer $nid
+ *   The node id of the webform.
+ * @param array $range_options
+ *   Associate array of range options.
+ * @param integer $uid
+ *   The user id of the user whose last download information should be used,
+ *   or the current user if NULL. This is unrelated to which user submitted
+ *   the submissions.
+ */
+function webform_download_sids_query($nid, $range_options, $uid = NULL) {
+  $query = db_select('webform_submissions', 'ws')
     ->condition('nid', $nid)
     ->addTag('webform_download_sids');
 
@@ -1651,27 +1725,10 @@ function webform_download_sids($nid, $range_options, $uid = NULL) {
     $query->condition('is_draft', (int) ($range_options['completion_type'] === 'draft'));
   }
 
-  // Set batch properties. Unfortunately the pager query class reads directly
-  // from $_GET['page'] to determine the current page number, so we have to set
-  // this super-global and then restore it after executing the query.
-  if (isset($range_options['batch_number']) && isset($range_options['batch_size'])) {
-    if (isset($_GET['page'])) {
-      $current_page = $_GET['page'];
-    }
-    $_GET['page'] = $range_options['batch_number'];
-    $query = $query->extend('PagerDefault');
-    $query->limit($range_options['batch_size']);
-    $query->element(0);
+  if (isset($range_options['batch_number']) && !empty($range_options['batch_size'])) {
+    $query->range($range_options['batch_number'] * $range_options['batch_size'], $range_options['batch_size']);
   }
-
-  $sids = $query->execute()->fetchCol();
-
-  // Restore the current page number (if any).
-  if (isset($current_page)) {
-    $_GET['page'] = $current_page;
-  }
-
-  return $sids;
+  return $query;
 }
 
 /**
