@@ -164,8 +164,12 @@ Drupal.webform.doConditions = function($form, settings) {
                                     ? $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled')
                                     : $target.find(':input').addClass('webform-conditional-disabled');
             $targetElements.webformProp('disabled', !actionResult);
-            $target.toggle();
-            if (!actionResult) {
+            $target.toggleClass('webform-conditional-hidden', !actionResult);
+            if (actionResult) {
+              $target.show();
+            }
+            else {
+              $target.hide();
               // Record that the target was hidden.
               targetLocked[action['target']] = 'hide';
             }
@@ -465,7 +469,7 @@ Drupal.webform.compare_select = function(a, b, element) {
 Drupal.webform.isVisible = function($element) {
   return $element.hasClass('webform-component-hidden')
             ? !$element.find('input').first().hasClass('webform-conditional-disabled')
-            : $element.is(':visible');
+            : $element.closest('.webform-conditional-hidden').length == 0;
 }
 
 /**
@@ -516,7 +520,7 @@ Drupal.webform.dateValue = function(element, existingValue) {
   var value = false;
   if (element) {
     var $element = $(element);
-    if ($element.is(':visible')) {
+    if (Drupal.webform.isVisible($element)) {
       var day = $element.find('[name*=day]').val();
       var month = $element.find('[name*=month]').val();
       var year = $element.find('[name*=year]').val();
@@ -550,7 +554,7 @@ Drupal.webform.timeValue = function(element, existingValue) {
   var value = false;
   if (element) {
     var $element = $(element);
-    if ($element.is(':visible')) {
+    if (Drupal.webform.isVisible($element)) {
       var hour = $element.find('[name*=hour]').val();
       var minute = $element.find('[name*=minute]').val();
       var ampm = $element.find('[name*=ampm]:checked').val();
