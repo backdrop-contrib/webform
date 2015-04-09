@@ -265,6 +265,10 @@ function _webform_edit_file_extensions_validate($element, &$form_state) {
     foreach (array_keys($element['types'][$category]['#value']) as $extension) {
       if ($element['types'][$category][$extension]['#value']) {
         $extensions[] = $extension;
+        // jpeg is an exception. It is allowed anytime jpg is allowed.
+        if ($extension == 'jpg') {
+          $extensions[] = 'jpeg';
+        }
       }
     }
   }
