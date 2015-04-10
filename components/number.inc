@@ -403,16 +403,20 @@ function theme_webform_display_number($variables) {
 /**
  * Implements _webform_analysis_component().
  */
-function _webform_analysis_number($component, $sids = array(), $single = FALSE) {
+function _webform_analysis_number($component, $sids = array(), $single = FALSE, $join = NULL) {
   $advanced_stats = $single;
 
   $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
     ->fields('wsd', array('data'))
-    ->condition('nid', $component['nid'])
-    ->condition('cid', $component['cid']);
+    ->condition('wsd.nid', $component['nid'])
+    ->condition('wsd.cid', $component['cid']);
 
   if (count($sids)) {
-    $query->condition('sid', $sids, 'IN');
+    $query->condition('wsd.sid', $sids, 'IN');
+  }
+
+  if ($join) {
+    $query->innerJoin($join, 'ws2_', 'wsd.sid = ws2_.sid');
   }
 
   $population = array();

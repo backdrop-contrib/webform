@@ -349,7 +349,7 @@ function theme_webform_display_grid($variables) {
 /**
  * Implements _webform_analysis_component().
  */
-function _webform_analysis_grid($component, $sids = array()) {
+function _webform_analysis_grid($component, $sids = array(), $single = FALSE, $join = NULL) {
   // Generate the list of options and questions.
   $node = node_load($component['nid']);
   $questions = _webform_select_options_from_text($component['extra']['questions'], TRUE);
@@ -360,15 +360,19 @@ function _webform_analysis_grid($component, $sids = array()) {
   // Generate a lookup table of results.
   $query = db_select('webform_submitted_data', 'wsd')
     ->fields('wsd', array('no', 'data'))
-    ->condition('nid', $component['nid'])
-    ->condition('cid', $component['cid'])
-    ->condition('data', '', '<>')
-    ->groupBy('no')
-    ->groupBy('data');
-  $query->addExpression('COUNT(sid)', 'datacount');
+    ->condition('wsd.nid', $component['nid'])
+    ->condition('wsd.cid', $component['cid'])
+    ->condition('wsd.data', '', '<>')
+    ->groupBy('wsd.no')
+    ->groupBy('wsd.data');
+  $query->addExpression('COUNT(wsd.sid)', 'datacount');
 
   if (count($sids)) {
-    $query->condition('sid', $sids, 'IN');
+    $query->condition('wsd.sid', $sids, 'IN');
+  }
+
+  if ($join) {
+    $query->innerJoin($join, 'ws2_', 'wsd.sid = ws2_.sid');
   }
 
   $result = $query->execute();

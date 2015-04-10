@@ -176,14 +176,18 @@ function theme_webform_display_textarea($variables) {
 /**
  * Implements _webform_analysis_component().
  */
-function _webform_analysis_textarea($component, $sids = array()) {
+function _webform_analysis_textarea($component, $sids = array(), $single = FALSE, $join = NULL) {
   $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
     ->fields('wsd', array('no', 'data'))
-    ->condition('nid', $component['nid'])
-    ->condition('cid', $component['cid']);
+    ->condition('wsd.nid', $component['nid'])
+    ->condition('wsd.cid', $component['cid']);
 
   if (count($sids)) {
-    $query->condition('sid', $sids, 'IN');
+    $query->condition('wsd.sid', $sids, 'IN');
+  }
+
+  if ($join) {
+    $query->innerJoin($join, 'ws2_', 'wsd.sid = ws2_.sid');
   }
 
   $nonblanks = 0;

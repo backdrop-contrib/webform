@@ -1412,6 +1412,34 @@ function webform_results_analysis($node, $sids = array(), $analysis_component = 
     '#component' => $analysis_component,
   );
 
+  // See if a query (possibly with exposed filter) needs to restrict the
+  // submissions that are being analyzed.
+  $query = NULL;
+  if (empty($sids)) {
+    $view = webform_get_view($node, 'webform_analysis');
+    if ($view->type != t('Default') || $view->name != 'webform_analysis') {
+      // The view has been customized from the no-op built-in view. Use it.
+      $view->set_display();
+      $view->init_handlers();
+      $view->override_url = $_GET['q'];
+      $view->preview = TRUE;
+      $view->pre_execute(array($node->nid));
+      $view->build();
+      // Let modules modify the view just prior to executing it.
+      foreach (module_implements('views_pre_execute') as $module) {
+        $function = $module . '_views_pre_execute';
+        $function($view);
+      }
+      // If the view is already executed, there was an error in generating it.
+      $query = $view->executed ? NULL : $view->query->query();
+      $view->post_execute();
+  
+      if (isset($view->exposed_widgets)) {
+        $analysis['exposed_filter']['#markup'] = $view->exposed_widgets;
+      }
+    }
+  }
+
   // If showing all components, display selection form.
   if (!$analysis_component) {
     $analysis['form'] = drupal_get_form('webform_analysis_components_form', $node);
@@ -1422,7 +1450,7 @@ function webform_results_analysis($node, $sids = array(), $analysis_component = 
   foreach ($components as $cid) {
     // Do component specific call.
     $component = $node->webform['components'][$cid];
-    if ($data = webform_component_invoke($component['type'], 'analysis', $component, $sids, isset($analysis_component))) {
+    if ($data = webform_component_invoke($component['type'], 'analysis', $component, $sids, isset($analysis_component), $query)) {
       drupal_alter('webform_analysis_component_data', $data, $node, $component);
       $analysis['data'][$cid] = array(
         '#theme' => array('webform_analysis_component__' . $node->nid . '__' . $cid, 'webform_analysis_component__' . $node->nid, 'webform_analysis_component'),

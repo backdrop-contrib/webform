@@ -381,15 +381,19 @@ function theme_webform_display_date($variables) {
 /**
  * Implements _webform_analysis_component().
  */
-function _webform_analysis_date($component, $sids = array()) {
+function _webform_analysis_date($component, $sids = array(), $single = FALSE, $join = NULL) {
   $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
     ->fields('wsd', array('no', 'data'))
-    ->condition('nid', $component['nid'])
-    ->condition('cid', $component['cid'])
-    ->orderBy('sid');
+    ->condition('wsd.nid', $component['nid'])
+    ->condition('wsd.cid', $component['cid'])
+    ->orderBy('wsd.sid');
 
   if (count($sids)) {
-    $query->condition('sid', $sids, 'IN');
+    $query->condition('wsd.sid', $sids, 'IN');
+  }
+
+  if ($join) {
+    $query->innerJoin($join, 'ws2_', 'wsd.sid = ws2_.sid');
   }
 
   $result = $query->execute();

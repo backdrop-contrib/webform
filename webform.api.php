@@ -1090,6 +1090,9 @@ function _webform_theme_component() {
  *   Boolean flag determining if the details about a single component are being
  *   shown. May be used to provided detailed information about a single
  *   component's analysis, such as showing "Other" options within a select list.
+ * @param $join
+ *   An optional SelectQuery object to be used to join with the submissions
+ *   table to restrict the submissions being analyzed.
  * @return
  *   An array containing one or more of the following keys:
  *   - table_rows: If this component has numeric data that can be represented in
@@ -1110,7 +1113,7 @@ function _webform_theme_component() {
  *
  * @see _webform_defaults_component()
  */
-function _webform_analysis_component($component, $sids = array(), $single = FALSE) {
+function _webform_analysis_component($component, $sids = array(), $single = FALSE, $join = NULL) {
   // Generate the list of options and questions.
   $options = _webform_select_options_from_text($component['extra']['options'], TRUE);
   $questions = _webform_select_options_from_text($component['extra']['questions'], TRUE);
@@ -1127,6 +1130,10 @@ function _webform_analysis_component($component, $sids = array(), $single = FALS
 
   if (count($sids)) {
     $query->condition('sid', $sids, 'IN');
+  }
+
+  if ($join) {
+    $query->innerJoin($join, 'ws2_', 'wsd.sid = ws2_.sid');
   }
 
   $result = $query->execute();

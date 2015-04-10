@@ -623,16 +623,21 @@ function theme_webform_display_select($variables) {
 /**
  * Implements _webform_analysis_component().
  */
-function _webform_analysis_select($component, $sids = array(), $single = FALSE) {
+function _webform_analysis_select($component, $sids = array(), $single = FALSE, $join = NULL) {
   $options = _webform_select_options($component, TRUE);
 
   // Create a generic query for the component.
   $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
-    ->condition('nid', $component['nid'])
-    ->condition('cid', $component['cid'])
-    ->condition('data', '', '<>');
+    ->condition('wsd.nid', $component['nid'])
+    ->condition('wsd.cid', $component['cid'])
+    ->condition('wsd.data', '', '<>');
+
   if ($sids) {
-    $query->condition('sid', $sids, 'IN');
+    $query->condition('wsd.sid', $sids, 'IN');
+  }
+
+  if ($join) {
+    $query->innerJoin($join, 'ws2_', 'wsd.sid = ws2_.sid');
   }
 
   // Clone the query for later use, if needed.
@@ -649,11 +654,11 @@ function _webform_analysis_select($component, $sids = array(), $single = FALSE) 
 
   if ($options) {
     // Gather the normal results first (not "other" options).
-    $query->addExpression('COUNT(data)', 'datacount');
+    $query->addExpression('COUNT(wsd.data)', 'datacount');
     $result = $query
-      ->condition('data', array_keys($options), 'IN')
+      ->condition('wsd.data', array_keys($options), 'IN')
       ->fields('wsd', array('data'))
-      ->groupBy('data')
+      ->groupBy('wsd.data')
       ->execute();
     foreach ($result as $data) {
       $display_option = isset($options[$data['data']]) ? $options[$data['data']] : $data['data'];
@@ -681,12 +686,12 @@ function _webform_analysis_select($component, $sids = array(), $single = FALSE) 
 
     // If showing all results, execute the "other" query and append their rows.
     if ($single) {
-      $other_query->addExpression('COUNT(data)', 'datacount');
+      $other_query->addExpression('COUNT(wsd.data)', 'datacount');
       $other_query
         ->fields('wsd', array('data'))
-        ->groupBy('data');
+        ->groupBy('wsd.data');
       if ($options) {
-        $other_query->condition('data', array_keys($options), 'NOT IN');
+        $other_query->condition('wsd.data', array_keys($options), 'NOT IN');
       }
       $other_result = $other_query->execute();
       foreach ($other_result as $data) {
