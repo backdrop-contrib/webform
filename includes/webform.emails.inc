@@ -340,6 +340,12 @@ function webform_email_edit_form($form, $form_state, $node, $email = array(), $c
     '#process' => array('webform_component_select'),
   );
 
+  $form['template']['components']['suffix']['exclude_empty'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Exclude empty components'),
+    '#default_value' => $email['exclude_empty'],
+  );
+
   // TODO: Allow easy re-use of existing templates.
   $form['templates']['#tree'] = TRUE;
   $form['templates']['default'] = array(
@@ -569,6 +575,8 @@ function webform_email_edit_form_submit($form, &$form_state) {
   $excluded = array_diff(array_keys($node->webform['components']), $included);
   $email['excluded_components'] = $excluded;
 
+  $email['exclude_empty'] = empty($form_state['values']['exclude_empty']) ? 0 : 1;
+
   if ($form_state['values']['clone']) {
     drupal_set_message(t('Email settings cloned.'));
     $form_state['values']['eid'] = webform_email_clone($email);
@@ -651,6 +659,7 @@ function webform_email_load($eid, $nid) {
       'from_address' => 'default',
       'template' => 'default',
       'excluded_components' => array(),
+      'exclude_empty' => 0,
       'html' => webform_variable_get('webform_default_format'),
       'attachments' => 0,
       'extra' => '',

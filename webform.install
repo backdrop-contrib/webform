@@ -471,8 +471,16 @@ function webform_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
+      'exclude_empty' => array(
+        'description' => 'Determines if the e-mail will include component with an empty value.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'extra' => array(
-        'description' => 'A serialized array of additional options for the e-mail configuration, including excluded components and value mapping for the TO and FROM addresses for select lists.',
+        'description' => 'A serialized array of additional options for the e-mail configuration, including value mapping for the TO and FROM addresses for select lists.',
         'type' => 'text',
         'not null' => TRUE,
       ),
@@ -2106,4 +2114,27 @@ function webform_update_7424() {
   return format_plural($count,
                        '1 "hide" conditional converted to "isn\'t" shown.',
                        '@count conditionals converted to "isn\'t" shown.');
+}
+
+/**
+ * Add "exclude empty" option to emails.
+ */
+function webform_update_7425() {
+  // Add next_serial column to webform.
+  $spec = array(
+    'description' => 'Determines if the e-mail will include component with an empty value.',
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'size' => 'tiny',
+    'not null' => TRUE,
+    'default' => 0,
+  );
+  if (!db_field_exists('webform_emails', 'exclude_empty')) {
+    db_add_field('webform_emails', 'exclude_empty', $spec);
+  }
+
+  // Clear the views cache since this release use the webform_analysis view.
+  cache_clear_all('*', 'cache_views', TRUE);
+
+  return t('Webform e-mails were sucessfully updated to add the option to exclude empty components.');
 }

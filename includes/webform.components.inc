@@ -1080,9 +1080,11 @@ function theme_webform_component_select($variables) {
     $header = array(array('class' => array('select-all'), 'data' => ' ' . t('Include all components')));
   }
   foreach (element_children($element) as $key) {
-    $rows[] = array(
-      theme('indentation', array('size' => $element[$key]['#indent'])) . drupal_render($element[$key]),
-    );
+    if ($key != 'suffix') {
+      $rows[] = array(
+        theme('indentation', array('size' => $element[$key]['#indent'])) . drupal_render($element[$key]),
+      );
+    }
   }
 
   $element['#type'] = 'fieldset';
@@ -1101,6 +1103,11 @@ function theme_webform_component_select($variables) {
   else {
     $element['#children'] = '<div class="webform-component-select-wrapper">' . theme('table', array('header' => $header, 'rows' => $rows, 'sticky' => FALSE)) . '</div>';
   }
+
+  if (isset($element['suffix'])) {
+    $element['#children'] .= '<div class="webform-component-select-suffix">' . drupal_render($element['suffix']) . '</div>';
+  }
+
 
   return theme('fieldset', array('element' => $element));
 }

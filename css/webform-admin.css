@@ -78,6 +78,9 @@
   height: 12px;
   margin: 0 2px 2px;
 }
+.webform-component-select-suffix {
+  margin-top: 10px;
+}
 .webform-select-list-format table {
   border: 1px solid;
   width: auto;

@@ -648,7 +648,7 @@ function theme_webform_submission_resend($variables) {
 /**
  * Print a Webform submission for display on a page or in an e-mail.
  */
-function webform_submission_render($node, $submission, $email, $format, $excluded_components = array()) {
+function webform_submission_render($node, $submission, $email, $format, $excluded_components = NULL) {
   $component_tree = array();
   $renderable = array();
   $page_count = 1;
@@ -663,10 +663,20 @@ function webform_submission_render($node, $submission, $email, $format, $exclude
   // Set the theme function for submissions.
   $renderable['#theme'] = array('webform_submission_' . $node->nid, 'webform_submission');
 
-  // Remove excluded components.
   $components = $node->webform['components'];
-  foreach ($excluded_components as $cid) {
-    unset($components[$cid]);
+  
+  // Remove excluded components.
+  if (is_array($excluded_components)) {
+    foreach ($excluded_components as $cid) {
+      unset($components[$cid]);
+    }
+    if ($email && $email['exclude_empty']) {
+      foreach($submission->data as $cid => $data) {
+        if (!isset($data[0]) || $data[0] == '') {
+          unset($components[$cid]);
+        }
+      }
+    }
   }
 
   module_load_include('inc', 'webform', 'includes/webform.components');
