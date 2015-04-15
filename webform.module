@@ -1986,6 +1986,7 @@ function webform_node_view($node, $view_mode) {
     '#page' => $page,
     '#form' => $form,
     '#enabled' => $enabled,
+    '#visible' => $extra_fields['webform']['visible'],
     '#weight' => 10,
   );
 }
@@ -2182,9 +2183,17 @@ function webform_block_view($delta = '') {
   }
 
   // Generate the content of the block based on display settings.
+  $content = array();
   if ($settings['display'] == 'form') {
     webform_node_view($node, 'form');
-    $content = isset($node->content['webform']) ? $node->content['webform'] : array();
+    if (isset($node->content['webform'])) {
+      $content = $node->content['webform'];
+      if (!$node->content['webform']['#visible']) {
+        // If the webform form is only shown in a block and not as within the
+        // node, remove the content from the node.
+        unset($node->content['webform']);
+      }
+    }
   }
   else {
     $content = node_view($node, $settings['display']);
