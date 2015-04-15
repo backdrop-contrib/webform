@@ -375,17 +375,6 @@ function webform_configure_form($form, &$form_state, $node) {
  * Validate handler for webform_configure_form().
  */
 function webform_configure_form_validate($form, &$form_state) {
-  // Ensure the entered e-mail addresses are valid.
-  if (!empty($form_state['values']['email'])) {
-    $emails = explode(',', $form_state['values']['email']);
-    foreach ($emails as $email) {
-      if (!valid_email_address(trim($email))) {
-        form_error($form['submission']['redirect_url'], t('The entered email address %address is not a valid address.', array('%address' => $email)));
-        break;
-      }
-    }
-  }
-
   // Ensure the entered redirect URL is valid.
   if ($form_state['values']['redirect'] == 'url') {
     $redirect_url = trim($form_state['values']['redirect_url']);

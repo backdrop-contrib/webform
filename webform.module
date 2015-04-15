@@ -4091,10 +4091,19 @@ function _webform_transliterate($name) {
 /**
  * Given an email address and a name, format an e-mail address.
  *
+ * The address can be the cid of a component with multiple values. When $single
+ * is true, a single address is return (the first of any multiples). When not
+ * true, an array of addresses is returned.
+ *
+ * Note that multiple names could be used with multiple addresses, but this
+ * capability is not currently possible with the webform UI. Separate names
+ * are only used with the From address, which is always single.
+ *
  * @param $address
  *   The e-mail address.
  * @param $name
- *   The name to be used in the formatted address.
+ *   The name to be used in the formatted address. If the address contains a
+ *   name in 'Some Name <somename@example.com>' format, $name is ignored.
  * @param $node
  *   The webform node if replacements will be done.
  * @param $submission
@@ -4106,10 +4115,14 @@ function _webform_transliterate($name) {
  *   multiple addresses. This is useful to ensure a single e-mail will be
  *   returned for the "From" address.
  * @param $format
- *   The e-mail format, defaults to the site-wide setting. May be either "short"
- *   or "long".
+ *   The e-mail format, defaults to the site-wide setting. May be "short",
+ *   "long", or NULL for the system default.
+ * @param $mapping
+ *   A mapping array to be applied to the address values.
+ * @return string|array
+ *   The formatted e-mail address -- or addresses (if not $single)
  */
-function webform_format_email_address($address, $name, $node = NULL, $submission = NULL, $encode = TRUE, $single = TRUE, $format = NULL) {
+function webform_format_email_address($address, $name, $node = NULL, $submission = NULL, $encode = TRUE, $single = TRUE, $format = NULL, $mapping = NULL) {
   if (!isset($format)) {
     $format = webform_variable_get('webform_email_address_format');
   }
@@ -4125,12 +4138,18 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
       // Convert the FROM name to be the label of select lists.
       if (webform_component_implements($component['type'], 'options')) {
         $options = webform_component_invoke($component['type'], 'options', $component);
-        $name = isset($options[$name[0]]) ? $options[$name[0]] : $name;
+        foreach ($name as &$one_name) {
+          $name = isset($options[$one_name]) ? $options[$one_name] : $name;
+        }
+        unset($one_name); // Drop PHP reference.
       }
     }
     else {
       $name = t('Value of !component', array('!component' => $node->webform['components'][$name]['name']));
     }
+  }
+  elseif (!isset($name)) {
+    $name = '';
   }
 
   if ($address == 'default') {
@@ -4141,6 +4160,9 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
       $values = $submission->data[$address];
       $address = array();
       foreach ($values as $value) {
+        if (isset($mapping) && isset($mapping[$value])) {
+          $value = $mapping[$value];
+        }
         $address = array_merge($address, explode(',', $value));
       }
     }
@@ -4149,33 +4171,105 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
     }
   }
 
-  // Convert arrays into a single value for From values.
-  if ($single) {
-    $address = is_array($address) ? reset($address) : $address;
-    $name = is_array($name) ? reset($name) : $name;
+  // Convert single values to an array to simplify processing.
+  $address = is_array($address) ? $address : explode(',', $address);
+  $name = is_array($name) ? $name : array($name);
+  $name_shortage = count($address) - count($name);
+  if ($name_shortage > 0) {
+    $name += array_fill(count($name), $name_shortage, $name[0]);
   }
 
-  // Address may be an array if a component value was used on checkboxes.
-  if (is_array($address)) {
-    foreach ($address as $key => $individual_address) {
-      $address[$key] = webform_replace_tokens($individual_address, $node, $submission);
+  foreach ($address as $key => $individual_address) {
+    $individual_address = webform_replace_tokens($individual_address, $node, $submission);
+    $email_parts = webform_parse_email_address($individual_address);
+    if ($format == 'long' && !empty($name[$key]) && !strlen($email_parts['name'])) {
+      $individual_name = $name[$key];
+      $individual_name = webform_replace_tokens($individual_name, $node, $submission);
+      if ($encode) {
+        $individual_name = mime_header_encode($individual_name);
+      }
+      $individual_name = trim($individual_name);
+      $individual_address = '"' . $individual_name . '" <' . $individual_address . '>';
     }
-  }
-  else {
-    $address = webform_replace_tokens($address, $node, $submission);
+    $address[$key] = $individual_address;
   }
 
-  if ($format == 'long' && !empty($name)) {
-    $name = webform_replace_tokens($name, $node, $submission);
-    if ($encode) {
-      $name = mime_header_encode($name);
+  return $single ? reset($address) : $address;
+
+}
+
+/**
+ * Validates an email form element.
+ */
+function webform_email_validate(&$emails, $form_name, $allow_empty, $allow_multiple) {
+  $nr_valid = webform_valid_email_address($emails);
+  if ($nr_valid === FALSE) {
+    form_set_error($form_name, t('The entered e-mail address "@email" does not appear valid.', array('@email' => $emails)));
+  }
+  elseif ($nr_valid === 0 && !$allow_empty) {
+    form_set_error($form_name, t('When adding a new custom e-mail, the e-mail field is required.'));
+  }
+  elseif ($nr_valid > 1 && !$allow_multiple) {
+    form_set_error($form_name, t('Only one e-mail address is allowed.'));
+  }
+  return $nr_valid;
+}
+
+/**
+ * Validates email address(es) with optional name(s).
+ *
+ * @param string $emails
+ *   An email address, a list of comma-separated email addresses. If all the
+ *   addresses are valid, the list of trimmed, non-empty emails is returned by
+ *   reference.
+ * @return boolean|integer
+ *   Returns FALSE if an invalid e-mail address was found, 0 if no email
+ *   address(es) were found, or the number of valid e-mail addresses found.
+ */
+function webform_valid_email_address(&$emails) {
+  $email_array = array_filter(array_map('trim', explode(',', $emails)));
+  $count = 0;
+  foreach ($email_array as $email) {
+    $matches = webform_parse_email_address($email);
+    if (!valid_email_address($matches['address'])) {
+      return FALSE;
     }
-    $name = trim($name);
-    return '"' . $name . '" <' . $address . '>';
+    $count++;
   }
-  else {
-    return $address;
+  $emails = implode(', ', $email_array);
+  return $count;
+}
+
+/**
+ * Parses an e-mail address into name and address.
+ *
+ * @param string $email
+ *   The email address to be parsed, with an optional name.
+ * @return array
+ *   Associative array indexed by 'name' and 'address'.
+ */
+function webform_parse_email_address($email) {
+  if (webform_variable_get('webform_email_address_format') == 'long') {
+    // Match e-mails of the form 'My Name <email@domain.com>' as follows:
+    // ^          = beginning of string
+    // "?         = optional quote
+    // ([^<]*?)   = match optional characters that aren't a < (non-greedy)
+    // "?         = optional quote
+    // SPACE*     = optional spaces
+    // (?:<(.*)>) = < matching stuff > (without the angle brakets)
+    // $          = end of string
+    preg_match('/^"?([^<]*?)"? *(?:<(.*)>)?$/', $email, $matches);
+    if (isset($matches[2]) && strlen($matches[2])) {
+      return array(
+        'name' => $matches[1],
+        'address' => $matches[2],
+      );
+    }
   }
+  return array(
+    'name' => '',
+    'address' => $email,
+  );
 }
 
 /**

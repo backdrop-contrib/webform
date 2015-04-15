@@ -249,17 +249,9 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
       unset($email['headers']['From']);
     }
     else {
-      // Replace "from_address" field content with chosen email mapping. For the
-      // from address, only a single address is supported, so we use the first.
-      if (isset($email['extra']['from_address_mapping'])) {
-        if (isset($submission->data[$email['from_address']][0])) {
-          $selected = $submission->data[$email['from_address']][0];
-          if (isset($email['extra']['from_address_mapping'][$selected])) {
-            $email['from_address'] = $email['extra']['from_address_mapping'][$selected];
-          }
-        }
-      }
-      $email['from'] = webform_format_email_address($email['from_address'], $email['from_name'], $node, $submission);
+      // Format the From address.
+      $mapping = isset($email['extra']['from_address_mapping']) ?  $email['extra']['from_address_mapping'] : NULL;
+      $email['from'] = webform_format_email_address($email['from_address'], $email['from_name'], $node, $submission, TRUE, TRUE, NULL, $mapping);
     }
 
     // If requested and not already set, set Reply-To to the From and re-format From address.
@@ -274,19 +266,11 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
       // Message is not already being sent from the domain of the default
       // webform from address.
       $email['headers']['Reply-To'] = $email['from'];
-      // Match e-mails of the form 'My Name <email@domain.com>' as follows:
-      // ^          = beginning of string
-      // "?         = optional quote
-      // ([^<]*?)   = match optional characters that aren't a < (non-greedy)
-      // "?         = optional quote
-      // SPACE*     = optional spaces
-      // (?:<(.*)>) = < matching stuff > (without the angle brakets)
-      // $          = end of string
-      preg_match('/^"?([^<]*?)"? *(?:<(.*)>)?$/', $email['from'], $matches);
       $email['from'] = $default_from_address;
-      if ($matches && webform_variable_get('webform_email_address_format') == 'long') {
+      if (webform_variable_get('webform_email_address_format') == 'long') {
+        $email_parts = webform_parse_email_address($email['headers']['Reply-To']);
         $from_name = t('!name via !site_name',
-                        array('!name' => empty($matches[1]) ? $matches[2] : $matches[1],
+                        array('!name' => strlen($email_parts['name']) ? $email_parts['name'] : $email_parts['address'],
                               '!site_name' => $default_from_name));
         $from_name = implode(' ', array_map('mime_header_encode', explode(' ', $from_name)));
         $email['from'] = '"' . $from_name . '" <' . $email['from'] . '>';
@@ -302,45 +286,21 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
       $email['subject'] = webform_format_email_subject($email['subject'], $node, $submission);
     }
 
-    // Replace the "email" field content with chosen email mapping.
-    if (isset($email['extra']['email_mapping']) && !empty($submission->data[$email['email']])) {
-      $component_emails = array();
-      foreach ($submission->data[$email['email']] as $email_value) {
-        if (isset($email['extra']['email_mapping'][$email_value])) {
-          $component_emails[] = $email['extra']['email_mapping'][$email_value];
-        }
-      }
-      $email['email'] = implode(',', $component_emails);
-    }
-
     // Update the to e-mail if set in the themed headers.
     if (isset($email['headers']['To'])) {
       $email['email'] = $email['headers']['To'];
       unset($email['headers']['To']);
+      $addresses = array_filter(explode(',', $email['email']));
+    }
+    else {
+      // Format the To address(es).
+      $mapping = isset($email['extra']['email_mapping']) ?  $email['extra']['email_mapping'] : NULL;
+      $addresses = webform_format_email_address($email['email'], NULL, $node, $submission, TRUE, FALSE, NULL, $mapping);
+      $email['email'] = implode(',', $addresses);
     }
 
     // Generate the list of addresses that this e-mail will be sent to.
-    $addresses = array_filter(explode(',', $email['email']));
-    $addresses_final = array();
-    foreach ($addresses as $address) {
-      $address = trim($address);
-
-      // After filtering e-mail addresses with component values, a single value
-      // might contain multiple addresses (such as from checkboxes or selects).
-      $address = webform_format_email_address($address, NULL, $node, $submission, TRUE, FALSE, 'short');
-
-      if (is_array($address)) {
-        foreach ($address as $new_address) {
-          $new_address = trim($new_address);
-          if (valid_email_address($new_address)) {
-            $addresses_final[] = $new_address;
-          }
-        }
-      }
-      elseif (valid_email_address($address)) {
-        $addresses_final[] = $address;
-      }
-    }
+    $addresses_final = array_filter($addresses, 'webform_valid_email_address');
 
     // Mail the webform results.
     foreach ($addresses_final as $address) {
@@ -531,35 +491,21 @@ function webform_submission_resend($form, $form_state, $node, $submission) {
 
   foreach ($node->webform['emails'] as $eid => $email) {
 
-    // Replace the "email" field content with chosen email mapping.
-    if (isset($email['extra']['email_mapping']) && !empty($submission->data[$email['email']])) {
-      $component_emails = array();
-      foreach ($submission->data[$email['email']] as $email_value) {
-        if (isset($email['extra']['email_mapping'][$email_value])) {
-          $component_emails[] = $email['extra']['email_mapping'][$email_value];
-        }
-      }
-      $email_list = implode(',', $component_emails);
-    }
-    else {
-      $email_list = $email['email'];
-    }
-
-    $email_addresses = array_filter(explode(',', check_plain($email_list)));
-    foreach ($email_addresses as $key => $email_address) {
-      $email_addresses[$key] = webform_format_email_address($email_address, NULL, $node, $submission, FALSE);
-    }
-    $valid_email = !empty($email_addresses[0]) && valid_email_address($email_addresses[0]);
+    $mapping = isset($email['extra']['email_mapping']) ?  $email['extra']['email_mapping'] : NULL;
+    $addresses = webform_format_email_address($email['email'], NULL, $node, $submission, FALSE, FALSE, NULL, $mapping);
+    $addresses_valid = array_map('webform_valid_email_address', $addresses);
+    $valid_email = count($addresses) == array_sum($addresses_valid);
+    
     $form['resend'][$eid] = array(
       '#type' => 'checkbox',
       '#default_value' => $valid_email ? TRUE : FALSE,
       '#disabled' => $valid_email ? FALSE : TRUE,
     );
     $form['emails'][$eid]['email'] = array(
-      '#markup' => implode('<br />', $email_addresses),
+      '#markup' => nl2br(check_plain(implode("\n", $addresses))),
     );
     if (!$valid_email) {
-      $form['emails'][$eid]['email']['#markup'] .= ' (' . t('empty') . ')';
+      $form['emails'][$eid]['email']['#markup'] .= ' (' . t('empty or invalid') . ')';
     }
     $form['emails'][$eid]['subject'] = array(
       '#markup' => check_plain(webform_format_email_subject($email['subject'], $node, $submission)),
