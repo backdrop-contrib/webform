@@ -186,7 +186,7 @@ function webform_menu() {
     'access callback' => 'webform_node_update_access',
     'access arguments' => array(1),
     'file' => 'includes/webform.emails.inc',
-    'type' => MENU_CALLBACK,
+    'type' => MENU_LOCAL_TASK,
   );
   $items['node/%webform_menu/webform/emails/%webform_menu_email/clone'] = array(
     'load arguments' => array(1),
@@ -194,14 +194,14 @@ function webform_menu() {
     'access callback' => 'webform_node_update_access',
     'access arguments' => array(1),
     'file' => 'includes/webform.emails.inc',
-    'type' => MENU_CALLBACK,
+    'type' => MENU_LOCAL_TASK,
   );
   $items['node/%webform_menu/webform/emails/%webform_menu_email/delete'] = array(
     'load arguments' => array(1),
     'page arguments' => array('webform_email_delete_form', 1, 4),
     'access callback' => 'webform_node_update_access',
     'access arguments' => array(1),
-    'type' => MENU_CALLBACK,
+    'type' => MENU_LOCAL_TASK,
   );
 
   // Node component forms.
@@ -4554,9 +4554,9 @@ function webform_set_breadcrumb($node, $submission = NULL) {
   $node_path = "node/{$node->nid}";
 
   // Set the href of the current menu item to be the node's path. This has two
-  // effects. The active trail will be to the node's prefered menu tree location,
-  // expanding the menu as appropriate. And the breadcrumbs will be set as if
-  // the current page were under the node's preferred location.
+  // effects. The active trail will be to the node's prefered menu tree
+  // location, expanding the menu as appropriate. And the breadcrumbs will be
+  // set as if the current page were under the node's preferred location.
   // Note that menu_tree_set_path() could be used to set the path for the menu,
   // but it will not affect the breadcrumbs when the webform is not in the
   // default menu.
