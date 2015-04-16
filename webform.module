@@ -520,6 +520,19 @@ function webform_menu_email_load($eid, $nid) {
 }
 
 /**
+ * Return the access token for a submission.
+ *
+ * @param object $submission
+ *   The submission object.
+ *
+ * @return string
+ *   The access token for the submission.
+ */
+function webform_get_submission_access_token($submission) {
+  return md5($submission->submitted . $submission->sid . drupal_get_private_key());
+}
+
+/**
  * Access function for confirmation pages.
  *
  * @param $node
@@ -558,7 +571,7 @@ function webform_confirmation_page_access($node) {
     // match the hash in the query string.
     elseif ((int) $user->uid === 0 && (int) $submission->uid === 0) {
       $hash_query = !empty($_GET['token']) ? $_GET['token'] : NULL;
-      $hash = md5($submission->submitted . $submission->sid . drupal_get_private_key());
+      $hash = webform_get_submission_access_token($submission);
       if ($hash_query === $hash) {
         return TRUE;
       }
@@ -598,7 +611,9 @@ function webform_submission_access($node, $submission, $op = 'view', $account = 
   $access_own_submission = isset($submission) && user_access('access own webform submissions', $account) && (($account->uid && $account->uid == $submission->uid) || isset($_SESSION['webform_submission'][$submission->sid]));
   $access_node_submissions = user_access('access own webform results', $account) && $account->uid == $node->uid;
 
-  $general_access = $access_all || $access_own_submission || $access_node_submissions;
+  $token_access = $submission && isset($_GET['token']) && $_GET['token'] == webform_get_submission_access_token($submission);
+
+  $general_access = $access_all || $access_own_submission || $access_node_submissions || $token_access;
 
   // Disable the page cache for anonymous users in this access callback,
   // otherwise the "Access denied" page gets cached.
@@ -3179,7 +3194,7 @@ function webform_client_form_submit($form, &$form_state) {
   elseif ($redirect_url == '<confirmation>') {
     $query = array('sid' => $sid);
     if ((int) $user->uid === 0) {
-      $query['token'] = md5($submission->submitted . $submission->sid . drupal_get_private_key());
+      $query['token'] = webform_get_submission_access_token($submission);
     }
     $redirect = array('node/' . $node->nid . '/done', array('query' => $query));
   }
