@@ -3967,6 +3967,9 @@ function webform_variable_get($variable) {
     case 'webform_email_address_format':
       $result = variable_get('webform_email_address_format', 'long');
       break;
+    case 'webform_email_address_individual':
+      $result = variable_get('webform_email_address_individual', 0);
+      break;
     case 'webform_default_from_name':
       $result = variable_get('webform_default_from_name', variable_get('site_name', ''));
       break;

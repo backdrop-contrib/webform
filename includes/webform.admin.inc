@@ -169,6 +169,17 @@ function webform_admin_settings() {
     '#description' => t('Most servers support the "long" format which will allow for more friendly From addresses in e-mails sent. However many Windows-based servers are unable to send in the long format. Change this option if experiencing problems sending e-mails with Webform.'),
   );
 
+  $form['advanced']['webform_email_address_individual'] = array(
+    '#type' => 'radios',
+    '#title' => t('E-mailing multiple recipients'),
+    '#options' => array(
+      '0' => t('Send a single e-mail to all recipients'),
+      '1' => t('Send individual e-mails to each recipient'),
+    ),
+    '#default_value' => webform_variable_get('webform_email_address_individual'),
+    '#description' => t('Individual e-mails increases privacy by not revealing the addresses of other recipients. A single e-mail to all recipients lets them use "Reply All" to communicate.'),
+  );
+
   $form['advanced']['webform_export_format'] = array(
     '#type' => 'radios',
     '#title' => t('Default export format'),

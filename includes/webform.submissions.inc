@@ -302,14 +302,24 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
     // Generate the list of addresses that this e-mail will be sent to.
     $addresses_final = array_filter($addresses, 'webform_valid_email_address');
 
-    // Mail the webform results.
+    // Verify that this submission is not attempting to send any spam hacks.
     foreach ($addresses_final as $address) {
-      // Verify that this submission is not attempting to send any spam hacks.
       if (_webform_submission_spam_check($address, $email['subject'], $email['from'], $email['headers'])) {
         watchdog('webform', 'Possible spam attempt from @remote_addr' . "<br />\n" . nl2br(htmlentities($email['message'])), array('@remote_add' => ip_address()));
         drupal_set_message(t('Illegal information. Data not submitted.'), 'error');
         return FALSE;
       }
+    }
+
+    // Consolidate addressees into one message if permitted by configuration.
+    $send_increment = 1;
+    if (!webform_variable_get('webform_email_address_individual')) {
+      $send_increment = count($addresses_final);
+      $addresses_final = array(implode(', ', $addresses_final));
+    }
+
+    // Mail the webform results.
+    foreach ($addresses_final as $address) {
 
       $language = $user->uid ? user_preferred_language($user) : language_default();
       $mail_params = array(
@@ -354,7 +364,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
       // Mail the submission.
       $message = drupal_mail('webform', 'submission', $address, $language, $mail_params, $email['from']);
       if ($message['result']) {
-        $send_count++;
+        $send_count += $send_increment;
       }
     }
   }

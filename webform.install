@@ -2138,3 +2138,10 @@ function webform_update_7425() {
 
   return t('Webform e-mails were sucessfully updated to add the option to exclude empty components.');
 }
+
+/**
+ * Add configuration to continue sending individual e-mails to multiple recipients.
+ */
+function webform_update_7426() {
+  variable_set('webform_email_address_individual', 1);
+}
