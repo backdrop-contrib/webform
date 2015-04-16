@@ -18,6 +18,9 @@ Drupal.behaviors.webformAdmin.attach = function(context) {
   Drupal.webform.downloadExport(context);
   // Enhancements for the conditionals administrative page.
   Drupal.webform.conditionalAdmin(context);
+  // Trigger radio/checkbox change when label click automatically selected by
+  // browser.
+  Drupal.webform.radioLabelAutoClick(context);
 }
 
 Drupal.webform = Drupal.webform || {};
@@ -324,4 +327,19 @@ Drupal.webform.restripeTable = function(table) {
     .filter(':even').filter('.even')
       .removeClass('even').addClass('odd');
 };
+
+/**
+ * Triggers a change event when a label receives a click.
+ *
+ * When the browser automatically selects a radio button when it's label is
+ * clicked, the FAPI states jQuery code doesn't receive an event. This function
+ * ensures that automatically-selected radio buttons keep in sync with the
+ * FAPI states.
+ */
+Drupal.webform.radioLabelAutoClick = function(context) {
+  $('label').once('webform-label').click(function(){
+    $(this).prev('input:radio').change();
+  });
+}
+
 })(jQuery);
