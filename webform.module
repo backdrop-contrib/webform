@@ -4200,9 +4200,25 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
 
 /**
  * Validates an email form element.
+ *
+ * @param string $emails
+ *   An email or list of comma-seperated email addresses. Passed by reference.
+ *   Empty emails will be eliminated, and mutiple addresses will be seperated
+ *   with a comma and space.
+ * @param string $form_name
+ *   The name of the form element to receive an error, in form_set_error format.
+ * @param boolean $allow_empty
+ *   TRUE if optional. FALSE if required.
+ * @param boolean $allow_multiple
+ *   TRUE if a list of emails is allowed. FALSE if only one.
+ * @param string $format
+ *   'short', 'long', or NULL (for default) format. Long format has a name and
+ *   the address in angle brackets.
+ * @return integer|boolean
+ *   The number of valid addresses found, or FALSE for an invalid email found.
  */
-function webform_email_validate(&$emails, $form_name, $allow_empty, $allow_multiple) {
-  $nr_valid = webform_valid_email_address($emails);
+function webform_email_validate(&$emails, $form_name, $allow_empty, $allow_multiple, $format = NULL) {
+  $nr_valid = webform_valid_email_address($emails, $format);
   if ($nr_valid === FALSE) {
     form_set_error($form_name, t('The entered e-mail address "@email" does not appear valid.', array('@email' => $emails)));
   }
@@ -4222,15 +4238,18 @@ function webform_email_validate(&$emails, $form_name, $allow_empty, $allow_multi
  *   An email address, a list of comma-separated email addresses. If all the
  *   addresses are valid, the list of trimmed, non-empty emails is returned by
  *   reference.
+ * @param string $format
+ *   'short', 'long', or NULL (for default) format. Long format has a name and
+ *   the address in angle brackets.
  * @return boolean|integer
  *   Returns FALSE if an invalid e-mail address was found, 0 if no email
  *   address(es) were found, or the number of valid e-mail addresses found.
  */
-function webform_valid_email_address(&$emails) {
+function webform_valid_email_address(&$emails, $format = NULL) {
   $email_array = array_filter(array_map('trim', explode(',', $emails)));
   $count = 0;
   foreach ($email_array as $email) {
-    $matches = webform_parse_email_address($email);
+    $matches = webform_parse_email_address($email, $format);
     if (!valid_email_address($matches['address'])) {
       return FALSE;
     }
@@ -4245,11 +4264,17 @@ function webform_valid_email_address(&$emails) {
  *
  * @param string $email
  *   The email address to be parsed, with an optional name.
+ * @param string $format
+ *   'short', 'long', or NULL (for default) format. Long format has a name and
+ *   the address in angle brackets.
  * @return array
  *   Associative array indexed by 'name' and 'address'.
  */
-function webform_parse_email_address($email) {
-  if (webform_variable_get('webform_email_address_format') == 'long') {
+function webform_parse_email_address($email, $format = NULL) {
+  if (!$format) {
+    $format = webform_variable_get('webform_email_address_format');
+  }
+  if ($format == 'long') {
     // Match e-mails of the form 'My Name <email@domain.com>' as follows:
     // ^          = beginning of string
     // "?         = optional quote
