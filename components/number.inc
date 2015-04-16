@@ -869,10 +869,10 @@ function webform_modulo($a, $b) {
  * See @link http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm @endlink
  * See @link http://floating-point-gui.de/errors/comparison/ @endlink
  * See @link http://en.wikipedia.org/wiki/IEEE_754-1985#Denormalized_numbers @endlink
-
- * @param $number_1 float
+ *
+ * @param float $number_1
  *   The first number.
- * @param $number_2 float
+ * @param float $number_2
  *   The second number.
  *
  * @return int|null

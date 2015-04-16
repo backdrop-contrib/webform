@@ -669,9 +669,9 @@ function hook_webform_results_access($node, $account) {
  *
  * @see webform_results_clear_access().
  *
- * @param $node object
+ * @param object $node
  *   The Webform node to check access on.
- * @param $account object
+ * @param object $account
  *   The user account to check access on.
  * @return boolean
  *   TRUE or FALSE if the user can access the webform results.
@@ -697,9 +697,9 @@ function hook_webform_results_clear_access($node, $account) {
  *
  * @see webform_node_update_access().
  *
- * @param $node object
+ * @param object $node
  *   The Webform node to check access on.
- * @param $account object
+ * @param object $account
  *   The user account to check access on.
  * @return boolean|NULL
  *   TRUE or FALSE if the user can access the webform results, or NULL if
