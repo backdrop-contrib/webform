@@ -2163,6 +2163,7 @@ function webform_block_view($delta = '') {
   $settings += array(
     'display' => 'form',
     'pages_block' => 1,
+    'confirmation_block' => 0,
   );
 
   // Get the node ID from delta.
@@ -2186,7 +2187,7 @@ function webform_block_view($delta = '') {
 
   // This is a webform node block.
   $node->webform_block = TRUE;
-
+  $node->webform['confirmation_block'] = $settings['confirmation_block'];
 
   // If not displaying pages in the block, set the #action property on the form.
   if ($settings['pages_block']) {
@@ -2212,6 +2213,40 @@ function webform_block_view($delta = '') {
   }
   else {
     $content = node_view($node, $settings['display']);
+  }
+
+  // Check for an in-block confirmation message.
+  if (isset($_SESSION['webform_confirmation'][$nid])) {
+    if ($_SESSION['webform_confirmation'][$nid]['confirmation_page']) {
+      // Replace form with confirmation page.
+      $content = array(
+        '#theme' => array('webform_confirmation_' . $node->nid, 'webform_confirmation'),
+        '#node' => $node,
+        '#sid' => $_SESSION['webform_confirmation'][$nid]['sid'],
+      );
+    } elseif (strlen(trim(strip_tags($node->webform['confirmation'])))) {
+      // Display confirmation link drupal status messages, but in the block.
+      $message = webform_replace_tokens($node->webform['confirmation'],
+                                        $node,
+                                        webform_get_submission($nid, $_SESSION['webform_confirmation'][$nid]['confirmation_page']),
+                                        NULL,
+                                        $node->webform['confirmation_format']);
+      $content = array(
+        'confirmation_message' => array(
+          '#markup' => "<div class=\"messages status webform-confirmation\">\n" .
+                       '<h2 class="element-invisible">' . t('Status message') . "</h2>\n" .
+                       $message .
+                       "</div>\n",
+          '#weight' => -1,
+        ),
+        'webform_view' => $content,
+      );
+
+    }
+    unset($_SESSION['webform_confirmation'][$nid]);
+    if (empty($_SESSION['webform_confirmation'])) {
+      unset($_SESSION['webform_confirmation']);
+    }
   }
 
   // Add contextual links for the webform node if they aren't already there.
@@ -2242,6 +2277,7 @@ function webform_block_configure($delta = '') {
   $settings += array(
     'display' => 'form',
     'pages_block' => 1,
+    'confirmation_block' => 0,
   );
 
   // Build a list of view modes for this node.
@@ -2273,6 +2309,16 @@ function webform_block_configure($delta = '') {
     '#description' => t('If your webform has multiple pages, you may change the behavior of the "Next" button. This will also affect where validation messages show up after an error.'),
   );
 
+  $form['confirmation_block'] = array(
+    '#type' => 'radios',
+    '#title' => t('Confirmation message'),
+    '#options' => array(
+      0 => t('Display as configured in the webform'),
+      1 => t('Display the confirmation page in the block on the same page (no redirect)'),
+    ),
+    '#default_value' => $settings['confirmation_block'],
+    '#description' => t('This setting overrides the webform\'s configuration and redirection location settings when the webform is submitted via this block.'),
+  );
   return $form;
 }
 
@@ -2286,6 +2332,7 @@ function webform_block_save($delta = '', $edit = array()) {
   $new_settings[$delta] = array(
     'display' => $edit['display'],
     'pages_block' => $edit['pages_block'],
+    'confirmation_block' => $edit['confirmation_block'],
   );
   // We store settings for multiple blocks in just one variable
   // so we merge the existing settings with the new ones before save.
@@ -3171,27 +3218,39 @@ function webform_client_form_submit($form, &$form_state) {
   }
 
   // Strip out empty tags added by WYSIWYG editors if needed.
-  $confirmation = strlen(trim(strip_tags($node->webform['confirmation']))) ? $node->webform['confirmation'] : '';
+  $message = strlen(trim(strip_tags($node->webform['confirmation']))) > 0;
 
   // Check confirmation and redirect_url fields.
-  $message = NULL;
   $redirect = NULL;
-  $external_url = FALSE;
   $redirect_url = trim($node->webform['redirect_url']);
   if (isset($form['actions']['draft']['#value']) && $form_state['values']['op'] == $form['actions']['draft']['#value']) {
     $message = t('Submission saved. You may return to this form later and it will restore the current values.');
   }
   elseif ($is_draft) {
-    // No redirect needed
+    // No redirect needed. No confirmation message needed.
+    $message = FALSE;
   }
   elseif (!empty($form_state['values']['details']['finished'])) {
     $message = t('Submission updated.');
     $redirect = "node/{$node->nid}/submission/$sid";
   }
+  elseif (!empty($node->webform['confirmation_block'])) {
+    $message = FALSE;
+    // Webform was submitted in a block and the confirmation message is to be
+    // displayed in the block.
+    $_SESSION['webform_confirmation'][$node->nid] = array(
+      'sid' => $sid,
+      'confirmation_page' => $redirect_url == '<confirmation>',
+    );
+    drupal_page_is_cacheable(FALSE);
+  }
   elseif ($redirect_url == '<none>') {
-    // No redirect needed
+    // No redirect needed. Show a confirmatin message if there is one.
   }
   elseif ($redirect_url == '<confirmation>') {
+    // No confirmation message needed because it will be shown on the
+    // confirmation page.
+    $message = FALSE;
     $query = array('sid' => $sid);
     if ((int) $user->uid === 0) {
       $query['token'] = webform_get_submission_access_token($submission);
@@ -3199,18 +3258,22 @@ function webform_client_form_submit($form, &$form_state) {
     $redirect = array('node/' . $node->nid . '/done', array('query' => $query));
   }
   else {
-    // Clean up the redirect URL, filter it for tokens and detect external domains.
+    // Clean up the redirect URL, filter it for tokens and detect external
+    // domains. If the redirect is to an external URL, then don't show the
+    // confirmation message.
     $redirect = webform_replace_url_tokens($redirect_url, $node, $submission);
-    $external_url = $redirect[1]['#webform_external'];
+    if ($redirect[1]['#webform_external']) {
+      $message = FALSE;
+    }
   }
 
   // Show a message if manually set.
-  if (isset($message)) {
+  if (is_string($message)) {
     drupal_set_message($message);
   }
   // If redirecting and we have a confirmation message, show it as a message.
-  elseif (!$is_draft && !$external_url && (!empty($redirect_url) && $redirect_url != '<confirmation>') && !empty($confirmation)) {
-    drupal_set_message(webform_replace_tokens($confirmation, $node, $submission, NULL, $node->webform['confirmation_format']));
+  elseif ($message) {
+    drupal_set_message(webform_replace_tokens($node->webform['confirmation'], $node, $submission, NULL, $node->webform['confirmation_format']));
   }
 
   $form_state['redirect'] = $redirect;
@@ -3308,6 +3371,10 @@ function template_preprocess_webform_confirmation(&$vars) {
   $submission = webform_get_submission($node->nid, $vars['sid']);
   $vars['confirmation_message'] = webform_replace_tokens($confirmation, $node, $submission, NULL, $node->webform['confirmation_format']);
 
+  // URL back to form (or same page for in-block confirmations).
+  $vars['url'] = empty($node->webform_block)
+                    ? url('node/'. $node->nid)
+                    : url(current_path(), array('query' => drupal_get_query_parameters()));
 
   // Progress bar.
   $vars['progressbar'] = '';
