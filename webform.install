@@ -733,6 +733,7 @@ function webform_uninstall() {
   variable_del('webform_tracking_mode');
   variable_del('webform_allowed_tags');
   variable_del('webform_email_address_format');
+  variable_del('webform_email_address_individual');
   variable_del('webform_default_from_name');
   variable_del('webform_default_from_address');
   variable_del('webform_default_subject');
