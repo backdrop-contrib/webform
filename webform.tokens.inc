@@ -99,7 +99,7 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
           $replacements[$original] = $submission->sid ? $submission->sid : '';
           break;
         case 'date':
-          $replacements[$original] = format_date($submission->submitted, 'medium', '', NULL, $language_code);
+          $replacements[$original] = format_date($submission->submitted, webform_variable_get('webform_date_type'), '', NULL, $language_code);
           break;
         case 'ip-address':
           $replacements[$original] = $sanitize ? check_plain($submission->remote_addr) : $submission->remote_addr;
