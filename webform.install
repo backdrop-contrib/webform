@@ -546,7 +546,19 @@ function webform_schema() {
          'default' => 0,
       ),
       'submitted' => array(
-        'description' => 'Timestamp of when the form was submitted.',
+        'description' => 'Timestamp when the form was first saved as draft or submitted.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'completed' => array(
+        'description' => 'Timestamp when the form was submitted as complete (not draft).',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'modified' => array(
+        'description' => 'Timestamp when the form was last saved (complete or draft).',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
@@ -1970,7 +1982,6 @@ function webform_update_7418() {
   db_change_field('webform_emails', 'extra', 'extra', $spec);
 }
 
-
 /**
  * Add an index on submitted data.
  */
@@ -2146,4 +2157,53 @@ function webform_update_7425() {
  */
 function webform_update_7426() {
   variable_set('webform_email_address_individual', 1);
+}
+
+/**
+ * Add database columns for submission completed and modified timestamps. Sites with many submissions may wish to use drush to execute this update.
+ */
+function webform_update_7427() {
+  // Create new timestamp columns.
+  $specs = array(
+    'completed' => array(
+      'description' => 'Timestamp when the form was submitted as complete (not draft).',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+    'modified' => array(
+      'description' => 'Timestamp when the form was last saved (complete or draft).',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    ),
+  );
+  foreach ($specs as $field_name => $spec) {
+    if (!db_field_exists('webform_submissions', $field_name)) {
+      db_add_field('webform_submissions', $field_name, $spec);
+    }
+  }
+
+  // In a site with many submissions, the db_update may timeout. Start a transaction to ensure atomic action.
+  $tx = db_transaction();
+  // Copy submitted to completed for non-draft submissions.
+  db_update('webform_submissions')
+    ->expression('completed', 'submitted')
+    ->condition('is_draft', 0)
+    ->execute();
+  // Commit the update.
+  unset($tx);
+
+  // Start another transaction.
+  $tx = db_transaction();
+  db_update('webform_submissions')
+    ->expression('modified', 'submitted')
+    ->execute();
+  // Commit the update.
+  unset($tx);
+
+  // Clear the views cache since to see the completed and modified views fields.
+  cache_clear_all('*', 'cache_views', TRUE);
+
+  return t('Webform submissions were updated with completed and modified timestamps.');
 }

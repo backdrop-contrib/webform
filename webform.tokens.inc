@@ -26,7 +26,17 @@ function webform_token_info() {
   );
   $info['tokens']['submission']['date'] = array(
     'name' => t('Date submitted'),
-    'description' => t('The date the webform was submitted.'),
+    'description' => t('The date the webform was first save as draft or completed.'),
+    'type' => 'date',
+  );
+  $info['tokens']['submission']['completed_date'] = array(
+    'name' => t('Date completed'),
+    'description' => t('The date the webform was first completed (not draft).'),
+    'type' => 'date',
+  );
+  $info['tokens']['submission']['modified_date'] = array(
+    'name' => t('Date modified'),
+    'description' => t('The date the webform was last saved (draft or completed).'),
     'type' => 'date',
   );
   $info['tokens']['submission']['ip-address'] = array(
@@ -100,6 +110,14 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
           break;
         case 'date':
           $replacements[$original] = format_date($submission->submitted, webform_variable_get('webform_date_type'), '', NULL, $language_code);
+          break;
+        case 'completed_date':
+          if ($submission->completed) {
+            $replacements[$original] = format_date($submission->completed, webform_variable_get('webform_date_type'), '', NULL, $language_code);
+          }
+          break;
+        case 'modified_date':
+          $replacements[$original] = format_date($submission->modified, webform_variable_get('webform_date_type'), '', NULL, $language_code);
           break;
         case 'ip-address':
           $replacements[$original] = $sanitize ? check_plain($submission->remote_addr) : $submission->remote_addr;
@@ -223,6 +241,12 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
     // Chained token relationships.
     if ($date_tokens = token_find_with_prefix($tokens, 'date')) {
       $replacements += token_generate('date', $date_tokens, array('date' => $submission->submitted), $options);
+    }
+    if ($submission->completed && ($date_tokens = token_find_with_prefix($tokens, 'completed_date'))) {
+      $replacements += token_generate('date', $date_tokens, array('date' => $submission->completed), $options);
+    }
+    if ($date_tokens = token_find_with_prefix($tokens, 'modified_date')) {
+      $replacements += token_generate('date', $date_tokens, array('date' => $submission->modified), $options);
     }
     if (($user_tokens = token_find_with_prefix($tokens, 'user')) && $account = user_load($submission->uid)) {
       $replacements += token_generate('user', $user_tokens, array('user' => $account), $options);

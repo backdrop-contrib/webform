@@ -1063,7 +1063,9 @@ function webform_webform_results_download_submission_information_info() {
   return array(
     'webform_serial' => t('Serial'),
     'webform_sid' => t('SID'),
-    'webform_time' => t('Time'),
+    'webform_time' => t('Submitted Time'),
+    'webform_completed_time' => t('Completed Time'),
+    'webform_modified_time' => t('Modified Time'),
     'webform_draft' => t('Draft'),
     'webform_ip_address' => t('IP Address'),
     'webform_uid' => t('UID'),
@@ -1087,6 +1089,25 @@ function webform_webform_results_download_submission_information_data($token, $s
       }
       else {
         return format_date($submission->submitted, 'short');
+      }
+    case 'webform_completed_time':
+      if (!$submission->completed) {
+        return '';
+      }
+      // Return timestamp in local time (not UTC).
+      elseif (!empty($options['iso8601_date'])) {
+        return format_date($submission->completed, 'custom', 'Y-m-d\TH:i:s');
+      }
+      else {
+        return format_date($submission->completed, 'short');
+      }
+    case 'webform_modified_time':
+      // Return timestamp in local time (not UTC).
+      if (!empty($options['iso8601_date'])) {
+        return format_date($submission->modified, 'custom', 'Y-m-d\TH:i:s');
+      }
+      else {
+        return format_date($submission->modified, 'short');
       }
     case 'webform_draft':
       return $submission->is_draft;

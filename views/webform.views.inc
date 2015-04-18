@@ -209,13 +209,53 @@ function webform_views_data() {
   // Submitted timestamp.
   $data['webform_submissions']['submitted'] = array(
     'title' => t('Submitted'),
-    'help' => t('The date this submission was submitted.'),
+    'help' => t('Timestamp when the form was first saved as draft or submitted.'),
     'field' => array(
       'handler' => 'views_handler_field_date',
       'click sortable' => TRUE,
     ),
     'filter' => array(
       'title' => t('Submitted'),
+      'handler' => 'views_handler_filter_date',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_date',
+    ),
+  );
+
+  // Completed timestamp.
+  $data['webform_submissions']['completed'] = array(
+    'title' => t('Completed'),
+    'help' => t('Timestamp when the form was submitted as complete (not draft).'),
+    'field' => array(
+      'handler' => 'views_handler_field_date',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'title' => t('Completed'),
+      'handler' => 'views_handler_filter_date',
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort_date',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_date',
+    ),
+  );
+
+  // Modified timestamp.
+  $data['webform_submissions']['modified'] = array(
+    'title' => t('Modified'),
+    'help' => t('Timestamp when the form was last saved (complete or draft).'),
+    'field' => array(
+      'handler' => 'views_handler_field_date',
+      'click sortable' => TRUE,
+    ),
+    'filter' => array(
+      'title' => t('Modified'),
       'handler' => 'views_handler_filter_date',
     ),
     'sort' => array(

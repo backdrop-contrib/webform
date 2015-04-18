@@ -65,6 +65,8 @@ function webform_submission_create($node, $account, $form_state, $is_preview = F
       'uid' => $account->uid,
       'sid' => NULL,
       'submitted' => REQUEST_TIME,
+      'completed' => 0,
+      'modified' => REQUEST_TIME,
       'remote_addr' => ip_address(),
       'is_draft' => TRUE,
       'preview' => $is_preview,
@@ -92,6 +94,9 @@ function webform_submission_update($node, $submission) {
     $function = $module . '_webform_submission_presave';
     $function($node, $submission);
   }
+
+  $submission->completed = empty($submission->completed) && !$submission->is_draft ? REQUEST_TIME : $submission->completed;
+  $submission->modified = REQUEST_TIME;
 
   // Update the main submission info.
   drupal_write_record('webform_submissions', $submission, 'sid');
