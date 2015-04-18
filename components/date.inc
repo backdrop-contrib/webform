@@ -371,7 +371,7 @@ function theme_webform_display_date($variables) {
   $output = ' ';
   if ($element['#value']['year'] && $element['#value']['month'] && $element['#value']['day']) {
     $timestamp = webform_strtotime($element['#value']['month'] . '/' . $element['#value']['day'] . '/' . $element['#value']['year']);
-    $format = webform_date_format('medium');
+    $format = webform_date_format();
     $output = format_date($timestamp, 'custom', $format, 'UTC');
   }
 

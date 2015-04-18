@@ -4067,6 +4067,9 @@ function webform_variable_get($variable) {
     case 'webform_node_types_primary':
       $result = variable_get('webform_node_types_primary', array('webform'));
       break;
+    case 'webform_date_type':
+      $result = variable_get('webform_date_type', 'medium');
+      break;
     case 'webform_export_format':
       module_load_include('inc', 'webform', 'includes/webform.export');
       $options = webform_export_list();
@@ -4760,24 +4763,51 @@ function webform_date_string($array, $type = NULL) {
 /**
  * Get a date format according to the site settings.
  *
- * @param $size
- *   A choice of 'short', 'medium', or 'long' date formats.
+ * @param $type
+ *   A choice of 'short', 'medium', 'long' , or other user-defined date formats.
+ *   Use NULL for the webform-specific date format choosen in the webform
+ *   settings.
+ * @return string
+ *   A date/time format string.
  */
-function webform_date_format($size = 'medium') {
+function webform_date_format($type = NULL) {
+  static $formats = array();
+  if (!isset($formats[$type])) {
+    $type_name = $type ? $type : webform_variable_get('webform_date_type');
+
     // Format date according to site's given format.
-    $format = variable_get('date_format_' . $size, 'D, m/d/Y - H:i');
-    $time = 'aABgGhHisueIOPTZ';
-    $day_of_week = 'Dlw';
-    $special = ',-: ';
-    $date_format = trim($format, $time . $day_of_week . $special);
+    $format = variable_get('date_format_' . $type_name, 'D, m/d/Y');
+
+    // Date/Time formatting characters
+    // WHAT           REQUIRED (at least 1)   OPTIONAL (allowed by insufficient)
+    // ---------------------------------------------------------------------------
+    // Day-of-week                            DlNw
+    // Day            dj                      Stz
+    // Month          FmMn
+    // Year           oYy                     L
+    //
+    //                NOT ALLOWED
+    // --------------------------------------------------------------------------
+    // Time           aABgGhHisueIOPTZ
+    // Special        ,-: <space>
+
+    // Strip Time and Special characters from the beginning and end of format.
+    $date_format = trim($format, 'aABgGhHisueIOPTZ,-: ');
 
     // Ensure that a day, month, and year value are present. Use a default
-    // format if all the values are not found.
-    if (!preg_match('/[dj]/', $date_format) || !preg_match('/[FmMn]/', $date_format) || !preg_match('/[oYy]/', $date_format)) {
+    // format if all the values are not found. This regular expression uses
+    // (?= ), the positive lookahead assertion. It asserts that there are some
+    // optional characters (.*) followed by one of the day, month, or year
+    // characters. Because it is an assertion, it doesn't consume the
+    // characters, so the day, month, and year can be in any order.
+    if (!preg_match('/(?=.*[dj])(?=.*[FmMn])(?=.*[oYy])/', $date_format)) {
       $date_format = 'm/d/Y';
     }
 
-    return $date_format;
+    $formats[$type_name] = $formats[$type] = $date_format;
+  }
+
+  return $formats[$type];
 }
 
 /**

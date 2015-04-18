@@ -180,6 +180,18 @@ function webform_admin_settings() {
     '#description' => t('Individual e-mails increases privacy by not revealing the addresses of other recipients. A single e-mail to all recipients lets them use "Reply All" to communicate.'),
   );
 
+  $date_format_options = array();
+  foreach (system_get_date_types() as $type => $type_info) {
+    $date_format_options[$type] = t('@title — @sample', array('@title' => $type_info['title'], '@sample' => format_date(REQUEST_TIME, 'custom', webform_date_format($type))));
+  }
+  $form['advanced']['webform_date_type'] = array(
+    '#type' => 'select',
+    '#title' => t('Date format'),
+    '#options' => $date_format_options,
+    '#default_value' => webform_variable_get('webform_date_type'),
+    '#description' => t('Choose the format for the display of date components. Only the date portion of the format is used. Reporting and export use the short format.'),
+  );
+
   $form['advanced']['webform_export_format'] = array(
     '#type' => 'radios',
     '#title' => t('Default export format'),
