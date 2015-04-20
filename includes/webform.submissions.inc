@@ -149,6 +149,7 @@ function webform_submission_insert($node, $submission) {
     if (empty($submission->serial)) {
       $submission->serial = _webform_submission_serial_next_value($node->nid);
     }
+    $submission->completed = empty($submission->completed) && !$submission->is_draft ? REQUEST_TIME : $submission->completed;
     drupal_write_record('webform_submissions', $submission);
     $is_new = TRUE;
   }
