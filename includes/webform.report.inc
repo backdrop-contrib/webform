@@ -485,6 +485,7 @@ function webform_results_download_form($form, &$form_state, $node) {
       'new' => t('Only new submissions since your last download'),
       'latest' => t('Only the latest'),
       'range_serial' => t('All submissions starting from'),
+      'range_date' => t('All submissions by date'),
     ),
     '#default_value' => 'all',
   );
@@ -502,6 +503,17 @@ function webform_results_download_form($form, &$form_state, $node) {
     '#type' => 'textfield',
     '#size' => 5,
     '#maxlength' => 8,
+  );
+  $date_attributes = array('placeholder' => format_date(REQUEST_TIME, 'custom', webform_date_format('short')));
+  $form['range']['start_date'] = array(
+    '#type' => 'textfield',
+    '#size' => 20,
+    '#attributes' => $date_attributes,
+  );
+  $form['range']['end_date'] = array(
+    '#type' => 'textfield',
+    '#size' => 20,
+    '#attributes' => $date_attributes,
   );
 
   // If drafts are allowed, provide options to filter download based on draft
@@ -544,11 +556,11 @@ function webform_results_download_range_validate($element, $form_state) {
       if ($element['latest']['#value'] == '') {
         form_error($element['latest'], t('Latest number of submissions field is required.'));
       }
-      else{
+      else {
         if (!is_numeric($element['latest']['#value'])) {
           form_error($element['latest'], t('Latest number of submissions must be numeric.'));
         }
-        else{
+        else {
           if ($element['latest']['#value'] <= 0) {
             form_error($element['latest'], t('Latest number of submissions must be greater than 0.'));
           }
@@ -561,11 +573,11 @@ function webform_results_download_range_validate($element, $form_state) {
       if ($element['start']['#value'] == '') {
         form_error($element['start'], t('Start submission number is required.'));
       }
-      else{
+      else {
         if (!is_numeric($element['start']['#value'])) {
           form_error($element['start'], t('Start submission number must be numeric.'));
         }
-        else{
+        else {
           if ($element['start']['#value'] <= 0) {
             form_error($element['start'], t('Start submission number must be greater than 0.'));
           }
@@ -576,15 +588,36 @@ function webform_results_download_range_validate($element, $form_state) {
         if (!is_numeric($element['end']['#value'])) {
           form_error($element['end'], t('End submission number must be numeric.'));
         }
-        else{
+        else {
           if ($element['end']['#value'] <= 0) {
             form_error($element['end'], t('End submission number must be greater than 0.'));
           }
-          else{
+          else {
             if ($element['end']['#value'] < $element['start']['#value']) {
-              form_error($element['end'], t('End submission number may not be less than Start submission number.'));
+              form_error($element['end'], t('End submission number must not be less than Start submission number.'));
             }
           }
+        }
+      }
+      break;
+    case 'range_date':
+      // Download Start-end range of submissions.
+      // Start submission time.
+      $start_date = strtotime($element['start_date']['#value']);
+      if ($element['start_date']['#value'] == '') {
+        form_error($element['start_date'], t('Start date range is required.'));
+      }
+      elseif ($start_date === FALSE) {
+        form_error($element['start_date'], t('Start date range is not in a valid format.'));
+      }
+      // End submission time.
+      $end_date = strtotime($element['end_date']['#value']);
+      if ($element['end_date']['#value'] != '') {
+        if ($end_date === FALSE) {
+          form_error($element['end_date'], t('End date range is not in a valid format.'));
+        }
+        elseif ($start_date !== FALSE && $start_date > $end_date) {
+          form_error($element['end_date'], t('End date range must not be before the Start date..'));
         }
       }
       break;
@@ -596,6 +629,8 @@ function webform_results_download_range_validate($element, $form_state) {
     'start' => $element['start']['#value'],
     'end' => $element['end']['#value'],
     'latest' => $element['latest']['#value'],
+    'start_date' => $element['start_date']['#value'],
+    'end_date' => $element['end_date']['#value'],
     'completion_type' => $element['completion_type']['#value'],
     'batch_size' => 1,
     'batch_number' => 0,
@@ -635,13 +670,13 @@ function theme_webform_results_download_range($variables) {
 
   // Set description for total of all submissions.
   $element['range_type']['all']['#theme_wrappers'] = array('webform_inline_radio');
-  $element['range_type']['all']['#description'] = '(' . t('@count total', array('@count' => $download_info['total'])) . ')';
+  $element['range_type']['all']['#title'] .= ' (' . t('@count total', array('@count' => $download_info['total'])) . ')';
 
   // Set description for "New submissions since last download".
   $format = webform_date_format('short');
   $requested_date = format_date($download_info['requested'], 'custom', $format);
   $element['range_type']['new']['#theme_wrappers'] = array('webform_inline_radio');
-  $element['range_type']['new']['#description'] = '(' . t('@count new since @date', array('@count' => $download_info['new'], '@date' => $requested_date)) . ')';
+  $element['range_type']['new']['#title'] .= ' (' . t('@count new since @date', array('@count' => $download_info['new'], '@date' => $requested_date)) . ')';
 
 
   // Disable option if there are no new submissions.
@@ -660,11 +695,18 @@ function theme_webform_results_download_range($variables) {
   $element['end']['#attributes']['class'][] = 'webform-set-active';
   $element['start']['#theme_wrappers'] = array();
   $element['end']['#theme_wrappers'] = array();
+  $element['start_date']['#attributes']['class'] = array('webform-set-active');
+  $element['end_date']['#attributes']['class'] = array('webform-set-active');
+  $element['start_date']['#theme_wrappers'] = array();
+  $element['end_date']['#theme_wrappers'] = array();
   $element['range_type']['range_serial']['#theme_wrappers'] = array('webform_inline_radio');
-  $element['range_type']['range_serial']['#title'] = t('All submissions starting from: !start and optionally to: !end', array('!start' => drupal_render($element['start']), '!end' => drupal_render($element['end'])));
-
   $last_serial = $download_info['serial'] ? $download_info['serial'] : drupal_placeholder(t('none'));
-  $element['range_type']['range_serial']['#description'] = '(' . t('Last downloaded end submission number: !serial.', array('!serial' => $last_serial)) . ')';
+  $element['range_type']['range_serial']['#title'] = t('Submissions by number from !start and optionally to: !end &nbsp; (Last downloaded: !serial)',
+                                                       array('!start' => drupal_render($element['start']), '!end' => drupal_render($element['end']), '!serial' => $last_serial));
+
+  // date range
+  $element['range_type']['range_date']['#theme_wrappers'] = array('webform_inline_radio');
+  $element['range_type']['range_date']['#title'] = t('Submissions by date from !start_date and optionally to: !end_date', array('!start_date' => drupal_render($element['start_date']), '!end_date' => drupal_render($element['end_date'])));
 
   return drupal_render_children($element);
 }
@@ -1183,7 +1225,7 @@ function webform_results_download($node, $export_info) {
   }
 
   // Update user last downloaded sid if required.
-  if (!in_array($export_info['options']['range']['range_type'], array('range', 'range_serial')) && !empty($export_info['last_sid'])) {
+  if (!in_array($export_info['options']['range']['range_type'], array('range', 'range_serial', 'range_date')) && !empty($export_info['last_sid'])) {
     // Insert a new record or update an existing record.
     db_merge('webform_last_download')
       ->key(array(
@@ -1743,29 +1785,42 @@ function webform_download_sids_query($nid, $range_options, $uid = NULL) {
       $download_info = webform_download_last_download_info($nid, $uid);
       $last_sid = $download_info ? $download_info['sid'] : 0;
       $query
-        ->condition('sid', $last_sid, '>')
+        ->condition('ws.sid', $last_sid, '>')
         ->orderBy('ws.sid', 'ASC');
       break;
     case 'latest':
       // Last x Submissions.
       $start_sid = webform_download_latest_start_sid($nid, $range_options['latest'], $range_options['completion_type']);
-      $query->condition('sid', $start_sid, '>=');
+      $query->condition('ws.sid', $start_sid, '>=');
       break;
     case 'range':
       // Submissions Start-End.
-      $query->condition('sid', $range_options['start'], '>=');
+      $query->condition('ws.sid', $range_options['start'], '>=');
       if ($range_options['end']){
-        $query->condition('sid', $range_options['end'], '<=');
+        $query->condition('ws.sid', $range_options['end'], '<=');
       }
       $query->orderBy('ws.sid', 'ASC');
       break;
     case 'range_serial':
       // Submissions Start-End, using serial numbers.
-      $query->condition('serial', $range_options['start'], '>=');
+      $query->condition('ws.serial', $range_options['start'], '>=');
       if ($range_options['end']){
-        $query->condition('serial', $range_options['end'], '<=');
+        $query->condition('ws.serial', $range_options['end'], '<=');
       }
       $query->orderBy('ws.serial', 'ASC');
+      break;
+    case 'range_date':
+      $date_field = $range_options['completion_type'] == 'finished' ? 'ws.completed' : 'ws.submitted';
+      $query->condition($date_field, strtotime($range_options['start_date']), '>=');
+      if ($range_options['end_date'] != '' && ($end_time = strtotime($range_options['end_date'])) !== FALSE) {
+        if ($end_time == strtotime('midnight', $end_time)) {
+          // Full day specified
+          $end_time += 86399; // 86400 is a full day of seconds.
+        }
+        $query->condition($date_field, $end_time, '<=');
+      }
+      ;
+      $query->orderBy($date_field, 'ASC');
       break;
   }
 
