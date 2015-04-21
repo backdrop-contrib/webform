@@ -372,6 +372,30 @@ function webform_views_data() {
     ),
   );
 
+  // Same as 'data', but handled as numeric data.
+  $data['webform_submitted_data']['data_numeric'] = array(
+    'table' => 'webform_submitted_data',
+    'title' => t('Data field (numeric)'),
+    'help' => t('The numeric value of a component as submitted by a user.'),
+    'real field' => 'data',
+    'field' => array(
+      'title' => t('Numeric value (raw)'), // Distinguish from the normal value handler.
+      'help' => t('The raw value from the database, cast to a number, as submitted by a user. Use only when needing to sort on a field value.'),
+      'handler' => 'webform_handler_field_numeric_data',
+      'click sortable' => TRUE,
+      'float' => TRUE,
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_numeric',
+    ),
+    'filter' => array(
+      'handler' => 'webform_handler_filter_numeric_data',
+    ),
+    'sort' => array(
+      'handler' => 'webform_handler_sort_numeric_data',
+    ),
+  );
+
   // Number field for multi-value fields.
   $data['webform_submitted_data']['no'] = array(
     'title' => t('Value delta'),
