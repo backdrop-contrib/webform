@@ -4767,32 +4767,36 @@ function webform_date_string($array, $type = NULL) {
  *   A choice of 'short', 'medium', 'long' , or other user-defined date formats.
  *   Use NULL for the webform-specific date format choosen in the webform
  *   settings.
+ * @param array $exclude
+ *   An array containing 'day', 'month', and/or 'year' if they should be
+ *   removed from the format.
  * @return string
  *   A date/time format string.
  */
-function webform_date_format($type = NULL) {
+function webform_date_format($type = NULL, $exclude = array()) {
   static $formats = array();
-  if (!isset($formats[$type])) {
+  $id = $type . ':' . implode('', $exclude);
+  if (!isset($formats[$id])) {
     $type_name = $type ? $type : webform_variable_get('webform_date_type');
 
     // Format date according to site's given format.
     $format = variable_get('date_format_' . $type_name, 'D, m/d/Y');
 
     // Date/Time formatting characters
-    // WHAT           REQUIRED (at least 1)   OPTIONAL (allowed by insufficient)
+    // WHAT           REQUIRED (at least 1) OPTIONAL (allowed but insufficient)
     // ---------------------------------------------------------------------------
-    // Day-of-week                            DlNw
-    // Day            dj                      Stz
+    // Day-of-week                          DlNw
+    // Day            dj                    Stz
     // Month          FmMn
-    // Year           oYy                     L
+    // Year           oYy                   L
     //
     //                NOT ALLOWED
     // --------------------------------------------------------------------------
     // Time           aABgGhHisueIOPTZ
-    // Special        ,-: <space>
+    // Special        /.,-: <space>
 
     // Strip Time and Special characters from the beginning and end of format.
-    $date_format = trim($format, 'aABgGhHisueIOPTZ,-: ');
+    $date_format = trim($format, 'aABgGhHisueIOPTZ/.,-: ');
 
     // Ensure that a day, month, and year value are present. Use a default
     // format if all the values are not found. This regular expression uses
@@ -4804,10 +4808,22 @@ function webform_date_format($type = NULL) {
       $date_format = 'm/d/Y';
     }
 
-    $formats[$type_name] = $formats[$type] = $date_format;
+    // Remove any excluded portions.
+    $strip = array(
+      'day' => 'DlNwdjStz',
+      'month' => 'FmMn',
+      'year' => 'oYyL',
+    );
+    foreach ($exclude as $field) {
+      // Strip the format and any trailing /.,-: or space.
+      $date_format = preg_replace('#[' . $strip[$field] . ']+[/\.,\-: ]*#', '', $date_format);
+      $date_format = trim($date_format, '/.,-: ');
+    }
+
+    $formats[$id] = $date_format;
   }
 
-  return $formats[$type];
+  return $formats[$id];
 }
 
 /**

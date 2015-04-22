@@ -18,6 +18,7 @@ function _webform_defaults_date() {
     'required' => 0,
     'extra' => array(
       'timezone' => 'user',
+      'exclude' => array(),
       'start_date' => '-2 years',
       'end_date' => '+2 years',
       'year_textfield' => 0,
@@ -74,6 +75,19 @@ function _webform_edit_date($component) {
     '#access' => variable_get('configurable_timezones', 1),
   );
 
+  $form['extra']['exclude'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Hide'),
+    '#default_value' => $component['extra']['exclude'],
+    '#options' => array(
+      'day' => t('Day'),
+      'month' => t('Month'),
+      'year' => t('Year'),
+    ),
+    '#description' => t('A hidden day or month will be set to 1. A hidden year will be set to the year of the default value.'),
+    '#weight' => 3,
+  );
+
   $form['display']['datepicker'] = array(
     '#type' => 'checkbox',
     '#title' => t('Enable popup calendar'),
@@ -111,7 +125,27 @@ function _webform_edit_date($component) {
     '#parents' => array('extra', 'end_date'),
   );
 
+  $form['#validate'] = array('_webform_edit_date_validate');
   return $form;
+}
+
+/**
+ * Implements hook_form_id_validate.
+ *
+ * Warns user about hiding all the date fields and not using the date picker.
+ */
+function _webform_edit_date_validate($form, &$form_state) {
+  // Reduce checkbox values to simple non-associative array of values.
+  form_set_value($form['extra']['exclude'], array_filter(array_values($form_state['values']['extra']['exclude'])), $form_state);
+
+  // Note that Drupal 7 doesn't support setting errors no checkboxes due to
+  // browser issues. @see https://www.drupal.org/node/222380
+  if (count($form_state['values']['extra']['exclude']) == 3) {
+    form_set_error('extra][exclude', 'The day, month and year can\'t all be hidden.');
+  }
+  if ($form_state['values']['extra']['exclude'] == array('month')) {
+    form_set_error('extra][exclude', 'You cannot hide just the month.');
+  }
 }
 
 /**
@@ -132,6 +166,7 @@ function _webform_render_date($component, $value = NULL, $filter = TRUE) {
     '#year_textfield' => $component['extra']['year_textfield'],
     '#default_value' => $filter ? webform_replace_tokens($component['value'], $node) : $component['value'],
     '#timezone' => $component['extra']['timezone'],
+    '#exclude' => $component['extra']['exclude'],
     '#process' => array('webform_expand_date'),
     '#theme' => 'webform_date',
     '#theme_wrappers' => array('webform_element'),
@@ -161,9 +196,10 @@ function _webform_render_date($component, $value = NULL, $filter = TRUE) {
  * Form API #process function for Webform date fields.
  */
 function webform_expand_date($element) {
+  $timezone = $element['#timezone'] != 'user' ? NULL : 'user';
+  
   // Accept a string or array value for #default_value.
   if (!empty($element['#default_value']) && is_string($element['#default_value'])) {
-    $timezone = $element['#timezone'] != 'user' ? NULL : 'user';
     $timestring = webform_strtodate('c', $element['#default_value'], $timezone);
     $element['#default_value'] = webform_date_array($timestring, 'date');
   }
@@ -196,19 +232,29 @@ function webform_expand_date($element) {
     switch ($type) {
       case 'month':
         $none = t('Month');
+        $hidden_default = 1;
         break;
       case 'day':
         $none = t('Day');
+        $hidden_default = 1;
         break;
       case 'year':
         $none = t('Year');
+        $hidden_default = !empty($element['#default_value']['year']) ? $element['#default_value']['year'] : webform_strtodate('Y', 'today', $timezone);
         break;
     }
     unset($element[$type]['#value']);
     $element[$type]['#title'] = $none;
     $element[$type]['#title_display'] = 'invisible';
-    $element[$type]['#default_value'] = isset($default_values[$type]) ? $default_values[$type] : NULL;
+    $element[$type]['#default_value'] = $default_values[$type];
     $element[$type]['#options'] = array('' => $none) + $element[$type]['#options'];
+    if (in_array($type, $element['#exclude'])) {
+      $element[$type] += array(
+        '#prefix' => '<div class="webform-date-field-wrapper element-invisible">',
+        '#suffix' => '</div>',
+      );
+      $element[$type]['#default_value'] = $hidden_default;
+    }
   }
 
   // Convert relative dates to absolute ones.
@@ -351,6 +397,10 @@ function _webform_submit_date($component, $value) {
 function _webform_display_date($component, $value, $format = 'html') {
   $value = webform_date_array(isset($value[0]) ? $value[0] : '', 'date');
 
+  // An exception is made when datepicker is displayed but and the day, month,
+  // and year are all hidden. In this case, the whole date is displayed as the
+  // assumed intention is to use the datepicker without the select/textfield
+  // fields.
   return array(
     '#title' => $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
@@ -358,6 +408,8 @@ function _webform_display_date($component, $value, $format = 'html') {
     '#theme' => 'webform_display_date',
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
     '#format' => $format,
+    '#exclude' => $component['extra']['exclude'],
+
     '#value' => $value,
     '#translatable' => array('title'),
   );
@@ -371,7 +423,7 @@ function theme_webform_display_date($variables) {
   $output = ' ';
   if ($element['#value']['year'] && $element['#value']['month'] && $element['#value']['day']) {
     $timestamp = webform_strtotime($element['#value']['month'] . '/' . $element['#value']['day'] . '/' . $element['#value']['year']);
-    $format = webform_date_format();
+    $format = webform_date_format(NULL, $element['#exclude']);
     $output = format_date($timestamp, 'custom', $format, 'UTC');
   }
 
@@ -423,7 +475,7 @@ function _webform_analysis_date($component, $sids = array(), $single = FALSE, $j
 function _webform_table_date($component, $value) {
   if ($value[0]) {
     $timestamp = webform_strtotime($value[0]);
-    $format = webform_date_format('short');
+    $format = webform_date_format('short', $component['extra']['exclude']);
     return format_date($timestamp, 'custom', $format, 'UTC');
   }
   else {
