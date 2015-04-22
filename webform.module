@@ -18,65 +18,14 @@ define('WEBFORM_CONDITIONAL_INCLUDE', 1);
 define('WEBFORM_CONDITIONAL_SAME_PAGE', 2);
 
 /**
- * Implements hook_help().
+ * Implements hook_config_info().
  */
-function webform_help($section = 'admin/help#webform', $arg = NULL) {
-  $output = '';
-  switch ($section) {
-    case 'admin/config/content/webform':
-      module_load_include('inc', 'webform', 'includes/webform.admin');
-      $type_list = webform_admin_type_list();
-      $output = t('Webform enables nodes to have attached forms and questionnaires.');
-      if ($type_list) {
-        $output .= ' ' . t('To add one, create a !types piece of content.', array('!types' => $type_list));
-      }
-      else {
-        $output .= ' <strong>' . t('Webform is currently not enabled on any content types.') . '</strong> ' . t('To use Webform, please enable it on at least one <a href="!url">content type</a>.', array('!url' => url('admin/structure/types')));
-      }
-      $output = '<p>' . $output . '</p>';
-      break;
-    case 'admin/content/webform':
-      $output = '<p>' . t('This page lists all of the content on the site that may have a webform attached to it.') . '</p>';
-      break;
-    case 'admin/help#webform':
-      module_load_include('inc', 'webform', 'includes/webform.admin');
-      $types = webform_admin_type_list();
-      if (empty($types)) {
-        $types = t('Webform-enabled piece of content');
-        $types_message = t('Webform is currently not enabled on any content types.') . ' ' . t('Visit the <a href="!url">Webform settings</a> page and enable Webform on at least one content type.', array('!url' => url('admin/config/content/webform')));
-      }
-      else {
-        $types_message = t('Optional: Enable Webform on multiple types by visiting the <a href="!url">Webform settings</a> page.', array('!url' => url('admin/config/content/webform')));
-      }
-      $output = t("<p>This module lets you create forms or questionnaires and define their content. Submissions from these forms are stored in the database and optionally also sent by e-mail to a predefined address.</p>
-      <p>Here is how to create one:</p>
-      <ul>
-        <li>!webform-types-message</li>
-        <li>Go to <a href=\"!create-content\">Create content</a> and add a !types piece of content.</li>
-        <li>After saving the new content, you will be redirected to the main field list of the form that will be created. Add the fields you would like on your form.</li>
-        <li>Once finished adding fields, you may want to send e-mails to administrators or back to the user who filled out the form. Click on the <em>Emails</em> sub-tab underneath the <em>Webform</em> tab on the piece of content.</li>
-        <li>Finally, visit the <em>Form settings</em> sub-tab under the <em>Webform</em> tab to configure remaining configurations options for your form.
-          <ul>
-          <li>Add a confirmation message and/or redirect URL that is to be displayed after successful submission.</li>
-          <li>Set a submission limit.</li>
-          <li>Determine which roles may submit the form.</li>
-          <li>Advanced configuration options such as allowing drafts or show users a message indicating how they can edit their submissions.</li>
-          </ul>
-        </li>
-        <li>Your form is now ready for viewing. After receiving submissions, you can check the results users have submitted by visiting the <em>Results</em> tab on the piece of content.</li>
-      </ul>
-      <p>Help on adding and configuring the components will be shown after you add your first component.</p>
-      ", array('!webform-types-message' => $types_message, '!create-content' => url('node/add'), '!types' => $types));
-      break;
-    case 'node/%/webform/conditionals':
-      $output .= '<p>' . t('Conditionals may be used to hide or show certain components (or entire pages!) based on the value of other components.') . '</p>';
-      break;
-    case 'node/%/submission/%/resend':
-      $output .= '<p>' . t('This form may be used to resend e-mails configured for this webform. Check the e-mails that need to be sent and click <em>Resend e-mails</em> to send these e-mails again.') . '</p>';
-      break;
-  }
-
-  return $output;
+function mailsystem_config_info() {
+  $prefixes['mailsystem.settings'] = array(
+    'label' => t('mailsystem settings'),
+    'group' => t('mailsystem'),
+  );
+  return $prefixes;
 }
 
 /**

@@ -711,7 +711,7 @@ function webform_update_last_removed() {
 
 
 function webform_update_1000() {
-  $config = config('webform.settings');
+$config = config('webform.settings');
 
   // migrate variables
   $config->set('webform_install_create_content_type', update_variable_get('webform_install_create_content_type'));
