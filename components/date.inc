@@ -146,6 +146,20 @@ function _webform_edit_date_validate($form, &$form_state) {
   if ($form_state['values']['extra']['exclude'] == array('month')) {
     form_set_error('extra][exclude', 'You cannot hide just the month.');
   }
+
+  // Validate that the start and end dates are valid. Don't validate the default
+  // date because with token substitution, it might not be valid at component
+  // definition time. Also note that validation was introduced in 7.x-4.8 and
+  // previously-defined webform may have invalid start and end dates.
+  foreach (array('start_date', 'end_date') as $field) {
+    if (trim($form_state['values']['extra'][$field]) && !($date[$field] = webform_strtodate('c', $form_state['values']['extra'][$field]))) {
+      form_set_error("extra][$field", t('The @field could not be interpreted in <a href="http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html">GNU Date Input Format</a>.',
+                                                 array('@field' => $form['validation'][$field]['#title'])));
+    }
+  }
+  if (!empty($date['start_date']) && !empty($date['end_date']) && $date['end_date'] < $date['start_date']) {
+    form_set_error('extra][end_date', t('The End date must be on or after the Start date.'));
+  }
 }
 
 /**
@@ -227,6 +241,67 @@ function webform_expand_date($element) {
   // Let Drupal do it's normal expansion.
   $element = form_process_date($element);
 
+  // Convert relative dates to absolute and calculate the year, month and day.
+  $timezone = $element['#timezone'] != 'user' ? NULL : 'user';
+  foreach (array('start', 'end') as $start_end) {
+    $element_field = &$element["#{$start_end}_date"];
+    $element_field = $element_field ? webform_strtodate('Y-m-d', $element_field, $timezone) : '';
+    if ($element_field) {
+      $parts = explode('-', $element_field);
+    }
+    else {
+      $parts = $start_end == 'start' ? array(webform_strtodate('Y', '-2 years'), 1, 1) : array(webform_strtodate('Y', '+2 years'), 12, 31);
+      $element_field = '';
+    }
+    unset($element_field); // Drop PHP reference.
+    $parts[3] = $parts[0] . '-' . $parts[1] . '-' . $parts[2];
+    $range[$start_end] = array_combine(array('year', 'month', 'day', 'date'), $parts);
+  }
+
+  // The start date is not guaranteeed to be early than the end date for
+  // historical reasons.
+  if ($range['start']['date'] > $range['end']['date']) {
+    $temp = $range['start'];
+    $range['start'] = $range['end'];
+    $range['end'] = $temp;
+  }
+
+  // Restrict the months and days when not all options are valid choices.
+  if ($element['#start_date'] && $element['#end_date']) {
+    $delta_months = ($range['end']['year'] * 12 + $range['end']['month']) - ($range['start']['year'] * 12 + $range['start']['month']);
+    if ($delta_months < 11) {
+      // There are 10 or fewer months between the start and end date. If there
+      // were 11, then every month would be possible, and the menu select
+      // should not be pruned.
+      $month_options = &$element['month']['#options'];
+      if ($range['start']['month'] <= $range['end']['month']) {
+        $month_options = array_intersect_key($month_options, array_flip(range($range['start']['month'], $range['end']['month'])));
+      }
+      else {
+        $month_options = array_intersect_key($month_options, array_flip(range($range['start']['month'], 12))) +
+                         array_intersect_key($month_options, array_flip(range(1, $range['end']['month'])));
+      }
+      unset($month_options); // Drop PHP reference.
+      if ($delta_months <= 1) {
+        // The start and end date are either on the same month or consequtive
+        // months. See if the days should be pruned.
+        $day_options = &$element['day']['#options'];
+        if ($range['start']['month'] == $range['end']['month']) {
+          // Range is within the same month. The days are a simple range from
+          // start day to end day.
+          $day_options = array_intersect_key($day_options, array_flip(range($range['start']['day'], $range['end']['day'])));
+        }
+        elseif ($range['start']['day'] > $range['end']['day'] + 1) {
+          // Range spans two months and at least one day would be omitted.
+          $days_in_month = date('t', mktime(0, 0, 0, $range['start']['month'], 1, $range['start']['year']));
+          $day_options = array_intersect_key($day_options, array_flip(range($range['start']['day'], $days_in_month))) +
+                         array_intersect_key($day_options, array_flip(range(1, $range['end']['day'])));
+        }
+        unset($day_options); // Drop PHP reference.
+      }
+    }
+  }
+
   // Set default values.
   foreach ($default_values as $type => $value) {
     switch ($type) {
@@ -257,13 +332,6 @@ function webform_expand_date($element) {
     }
   }
 
-  // Convert relative dates to absolute ones.
-  foreach (array('start_date', 'end_date') as $start_end) {
-    $timezone = $element['#timezone'] != 'user' ? NULL : 'user';
-    $date = webform_strtodate('Y-m-d', $element['#' . $start_end], $timezone);
-    $element['#' . $start_end] = $date ? $date : '';
-  }
-
   // Tweak the year field.
   if ($element['#year_textfield']) {
     $element['year']['#type'] = 'textfield';
@@ -272,9 +340,7 @@ function webform_expand_date($element) {
     unset($element['year']['#options']);
   }
   elseif ($element['#start_date'] || $element['#end_date']) {
-    $start_year = $element['#start_date'] ? webform_strtodate('Y', $element['#start_date']) : webform_strtodate('Y', '-2 years');
-    $end_year = $element['#end_date'] ? webform_strtodate('Y', $element['#end_date']) : webform_strtodate('Y', '+2 years');
-    $element['year']['#options'] = array('' => t('Year')) + drupal_map_assoc(range($start_year, $end_year));
+    $element['year']['#options'] = array('' => t('Year')) + drupal_map_assoc(range($range['start']['year'], $range['end']['year']));
   }
 
   return $element;
@@ -329,21 +395,18 @@ function theme_webform_date($variables) {
 function webform_validate_date($element, $form_state) {
   if ($element['month']['#value'] !== '' || $element['day']['#value'] !== '' || $element['year']['#value'] !== '') {
     // Check that each part of the date has been filled in.
-    $missing_fields = array();
     foreach (array('day', 'month', 'year') as $field_type) {
       if (empty($element[$field_type]['#value'])) {
-        $missing_fields[] = $field_type;
+        form_error($element[$field_type], t('!part in !name is missing.', array('!name' => $element['#title'], '!part' => $element[$missing_field]['#title'])));
+        $missing_fields = TRUE;
       }
     }
-    if (count($missing_fields)) {
-      foreach ($missing_fields as $missing_field) {
-        form_error($element[$missing_field], t('!part in !name is missing.', array('!name' => $element['#title'], '!part' => $element[$missing_field]['#title'])));
-      }
+    if (isset($missing_fields)) {
       return;
     }
 
     // Check for a valid date.
-    if (!checkdate((int) $element['month']['#value'], (int) $element['day']['#value'], (int) $element['year']['#value'])) {
+    if (!checkdate($element['month']['#value'], $element['day']['#value'], $element['year']['#value'])) {
       form_error($element, t('Entered !name is not a valid date.', array('!name' => $element['#title'])));
       return;
     }
@@ -352,7 +415,8 @@ function webform_validate_date($element, $form_state) {
     $timestamp = strtotime($element['year']['#value'] . '-' . $element['month']['#value'] . '-' . $element['day']['#value']);
     $format = webform_date_format('short');
 
-    // Flip start and end if needed.
+    // Flip start and end if needed. Prior to 7.x-4.8, it was possible to save
+    // a date component with the end date earlier than the start date.
     $date1 = strtotime($element['#start_date']);
     $date2 = strtotime($element['#end_date']);
     if ($date1 !== FALSE && $date2 !== FALSE) {
@@ -365,17 +429,13 @@ function webform_validate_date($element, $form_state) {
     }
 
     // Check that the date is after the start date.
-    if ($start_date !== FALSE) {
-      if ($timestamp < $start_date) {
-        form_error($element, t('The entered date must be @start_date or later.', array('@start_date' => date($format, $start_date))));
-      }
+    if ($start_date !== FALSE && $timestamp < $start_date) {
+      form_error($element, t('The entered date must be @start_date or later.', array('@start_date' => date($format, $start_date))));
     }
 
     // Check that the date is before the end date.
-    if ($end_date !== FALSE) {
-      if ($timestamp > $end_date) {
-        form_error($element, t('The entered date must be @end_date or earlier.', array('@end_date' => date($format, $end_date))));
-      }
+    if ($end_date !== FALSE && $timestamp > $end_date) {
+      form_error($element, t('The entered date must be @end_date or earlier.', array('@end_date' => date($format, $end_date))));
     }
   }
   elseif ($element['#required']) {
@@ -397,10 +457,6 @@ function _webform_submit_date($component, $value) {
 function _webform_display_date($component, $value, $format = 'html') {
   $value = webform_date_array(isset($value[0]) ? $value[0] : '', 'date');
 
-  // An exception is made when datepicker is displayed but and the day, month,
-  // and year are all hidden. In this case, the whole date is displayed as the
-  // assumed intention is to use the datepicker without the select/textfield
-  // fields.
   return array(
     '#title' => $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
