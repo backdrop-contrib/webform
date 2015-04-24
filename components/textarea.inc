@@ -106,7 +106,7 @@ function _webform_edit_textarea($component) {
 /**
  * Implements _webform_render_component().
  */
-function _webform_render_textarea($component, $value = NULL, $filter = TRUE) {
+function _webform_render_textarea($component, $value = NULL, $filter = TRUE, $submission = NULL) {
   $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
 
   $element = array(

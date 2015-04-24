@@ -131,7 +131,7 @@ function _webform_edit_textfield($component) {
 /**
  * Implements _webform_render_component().
  */
-function _webform_render_textfield($component, $value = NULL, $filter = TRUE) {
+function _webform_render_textfield($component, $value = NULL, $filter = TRUE, $submission = NULL) {
   $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
 
   $element = array(

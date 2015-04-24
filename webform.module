@@ -2717,7 +2717,7 @@ function _webform_client_form_add_component($node, $component, $component_value,
   // version of the form (such as for Form Builder).
   elseif ($component['page_num'] == $page_num || $filter == FALSE) {
     // Add this user-defined field to the form (with all the values that are always available).
-    if ($element = webform_component_invoke($component['type'], 'render', $component, $component_value, $filter)) {
+    if ($element = webform_component_invoke($component['type'], 'render', $component, $component_value, $filter, $form['#submission'])) {
       // Set access based on the private property.
       $element += array('#access' => TRUE);
       $element['#access'] = $element['#access'] && $component_access;
@@ -4829,7 +4829,7 @@ function webform_date_format($type = NULL, $exclude = array()) {
 /**
  * Return a date in the desired format taking into consideration user timezones.
  */
-function webform_strtodate($format, $string, $timezone_name = NULL) {
+function webform_strtodate($format, $string, $timezone_name = NULL, $reference_timestamp = NULL) {
   global $user;
 
   // Adjust the time based on the user or site timezone.
@@ -4846,7 +4846,23 @@ function webform_strtodate($format, $string, $timezone_name = NULL) {
     // only supported for DateTime in PHP 5.3 and higher.
     try {
       @$timezone = new DateTimeZone($timezone_name);
-      @$datetime = new DateTime($string, $timezone);
+      if (isset($reference_timestamp)) {
+        // A reference for relative dates has been provided.
+        // 1) Convert the reference timestamp (in UTC) to a DateTime.
+        // 2) Set to time zone to the user or system timezone, recreating
+        //    the reference time in the appropriate time zone.
+        // 3) Set the time to midnight because when a non-referenced relative
+        //    date is created without a time, it is created at midnight (0:00).
+        // 4) Adjust to the specified relative (or absolute) time.
+
+        @$datetime = new DateTime('@' . $reference_timestamp);
+        @$datetime->setTimezone($timezone)
+                  ->setTime(0, 0, 0)
+                  ->modify($string);
+      }
+      else {
+        @$datetime = new DateTime($string, $timezone);
+      }
       return @$datetime->format($format);
     }
     catch (Exception $e) {
@@ -4854,7 +4870,7 @@ function webform_strtodate($format, $string, $timezone_name = NULL) {
     }
   }
   else {
-    return date($format, strtotime($string));
+    return date($format, isset($reference_timestamp) ? strtotime($string, $reference_timestamp) : strtotime($string));
   }
 }
 

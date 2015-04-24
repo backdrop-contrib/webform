@@ -165,7 +165,7 @@ function _webform_edit_date_validate($form, &$form_state) {
 /**
  * Implements _webform_render_component().
  */
-function _webform_render_date($component, $value = NULL, $filter = TRUE) {
+function _webform_render_date($component, $value = NULL, $filter = TRUE, $submission = NULL) {
   $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
 
   $element = array(
@@ -177,6 +177,7 @@ function _webform_render_date($component, $value = NULL, $filter = TRUE) {
     '#required' => $component['required'],
     '#start_date' => trim($component['extra']['start_date']),
     '#end_date' => trim($component['extra']['end_date']),
+    '#reference_timestamp' => $submission && $submission->completed ? $submission->completed : NULL,
     '#year_textfield' => $component['extra']['year_textfield'],
     '#default_value' => $filter ? webform_replace_tokens($component['value'], $node) : $component['value'],
     '#timezone' => $component['extra']['timezone'],
@@ -245,7 +246,7 @@ function webform_expand_date($element) {
   $timezone = $element['#timezone'] != 'user' ? NULL : 'user';
   foreach (array('start', 'end') as $start_end) {
     $element_field = &$element["#{$start_end}_date"];
-    $element_field = $element_field ? webform_strtodate('Y-m-d', $element_field, $timezone) : '';
+    $element_field = $element_field ? webform_strtodate('Y-m-d', $element_field, $timezone, $element['#reference_timestamp']) : '';
     if ($element_field) {
       $parts = explode('-', $element_field);
     }

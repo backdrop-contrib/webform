@@ -890,10 +890,14 @@ function _webform_edit_component($component) {
  *   Whether or not to filter the contents of descriptions and values when
  *   rendering the component. Values need to be unfiltered to be editable by
  *   Form Builder.
+ * @param $submission
+ *   The submission from which this component is being rendered. Usually not
+ *   needed. Used by _webform_render_date() to validate using the submission's
+ *   completion date.
  *
  * @see _webform_client_form_add_component()
  */
-function _webform_render_component($component, $value = NULL, $filter = TRUE) {
+function _webform_render_component($component, $value = NULL, $filter = TRUE, $submission = NULL) {
   $form_item = array(
     '#type' => 'textfield',
     '#title' => $filter ? webform_filter_xss($component['name']) : $component['name'],

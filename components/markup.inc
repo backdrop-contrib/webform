@@ -79,7 +79,7 @@ function _webform_edit_markup_validate($form, &$form_state) {
 /**
  * Implements _webform_render_component().
  */
-function _webform_render_markup($component, $value = NULL, $filter = TRUE) {
+function _webform_render_markup($component, $value = NULL, $filter = TRUE, $submission = NULL) {
   $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
 
   $element = array(

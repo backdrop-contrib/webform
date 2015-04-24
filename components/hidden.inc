@@ -68,7 +68,7 @@ function _webform_edit_hidden($component) {
 /**
  * Implements _webform_render_component().
  */
-function _webform_render_hidden($component, $value = NULL, $filter = TRUE) {
+function _webform_render_hidden($component, $value = NULL, $filter = TRUE, $submission = NULL) {
   $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
 
   $default_value = $filter ? webform_replace_tokens($component['value'], $node) : $component['value'];

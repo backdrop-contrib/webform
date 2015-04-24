@@ -314,7 +314,7 @@ function _webform_edit_validate_set_aslist($options, &$form_state) {
 /**
  * Implements _webform_render_component().
  */
-function _webform_render_select($component, $value = NULL, $filter = TRUE) {
+function _webform_render_select($component, $value = NULL, $filter = TRUE, $submission = NULL) {
   $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
 
   $element = array(
