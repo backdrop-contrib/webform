@@ -21,6 +21,8 @@ function _webform_defaults_time() {
     'required' => 0,
     'extra' => array(
       'timezone' => 'user',
+      'start_time' => '',
+      'end_time' => '',
       'hourformat' => '12-hour',
       'minuteincrements' => 1,
       'title_display' => 0,
@@ -61,6 +63,24 @@ function _webform_edit_time($component) {
     '#maxlength' => 127,
     '#weight' => 0,
   );
+  $form['validation']['start_time'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Start time'),
+    '#default_value' => $component['extra']['start_time'],
+    '#description' => t('The earliest time that may be entered into the field.'),
+    '#size' => 10,
+    '#weight' => 3,
+    '#parents' => array('extra', 'start_time'),
+  );
+  $form['validation']['end_time'] = array(
+    '#type' => 'textfield',
+    '#title' => t('End date'),
+    '#default_value' => $component['extra']['end_time'],
+    '#description' => t('The latest time that may be entered into the field.'),
+    '#size' => 10,
+    '#weight' => 4,
+    '#parents' => array('extra', 'end_time'),
+  );
   $form['extra']['timezone'] = array(
     '#type' => 'radios',
     '#title' => t('Default value timezone'),
@@ -92,7 +112,26 @@ function _webform_edit_time($component) {
     '#weight' => 3,
     '#parents' => array('extra', 'minuteincrements'),
   );
+  $form['#validate'] = array('_webform_edit_time_validate');
   return $form;
+}
+
+/**
+ * Implements hook_form_id_validate.
+ *
+ * Validate start and end times.
+ */
+function _webform_edit_time_validate($form, &$form_state) {
+  // Validate that the start and end times are valid. Don't validate the default
+  // time because with token substitution, it might not be valid at component
+  // definition time. The end time may be before the start time to faciliate
+  // time ranges spanning midnight.
+  foreach (array('start_time', 'end_time') as $field) {
+    $time[$field] = FALSE;
+    if (trim($form_state['values']['extra'][$field]) && ($time[$field] = strtotime('1-1-1970 UTC ' . $form_state['values']['extra'][$field])) === FALSE) {
+      form_set_error("extra][$field", t('The @field isn\'t a valid time.', array('@field' => $form['validation'][$field]['#title'])));
+    }
+  }
 }
 
 /**
@@ -109,6 +148,8 @@ function _webform_render_time($component, $value = NULL, $filter = TRUE) {
     '#weight' => $component['weight'],
     '#description' => $filter ? webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#element_validate' => array('webform_validate_time'),
+    '#start_time' => trim($component['extra']['start_time']),
+    '#end_time' => trim($component['extra']['end_time']),
     '#hourformat' => $component['extra']['hourformat'],
     '#minuteincrements' => $component['extra']['minuteincrements'],
     '#default_value' => $filter ? webform_replace_tokens($component['value'], $node) : $component['value'],
@@ -146,58 +187,52 @@ function webform_expand_time($element) {
   else {
     $default_values = array(
       'hour' => '',
-      'minute' => '',
+      'minute' => '0',
       'second' => '',
     );
   }
-
-  $first_hour = 0;
-  $last_hour = 23;
-  if ($element['#hourformat'] == '12-hour') {
-    $first_hour = 1;
-    $last_hour = 12;
-    $default_values = webform_time_convert($default_values, '12-hour');
-    $default_values['ampm'] = $default_values['ampm'] ? $default_values['ampm'] : 'am';
-  }
+  $start_hour = $element['#start_time'] ? date('G', strtotime('1-1-1970 ' . $element['#start_time'])) : FALSE;
+  $end_hour = $element['#start_time'] ? date('G', strtotime('1-1-1970 ' . $element['#end_time'])) : FALSE;
+  $reduced_range = $start_hour > 0 || $end_hour < 23;
+  $format_12_hour = $element['#hourformat'] == '12-hour';
 
   // Generate the choices for drop-down selects.
-  $hours[''] = t('hour');
-  $minutes[''] = t('minute');
-  for ($i = $first_hour; $i <= $last_hour; $i++) {
-    $hours[$i] = $i;
-  }
-  for ($i = 0; $i <= 59; $i += $element['#minuteincrements']) {
-    $minutes[$i] = $i < 10 ? "0$i" : $i;
-  }
-  $ampms = array('am' => t('am'), 'pm' => t('pm'));
-
-  // Adjust the default for minutes if needed, rounding up to the closest value.
-  if (!isset($minutes[$default_values['minute']])) {
-    foreach ($minutes as $minute => $padded_minute) {
-      if ($minute > $default_values['minute']) {
-        $default_values['minute'] = $minute;
-        break;
-      }
-    }
+  $hours = $format_12_hour && !$reduced_range ? range(1, 12) : range(0, 23);
+  if ($format_12_hour && $reduced_range) {
+    $hours = array_map(function($hour) {
+      return (1 + ($hour + 11) % 12) . ($hour < 12 ? ' am' : ' pm');
+    }, $hours);
   }
 
-  // If the above loop didn't set a value, it's because rounding up would go to
-  // the next hour. This gets quite a bit more complicated, since we need to
-  // deal with looping around on hours, as well as flipping am/pm.
+  $minutes = range(0, 59, $element['#minuteincrements']);
+  $minutes = array_combine($minutes, array_map(function ($minute) {
+    return substr('00' . $minute, -2);
+  }, $minutes));
+
+  // Prune the hours to the allowed range.
+  if ($reduced_range) {
+    if ($start_hour <= $end_hour) {
+        $hours = array_intersect_key($hours, array_flip(range($start_hour, $end_hour)));
+    }
+    else {
+      $hours = array_intersect_key($hours, array_flip(range($start_hour, 23))) +
+               array_intersect_key($hours, array_flip(range(0, $end_hour)));
+    }
+  }
+  $hours = array('' => t('Hour')) + $hours;
+  $minutes = array('' => t('Minute')) + $minutes;
+
+  // Adjust the default for minutes if needed, rounding down if needed.
+  // Rounding down eliminate the problem of rounding up going to the next hour.
+  // Worse, rounding 23:59 up would actually be the next day, which can't be
+  // represented because time components aren't linked to date components.
   if (!isset($minutes[$default_values['minute']])) {
-    $default_values['minute'] = 0;
-    $default_values['hour']++;
-    // If the hour rolls over also, set hour to the first hour in the list.
-    if (!isset($hours[$default_values['hour']])) {
-      $default_values['hour'] = $element['#hourformat'] == '12-hour' ? 1 : 0;
-    }
-    // If the hour has been incremented to 12:00 in 12-hour format, flip am/pm.
-    // Note that technically midnight and noon are neither am or pm, but common
-    // convention (and US standard) is to represent 12:00am as midnight.
-    // See http://en.wikipedia.org/wiki/Midnight#Start_and_end_of_day.
-    if ($element['#hourformat'] == '12-hour' && $default_values['hour'] == 12) {
-      $default_values['ampm'] = $default_values['ampm'] == 'am' ? 'pm' : 'am';
-    }
+    $default_values['minute'] -= $default_values['minute'] % $element['#minuteincrements'];
+  }
+
+  // Convert default to 12-hour if needed.
+  if ($format_12_hour && !$reduced_range) {
+    $default_values = webform_time_convert($default_values, '12-hour');
   }
 
   $element['hour'] = array(
@@ -216,11 +251,11 @@ function webform_expand_time($element) {
     '#default_value' => $default_values['minute'],
     '#options' => $minutes,
   );
-  if (strcmp($element['#hourformat'], '12-hour') == 0) {
+  if ($format_12_hour && !$reduced_range) {
     $element['ampm'] = array(
       '#type' => 'radios',
-      '#default_value' => $default_values['ampm'],
-      '#options' => $ampms,
+      '#default_value' => $default_values['ampm'] ? $default_values['ampm'] : 'am',
+      '#options' => array('am' => t('am'), 'pm' => t('pm')),
     );
   }
 
@@ -256,18 +291,45 @@ function webform_validate_time($element, $form_state) {
   $form_key = $element['#webform_component']['form_key'];
 
   // Check if the user filled the required fields.
-  foreach ($element['#hourformat'] == '12-hour' ? array('hour', 'minute', 'ampm') : array('hour', 'minute') as $field_type) {
-    if ($element[$field_type]['#value'] === '' && $element['#required']) {
-      form_error($element, t('!name field is required.', array('!name' => $element['#title'])));
-      return;
+  if ($element['#required']) {
+    foreach (array('hour', 'minute', 'ampm') as $field_type) {
+      if (isset($element[$field_type]) && $element[$field_type]['#value'] === '') {
+        form_error($element, t('!name field is required.', array('!name' => $element['#title'])));
+        return;
+      }
     }
   }
 
-  // Check for a valid time.
-  if ($element['hour']['#value'] !== '' || $element['minute']['#value'] !== '') {
+  // Check for a valid time. Allow a minute with no hour as "no time set".
+  if ($element['hour']['#value'] !== '' ) {
     if (!is_numeric($element['hour']['#value']) || !is_numeric($element['minute']['#value']) || (isset($element['ampm']) && $element['ampm']['#value'] === '')) {
       form_error($element, t('Entered !name is not a valid time.', array('!name' => $element['#title'])));
       return;
+    }
+
+    // Enforce the start and end times, if any.
+    $timestamp = strtotime($element['hour']['#value'] . ':' . $element['minute']['#value'] . ' ' .
+                           (isset($element['ampm']) ?  $element['ampm']['#value'] : ''));
+    $start_time = strtotime($element['#start_time']);
+    $end_time = strtotime($element['#end_time']);
+    $subs = array(
+      '@start_time' => $element['#start_time'],
+      '@end_time' => $element['#end_time'],
+    );
+    if ($start_time !== FALSE && $end_time !== FALSE && $start_time > $end_time) {
+      // Validate as "over midnight" date range.
+      if ($end_time < $timestamp && $timestamp < $start_time) {
+        form_error($element, t('The entered time must be from @start_time to midnight to @end_time.', $subs));
+      }
+    }
+    else {
+      // Validate the start and end times are a regular (over noon) time range.
+      if ($start_time !== FALSE && $timestamp < $start_time) {
+        form_error($element, t('The entered time must be no earlier than @start_time.', $subs));
+      }
+      if ($end_time !== FALSE && $timestamp > $end_time) {
+        form_error($element, t('The entered time must be no later than @end_time.', $subs));
+      }
     }
   }
 }

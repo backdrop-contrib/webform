@@ -397,7 +397,7 @@ function webform_validate_date($element, $form_state) {
     // Check that each part of the date has been filled in.
     foreach (array('day', 'month', 'year') as $field_type) {
       if (empty($element[$field_type]['#value'])) {
-        form_error($element[$field_type], t('!part in !name is missing.', array('!name' => $element['#title'], '!part' => $element[$missing_field]['#title'])));
+        form_error($element[$field_type], t('!part in !name is missing.', array('!name' => $element['#title'], '!part' => $element[$field_type]['#title'])));
         $missing_fields = TRUE;
       }
     }
