@@ -24,6 +24,10 @@ function webform_token_info() {
     'name' => t('Submission ID'),
     'description' => t('The unique indentifier for the webform submission.'),
   );
+  $info['tokens']['submission']['access-token'] = array(
+    'name' => t('Access token'),
+    'description' => t('The security token used to gain access to this webform submission.'),
+  );
   $info['tokens']['submission']['date'] = array(
     'name' => t('Date submitted'),
     'description' => t('The date the webform was first save as draft or completed.'),
@@ -107,6 +111,9 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
           break;
         case 'sid':
           $replacements[$original] = $submission->sid ? $submission->sid : '';
+          break;
+        case 'access-token':
+          $replacements[$original] = webform_get_submission_access_token($submission);
           break;
         case 'date':
           $replacements[$original] = format_date($submission->submitted, webform_variable_get('webform_date_type'), '', NULL, $language_code);
