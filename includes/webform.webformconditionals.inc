@@ -422,7 +422,7 @@ class WebformConditionals {
     if (!$this->visibilityMap) {
       // The conditionals have not yet been executed on a submission.
       $this->executeConditionals(array(), 0);
-      watchdog('drivingevals', 'WebformConditionals::componentVisibility called prior to evaluating a submission.', 'error');
+      watchdog('webform', 'WebformConditionals::componentVisibility called prior to evaluating a submission.', 'error');
     }
     return isset($this->visibilityMap[$page_num][$cid]) ? $this->visibilityMap[$page_num][$cid] : self::componentShown;
   }
@@ -470,7 +470,7 @@ class WebformConditionals {
     if (!$this->requiredMap) {
       // The conditionals have not yet been executed on a submission.
       $this->executeConditionals(array(), 0);
-      watchdog('drivingevals', 'WebformConditionals::componentRequired called prior to evaluating a submission.', 'error');
+      watchdog('webform', 'WebformConditionals::componentRequired called prior to evaluating a submission.', 'error');
     }
     return isset($this->requiredMap[$page_num][$cid]) ? $this->requiredMap[$page_num][$cid] : NULL;
   }
