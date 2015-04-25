@@ -193,11 +193,11 @@ function webform_expand_time($element) {
   }
   $start_hour = $element['#start_time'] ? date('G', strtotime('1-1-1970 ' . $element['#start_time'])) : FALSE;
   $end_hour = $element['#start_time'] ? date('G', strtotime('1-1-1970 ' . $element['#end_time'])) : FALSE;
-  $reduced_range = $start_hour > 0 || $end_hour < 23;
+  $reduced_range = ($start_hour !== FALSE && $start_hour > 0) || ($end_hour !== FALSE && $end_hour < 23);
   $format_12_hour = $element['#hourformat'] == '12-hour';
 
   // Generate the choices for drop-down selects.
-  $hours = $format_12_hour && !$reduced_range ? range(1, 12) : range(0, 23);
+  $hours = $format_12_hour && !$reduced_range ? array_slice(range(0, 12), 1, 12, TRUE) : range(0, 23);
   if ($format_12_hour && $reduced_range) {
     $hours = array_map(function($hour) {
       return (1 + ($hour + 11) % 12) . ($hour < 12 ? ' am' : ' pm');
@@ -230,6 +230,11 @@ function webform_expand_time($element) {
     $default_values['minute'] -= $default_values['minute'] % $element['#minuteincrements'];
   }
 
+  // Set the overall default value.
+  if ($default_values['hour'] !== '') {
+    $element['#default_value'] = webform_date_string($default_values);
+  }
+
   // Convert default to 12-hour if needed.
   if ($format_12_hour && !$reduced_range) {
     $default_values = webform_time_convert($default_values, '12-hour');
@@ -257,11 +262,6 @@ function webform_expand_time($element) {
       '#default_value' => $default_values['ampm'] ? $default_values['ampm'] : 'am',
       '#options' => array('am' => t('am'), 'pm' => t('pm')),
     );
-  }
-
-  // Set the overall default value.
-  if ($default_values['hour'] !== '') {
-    $element['#default_value'] = webform_date_string($default_values);
   }
 
   return $element;
