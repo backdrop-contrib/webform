@@ -79,6 +79,13 @@ function webform_schema() {
         'not null' => TRUE,
         'default' => 1,
       ),
+      'confidential' => array(
+        'description' => 'Boolean value for whether to anonymize submissions.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
       'submit_text' => array(
         'description' => 'The title of the submit button on the form.',
         'type' => 'varchar',
@@ -2206,4 +2213,23 @@ function webform_update_7427() {
   cache_clear_all('*', 'cache_views', TRUE);
 
   return t('Webform submissions were updated with completed and modified timestamps.');
+}
+
+/**
+ * Add a "confidential" option to webforms.
+ */
+function webform_update_7428() {
+  // Add next_serial column to webform.
+  if (!db_field_exists('webform', 'confidential')) {
+    $spec = array(
+      'description' => 'Boolean value for whether to anonymize submissions.',
+      'type' => 'int',
+      'size' => 'tiny',
+      'not null' => TRUE,
+      'default' => 0,
+    );
+    db_add_field('webform', 'confidential', $spec);
+  }
+
+  return t('Webforms may now be configured to anonymize confidential submissions.');
 }

@@ -67,7 +67,7 @@ function webform_submission_create($node, $account, $form_state, $is_preview = F
       'submitted' => REQUEST_TIME,
       'completed' => 0,
       'modified' => REQUEST_TIME,
-      'remote_addr' => ip_address(),
+      'remote_addr' => webform_ip_address($node),
       'is_draft' => TRUE,
       'preview' => $is_preview,
       'serial' => NULL,
@@ -960,27 +960,26 @@ function webform_submission_user_limit_check($node, $account = NULL) {
     return FALSE; // No check enabled.
   }
 
-  // Retrieve submission data for this IP address or username from the database.
-  $query = db_select('webform_submissions')
-    ->addTag('webform_submission_user_limit_check')
-    ->condition('nid', $node->nid)
-    ->condition('is_draft', 0);
-
-  if ($node->webform['submit_interval'] != -1) {
-    $query->condition('submitted', REQUEST_TIME - $node->webform['submit_interval'], '>');
-  }
-
-  if ($account->uid) {
-    $query->condition('uid', $account->uid);
-  }
-  else {
-    $query->condition('remote_addr', ip_address());
-  }
-
   // Fetch all the entries from the database within the submit interval with
   // this username and IP.
   $num_submissions_database = 0;
-  if ($account->uid !== 0 || $tracking_mode === 'ip_address' || $tracking_mode === 'strict') {
+  if (!$node->webform['confidential'] &&
+      ($account->uid !== 0 || $tracking_mode === 'ip_address' || $tracking_mode === 'strict')) {
+    $query = db_select('webform_submissions')
+      ->addTag('webform_submission_user_limit_check')
+      ->condition('nid', $node->nid)
+      ->condition('is_draft', 0);
+
+    if ($node->webform['submit_interval'] != -1) {
+      $query->condition('submitted', REQUEST_TIME - $node->webform['submit_interval'], '>');
+    }
+
+    if ($account->uid) {
+      $query->condition('uid', $account->uid);
+    }
+    else {
+      $query->condition('remote_addr', ip_address());
+    }
     $num_submissions_database = $query->countQuery()->execute()->fetchField();
   }
 
@@ -999,9 +998,6 @@ function webform_submission_user_limit_check($node, $account = NULL) {
       }
       // Count the number of submissions recorded in cookies.
       $num_submissions_cookie = count($_COOKIE[$cookie_name]);
-    }
-    else {
-      $num_submissions_cookie = 0;
     }
   }
 
