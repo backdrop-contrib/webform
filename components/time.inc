@@ -74,7 +74,7 @@ function _webform_edit_time($component) {
   );
   $form['validation']['end_time'] = array(
     '#type' => 'textfield',
-    '#title' => t('End date'),
+    '#title' => t('End time'),
     '#default_value' => $component['extra']['end_time'],
     '#description' => t('The latest time that may be entered into the field.'),
     '#size' => 10,
@@ -192,11 +192,11 @@ function webform_expand_time($element) {
     );
   }
   $start_hour = $element['#start_time'] ? date('G', strtotime('1-1-1970 ' . $element['#start_time'])) : FALSE;
-  $end_hour = $element['#start_time'] ? date('G', strtotime('1-1-1970 ' . $element['#end_time'])) : FALSE;
+  $end_hour = $element['#end_time'] ? date('G', strtotime('1-1-1970 ' . $element['#end_time'])) : FALSE;
   $reduced_range = ($start_hour !== FALSE && $start_hour > 0) || ($end_hour !== FALSE && $end_hour < 23);
   $format_12_hour = $element['#hourformat'] == '12-hour';
 
-  // Generate the choices for drop-down selects.
+  // Generate the choices for the hour drop-down select.
   $hours = $format_12_hour && !$reduced_range ? array_slice(range(0, 12), 1, 12, TRUE) : range(0, 23);
   if ($format_12_hour && $reduced_range) {
     $hours = array_map(function($hour) {
@@ -204,21 +204,26 @@ function webform_expand_time($element) {
     }, $hours);
   }
 
-  $minutes = range(0, 59, $element['#minuteincrements']);
-  $minutes = array_combine($minutes, array_map(function ($minute) {
-    return substr('00' . $minute, -2);
-  }, $minutes));
-
   // Prune the hours to the allowed range.
   if ($reduced_range) {
+    // $start_hour of FALSE type-juggles nicely to 0.
+    $end_hour = $end_hour === FALSE ? 23 : $end_hour;
     if ($start_hour <= $end_hour) {
-        $hours = array_intersect_key($hours, array_flip(range($start_hour, $end_hour)));
+      $hours = array_intersect_key($hours, array_flip(range($start_hour, $end_hour)));
     }
     else {
       $hours = array_intersect_key($hours, array_flip(range($start_hour, 23))) +
                array_intersect_key($hours, array_flip(range(0, $end_hour)));
     }
   }
+
+  // Generate the choices for the minute drop-down select.
+  $minutes = range(0, 59, $element['#minuteincrements']);
+  $minutes = array_combine($minutes, array_map(function ($minute) {
+    return substr('00' . $minute, -2);
+  }, $minutes));
+
+  // Add the labels to the drop-down selects.
   $hours = array('' => t('Hour')) + $hours;
   $minutes = array('' => t('Minute')) + $minutes;
 
