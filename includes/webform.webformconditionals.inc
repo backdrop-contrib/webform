@@ -144,6 +144,13 @@ class WebformConditionals {
                                             '%to' => $component['name'],
                                          ));
               }
+              elseif ($source_component['page_num'] == $page_num && $component['type'] == 'pagebreak') {
+                $errors[$page_num][] = t('The page break %to can\'t be controlled by %from on the same page.',
+                                         array(
+                                            '%from' => $source_component['name'],
+                                            '%to' => $component['name'],
+                                         ));
+              }
             }
           }
         }
