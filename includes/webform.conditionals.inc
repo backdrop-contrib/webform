@@ -192,8 +192,9 @@ function webform_conditionals_form_validate($form, &$form_state) {
             form_set_error('conditionals][' . $conditional_key . '][actions][' . $action_key . '][action',
                            t('A component of type %type can\'t be %action. (%target)',
                              array(
-                                   '%action' => $action['action']['#options'][$action['action']['#value']],
-                                   '%type' => $component_options[$component_type])));
+                                '%action' => $action['action']['#options'][$action['action']['#value']],
+                                '%type' => $component_options[$component_type],
+                                '%target' => $components[$action['target']['#value']]['name'])));
           }
           $targets[$target_id] = $target_id;
         }
