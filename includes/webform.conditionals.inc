@@ -182,11 +182,10 @@ function webform_conditionals_form_validate($form, &$form_state) {
       foreach ($conditional['actions'] as $action_key => $action) {
         if (substr($action_key, 0, 1) !== '#') {
           $target_id = $action['target']['#value'];
-          $target_name = $action['target']['#options'][$action['target']['#value']];
           if (isset($targets[$target_id])) {
             form_set_error('conditionals][' . $conditional_key . '][actions][' . $action_key . '][target',
                            t('A conditional cannot show or hide a component more than once. (%target).',
-                             array('%target' => $target_name)));
+                             array('%target' => $components[$action['target']['#value']]['name'])));
           }
           $component_type = $node->webform['components'][$action['target']['#value']]['type'];
           if (!webform_conditional_action_able($component_type, $action['action']['#value'])) {
