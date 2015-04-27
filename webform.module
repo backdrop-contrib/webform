@@ -1948,14 +1948,14 @@ function webform_node_view($node, $view_mode) {
   }
 
   // Check if this user has a draft for this webform.
-  $is_draft = FALSE;
+  $resume_draft = FALSE;
   if (($node->webform['allow_draft'] || $node->webform['auto_save']) && $user->uid != 0) {
     // Draft found - display form with draft data for further editing.
     if ($draft_sid = _webform_fetch_draft_sid($node->nid, $user->uid)) {
       module_load_include('inc', 'webform', 'includes/webform.submissions');
       $submission = webform_get_submission($node->nid, $draft_sid);
       $enabled = TRUE;
-      $is_draft = TRUE;
+      $resume_draft = TRUE;
     }
   }
 
@@ -1968,7 +1968,7 @@ function webform_node_view($node, $view_mode) {
   }
   // If this is the first time, generate the form array.
   else {
-    $form = drupal_get_form('webform_client_form_' . $node->nid, $node, $submission, $is_draft);
+    $form = drupal_get_form('webform_client_form_' . $node->nid, $node, $submission, $resume_draft);
     $cached_forms[$node->nid] = $form;
   }
 
@@ -2379,14 +2379,15 @@ function webform_block_save($delta = '', $edit = array()) {
  * @param $submission
  *   An object containing information about the form submission if we're
  *   displaying a result.
- * @param $is_draft
- *   Optional. Set to TRUE if displaying a draft.
+ * @param $resume_draft
+ *   Optional. Set to TRUE when resuming a draft and skipping past previously-
+ *   validated pages is desired.
  * @param $filter
  *   Whether or not to filter the contents of descriptions and values when
  *   building the form. Values need to be unfiltered to be editable by
  *   Form Builder.
  */
-function webform_client_form($form, &$form_state, $node, $submission = FALSE, $is_draft = FALSE, $filter = TRUE) {
+function webform_client_form($form, &$form_state, $node, $submission = FALSE, $resume_draft = FALSE, $filter = TRUE) {
   global $user;
 
   // Attach necessary JavaScript and CSS.
@@ -2411,7 +2412,7 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
   // Bind arguments to $form to make them available in theming and form_alter.
   $form['#node'] = $node;
   $form['#submission'] = $submission;
-  $form['#is_draft'] = $submission ? $submission->is_draft : $is_draft;
+  $form['#is_draft'] = $submission && $submission->is_draft;
   $form['#filter'] = $filter;
 
   // Add a theme function for this form.
@@ -2456,23 +2457,21 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
         $form_state['webform']['page_count']++;
       }
       $form_state['webform']['preview'] = $node->webform['preview'];
+
+      // If this is the first time this draft has been restore and presented to
+      // the user, let them know that they are looking at a draft, rather than
+      // a new form. This applies to the node view page, but not to a submission
+      // edit page (where they presummably know what submission they are
+      // editing).
+      if ($resume_draft && empty($form_state['input'])) {
+        drupal_set_message(t('A partially-completed form was found. Please complete the remaining portions.'));
+      }
     }
     else {
       $form_state['webform']['component_tree'] = $form_state['storage']['component_tree'];
       $form_state['webform']['page_count'] = $form_state['storage']['page_count'];
       $form_state['webform']['page_num'] = $form_state['storage']['page_num'];
       $form_state['webform']['preview'] = $form_state['storage']['preview'];
-    }
-
-    // Shorten up our variable names.
-    $component_tree = $form_state['webform']['component_tree'];
-    $page_count = $form_state['webform']['page_count'];
-    $page_num = $form_state['webform']['page_num'];
-    $preview = $form_state['webform']['preview'];
-
-    if ($page_count > 1) {
-      $next_page_labels = array();
-      $prev_page_labels = array();
     }
 
     // Set the input values based on whether we're editing an existing
@@ -2504,6 +2503,36 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
 
     // Allow values from other pages to be sent to browser for conditionals.
     $form['#conditional_values'] = $input_values;
+
+    // For resuming a previous draft, find the next page after the last
+    // validated page.
+    if (!isset($form_state['storage']['page_num']) && $submission && $submission->is_draft && $submission->highest_valid_page) {
+      // Find the
+      //    1) previous/next non-empty page, or
+      //    2) the preview page, or
+      //    3) the preview page, forcing its display if the form would unexpectedly submit, or
+      //    4) page 1 even if empty, if no other previous page would be shown
+      $form_state['webform']['page_num'] = $submission->highest_valid_page;
+      do {
+        $form_state['webform']['page_num']++;
+      } while (!webform_get_conditional_sorter($node)->pageVisibility($form_state['webform']['page_num']));
+      if (!$form_state['webform']['preview'] && $form_state['webform']['page_num'] == $form_state['webform']['page_count'] + (int)!$form_state['webform']['preview']) {
+        // Force a preview to avert an unintended submission via Next.
+        $form_state['webform']['preview'] = TRUE;
+        $form_state['webform']['page_count']++;
+        // The form hasn't been submitted (ever) and the preview code will
+        // expect $form_state['values']['submitted'] to be set from a previous
+        // submission, so provide these values here.
+        $form_state['values']['submitted'] = $input_values;
+      }
+      $form_state['storage']['submitted'] = $input_values;
+    }
+
+    // Shorten up our variable names.
+    $component_tree = $form_state['webform']['component_tree'];
+    $page_count = $form_state['webform']['page_count'];
+    $page_num = $form_state['webform']['page_num'];
+    $preview = $form_state['webform']['preview'];
 
     if ($page_count > 1) {
       $page_labels = webform_page_labels($node, $form_state);
@@ -3189,7 +3218,16 @@ function webform_client_form_submit($form, &$form_state) {
     // Since this is a new submission, a new sid is needed.
     $sid = NULL;
   }
+
+  // Save draft state, and for drafts, save the current page (if clicking next)
+  // or the previous page (if not) as the last valid page.
   $submission->is_draft = $is_draft;
+  $submission->highest_valid_page = 0;
+  if ($is_draft) {
+     $submission->highest_valid_page = end($form_state['clicked_button']['#parents']) == 'next' && $form_state['values']['op'] != '__AUTOSAVE__'
+                                          ? $form_state['webform']['page_num']
+                                          : $form_state['webform']['page_num'] - 1;
+  }
 
   // If there is no data to be saved (such as on a multipage form with no fields
   // on the first page), process no further. Submissions with no data cannot

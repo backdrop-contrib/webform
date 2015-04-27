@@ -552,6 +552,13 @@ function webform_schema() {
          'not null' => TRUE,
          'default' => 0,
       ),
+      'highest_valid_page' => array(
+         'description' => 'For drafts, the highest validated page number.',
+         'type' => 'int',
+         'size' => 'small',
+         'not null' => TRUE,
+         'default' => 0,
+      ),
       'submitted' => array(
         'description' => 'Timestamp when the form was first saved as draft or submitted.',
         'type' => 'int',
@@ -2219,7 +2226,7 @@ function webform_update_7427() {
  * Add a "confidential" option to webforms.
  */
 function webform_update_7428() {
-  // Add next_serial column to webform.
+  // Add confidential column to webform.
   if (!db_field_exists('webform', 'confidential')) {
     $spec = array(
       'description' => 'Boolean value for whether to anonymize submissions.',
@@ -2233,3 +2240,23 @@ function webform_update_7428() {
 
   return t('Webforms may now be configured to anonymize confidential submissions.');
 }
+
+/**
+ * Add a column to the submission table to store the page on which to resume a draft. Sites with many, many submissions may wish to execute this update with 'drush updatedb'.
+ */
+function webform_update_7429() {
+  // Add highest_valid_page column to webform_submissions.
+  if (!db_field_exists('webform_submissions', 'highest_valid_page')) {
+    $spec = array(
+      'description' => 'For drafts, the highest validated page number.',
+      'type' => 'int',
+      'size' => 'small',
+      'not null' => TRUE,
+      'default' => 0,
+    );
+    db_add_field('webform_submissions', 'highest_valid_page', $spec);
+  }
+
+  return t('Webforms will now resume draft submissions on the page where the submitter left off.');
+}
+

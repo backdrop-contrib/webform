@@ -69,6 +69,7 @@ function webform_submission_create($node, $account, $form_state, $is_preview = F
       'modified' => REQUEST_TIME,
       'remote_addr' => webform_ip_address($node),
       'is_draft' => TRUE,
+      'highest_valid_page' => 0,
       'preview' => $is_preview,
       'serial' => NULL,
       'data' => $data,
