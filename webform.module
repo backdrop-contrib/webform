@@ -2936,6 +2936,15 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
     $required = $sorter->componentRequired($cid, $page_num);
     if (isset($required)) {
       $elements['#required'] = $required;
+
+      // Some components, e.g. grids, have nested sub-elements. Extend required
+      // to any sub-components.
+      foreach (element_children($elements) as $key) {
+        if (isset($elements[$key]) && $elements[$key] && !isset($elements[$key]['#webform_component'])) {
+          // Child is *not* a component.
+          $elements[$key]['#required'] = $required;
+        }
+      }
     }
   }
 

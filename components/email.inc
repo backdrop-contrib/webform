@@ -158,6 +158,10 @@ function _webform_render_email($component, $value = NULL, $filter = TRUE, $submi
     '#translatable' => array('title', 'description'),
   );
 
+  if ($component['required']) {
+    $element['#attributes']['required'] = 'required';
+  }
+
   // Add an e-mail class for identifying the difference from normal textfields.
   $element['#attributes']['class'][] = 'email';
 

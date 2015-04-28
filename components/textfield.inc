@@ -149,6 +149,10 @@ function _webform_render_textfield($component, $value = NULL, $filter = TRUE, $s
     '#translatable' => array('title', 'description', 'field_prefix', 'field_suffix'),
   );
 
+  if ($component['required']) {
+    $element['#attributes']['required'] = 'required';
+  }
+
   if ($component['extra']['placeholder']) {
     $element['#attributes']['placeholder'] = $component['extra']['placeholder'];
   }

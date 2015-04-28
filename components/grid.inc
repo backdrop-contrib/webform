@@ -240,6 +240,11 @@ function webform_expand_grid($element) {
         '#webform_validated' => FALSE,
         '#translatable' => array('title'),
       );
+
+      // Add HTML5 required attribute, if needed.
+      if ($element['#required']) {
+        $element[$key]['#attributes']['required'] = 'required';
+      }
     }
   }
 

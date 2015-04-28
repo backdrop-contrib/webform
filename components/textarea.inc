@@ -125,6 +125,10 @@ function _webform_render_textarea($component, $value = NULL, $filter = TRUE, $su
     '#translatable' => array('title', 'description'),
   );
 
+  if ($component['required']) {
+    $element['#attributes']['required'] = 'required';
+  }
+
   if ($component['extra']['placeholder']) {
     $element['#attributes']['placeholder'] = $component['extra']['placeholder'];
   }

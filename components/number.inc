@@ -297,6 +297,10 @@ function _webform_render_number($component, $value = NULL, $filter = TRUE, $subm
     '#translatable' => array('title', 'description', 'field_prefix', 'field_suffix'),
   );
 
+  if ($component['required']) {
+    $element['#attributes']['required'] = 'required';
+  }
+
   // Set the decimal count to zero for integers.
   if ($element['#integer'] && $element['#decimals'] === '') {
     $element['#decimals'] = 0;

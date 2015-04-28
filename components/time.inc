@@ -287,6 +287,16 @@ function theme_webform_time($variables) {
     $element['minute']['#attributes']['class'][] = 'error';
   }
 
+  // Add HTML5 required attribute, if needed.
+  if ($element['#required']) {
+    $element['hour']['#attributes']['required'] = 'required';
+    $element['minute']['#attributes']['required'] = 'required';
+    if (!empty($element['ampm'])) {
+      $element['ampm']['am']['#attributes']['required'] = 'required';
+      $element['ampm']['pm']['#attributes']['required'] = 'required';
+    }
+  }
+
   $output = '<div class="webform-container-inline">' . drupal_render($element['hour']) . drupal_render($element['minute']) . drupal_render($element['ampm']) . '</div>';
 
   return $output;

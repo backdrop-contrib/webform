@@ -364,6 +364,13 @@ function theme_webform_date($variables) {
     $element['day']['#attributes']['class'][] = 'error';
   }
 
+  // Add HTML5 required attribute, if needed.
+  if ($element['#required']) {
+    $element['year']['#attributes']['required'] = 'required';
+    $element['month']['#attributes']['required'] = 'required';
+    $element['day']['#attributes']['required'] = 'required';
+  }
+
   $class = array('webform-container-inline');
 
   // Add the JavaScript calendar if available (provided by Date module package).
