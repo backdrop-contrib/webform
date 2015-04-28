@@ -470,8 +470,8 @@ class WebformConditionals {
    *   The component id of the component whose required state is being sought
    * @param integer $page_num
    *   The page number that the component is on.
-   * @return integer
-   *   self::componentHidden, ...Shown, or ...Dependent.
+   * @return boolean
+   *   Whether the component is required based on conditionals.
    */
   function componentRequired($cid, $page_num) {
     if (!$this->requiredMap) {

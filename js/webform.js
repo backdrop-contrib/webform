@@ -488,7 +488,12 @@ Drupal.webform.stringValue = function(element, existingValue) {
       if (!value.length) {
         var selectValue = $element.find('select').val();
         if (selectValue) {
-          value.push(selectValue);
+          if ($.isArray(selectValue)) {
+            value = selectValue;
+          }
+          else {
+            value.push(selectValue);
+          }
         }
       }
       // Simple text fields. This check is done last so that the select list in
