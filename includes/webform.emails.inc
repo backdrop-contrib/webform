@@ -635,7 +635,7 @@ function webform_email_load($eid, $nid) {
   }
   else {
     $email = isset($node->webform['emails'][$eid]) ? $node->webform['emails'][$eid] : FALSE;
-    if (webform_variable_get('webform_format_override')) {
+    if ($email && webform_variable_get('webform_format_override')) {
       $email['html'] = webform_variable_get('webform_default_format');
     }
   }
