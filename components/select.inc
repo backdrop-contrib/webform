@@ -349,7 +349,9 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE, $subm
   // Drupal 7's adding of the option for us. See @form_process_select().
   if ($component['extra']['aslist'] && !$component['extra']['multiple'] && $default_value === '') {
     $element['#empty_value'] = '';
-    $element['#empty_option'] = $component['extra']['empty_option'];
+    if (strlen($component['extra']['empty_option'])) {
+      $element['#empty_option'] =  $component['extra']['empty_option'];
+    }
   }
 
   // Set the component options.
