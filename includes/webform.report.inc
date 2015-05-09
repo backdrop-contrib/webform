@@ -854,8 +854,10 @@ function webform_results_export($node, $format = 'delimited', $options = array()
     $col_count = count($row) > $col_count ? count($row) : $col_count;
   }
 
-  // Write data from submissions.
-  $rows = webform_results_download_rows($node, $options);
+  // Write data from submissions. $last_is is non_NULL to trigger returning it
+  // by reference.
+  $last_sid = TRUE;
+  $rows = webform_results_download_rows($node, $options, 0, $last_sid);
   foreach ($rows as $row) {
     $exporter->add_row($handle, $row, $row_count);
     $row_count++;
@@ -872,7 +874,7 @@ function webform_results_export($node, $format = 'delimited', $options = array()
   $export_info['file_name'] = $file_name;
   $export_info['row_count'] = $row_count;
   $export_info['col_count'] = $col_count;
-  $export_info['last_sid'] = end($submissions) ? key($submissions) : NULL;
+  $export_info['last_sid'] = $last_sid;
   $export_info['exporter'] = $exporter;
 
   return $export_info;
@@ -983,13 +985,15 @@ function webform_results_download_headers($node, $options) {
  *   through from the GUI interface.
  * @param $serial_start
  *   The starting position for the Serial column in the output.
+ * @param $last_sid
+ *   If set to a non-NULL value, the last sid will be returned.
  *
  * @return $rows
  *   An array of rows built according to the provided $serial_start and
  *   $pager_count variables. Note that the current page number is determined
  *   by the super-global $_GET['page'] variable.
  */
-function webform_results_download_rows($node, $options, $serial_start = 0) {
+function webform_results_download_rows($node, $options, $serial_start = 0, $last_sid = NULL) {
   // Get all the required submissions for the download.
   $filters['nid'] = $node->nid;
   if (isset($options['sids'])){
@@ -1000,6 +1004,10 @@ function webform_results_download_rows($node, $options, $serial_start = 0) {
   }
 
   $submissions = webform_get_submissions($filters, NULL);
+
+  if (isset($last_sid)) {
+    $last_sid = end($submissions) ? key($submissions) : NULL;
+  }
 
   return webform_results_download_rows_process($node, $options, $serial_start, $submissions);
 }
