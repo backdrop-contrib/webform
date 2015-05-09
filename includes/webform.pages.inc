@@ -14,6 +14,11 @@ function webform_configure_form($form, &$form_state, $node) {
 
   $form['#attached']['library'][] = array('webform', 'admin');
 
+  // Refresh the entity cache to get the lastest submission number.
+  $nid = $node->nid;
+  entity_get_controller('node')->resetCache(array($nid));
+  $node = node_load($nid);
+
   $form['#node'] = $node;
 
   $form['#submit'] = array(
@@ -414,14 +419,6 @@ function webform_configure_form_validate($form, &$form_state) {
     }
   }
 
-  // Serial number must be a positive integer greater than any existing serial number.
-  $next_min = _webform_submission_serial_next_value_used($form['#node']->nid);
-  if ((int) $form['advanced']['next_serial']['#value'] < $next_min) {
-    form_error($form['advanced']['next_serial'],
-               t('The next submission number must be at least %min (greater than any existing serial number).',
-                 array('%min' => $next_min)));
-  }
-
   // Prohibit the combination of confidential + per-user limit + ip-only
   // submission tracking for anonymous users as it would not be enforceable.
   if (webform_variable_get('webform_tracking_mode') == 'ip_address' &&
@@ -517,8 +514,17 @@ function webform_configure_form_submit($form, &$form_state) {
   // Set submit button text.
   $node->webform['submit_text'] = $form_state['values']['submit_text'];
 
-  // Set next serial number.
-  $node->webform['next_serial'] = (int) $form_state['values']['next_serial'];
+  // Set next serial number. It must be a positive integer greater than any
+  // existing serial number, which could have increased while this form was
+  // being edited.
+  $next_min = _webform_submission_serial_next_value_used($node->nid);
+  $next_serial = (int)$form_state['values']['next_serial'];
+  if ($next_serial < $next_min) {
+    drupal_set_message(t('The next submission number was increased to @min to make it higher than existing submissions.',
+                         array('@min' => $next_min)));
+    $next_serial = $next_min;
+  }
+  $node->webform['next_serial'] = $next_serial;
 }
 
 /**
