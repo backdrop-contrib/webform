@@ -635,7 +635,7 @@ function webform_results_download_range_validate($element, $form_state) {
     'batch_size' => 1,
     'batch_number' => 0,
   );
-  if (!webform_download_sids_count($form_state['values']['node']->nid, $range_options)) {
+  if (!form_get_errors() && !webform_download_sids_count($form_state['values']['node']->nid, $range_options)) {
     form_error($element['range_type'], t('The specified range will not return any results.'));
   }
 
@@ -1902,5 +1902,5 @@ function webform_download_latest_start_sid($nid, $latest_count, $completion_type
   }
 
   $latest_sids = $query->execute()->fetchCol();
-  return min($latest_sids);
+  return $latest_sids ? min($latest_sids) : 1;
 }
