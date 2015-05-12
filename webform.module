@@ -3869,7 +3869,7 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
   $clear = is_bool($sanitize);
   $string = token_replace($string, $token_data, array('clear' => $clear, 'sanitize' => $sanitize === TRUE));
   if (!$clear) {
-    $string = webform_clear_tokens(check_markup($string, $sanitize));
+    $string = webform_replace_tokens_clear(check_markup($string, $sanitize));
   }
   return $string;
 }
@@ -3887,11 +3887,14 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
  * there is no value provided. These tokens i.e. [current-page:query:*] needs to
  * be removed to not show up in the output.
  *
+ * Note: This function was previously named webform_clear_tokens, which
+ * conflicted with the webform_clear module, being called as hook_tokens.
+ *
  * @param string $text
  *   The text to have its tokens removed.
  * @see token_replace()
  */
-function webform_clear_tokens($text) {
+function webform_replace_tokens_clear($text) {
   if (empty($text)) {
     return $text;
   }
