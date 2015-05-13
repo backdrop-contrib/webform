@@ -3436,7 +3436,7 @@ function template_preprocess_webform_confirmation(&$vars) {
 
   // URL back to form (or same page for in-block confirmations).
   $vars['url'] = empty($node->webform_block)
-                    ? url('node/'. $node->nid)
+                    ? url('node/' . $node->nid)
                     : url(current_path(), array('query' => drupal_get_query_parameters()));
 
   // Progress bar.

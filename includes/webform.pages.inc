@@ -304,7 +304,7 @@ function webform_configure_form($form, &$form_state, $node) {
     '#title' => t('Preview message'),
     '#default_value' => $node->webform['preview_message'],
     '#format' => $node->webform['preview_message_format'],
-    '#description' => t('A message to be displayed on the preview page. If left blank, the message "!default" will be used. Supports Webform token replacements.', array('!default' => $preview_default_message))  . ' ' . theme('webform_token_help', array('groups' => array('node', 'submission'))),
+    '#description' => t('A message to be displayed on the preview page. If left blank, the message "!default" will be used. Supports Webform token replacements.', array('!default' => $preview_default_message)) . ' ' . theme('webform_token_help', array('groups' => array('node', 'submission'))),
   );
   $form['preview']['settings']['preview_components'] = array(
     '#type' => 'select',

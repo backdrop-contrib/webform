@@ -996,7 +996,7 @@ function webform_results_download_headers($node, $options) {
 function webform_results_download_rows($node, $options, $serial_start = 0, $last_sid = NULL) {
   // Get all the required submissions for the download.
   $filters['nid'] = $node->nid;
-  if (isset($options['sids'])){
+  if (isset($options['sids'])) {
     $filters['sid'] = $options['sids'];
   }
   elseif (!empty($options['completion_type']) && $options['completion_type'] !== 'all') {
@@ -1804,7 +1804,7 @@ function webform_download_sids_query($nid, $range_options, $uid = NULL) {
     case 'range':
       // Submissions Start-End.
       $query->condition('ws.sid', $range_options['start'], '>=');
-      if ($range_options['end']){
+      if ($range_options['end']) {
         $query->condition('ws.sid', $range_options['end'], '<=');
       }
       $query->orderBy('ws.sid', 'ASC');
@@ -1812,7 +1812,7 @@ function webform_download_sids_query($nid, $range_options, $uid = NULL) {
     case 'range_serial':
       // Submissions Start-End, using serial numbers.
       $query->condition('ws.serial', $range_options['start'], '>=');
-      if ($range_options['end']){
+      if ($range_options['end']) {
         $query->condition('ws.serial', $range_options['end'], '<=');
       }
       $query->orderBy('ws.serial', 'ASC');

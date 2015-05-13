@@ -804,7 +804,7 @@ function webform_uninstall() {
   $query = new EntityFieldQuery();
   $results = $query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'webform')
-    ->range(0,1)
+    ->range(0, 1)
     ->execute();
   $instances = field_info_instances('node', 'webform');
   unset($instances['body']);
@@ -1053,7 +1053,7 @@ function webform_update_7314() {
  */
 function webform_update_7315() {
   if (!db_field_exists('webform_last_download', 'requested')) {
-    db_add_field('webform_last_download', 'requested', array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0,));
+    db_add_field('webform_last_download', 'requested', array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0));
   }
 }
 
@@ -1948,7 +1948,7 @@ function webform_update_7416() {
       ->execute();
   }
   // Commit the transaction
-  unset ($txn);
+  unset($txn);
 
   // Now that every submission has a serial number, make serial numbers required.
   $spec['not null'] = TRUE;
@@ -2023,7 +2023,7 @@ function webform_update_7421() {
                           FALSE);
   variable_set('webform_email_html_capable', $capable);
   return $capable
-            ? t('An HTML-capable module is installed. The option to send HTML e-mail is enabled. ')
+            ? t('An HTML-capable module is installed. The option to send HTML e-mail is enabled.')
             : t('No commonly-known HTML capable module is installed. The option to send HTML e-mail is disabled.');
 }
 

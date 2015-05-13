@@ -436,10 +436,10 @@ function theme_webform_email_component_mapping($variables) {
   $table = theme('table', array('header' => $header, 'rows' => $rows, 'sticky' => FALSE, 'empty' => $empty));
   $description = t('The selected component %name has multiple options. You may enter an e-mail address for each choice.', array('%name' => $element['#title']));
   if ($element['#webform_allow_empty']) {
-    $description .= ' '. t('When that choice is selected, an e-mail will be sent to the corresponding address. If a field is left blank, no e-mail will be sent for that option.');
+    $description .= ' ' . t('When that choice is selected, an e-mail will be sent to the corresponding address. If a field is left blank, no e-mail will be sent for that option.');
   }
   else {
-    $description .= ' '. t('When that choice is selected, an e-mail will be sent from the corresponding address.');
+    $description .= ' ' . t('When that choice is selected, an e-mail will be sent from the corresponding address.');
   }
 
   $wrapper_element = array(
@@ -514,7 +514,7 @@ function webform_email_edit_form_submit($form, &$form_state) {
       // Merge the email mapping(s) into single value(s)
       $cid = $form_state['values'][$field . '_' . $option];
       if (is_numeric($cid) && isset($form_state['values'][$field . '_mapping'][$cid])) {
-        $email['extra'][$field .'_mapping'] = $form_state['values'][$field . '_mapping'][$cid];
+        $email['extra'][$field . '_mapping'] = $form_state['values'][$field . '_mapping'][$cid];
       }
     }
   }

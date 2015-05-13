@@ -638,7 +638,7 @@ function webform_submission_render($node, $submission, $email, $format, $exclude
       unset($components[$cid]);
     }
     if ($email && $email['exclude_empty']) {
-      foreach($submission->data as $cid => $data) {
+      foreach ($submission->data as $cid => $data) {
         if (!isset($data[0]) || $data[0] == '') {
           unset($components[$cid]);
         }

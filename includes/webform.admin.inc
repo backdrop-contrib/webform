@@ -241,7 +241,7 @@ function webform_admin_settings() {
     '#type' => 'textfield',
     '#title' => t("Select email mapping limit"),
     '#default_value' => webform_variable_get('webform_email_select_max'),
-    '#description' => t('When mapping emails addresses to a select component, limit the choice to components with less than the amount of options indicated. This is to avoid flooding the email settings form. '),
+    '#description' => t('When mapping emails addresses to a select component, limit the choice to components with less than the amount of options indicated. This is to avoid flooding the email settings form.'),
   );
 
   $form = system_settings_form($form);

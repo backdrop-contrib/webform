@@ -1,8 +1,9 @@
-(function ($) {
-
 /**
+ * @file
  * Webform node form interface enhancments.
  */
+
+(function ($) {
 
 Drupal.behaviors.webformAdmin = {};
 Drupal.behaviors.webformAdmin.attach = function(context) {

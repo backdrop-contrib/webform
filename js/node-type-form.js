@@ -1,3 +1,8 @@
+/**
+ * @file
+ * Enhancements for webform node type forms.
+ */
+
 (function ($) {
   Drupal.behaviors.webformContentTypes = {
     attach: function (context) {

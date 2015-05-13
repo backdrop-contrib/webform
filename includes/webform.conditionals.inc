@@ -277,7 +277,7 @@ function theme_webform_conditional_groups($variables) {
       }
       $even_odd = ($index + 1) % 2 ? 'odd' : 'even';
       $element[$key]['weight']['#attributes']['class'] = array('webform-conditional-weight');
-      $data = '<div class="webform-conditional-new">' . $data . t('Add a new condition: ') . drupal_render($element[$key]['new']) . '</div>';
+      $data = '<div class="webform-conditional-new">' . $data . t('Add a new condition:') . ' ' . drupal_render($element[$key]['new']) . '</div>';
       $output .= '<tr class="webform-conditional-new-row ' . $even_odd . '">';
       $output .= '<td>' . $data . '</td>';
       $output .= '<td>' . drupal_render($element[$key]['weight']) . '</td>';
