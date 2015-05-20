@@ -316,7 +316,8 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
     // Verify that this submission is not attempting to send any spam hacks.
     foreach ($addresses_final as $address) {
       if (_webform_submission_spam_check($address, $email['subject'], $email['from'], $email['headers'])) {
-        watchdog('webform', 'Possible spam attempt from @remote_addr' . "<br />\n" . nl2br(htmlentities($email['message'])), array('@remote_add' => ip_address()));
+        watchdog('webform', 'Possible spam attempt from @remote !message',
+                 array('@remote' => ip_address(), '!message'=> "<br />\n" . nl2br(htmlentities($email['message']))));
         drupal_set_message(t('Illegal information. Data not submitted.'), 'error');
         return FALSE;
       }
