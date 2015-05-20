@@ -351,6 +351,7 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE, $subm
     $element['#empty_value'] = '';
     if (strlen($component['extra']['empty_option'])) {
       $element['#empty_option'] =  $component['extra']['empty_option'];
+      $element['#translatable'][] = 'empty_option';
     }
   }
 
