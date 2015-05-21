@@ -399,7 +399,7 @@ class WebformConditionals {
               break;
             case 'set':
               if ($action_result && empty($targetLocked[$target]) && $components[$target]['type'] != 'markup') {
-                $input_values[$target] = $action['argument'];
+                $input_values[$target][0] = $action['argument'];
               }
               break;
           }
