@@ -4365,14 +4365,16 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
  *   TRUE if optional. FALSE if required.
  * @param boolean $allow_multiple
  *   TRUE if a list of emails is allowed. FALSE if only one.
+ * @param boolean $allow_tokens
+ *   TRUE if any token should be assumed to contain a valid e-mail address.
  * @param string $format
  *   'short', 'long', or NULL (for default) format. Long format has a name and
  *   the address in angle brackets.
  * @return integer|boolean
  *   The number of valid addresses found, or FALSE for an invalid email found.
  */
-function webform_email_validate(&$emails, $form_name, $allow_empty, $allow_multiple, $format = NULL) {
-  $nr_valid = webform_valid_email_address($emails, $format);
+function webform_email_validate(&$emails, $form_name, $allow_empty, $allow_multiple, $allow_tokens, $format = NULL) {
+  $nr_valid = webform_valid_email_address($emails, $allow_tokens, $format);
   if ($nr_valid === FALSE) {
     form_set_error($form_name, t('The entered e-mail address "@email" does not appear valid.', array('@email' => $emails)));
   }
@@ -4392,6 +4394,8 @@ function webform_email_validate(&$emails, $form_name, $allow_empty, $allow_multi
  *   An email address, a list of comma-separated email addresses. If all the
  *   addresses are valid, the list of trimmed, non-empty emails is returned by
  *   reference.
+ * @param boolean $allow_tokens
+ *   TRUE if any token should be assumed to contain a valid e-mail address.
  * @param string $format
  *   'short', 'long', or NULL (for default) format. Long format has a name and
  *   the address in angle brackets.
@@ -4399,10 +4403,17 @@ function webform_email_validate(&$emails, $form_name, $allow_empty, $allow_multi
  *   Returns FALSE if an invalid e-mail address was found, 0 if no email
  *   address(es) were found, or the number of valid e-mail addresses found.
  */
-function webform_valid_email_address(&$emails, $format = NULL) {
+function webform_valid_email_address(&$emails, $allow_tokens = FALSE, $format = NULL) {
   $email_array = array_filter(array_map('trim', explode(',', $emails)));
   $count = 0;
   foreach ($email_array as $email) {
+    if ($allow_tokens) {
+      foreach (token_scan($email) as $tokens) {
+        foreach ($tokens as $token) {
+          $email = str_replace($token, 'admin@example.com', $email);
+        }
+      }
+    }
     $matches = webform_parse_email_address($email, $format);
     if (!valid_email_address($matches['address'])) {
       return FALSE;

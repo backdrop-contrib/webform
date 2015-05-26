@@ -458,7 +458,7 @@ function theme_webform_email_component_mapping($variables) {
  */
 function webform_email_address_validate($form, &$form_state) {
   if ($form_state['values']['email_option'] == 'custom') {
-    webform_email_validate($form_state['values']['email_custom'], 'email_custom', FALSE, TRUE);
+    webform_email_validate($form_state['values']['email_custom'], 'email_custom', FALSE, TRUE, TRUE);
   }
 }
 
@@ -467,7 +467,7 @@ function webform_email_address_validate($form, &$form_state) {
  */
 function webform_email_edit_form_validate($form, &$form_state) {
   if ($form_state['values']['from_address_option'] == 'custom') {
-    webform_email_validate($form_state['values']['from_address_custom'], 'from_address_custom', FALSE, FALSE);
+    webform_email_validate($form_state['values']['from_address_custom'], 'from_address_custom', FALSE, FALSE, TRUE);
   }
 
   // Validate component-based values for the TO and FROM address.
@@ -478,7 +478,7 @@ function webform_email_edit_form_validate($form, &$form_state) {
         $empty_allowed = $field_name === 'email';
         $multiple_allowed = $field_name === 'email';
         foreach ($form_state['values'][$field_name . '_mapping'][$cid] as $key => &$value) {
-          webform_email_validate($value, "{$field_name}_mapping][$cid][$key", $empty_allowed, $multiple_allowed);
+          webform_email_validate($value, "{$field_name}_mapping][$cid][$key", $empty_allowed, $multiple_allowed, TRUE);
         }
       }
     }
