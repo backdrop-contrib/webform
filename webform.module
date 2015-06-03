@@ -2084,7 +2084,7 @@ function theme_webform_view_messages($variables) {
     $message = t('Submissions for this form are closed.');
   }
   elseif ($node->webform['confidential'] && user_is_logged_in()) {
-    $message = t('This form is confidential. You much <a href="!url">Log out</a> to submit it.',
+    $message = t('This form is confidential. You must <a href="!url">Log out</a> to submit it.',
                  array('!url' => url('/user/logout', array('query' => array('destination' => request_uri())))));
   }
   // If open and not allowed to submit the form, give an explanation.
