@@ -742,6 +742,9 @@ function webform_install() {
     // Disable comments by default on Webform nodes.
     variable_set('comment_webform', '0');
   }
+  else {
+    variable_set('webform_node_types_primary', array());
+  }
 
   // Note: MS SQL Server does not support size-limited indexes and the column
   // type (text) is too big to fit inside index size limits.
