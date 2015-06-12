@@ -1088,6 +1088,9 @@ function webform_webform_component_info() {
       ),
       'file' => 'components/number.inc',
       'conditional_type' => 'numeric',
+      'features' => array(
+        'conditional_action_set' => TRUE,
+      ),
     ),
     'pagebreak' => array(
       'label' => t('Page break'),
