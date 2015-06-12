@@ -514,6 +514,9 @@ function webform_menu_email_load($eid, $nid) {
         $email['email'] = $_GET['email'];
       }
     }
+    if (isset($_GET['status'])) {
+      $email['status'] = $_GET['status'];
+    }
   }
 
   return $email;

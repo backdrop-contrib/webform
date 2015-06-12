@@ -491,6 +491,14 @@ function webform_schema() {
         'type' => 'text',
         'not null' => TRUE,
       ),
+      'status' => array(
+        'description' => 'Whether this email is enabled.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
     ),
     'primary key' => array('nid', 'eid'),
   );
@@ -2129,7 +2137,7 @@ function webform_update_7423() {
 
   // Rebuild the registry because this point release contains a new class: WebformConditionals.
   registry_rebuild();
-  
+
   return t('Webform database tables were successfully adjusted to allow more than one action for each conditional.');
 }
 
@@ -2263,3 +2271,22 @@ function webform_update_7429() {
   return t('Webforms will now resume draft submissions on the page where the submitter left off.');
 }
 
+/**
+ * Add a column to the emails table to allow disabling.
+ */
+function webform_update_7430() {
+  // Add status column to webform_emails.
+  if (!db_field_exists('webform_emails', 'status')) {
+    $spec = array(
+      'description' => 'Whether this email is enabled.',
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'size' => 'tiny',
+      'not null' => TRUE,
+      'default' => 1,
+    );
+    db_add_field('webform_emails', 'status', $spec);
+  }
+
+  return t('Webform emails may now be disabled.');
+}

@@ -147,6 +147,7 @@ html.js div.webform-position {
 tr.webform-add-form .tabledrag-changed {
   display: none;
 }
+#webform-emails tr.webform-add-form,
 #webform-components tr.webform-add-form {
   background-color: inherit;
 }
