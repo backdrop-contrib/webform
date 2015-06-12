@@ -529,9 +529,10 @@ function theme_webform_grid($variables) {
     // Render each radio button in the row.
     $radios = form_process_radios($question_element);
     foreach (element_children($radios) as $key) {
-      $radios[$key]['#title'] = $question_element['#title'] . ' - ' . $radios[$key]['#title'];
+      $radio_title = $radios[$key]['#title'];
+      $radios[$key]['#title'] = $question_element['#title'] . ' - ' . $radio_title;
       $radios[$key]['#title_display'] = 'invisible';
-      $row[] = array('data' => drupal_render($radios[$key]), 'class' => array('checkbox', 'webform-grid-option'));
+      $row[] = array('data' => drupal_render($radios[$key]), 'class' => array('checkbox', 'webform-grid-option'), 'data-label' => array($radio_title));
     }
     if ($right_titles) {
       $row[] = array('data' => isset($question_titles[1]) ? webform_filter_xss($question_titles[1]) : '', 'class' => array('webform-grid-question'));
