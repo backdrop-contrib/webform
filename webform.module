@@ -1398,11 +1398,15 @@ function webform_file_download($uri) {
  *   An array of node type names.
  */
 function webform_node_types() {
-  $types = array();
-  foreach (node_type_get_names() as $type => $name) {
-    if (variable_get('webform_node_' . $type, FALSE)) {
-      $types[] = $type;
+  static $types = NULL;
+  if (!isset($types)) {
+    $types = array();
+    foreach (node_type_get_names() as $type => $name) {
+      if (variable_get('webform_node_' . $type, FALSE)) {
+        $types[] = $type;
+      }
     }
+
   }
   return $types;
 }
