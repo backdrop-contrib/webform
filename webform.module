@@ -2749,7 +2749,7 @@ function _webform_client_form_add_component($node, $component, $component_value,
   if ($format != 'form') {
     // This component is display only.
     $data = empty($input_values[$cid]) ? NULL : $input_values[$cid];
-    if ($display_element = webform_component_invoke($component['type'], 'display', $component, $data, $format)) {
+    if ($display_element = webform_component_invoke($component['type'], 'display', $component, $data, $format, $form['#submission'])) {
       // Set access based on the private property.
       $display_element += array('#access' => TRUE);
       $display_element['#access'] = $display_element['#access'] && $component_access;

@@ -377,7 +377,7 @@ function _webform_render_number($component, $value = NULL, $filter = TRUE, $subm
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_number($component, $value, $format = 'html') {
+function _webform_display_number($component, $value, $format = 'html', $submission = array()) {
   $empty = !isset($value[0]) || $value[0] === '';
   return array(
     '#title' => $component['name'],

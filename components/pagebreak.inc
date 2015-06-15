@@ -78,7 +78,7 @@ function _webform_render_pagebreak($component, $value = NULL, $filter = TRUE, $s
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_pagebreak($component, $value = NULL, $format = 'html') {
+function _webform_display_pagebreak($component, $value = NULL, $format = 'html', $submission = array()) {
   $element = array(
     '#theme' => 'webform_display_pagebreak',
     '#title' => $component['name'],

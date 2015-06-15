@@ -406,7 +406,7 @@ function webform_file_allow_access($element) {
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_file($component, $value, $format = 'html') {
+function _webform_display_file($component, $value, $format = 'html', $submission = array()) {
   $fid = isset($value[0]) ? $value[0] : NULL;
   return array(
     '#title' => $component['name'],

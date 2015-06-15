@@ -103,7 +103,7 @@ function _webform_render_hidden($component, $value = NULL, $filter = TRUE, $subm
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_hidden($component, $value, $format = 'html') {
+function _webform_display_hidden($component, $value, $format = 'html', $submission = array()) {
   $element = array(
     '#title' => $component['name'],
     '#markup' => isset($value[0]) ? $value[0] : NULL,

@@ -264,7 +264,7 @@ function webform_expand_grid($element) {
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_grid($component, $value, $format = 'html') {
+function _webform_display_grid($component, $value, $format = 'html', $submission = array()) {
   $node = node_load($component['nid']);
   $questions = _webform_select_options_from_text($component['extra']['questions'], TRUE);
   $questions = _webform_select_replace_tokens($questions, $node);

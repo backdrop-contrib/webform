@@ -152,7 +152,7 @@ function _webform_render_textarea($component, $value = NULL, $filter = TRUE, $su
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_textarea($component, $value, $format = 'html') {
+function _webform_display_textarea($component, $value, $format = 'html', $submission = array()) {
   return array(
     '#title' => $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',

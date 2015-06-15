@@ -189,7 +189,7 @@ function _webform_render_textfield($component, $value = NULL, $filter = TRUE, $s
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_textfield($component, $value, $format = 'html') {
+function _webform_display_textfield($component, $value, $format = 'html', $submission = array()) {
   return array(
     '#title' => $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',

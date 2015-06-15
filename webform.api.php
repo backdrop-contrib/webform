@@ -948,6 +948,8 @@ function hook_webform_component_render_alter(&$element, &$component) {
  *   Either 'html' or 'text'. Defines the format that the content should be
  *   returned as. Make sure that returned content is run through check_plain()
  *   or other filtering functions when returning HTML.
+ * @param $submission
+ *   The submission. Used to generate tokens.
  * @return
  *   A renderable element containing at the very least these properties:
  *    - #title
@@ -959,7 +961,7 @@ function hook_webform_component_render_alter(&$element, &$component) {
  *   which will properly format the label and content for use within an e-mail
  *   (such as wrapping the text) or as HTML (ensuring consistent output).
  */
-function _webform_display_component($component, $value, $format = 'html') {
+function _webform_display_component($component, $value, $format = 'html', $submission = array()) {
   return array(
     '#title' => $component['name'],
     '#weight' => $component['weight'],
