@@ -1046,7 +1046,7 @@ function webform_component_select($element) {
       array('system', 'backdrop.collapse'),
     ),
     'js' => array(
-      'misc/tableselect.js' => array(),
+      'core/misc/tableselect.js' => array(),
     ),
   );
 
