@@ -20,10 +20,10 @@ define('WEBFORM_CONDITIONAL_SAME_PAGE', 2);
 /**
  * Implements hook_config_info().
  */
-function mailsystem_config_info() {
-  $prefixes['mailsystem.settings'] = array(
-    'label' => t('mailsystem settings'),
-    'group' => t('mailsystem'),
+function webform_config_info() {
+  $prefixes['webform.settings'] = array(
+    'label' => t('Webform settings'),
+    'group' => t('Configuration'),
   );
   return $prefixes;
 }
