@@ -171,18 +171,17 @@ function webform_configure_form($form, &$form_state, $node) {
     '#weight' => 10,
   );
   $user_roles = user_roles();
-  foreach ($user_roles as $rid => $rname) {
-    if ($rid == BACKDROP_ANONYMOUS_RID || $rid == BACKDROP_AUTHENTICATED_RID) {
+  foreach ($user_roles as $rid) {
+    if ($rid == BACKDROP_ANONYMOUS_ROLE || $rid == BACKDROP_AUTHENTICATED_ROLE) {
       continue;
     }
-    $user_roles[$rid] = webform_tt("user:rid:$rid:name", $rname);
   }
   $form['role_control']['roles'] = array(
     '#default_value' => $node->webform['roles'],
     '#options' => $user_roles,
     '#type' => 'checkboxes',
     '#title' => t('Roles that can submit this webform'),
-    '#description' => t('The %authenticated role applies to any user signed into the site, regardless of other assigned roles.', array('%authenticated' => $user_roles[2])),
+    '#description' => t('The %authenticated role applies to any user signed into the site, regardless of other assigned roles.', array('%authenticated' => $user_roles['authenticated'])),
   );
   /* End per-role submission control */
 
@@ -571,7 +570,7 @@ function theme_webform_advanced_submit_limit_form($variables) {
 
   $form['enforce_limit']['no']['#theme_wrappers'] = array('webform_inline_radio');
   $form['enforce_limit']['yes']['#theme_wrappers'] = array('webform_inline_radio');
-  $form['enforce_limit']['yes']['#title'] = t('Limit each user to !count submission(s) !timespan', array('!count' => drupal_render($form['submit_limit']), '!timespan' => drupal_render($form['submit_interval'])));
+  $form['enforce_limit']['yes']['#title'] = t('Limit each user to !count submission(s) !timespan', array('!count' => backdrop_render($form['submit_limit']), '!timespan' => backdrop_render($form['submit_interval'])));
 
   return backdrop_render_children($form);
 }
