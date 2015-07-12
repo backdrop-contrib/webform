@@ -1398,7 +1398,7 @@ function webform_file_download($uri) {
  *   An array of node type names.
  */
 function webform_node_types() {
-  static $types = NULL;
+  $types = &drupal_static(__FUNCTION__, NULL);
   if (!isset($types)) {
     $types = array();
     foreach (node_type_get_names() as $type => $name) {
@@ -1406,7 +1406,6 @@ function webform_node_types() {
         $types[] = $type;
       }
     }
-
   }
   return $types;
 }
