@@ -47,6 +47,10 @@ function _webform_theme_file() {
       'render element' => 'element',
       'file' => 'components/file.inc',
     ),
+    'webform_managed_file' => array(
+      'render element' => 'element',
+      'file' => 'components/file.inc',
+    ),
   );
 }
 
@@ -342,6 +346,7 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE, $submis
 
   $element = array(
     '#type' => 'managed_file',
+    '#theme' => 'webform_managed_file',
     '#title' => $filter ? webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#required' => $component['required'],
@@ -368,6 +373,42 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE, $submis
 
   return $element;
 }
+
+/**
+ * Returns HTML for a webform managed file element.
+ *
+ * See #2495821 and #2497909. The core theme_file_managed_file creates a
+ * wrapper around the element with the element's id, thereby creating 2 elements
+ * with the same id.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - element: A render element representing the file.
+ *
+ */
+function theme_webform_managed_file($variables) {
+  $element = $variables['element'];
+
+  $attributes = array();
+
+  // For webform use, do not add the id to the wrapper.
+  //if (isset($element['#id'])) {
+  //  $attributes['id'] = $element['#id'];
+  //}
+
+  if (!empty($element['#attributes']['class'])) {
+    $attributes['class'] = (array) $element['#attributes']['class'];
+  }
+  $attributes['class'][] = 'form-managed-file';
+
+  // This wrapper is required to apply JS behaviors and CSS styling.
+  $output = '';
+  $output .= '<div' . drupal_attributes($attributes) . '>';
+  $output .= drupal_render_children($element);
+  $output .= '</div>';
+  return $output;
+}
+
 
 /**
  * Implements _webform_submit_component().
