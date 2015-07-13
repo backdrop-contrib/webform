@@ -454,18 +454,7 @@
     });
     var a_position = optionList.indexOf(a);
     var b_position = optionList.indexOf(b);
-    if (a_position < 0 && b_position < 0) {
-      return null;
-    }
-    else if (a_position < 0) {
-      return 1;
-    }
-    else if (b_position < 0) {
-      return -1;
-    }
-    else {
-      return a_position - b_position;
-    }
+    return (a_position < 0 || b_position < 0) ? null : a_position - b_position;
   };
 
   /**
