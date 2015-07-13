@@ -121,7 +121,7 @@ function hook_webform_submission_load(&$submissions) {
  *
  * @see webform_submission_create()
  */
-function hook_webform_submission_create($submission, $node, $account, $form_state) {
+function hook_webform_submission_create_alter(&$submission, &$node, &$account, &$form_state) {
   $submission->new_property = TRUE;
 }
 
