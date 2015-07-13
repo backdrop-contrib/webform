@@ -405,7 +405,9 @@ class WebformConditionals {
               break;
             case 'set':
               if ($action_result && empty($targetLocked[$target]) && $components[$target]['type'] != 'markup') {
-                $input_values[$target][0] = $action['argument'];
+                $input_values[$target] = isset($input_values[$target]) && is_array($input_values[$target])
+                                            ? array($action['argument'])
+                                            : $action['argument'];
               }
               break;
           }
