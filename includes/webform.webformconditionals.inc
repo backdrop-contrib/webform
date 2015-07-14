@@ -373,9 +373,7 @@ class WebformConditionals {
           // Contrib caching, such as entitycache, may have loaded the node
           // without building it. It is possible that the component include file
           // hasn't been included yet. See #2529246.
-          if (!function_exists($comparison_callback)) {
-            webform_component_include($source_component['type']);
-          }
+          webform_component_include($source_component['type']);
           $conditional_results[] = $comparison_callback($source_values, $rule['value'], $source_component);
 
           // Record page number to later determine any intra-page dependency on this source.
