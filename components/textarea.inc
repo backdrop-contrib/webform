@@ -226,6 +226,14 @@ function _webform_table_textarea($component, $value) {
 }
 
 /**
+ * Implements _webform_action_set_component().
+ */
+function _webform_action_set_textarea($component, &$element, &$form_state, $value) {
+  $element['#value'] = $value;
+  form_set_value($element, $value, $form_state);
+}
+
+/**
  * Implements _webform_csv_headers_component().
  */
 function _webform_csv_headers_textarea($component, $export_options) {

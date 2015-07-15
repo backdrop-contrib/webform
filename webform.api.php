@@ -994,6 +994,27 @@ function hook_webform_component_display_alter(&$element, &$component) {
 }
 
 /**
+ * Performs the conditional action set on an implemented component.
+ *
+ * Setting the form element allows form validation functions to see the value
+ * that webform has set for the given component.
+ *
+ * @param array $component
+ *   The webform component array whose value is being set for the currently-
+ *   edited submission.
+ * @param array $element
+ *   The form element currently being set.
+ * @param array $form_state
+ *   The form's state.
+ * @param string $value
+ *   The value to be set, as defined in the conditional action.
+ */
+function _webform_action_set_component($component, &$element, &$form_state, $value) {
+  $element['#value'] = $value;
+  form_set_value($element, $value, $form_state);
+}
+
+/**
  * A hook for changing the input values before saving to the database.
  *
  * Webform expects a component to consist of a single field, or a single array

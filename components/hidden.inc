@@ -171,6 +171,14 @@ function _webform_table_hidden($component, $value) {
 }
 
 /**
+ * Implements _webform_action_set_component().
+ */
+function _webform_action_set_hidden($component, &$element, &$form_state, $value) {
+  $element['#value'] = $value;
+  form_set_value($element, $value, $form_state);
+}
+
+/**
  * Implements _webform_csv_headers_component().
  */
 function _webform_csv_headers_hidden($component, $export_options) {
