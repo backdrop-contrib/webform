@@ -17,8 +17,8 @@ function webform_drush_command() {
       'file' => 'The file path to export to (defaults to print to stdout)',
       'format' => 'The exporter format to use. Out-of-the-box this may be "delimited" or "excel".',
       'delimiter' => 'Delimiter between columns (defaults to site-wide setting). This option may need to be wrapped in quotes. i.e. --delimter="\t".',
-      'components' => 'Comma-separated list of components IDs to include.' . "\n" .
-                      'May also include "serial", "sid", "time", "complete_time", "modified_time", "draft", "ip_address", "uid", and "username".',
+      'components' => 'Comma-separated list of component IDs or form keys to include.' . "\n" .
+                      'May also include "webform_serial", "webform_sid", "webform_time", "webform_complete_time", "webform_modified_time", "webform_draft", "webform_ip_address", "webform_uid", and "webform_username".',
       'header-keys' => 'Integer -1 for none, 0 for label (default) or 1 for field key.',
       'select-keys' => 'Integer 0 or 1 value. Set to 1 to print select list values by their field keys instead of labels.',
       'select-format' => 'Set to "separate" (default) or "compact" to determine how select list values are exported.',
@@ -64,6 +64,18 @@ function drush_webform_export($nid = FALSE) {
     $options[$option_name] = drush_get_option(str_replace('_', '-', $option_name), $option_value);
   }
   $options['components'] = is_array($options['components']) ? $options['components'] : explode(',', $options['components']);
+
+  // Map form keys to cids.
+  $form_keys = array();
+  foreach ($node->webform['components'] as $cid => $component) {
+    $form_keys[$component['form_key']] = $cid;
+  }
+  foreach ($options['components'] as $key => &$component) {
+    if (isset($form_keys[$component])) {
+      $component = $form_keys[$component];
+    }
+  }
+  unset($component); // Drop PHP reference.
 
   // Get the range options.
   unset($options['range']['range_type']);
