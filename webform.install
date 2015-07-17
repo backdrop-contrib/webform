@@ -787,6 +787,7 @@ function webform_uninstall() {
   variable_del('webform_date_type');
   variable_del('webform_export_format');
   variable_del('webform_csv_delimiter');
+  variable_del('webform_csv_line_ending');
   variable_del('webform_export_wordwrap');
   variable_del('webform_excel_legacy_exporter');
   variable_del('webform_progressbar_style');
