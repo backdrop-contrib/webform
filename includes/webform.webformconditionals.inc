@@ -449,7 +449,7 @@ class WebformConditionals {
     if (!$this->visibilityMap) {
       // The conditionals have not yet been executed on a submission.
       $this->executeConditionals(array(), 0);
-      watchdog('webform', 'WebformConditionals::componentVisibility called prior to evaluating a submission.', 'error');
+      watchdog('webform', 'WebformConditionals::componentVisibility called prior to evaluating a submission.', array(), WATCHDOG_ERROR);
     }
     return isset($this->visibilityMap[$page_num][$cid]) ? $this->visibilityMap[$page_num][$cid] : self::componentShown;
   }
@@ -497,7 +497,7 @@ class WebformConditionals {
     if (!$this->requiredMap) {
       // The conditionals have not yet been executed on a submission.
       $this->executeConditionals(array(), 0);
-      watchdog('webform', 'WebformConditionals::componentRequired called prior to evaluating a submission.', 'error');
+      watchdog('webform', 'WebformConditionals::componentRequired called prior to evaluating a submission.', array(), WATCHDOG_ERROR);
     }
     return isset($this->requiredMap[$page_num][$cid]) ? $this->requiredMap[$page_num][$cid] : NULL;
   }
@@ -518,7 +518,7 @@ class WebformConditionals {
     if (!$this->setMap) {
       // The conditionals have not yet been executed on a submission.
       $this->executeConditionals(array(), 0);
-      watchdog('webform', 'WebformConditionals::componentSet called prior to evaluating a submission.', 'error');
+      watchdog('webform', 'WebformConditionals::componentSet called prior to evaluating a submission.', array(), WATCHDOG_ERROR);
     }
     return isset($this->setMap[$page_num][$cid]) ? $this->setMap[$page_num][$cid] : NULL;
   }
@@ -539,7 +539,7 @@ class WebformConditionals {
     if (!$this->markupMap) {
       // The conditionals have not yet been executed on a submission.
       $this->executeConditionals(array(), 0);
-      watchdog('webform', 'WebformConditionals::componentMarkup called prior to evaluating a submission.', 'error');
+      watchdog('webform', 'WebformConditionals::componentMarkup called prior to evaluating a submission.', array(), WATCHDOG_ERROR);
     }
     return isset($this->markupMap[$page_num][$cid]) ? $this->markupMap[$page_num][$cid] : NULL;
   }
