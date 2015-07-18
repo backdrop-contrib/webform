@@ -4256,7 +4256,7 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
       if (webform_component_implements($component['type'], 'options')) {
         $options = webform_component_invoke($component['type'], 'options', $component);
         foreach ($name as &$one_name) {
-          $name = isset($options[$one_name]) ? $options[$one_name] : $name;
+          $one_name = isset($options[$one_name]) ? $options[$one_name] : $one_name;
         }
         unset($one_name); // Drop PHP reference.
       }
