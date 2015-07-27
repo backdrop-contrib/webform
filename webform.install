@@ -450,10 +450,8 @@ function webform_schema() {
       ),
       'rid' => array(
         'description' => 'The role identifier.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
+        'type' => 'varchar',
+        'length' => 16,
       ),
     ),
     'primary key' => array('nid', 'rid'),
