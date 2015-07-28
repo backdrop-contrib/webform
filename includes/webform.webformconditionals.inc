@@ -322,7 +322,8 @@ class WebformConditionals {
       $this->setMap = $this->requiredMap;
       $this->markupMap = $this->requiredMap;
 
-    } else {
+    } 
+    else {
       array_walk($this->visibilityMap[$page_num], function (&$status) {
         $status = WebformConditionals::componentShown;
       });
@@ -414,7 +415,8 @@ class WebformConditionals {
               if ($action_result && empty($targetLocked[$target])) {
                 if ($components[$target]['type'] == 'markup') {
                   $this->markupMap[$page_num][$target] = $action['argument'];
-                } else {
+                } 
+                else {
                   $input_values[$target] = isset($input_values[$target]) && is_array($input_values[$target])
                                               ? array($action['argument'])
                                               : $action['argument'];
@@ -469,7 +471,8 @@ class WebformConditionals {
     $result = self::componentHidden;
     if ($page_num == 1 || empty($this->visibilityMap[$page_num])) {
       $result = self::componentShown;
-    } elseif (($page_map = $this->pageMap[$page_num]) && $this->componentVisibility(reset($page_map), $page_num)) {
+    } 
+    elseif (($page_map = $this->pageMap[$page_num]) && $this->componentVisibility(reset($page_map), $page_num)) {
       while ($cid = next($page_map)) {
         if ($this->componentVisibility($cid, $page_num) != self::componentHidden) {
           $result = self::componentShown;
