@@ -107,7 +107,7 @@ function _webform_render_markup($component, $value = NULL, $filter = TRUE, $subm
  *
  * Required to have access to current form values from $form_state.
  */
-function _webform_render_markup_after_build($form_element, &$form_state){
+function _webform_render_markup_after_build($form_element, &$form_state) {
   global $user;
   $node = node_load($form_element['#webform_nid']);
   $submission = NULL;
