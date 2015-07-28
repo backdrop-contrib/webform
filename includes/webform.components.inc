@@ -386,7 +386,6 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
   drupal_set_title(t('Edit component: @name', array('@name' => $component['name'])), PASS_THROUGH);
 
   $form['#node'] = $node;
-  $form['#attached']['library'][] = array('webform', 'admin');
   $form['#tree'] = TRUE;
 
   // Print the correct field type specification.
@@ -590,6 +589,9 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     unset($form['validation']);
   }
   $form = array_merge($form, $additional_form_elements);
+  // Ensure that the webform admin library is attached, possibly in addition to
+  // component-specific attachments.
+  $form['#attached']['library'][] = array('webform', 'admin');
 
   // Add the submit button.
   $form['actions'] = array(
