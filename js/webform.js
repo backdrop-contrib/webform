@@ -526,7 +526,7 @@
   };
 
   /**
-   * Utility function to calculate a millisecond timestamp from a time field.
+   * Utility function to calculate a second-based timestamp from a time field.
    */
   Drupal.webform.dateValue = function (element, existingValue) {
     var value = false;
