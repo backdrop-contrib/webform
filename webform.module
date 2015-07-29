@@ -3205,6 +3205,9 @@ function webform_client_form_submit($form, &$form_state) {
   // exist, but webform_get_submission() will not find the draft. So, make a new
   // submission.
   if ($sid && $submission = webform_get_submission($node->webform['nid'], $sid)) {
+    // Store original data on object for use in update hook.
+    $submission->original = clone $submission;
+
     // Merge with new submission data. The + operator maintains numeric keys.
     // This maintains existing data with just-submitted data when a user resumes
     // a submission previously saved as a draft.
