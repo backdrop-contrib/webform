@@ -44,7 +44,7 @@ function _webform_edit_markup($component) {
     '#type' => 'text_format',
     '#title' => t('Value'),
     '#default_value' => $component['value'],
-    '#description' => t('Markup allows you to enter custom HTML into your form.') . theme('webform_token_help', array('groups' => array('node', 'submission'))),
+    '#description' => t('Markup allows you to enter custom HTML into your form.') . ' ' . theme('webform_token_help', array('groups' => array('node', 'submission'))),
     '#weight' => -1,
     '#format' => $component['extra']['format'],
     '#element_validate' => array('_webform_edit_markup_validate'),
@@ -125,6 +125,11 @@ function _webform_render_markup_after_build($form_element, &$form_state) {
   $component = $form_element['#webform_component'];
   if ($node) {
     $sorter = webform_get_conditional_sorter($node);
+    // If the form was retrieved from the form cache, the conditionals may not
+    // have been executed yet.
+    if (!$sorter->isExecuted()) {
+      $sorter->executeConditionals(isset($submission) ? $submission->data : array());
+    }
     $conditional_value = $sorter->componentMarkup($component['cid'], $component['page_num']);
     if (isset($conditional_value)) {
       // Provide original value, should conditional logic no longer set the value.
