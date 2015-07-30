@@ -435,6 +435,13 @@ class WebformConditionals {
   }
 
   /**
+   * Returns whether the conditionals have been executed yet.
+   */
+  function isExecuted() {
+    return (boolean)($this->visibilityMap);
+  }
+
+  /**
    * Returns whether a given component is always hidden, always shown, or might
    * be shown depending upon other sources on the same page.
    *
