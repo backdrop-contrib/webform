@@ -157,7 +157,7 @@ function webform_conditionals_form_validate($form, &$form_state) {
     return;
   }
 
-  foreach ($form_state['complete form']['conditionals'] as $conditional_key => $element) {
+  foreach ($form_state['complete_form']['conditionals'] as $conditional_key => $element) {
     if (substr($conditional_key, 0, 1) !== '#' && $conditional_key !== 'new') {
       $conditional = $element['conditional'];
       foreach ($conditional['rules'] as $rule_key => $rule) {
