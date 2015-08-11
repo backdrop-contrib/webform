@@ -30,10 +30,14 @@ If you need to build a lot of customized, one-off forms, Webform is a more suita
 TESTED
 -----
 
-Created several webforms with random options for admin and anonymous users for Backdrop 1.x.  Will need heavy user testing to make sure all the options of this premier module work as expected.
+Created several webforms with random options for admin and anonymous users for Backdrop 1.1.
+
+Will need heavy user testing to make sure all the options of this premier module work as expected.
 
 KNOWN ISSUES
 ---------------------
+
+People have had the inability for anonymous users to access Webform.  However, after the work in <https://github.com/backdrop-contrib/webform/issues/2> , it appears this issue is resolved now on current usage.
 
 This line exists:
 if (config_get('webform.settings', 'webform_install_create_content_type'))
@@ -60,7 +64,9 @@ INSTALLATION
 
 Install this module using the official Backdrop CMS instructions at https://backdropcms.org/guide/modules
 
-Edit the settings under "Administer" -> "Configuration" -> "Content authoring" -> "Webform settings"
+Edit the global settings under "Administer" -> "Configuration" -> "Content authoring" -> "Webform settings"
+
+Webform also has many options for each created webform in the traditional "node edit" screen
 
 COMING FROM DRUPAL?
 -------------------
@@ -70,18 +76,17 @@ Nothing substantially different.
 PERMISSIONS
 ------------
 
-@todo
+Webform has permisions both on the global user permissions Backdrop page as well as in the options for the traditional "node edit" screen.
 
 
 USAGE
 -----
 
-* Create a webform node at node/add/webform.
+* Create a webform node at node/add/webform
 
 Support
 -------
-Please use the issue queue for filing bugs with this module at
-http://drupal.org/project/issues/webform
+Please use the issue queue for filing bugs with this module.
 
 Webform and you
 Webform is second most popular non-utility contrib module (after Views). It is a large, rich module used by hundreds of thousands of sites. If you are using Webform, please give back to our community. We need your help triaging issues, answering support requests, writing patches, reviewing/testing patches.
