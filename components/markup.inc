@@ -112,11 +112,11 @@ function _webform_render_markup_after_build($form_element, &$form_state) {
   $node = node_load($form_element['#webform_nid']);
   $submission = NULL;
 
-  // Convert existing submitted data to an in-progress submission.
-  if (!empty($form_state['storage']['submitted'])) {
-    module_load_include('inc', 'webform', 'includes/webform.submissions');
-    $submission = webform_submission_create($node, $user, $form_state, TRUE, $form_element['#webform_submission']);
-  }
+  // Convert existing submission data to an in-progress submission.
+  $form_state_for_submission = $form_state;
+  $form_state_for_submission['values']['submitted'] = $form_state['#conditional_values'];
+  module_load_include('inc', 'webform', 'includes/webform.submissions');
+  $submission = webform_submission_create($node, $user, $form_state_for_submission, TRUE, $form_element['#webform_submission']);
 
   // Replace tokens using the current or generated submission.
   $value = webform_replace_tokens($form_element['#markup'], $node, $submission, NULL, $form_element['#webform_format']);
