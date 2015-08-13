@@ -1,6 +1,14 @@
 WEBFORM
 ===================
 
+This module adds a webform content type to your Backdrop site.
+
+A webform can be a questionnaire, contact or request form. These can be used by visitor to make contact or to enable a more complex survey than polls provide. Submissions from a webform are saved in a database table and can optionally be mailed to e-mail addresses upon submission.
+
+Some good examples could be contests, personalized contact forms, or petitions. Each of these could have a customized form for end-users to fill out.
+
+If you need to build a lot of customized, one-off forms, Webform is a more suitable solution than creating content types and using CCK or Field module.
+
 CONTENTS OF THIS FILE
 ---------------------
 
@@ -15,17 +23,6 @@ CONTENTS OF THIS FILE
  - License
  - Credits
  - Maintainers
-
-INTRODUCTION
-------------
-
-This module adds a webform content type to your Backdrop site.
-
-A webform can be a questionnaire, contact or request form. These can be used by visitor to make contact or to enable a more complex survey than polls provide. Submissions from a webform are saved in a database table and can optionally be mailed to e-mail addresses upon submission.
-
-Some good examples could be contests, personalized contact forms, or petitions. Each of these could have a customized form for end-users to fill out.
-
-If you need to build a lot of customized, one-off forms, Webform is a more suitable solution than creating content types and using CCK or Field module.
 
 TESTED
 -----
