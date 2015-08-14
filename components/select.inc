@@ -26,6 +26,7 @@ function _webform_defaults_select() {
       'other_text' => t('Other...'),
       'title_display' => 0,
       'description' => '',
+      'description_above' => FALSE,
       'custom_keys' => FALSE,
       'options_source' => '',
       'private' => FALSE,

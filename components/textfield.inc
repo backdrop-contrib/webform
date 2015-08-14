@@ -25,6 +25,7 @@ function _webform_defaults_textfield() {
       'unique' => 0,
       'title_display' => 0,
       'description' => '',
+      'description_above' => FALSE,
       'placeholder' => '',
       'attributes' => array(),
       'private' => FALSE,

@@ -835,6 +835,7 @@ function _webform_defaults_component() {
       'optrand' => 0,
       'qrand' => 0,
       'description' => '',
+      'description_above' => FALSE,
       'private' => FALSE,
       'analysis' => TRUE,
     ),
