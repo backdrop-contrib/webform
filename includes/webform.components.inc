@@ -474,6 +474,17 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     $form['display']['title_display']['#parents'] = array('extra', 'title_display');
   }
 
+  if (webform_component_feature($component['type'], 'description')) {
+    $form['display']['description_above'] = array(
+      '#type' => 'checkbox',
+      '#default_value' => !empty($component['extra']['description_above']),
+      '#title' => t('Description above field'),
+      '#description' => t('Place the description above &mdash; rather than below &mdash; the field.'),
+      '#weight' => 8.5,
+      '#parents' => array('extra', 'description_above'),
+    );
+  }
+
   if (webform_component_feature($component['type'], 'private')) {
     // May user mark fields as Private?
     $form['display']['private'] = array(
