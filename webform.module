@@ -2408,6 +2408,12 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $r
   form_load_include($form_state, 'inc', 'webform', 'includes/webform.components');
   form_load_include($form_state, 'inc', 'webform', 'includes/webform.submissions');
 
+  // For ajax requests, $form_state['values']['details'] is missing. Restore
+  // from storage, if available, for multi-page forms.
+  if (empty($form_state['values']['details']) && !empty($form_state['storage']['details'])) {
+    $form_state['values']['details'] = $form_state['storage']['details'];
+  }
+
   // If in a multi-step form, a submission ID may be specified in form state.
   // Load this submission. This allows anonymous users to use auto-save.
   if (empty($submission) && !empty($form_state['values']['details']['sid'])) {
@@ -3285,6 +3291,11 @@ function webform_client_form_submit($form, &$form_state) {
     // No sid was found thus insert it in the dataabase.
     $form_state['values']['details']['sid'] = $sid = webform_submission_insert($node, $submission);
     $form_state['values']['details']['is_new'] = TRUE;
+
+    // Save the new details in storage. When ajax calls for file upload/remove,
+    // $form_state['values']['details'] is missing. This allows the proper
+    // submission to be retrieved in webform_client_form. See #2562703.
+    $form_state['storage']['details'] = $form_state['values']['details'];
 
     // Set a cookie including the server's submission time. The cookie expires
     // in the length of the interval plus a day to compensate for timezones.
