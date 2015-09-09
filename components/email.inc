@@ -336,6 +336,13 @@ function _webform_table_email($component, $value) {
   return check_plain(empty($value[0]) ? '' : $value[0]);
 }
 
+/**
+ * Implements _webform_action_set_component().
+ */
+function _webform_action_set_email($component, &$element, &$form_state, $value) {
+  $element['#value'] = $value;
+  form_set_value($element, $value, $form_state);
+}
 
 /**
  * Implements _webform_csv_headers_component().
