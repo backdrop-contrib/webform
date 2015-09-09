@@ -616,6 +616,12 @@ function webform_submission_access($node, $submission, $op = 'view', $account = 
 
   $token_access = $submission && isset($_GET['token']) && $_GET['token'] == webform_get_submission_access_token($submission);
 
+  // If access is granted via a token, then allow subsequent submission access
+  // for anonymous users.
+  if (!$user->uid && $token_access) {
+    $_SESSION['webform_submission'][$submission->sid] = $node->nid;
+  }
+
   $general_access = $access_all || $access_own_submission || $access_node_submissions || $token_access;
 
   // Disable the page cache for anonymous users in this access callback,
@@ -3310,7 +3316,7 @@ function webform_client_form_submit($form, &$form_state) {
     // Save session information about this submission for anonymous users,
     // allowing them to access or edit their submissions.
     if (!$user->uid && user_access('access own webform submissions')) {
-      $_SESSION['webform_submission'][$form_state['values']['details']['sid']] = $node->nid;
+      $_SESSION['webform_submission'][$sid] = $node->nid;
     }
   }
   else {
