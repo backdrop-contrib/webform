@@ -822,7 +822,9 @@ function _webform_csv_data_select($component, $export_options, $value) {
 
   if ($component['extra']['multiple']) {
     foreach ($options as $key => $item) {
-      $index = array_search($key, (array) $value);
+      // Strict search is needed to avoid a key of 0 from matching an empty
+      // value.
+      $index = array_search((string)$key, (array)$value, TRUE);
       if ($index !== FALSE) {
         if ($export_options['select_format'] == 'separate') {
           $return[] = 'X';
