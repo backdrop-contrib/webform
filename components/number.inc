@@ -802,7 +802,33 @@ function _webform_number_format($component, $value) {
  * Based on http://stackoverflow.com/questions/5917082/regular-expression-to-match-numbers-with-or-without-commas-and-decimals-in-text.
  */
 function webform_number_format_match($value, $point, $separator) {
-  return preg_match('/^-? ?\d{1,3}(?:' . ($separator ? (preg_quote($separator, '/') . '?') : '') . '\d{2,3})*(?:' . preg_quote($point, '/') . '\d+)?$/', $value);
+  // A valid number is:
+  //   1. optional minus sign
+  //   2. optional space
+  //   3. the rest of the string can't be just a decimal or blank.
+  //   3. optional integer portion, with thousands separators
+  //   4. optional decimal portion, starting is a decimal separator
+
+  //  ^               Start of string
+  //  -?              Optional minus sign
+  //   ?              Optional space
+  //  (?!\.?$)        Assert looking ahead, not just a decimal or nothing
+  //  (               Optional integer portion
+  //    \d{1,3}         1 to 3 digits
+  //    (?:             Thousands group(s)
+  //      ,?              Optional thousands seperator, if given
+  //      \d{2,3}         2 or 3 digits. Some countries use groups of two sometimes.
+  //    )*              0 or more of these thosuands groups
+  //  )               End optional integer portion
+  //  (               Optional decimal portion
+  //    .               Decimal separator
+  //    \d*             0 or more digits to the right of the decimal
+  //  )               End of optional decimal part
+  // $                End of string
+
+  $thousands = $separator ? (preg_quote($separator, '/') . '?') : '';
+  $decimal = preg_quote($point, '/');
+  return preg_match('/^-? ?(?!\.?$)(\d{1,3}(?:' . $thousands . '\d{2,3})*)?(' . $decimal . '\d*)?$/', $value);
 }
 
 /**
