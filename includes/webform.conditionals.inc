@@ -180,12 +180,14 @@ function webform_conditionals_form_validate($form, &$form_state) {
       $conditional = $element['conditional'];
       $targets = array();
       foreach ($conditional['actions'] as $action_key => $action) {
-        if (substr($action_key, 0, 1) !== '#') {
+        if (is_numeric($action_key)) {
+          $operation = $action['action']['#value'];
           $target_id = $action['target']['#value'];
-          if (isset($targets[$target_id])) {
+          if (isset($targets[$target_id][$operation])) {
             form_set_error('conditionals][' . $conditional_key . '][actions][' . $action_key . '][target',
-                           t('A conditional cannot show or hide a component more than once. (%target).',
-                             array('%target' => $components[$action['target']['#value']]['name'])));
+                           t('A operation %op cannot be made for a component more than once. (%target).',
+                             array('%op' => $action['action']['#options'][$operation],
+                                   '%target' => $components[$action['target']['#value']]['name'])));
           }
           $component_type = $node->webform['components'][$action['target']['#value']]['type'];
           if (!webform_conditional_action_able($component_type, $action['action']['#value'])) {
@@ -196,13 +198,13 @@ function webform_conditionals_form_validate($form, &$form_state) {
                                 '%type' => $component_options[$component_type],
                                 '%target' => $components[$action['target']['#value']]['name'])));
           }
-          $targets[$target_id] = $target_id;
+          $targets[$target_id][$operation] = $target_id;
         }
       }
       foreach ($conditional['rules'] as $rule_key => $rule) {
-        if (substr($rule_key, 0, 1) !== '#' && in_array($rule['source']['#value'], $targets)) {
+        if (is_numeric($rule_key) && isset($targets[$rule['source']['#value']])) {
           form_set_error('conditionals][' . $conditional_key . '][rules][' . $rule_key . '][source',
-                         t('The subject of the conditional cannot be the same as the component that is shown or hidden (%target).',
+                         t('The subject of the conditional cannot be the same as the component that is changed (%target).',
                          array('%target' => $components[$rule['source']['#value']]['name'])));
         }
       }
