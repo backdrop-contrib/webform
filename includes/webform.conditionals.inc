@@ -56,6 +56,7 @@ function webform_conditionals_form($form, &$form_state, $node) {
 
   $source_list = webform_component_list($node, 'conditional', 'path', TRUE);
   $target_list = webform_component_list($node, TRUE, 'path', TRUE);
+  $components = $node->webform['components'];
   $delta = $form_state['conditional_count'];
   $weight = -$delta - 1;
   $index = 0;
@@ -79,6 +80,15 @@ function webform_conditionals_form($form, &$form_state, $node) {
       '#targets' => $target_list,
       '#parents' => array('conditionals', $rgid),
     );
+    foreach ($conditional_group['actions'] as $action) {
+      $cid = $action['target'];
+      if ($action['action'] == 'require' && !$components[$cid]['required']) {
+        drupal_set_message(t('Component %title must be configured as Required for Webform to conditionally change its required status. <a href="!url">Configure %title.</a>',
+                             array('%title' => $components[$cid]['name'],
+                                   '!url' => url("node/{$node->nid}/webform/components/$cid", array('query' => array('destination' => "node/{$node->nid}/webform/conditionals"))))
+                             ), 'error');
+      }
+    }
     $form['conditionals'][$rgid]['weight'] = array(
       '#type' => 'weight',
       '#title' => t('Weight for rule group !rgid', array('!rgid' => $rgid)),
