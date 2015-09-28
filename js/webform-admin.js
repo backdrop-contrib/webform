@@ -293,7 +293,7 @@
    */
   Drupal.webform.conditionalActionChange = function () {
     var action = $(this).val();
-    var $argument = $(this).parents('.webform-conditional:first').find('.webform-conditional-argument input');
+    var $argument = $(this).parents('.webform-conditional-condition:first').find('.webform-conditional-argument input');
     var isShown = $argument.is(':visible');
     switch (action) {
       case 'show':
