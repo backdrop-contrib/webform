@@ -260,7 +260,7 @@
     }
     // If the operator does not need a source value (i.e. is empty), hide it.
     else if (formKey === false) {
-      $value[0].innerHTML = '&nbsp;';
+      $value[0].innerHTML = '<input type="text" value="" style="display: none;" >';
     }
     // If there is a per-source form for this operator (e.g. option lists), use
     // the specialized value form.
