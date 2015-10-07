@@ -187,3 +187,12 @@ function drush_webform_clear($nid = FALSE) {
   // Alas, there is no drush version of format_plural, so use the ugly "(s)".
   drush_log(dt('@count submission(s) in webform "@title" cleared.', array('@count' => $count, '@title' => $node->title)), 'ok');
 }
+
+/**
+ * Implements hook_drush_sql_sync_sanitize.
+ */
+function webform_drush_sql_sync_sanitize($source) {
+  drush_sql_register_post_sync_op('webform_submitted_data',
+    dt('Delete all data submitted to webforms (depending on the site config, may contain sensitive data).'),
+    "TRUNCATE webform_submitted_data; TRUNCATE webform_submissions;");
+}
