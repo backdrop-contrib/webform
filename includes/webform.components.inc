@@ -711,9 +711,13 @@ function webform_component_delete_form($form, $form_state, $node, $component) {
     '#value' => $component,
   );
 
-  if (webform_component_feature($node->webform['components'][$cid]['type'], 'group')) {
+  $component_type = $node->webform['components'][$cid]['type'];
+  if (webform_component_feature($component_type, 'group')) {
     $question = t('Delete the %name fieldset?', array('%name' => $node->webform['components'][$cid]['name']));
-    $description = t('This will immediately delete the %name fieldset and all children elements within %name from the %webform webform. This cannot be undone.', array('%name' => $node->webform['components'][$cid]['name'], '%webform' => $node->title));
+    $description = t('This will immediately delete the %name @type component and all nested components within %name from the %webform webform. This cannot be undone.',
+                     array('%name' => $node->webform['components'][$cid]['name'],
+                           '@type' => webform_component_property($component_type, 'label'),
+                           '%webform' => $node->title));
   }
   else {
     $question = t('Delete the %name component?', array('%name' => $node->webform['components'][$cid]['name']));
