@@ -809,6 +809,7 @@ function webform_uninstall() {
   variable_del('webform_progressbar_label_confirmation');
   variable_del('webform_table');
   variable_del('webform_submission_access_control');
+  variable_del('webform_token_access');
   variable_del('webform_update_batch_size');
   variable_del('webform_disabled_components');
 

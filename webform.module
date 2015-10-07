@@ -3903,7 +3903,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
  */
 function webform_replace_tokens($string, $node = NULL, $submission = NULL, $email = NULL, $sanitize = FALSE) {
   // Don't do any filtering if the string is empty.
-  if (!strlen(trim($string))) {
+  if (!strlen(trim($string)) || !webform_variable_get('webform_token_access')) {
     return $string;
   }
 
@@ -3946,7 +3946,7 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
  * @see token_replace()
  */
 function webform_replace_tokens_clear($text) {
-  if (empty($text)) {
+  if (empty($text) || !webform_variable_get('webform_token_access')) {
     return $text;
   }
 
@@ -4220,6 +4220,9 @@ function webform_variable_get($variable) {
     case 'webform_submission_access_control':
       $result = variable_get('webform_submission_access_control', 1);
       break;
+    case 'webform_token_access':
+      $result = variable_get('webform_token_access', 1);
+      break;
     case 'webform_update_batch_size':
       $result = variable_get('webform_update_batch_size', 100);
       break;
@@ -4238,6 +4241,9 @@ function webform_variable_get($variable) {
  * Token module is not available, a message should be displayed.
  */
 function theme_webform_token_help($variables) {
+  if (!webform_variable_get('webform_token_access')) {
+    return '';
+  }
   $groups = $variables['groups'];
   module_load_include('inc', 'token', 'token.pages');
 
@@ -4461,7 +4467,7 @@ function webform_valid_email_address(&$emails, $allow_tokens = FALSE, $format = 
   $email_array = array_filter(array_map('trim', explode(',', $emails)));
   $count = 0;
   foreach ($email_array as $email) {
-    if ($allow_tokens) {
+    if ($allow_tokens && webform_variable_get('webform_token_access')) {
       foreach (token_scan($email) as $tokens) {
         foreach ($tokens as $token) {
           $email = str_replace($token, 'admin@example.com', $email);
