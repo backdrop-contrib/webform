@@ -2842,7 +2842,7 @@ function _webform_client_form_add_component($node, $component, $component_value,
       $subcomponent_value = isset($input_values[$scid]) ? $input_values[$scid] : NULL;
       // Include if always shown, or for forms, also if currently hidden but might be shown due to conditionals.
       $visibility = $sorter->componentVisibility($scid, $subcomponent['page_num']);
-      if ($visibility == WebformConditionals::componentShown || ($format == 'form' && $visibility)) {
+      if ($visibility == WebformConditionals::componentShown || ($format == 'form' && $visibility) || !$filter) {
         _webform_client_form_add_component($node, $subcomponent, $subcomponent_value, $parent_fieldset[$component['form_key']], $form, $input_values, $format, $page_num, $filter);
       }
     }
