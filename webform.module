@@ -1047,6 +1047,7 @@ function webform_webform_component_info() {
       'features' => array(
         'default_value' => FALSE,
         'title_inline' => FALSE,
+        'title_internal' => TRUE,
         'css_classes' => FALSE,
         'conditional' => FALSE,
       ),
@@ -3602,7 +3603,6 @@ function template_preprocess_webform_element(&$variables) {
   // If #title_display is none, set it to invisible instead - none only used if
   // we have no title at all to use.
   if ($element['#title_display'] == 'none') {
-    $variables['element']['#title_display'] = 'invisible';
     $element['#title_display'] = 'invisible';
     if (empty($element['#attributes']['title']) && !empty($element['#title'])) {
       $element['#attributes']['title'] = $element['#title'];
@@ -3611,6 +3611,11 @@ function template_preprocess_webform_element(&$variables) {
 
   // If #title is not set, we don't display any label or required marker.
   if (!isset($element['#title'])) {
+    $element['#title_display'] = 'none';
+  }
+
+  // If an internal title is being used, generate no external title.
+  if ($element['#title_display'] == 'internal') {
     $element['#title_display'] = 'none';
   }
 }

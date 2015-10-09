@@ -311,14 +311,10 @@ function theme_webform_display_grid($variables) {
   if ($format == 'html') {
     $right_titles = _webform_grid_right_titles($element);
     $rows = array();
-    $title = array('data' => '', 'class' => array('webform-grid-question'));
-    $header = array($title);
-    foreach ($element['#grid_options'] as $option) {
-      $header[] = array('data' => webform_filter_xss($option), 'class' => array('checkbox', 'webform-grid-option'));
-    }
-    if ($right_titles) {
-      $header[] = $title;
-    }
+
+    // Set the header for the table.
+    $header = _webform_grid_header($element, $right_titles);
+
     foreach ($element['#grid_questions'] as $question_key => $question) {
       $row = array();
       $questions = explode('|', $question, 2);
@@ -509,23 +505,16 @@ function theme_webform_grid($variables) {
   $right_titles = _webform_grid_right_titles($element);
 
   $rows = array();
-  $title = array('data' => '', 'class' => array('webform-grid-question'));
-  $header = array($title);
+
   // Set the header for the table.
-  foreach ($element['#grid_options'] as $option) {
-    $header[] = array('data' => webform_filter_xss($option), 'class' => array('checkbox', 'webform-grid-option'));
-  }
-  if ($right_titles) {
-    $header[] = $title;
-  }
+  $header = _webform_grid_header($element, $right_titles);
 
   foreach (element_children($element) as $key) {
     $question_element = $element[$key];
     $question_titles = explode('|', $question_element['#title'], 2);
 
     // Create a row with the question title.
-    $title = array('data' => webform_filter_xss($question_titles[0]), 'class' => array('webform-grid-question'));
-    $row = array($title);
+    $row = array(array('data' => webform_filter_xss($question_titles[0]), 'class' => array('webform-grid-question')));
 
     // Render each radio button in the row.
     $radios = form_process_radios($question_element);
@@ -546,9 +535,41 @@ function theme_webform_grid($variables) {
 }
 
 /**
+ * Generate a table header suitable for form or html display.
+ */
+function _webform_grid_header($element, $right_titles) {
+  $titles = explode('|', $element['#title'], 2);
+  $header = array(array('data' => _webform_grid_header_title($element, $titles[0]), 'class' => array('webform-grid-question')));
+  foreach ($element['#grid_options'] as $option) {
+    $header[] = array('data' => webform_filter_xss($option), 'class' => array('checkbox', 'webform-grid-option'));
+  }
+  if ($right_titles) {
+    $header[] = array('data' => _webform_grid_header_title($element, $titles[1]), 'class' => array('webform-grid-question'));
+  }
+  return $header;
+}
+
+/**
+ * Create internal component title for table header, if any.
+ */
+function _webform_grid_header_title($element, $title) {
+  $header_title = '';
+  if ($element['#title_display'] == 'internal') {
+    $variables = array('element' => $element);
+    $variables['element']['#title_display'] = 'before';
+    $variables['element']['#title'] = $title;
+    $header_title = theme('form_element_label', $variables);
+  }
+  return $header_title;
+}
+
+/**
  * Determine if a right-side title column has been specified.
  */
 function _webform_grid_right_titles($element) {
+  if ($element['#title_display'] == 'internal' && substr_count($element['#title'], '|')) {
+    return TRUE;
+  }
   foreach ($element['#grid_questions'] as $question_key => $question) {
     if (substr_count($question, '|')) {
       return TRUE;
