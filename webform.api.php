@@ -520,10 +520,6 @@ function hook_webform_component_info() {
       // This component has a title that can be displayed inline.
       'title_inline' => TRUE,
 
-      // This component has a title that can be displayed within the form
-      // element itself, such as a grid.
-      'title_internal' => TRUE,
-
       // If this component can be used as a conditional SOURCE. All components
       // may always be displayed conditionally, regardless of this setting.
       // Defaults to TRUE.

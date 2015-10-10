@@ -311,21 +311,6 @@
   };
 
   /**
-   * Given a table's DOM element, restripe the odd/even classes.
-   */
-  Drupal.webform.restripeTable = function (table) {
-    // :even and :odd are reversed because jQuery counts from 0 and
-    // we count from 1, so we're out of sync.
-    // Match immediate children of the parent element to allow nesting.
-    $('> tbody > tr, > tr', table)
-      .filter(':odd').filter('.odd')
-        .removeClass('odd').addClass('even')
-      .end().end()
-      .filter(':even').filter('.even')
-        .removeClass('even').addClass('odd');
-  };
-
-  /**
    * Triggers a change event when a label receives a click.
    *
    * When the browser automatically selects a radio button when it's label is

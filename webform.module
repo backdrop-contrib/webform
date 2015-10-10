@@ -1050,6 +1050,7 @@ function webform_webform_component_info() {
         'title_internal' => TRUE,
         'css_classes' => FALSE,
         'conditional' => FALSE,
+        'group' => TRUE,
       ),
       'file' => 'components/grid.inc',
     ),
@@ -3432,6 +3433,10 @@ function _webform_client_form_submit_flatten($node, $fieldset, $parent = 0) {
         else {
           $values[$cid] = $value;
         }
+      }
+      else {
+        // This $form_key must belong to the parent. For example, a grid.
+        $values[$parent][$form_key] = $value;
       }
     }
   }
