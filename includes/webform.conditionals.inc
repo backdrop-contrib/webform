@@ -434,6 +434,7 @@ function _webform_conditional_expand($element) {
       '#type' => 'textfield',
       '#title' => t('Argument'),
       '#size' => 20,
+      '#maxlength' => NULL,
       '#default_value' => $element['#default_value']['actions'][$aid]['argument'],
     );
     $element['actions'][$aid]['remove'] = array(
