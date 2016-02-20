@@ -646,14 +646,9 @@ config_set('webform.settings', 'webform_default_from_name', config_get('system.c
 config_set('webform.settings', 'webform_default_from_address', config_get('system.core', 'site_mail'));
 config_set('webform.settings', 'webform_node_types_primary', array('webform'));
 config_set('webform.settings', 'webform_progressbar_style', array('progressbar_bar', 'progressbar_pagebreak_labels', 'progressbar_include_confirmation'));
-config_set('webform.settings', 'webform_disabled_components', array());
 config_set('webform.settings', 'webform_node_types', array('webform'));
-config_set('webform.settings', 'webform_disabled_components', array());
 config_set('webform.settings', 'file_directory_temp', file_directory_temp());
-
-config_set('webform.settings', 'webform_disabled_components', array());
 config_set('webform.settings', 'filter_default_format', filter_default_format());
-config_set('webform.settings', 'webform_disabled_components', array());
 
 module_load_include('inc', 'node', 'content_types');
   db_update('system')
@@ -747,7 +742,7 @@ $config = config('webform.settings');
   $config->set('webform_table', update_variable_get('webform_table'));
   $config->set('webform_submission_access_control', update_variable_get('webform_submission_access_control'));
   $config->set('webform_update_batch_size', update_variable_get('webform_update_batch_size'));
-  $config->set('webform_disabled_components', update_variable_get('webform_disabled_components'));
+  $config->set('webform_disabled_components', update_variable_get('webform_disabled_components'), array());
   $config->set('webform_use_cookies', update_variable_get('webform_use_cookies'));
 
   $config->set('webform_tracking_mode', update_variable_get('webform_tracking_mode'));

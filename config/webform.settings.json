@@ -8,7 +8,13 @@
     "webform_blocks": "",
 
     "webform_tracking_mode": "cookie",
-    "webform_allowed_tags": "",
+    "webform_allowed_tags": [
+        "a",
+        "em",
+        "strong",
+        "code",
+        "img"
+    ],
     "webform_search_index": "1",
     "webform_email_address_format": "long",
     "webform_default_from_name": "",
@@ -21,24 +27,28 @@
 
     "webform_format_override": "0",
     "webform_email_select_max": "50",
-    "webform_node_types_primary": "webform",
+    "webform_node_types_primary": ["webform"],
     "webform_export_format": "excel",
     "webform_csv_delimiter": "\t",
 
     "webform_export_wordwrap": "0",
     "webform_excel_legacy_exporter": "0",
-    "webform_progressbar_style": "",
+    "webform_progressbar_style": [
+        "progressbar_bar",
+        "progressbar_pagebreak_labels",
+        "progressbar_include_confirmation"
+    ],
     "webform_progressbar_label_first": "Start",
     "webform_progressbar_label_confirmation": "Complete",
 
     "webform_table": "FALSE",
     "webform_submission_access_control": "1",
     "webform_update_batch_size": "100",
-    "webform_disabled_components": "",
+    "webform_disabled_components": [],
     "webform_use_cookies": "",
 
     "webform_tracking_mode": "",
-    "webform_node_types": "webform",
+    "webform_node_types": ["webform"],
     "webform_export_batch_size": "",
     "webform_export_path": "temporary://"
 }
