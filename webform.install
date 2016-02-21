@@ -634,21 +634,13 @@ function webform_requirements($phase) {
   return $requirements;
 }
 
-
-
 /**
  * Implements hook_install().
  */
 function webform_install() {
 
-config_set('webform.settings', 'webform_allowed_tags', array('a', 'em', 'strong', 'code', 'img'));
 config_set('webform.settings', 'webform_default_from_name', config_get('system.core', 'site_name'));
 config_set('webform.settings', 'webform_default_from_address', config_get('system.core', 'site_mail'));
-config_set('webform.settings', 'webform_node_types_primary', array('webform'));
-config_set('webform.settings', 'webform_progressbar_style', array('progressbar_bar', 'progressbar_pagebreak_labels', 'progressbar_include_confirmation'));
-config_set('webform.settings', 'webform_node_types', array('webform'));
-config_set('webform.settings', 'file_directory_temp', file_directory_temp());
-config_set('webform.settings', 'filter_default_format', filter_default_format());
 
 module_load_include('inc', 'node', 'content_types');
   db_update('system')
@@ -700,55 +692,47 @@ function webform_update_last_removed() {
   return 6313;
 }
 
-
-
-
-
-
 function webform_update_1000() {
 $config = config('webform.settings');
 
   // migrate variables
-  $config->set('webform_install_create_content_type', update_variable_get('webform_install_create_content_type'));
-  $config->set('webform_install_add_body_field', update_variable_get('webform_install_add_body_field'));
-  $config->set('webform_node_webform', update_variable_get('webform_node_webform'));
-  $config->set('comment_webform', update_variable_get('comment_webform'));
-  $config->set('webform_blocks', update_variable_get('webform_blocks'));
+  $config->set('webform_install_create_content_type', update_variable_get('webform_install_create_content_type', TRUE));
+  $config->set('webform_install_add_body_field', update_variable_get('webform_install_add_body_field', FALSE));
+  $config->set('webform_node_webform', update_variable_get('webform_node_webform',TRUE));
+  $config->set('comment_webform', update_variable_get('comment_webform', 0));
+  $config->set('webform_blocks', update_variable_get('webform_blocks', array()));
+  $config->set('webform_tracking_mode', update_variable_get('webform_tracking_mode', 'cookie'));
+  $config->set('webform_allowed_tags', update_variable_get('webform_allowed_tags', array('a', 'em', 'strong', 'code', 'img')));
+  $config->set('webform_search_index', update_variable_get('webform_search_index', 1));
+  $config->set('webform_email_address_format', update_variable_get('webform_email_address_format', 'long'));
+  $config->set('webform_default_from_name', update_variable_get('webform_default_from_name', config_get('system.core', 'site_name')));
 
-  $config->set('webform_tracking_mode', update_variable_get('webform_tracking_mode'));
-  $config->set('webform_allowed_tags', update_variable_get('webform_allowed_tags'));
-  $config->set('webform_search_index', update_variable_get('webform_search_index'));
-  $config->set('webform_email_address_format', update_variable_get('webform_email_address_format'));
-  $config->set('webform_default_from_name', update_variable_get('webform_default_from_name'));
+  $config->set('webform_default_from_address', update_variable_get('webform_default_from_address', config_get('system.core', 'site_mail')));
+  $config->set('webform_default_subject', update_variable_get('webform_default_subject', t('Form submission from: [node:title]')));
+  $config->set('webform_email_replyto', update_variable_get('webform_email_replyto', TRUE));
+  $config->set('webform_email_html_capable', update_variable_get('webform_email_html_capable', FALSE));
+  $config->set('webform_default_format', update_variable_get('webform_default_format', 0));
 
-  $config->set('webform_default_from_address', update_variable_get('webform_default_from_address'));
-  $config->set('webform_default_subject', update_variable_get('webform_default_subject'));
-  $config->set('webform_email_replyto', update_variable_get('webform_email_replyto'));
-  $config->set('webform_email_html_capable', update_variable_get('webform_email_html_capable'));
-  $config->set('webform_default_format', update_variable_get('webform_default_format'));
+  $config->set('webform_format_override', update_variable_get('webform_format_override', 0));
+  $config->set('webform_email_select_max', update_variable_get('webform_email_select_max', 50));
+  $config->set('webform_node_types_primary', update_variable_get('webform_node_types_primary', array('webform')));
+  $config->set('webform_export_format', update_variable_get('webform_export_format', 'excel'));
+  $config->set('webform_csv_delimiter', update_variable_get('webform_csv_delimiter', '\t'));
 
-  $config->set('webform_format_override', update_variable_get('webform_format_override'));
-  $config->set('webform_email_select_max', update_variable_get('webform_email_select_max'));
-  $config->set('webform_node_types_primary', update_variable_get('webform_node_types_primary'));
-  $config->set('webform_export_format', update_variable_get('webform_export_format'));
-  $config->set('webform_csv_delimiter', update_variable_get('webform_csv_delimiter'));
+  $config->set('webform_export_wordwrap', update_variable_get('webform_export_wordwrap', 0));
+  $config->set('webform_excel_legacy_exporter', update_variable_get('webform_excel_legacy_exporter', 0));
+  $config->set('webform_progressbar_style', update_variable_get('webform_progressbar_style', array('progressbar_bar', 'progressbar_pagebreak_labels', 'progressbar_include_confirmation')));
+  $config->set('webform_progressbar_label_first', update_variable_get('webform_progressbar_label_first', t('Start')));
+  $config->set('webform_progressbar_label_confirmation', update_variable_get('webform_progressbar_label_confirmation', t('Complete')));
 
-  $config->set('webform_export_wordwrap', update_variable_get('webform_export_wordwrap'));
-  $config->set('webform_excel_legacy_exporter', update_variable_get('webform_excel_legacy_exporter'));
-  $config->set('webform_progressbar_style', update_variable_get('webform_progressbar_style'));
-  $config->set('webform_progressbar_label_first', update_variable_get('webform_progressbar_label_first'));
-  $config->set('webform_progressbar_label_confirmation', update_variable_get('webform_progressbar_label_confirmation'));
+  $config->set('webform_table', update_variable_get('webform_table', FALSE));
+  $config->set('webform_submission_access_control', update_variable_get('webform_submission_access_control', 1));
+  $config->set('webform_update_batch_size', update_variable_get('webform_update_batch_size', 100));
+  $config->set('webform_disabled_components', update_variable_get('webform_disabled_components', array()));
 
-  $config->set('webform_table', update_variable_get('webform_table'));
-  $config->set('webform_submission_access_control', update_variable_get('webform_submission_access_control'));
-  $config->set('webform_update_batch_size', update_variable_get('webform_update_batch_size'));
-  $config->set('webform_disabled_components', update_variable_get('webform_disabled_components'), array());
-  $config->set('webform_use_cookies', update_variable_get('webform_use_cookies'));
-
-  $config->set('webform_tracking_mode', update_variable_get('webform_tracking_mode'));
-  $config->set('webform_node_types', update_variable_get('webform_node_types'));
-  $config->set('webform_export_batch_size', update_variable_get('webform_export_batch_size'));
-  $config->set('webform_export_path', update_variable_get('webform_export_path'));
+  $config->set('webform_node_types', update_variable_get('webform_node_types', array('webform')));
+  $config->set('webform_export_batch_size', update_variable_get('webform_export_batch_size', 100));
+  $config->set('webform_export_path', update_variable_get('webform_export_path', 'temporary://'));
 
   $config->save();
 
