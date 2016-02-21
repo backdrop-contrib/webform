@@ -387,19 +387,6 @@ function webform_menu() {
       'title' => 'Load',
       'type' => MENU_DEFAULT_LOCAL_TASK,
     );
-    if (module_exists('token')) {
-      $items['node/%webform_menu/submission/%webform_menu_submission/devel/token'] = array(
-        'title' => 'Tokens',
-        'load arguments' => array(1),
-        'page callback' => 'token_devel_token_object',
-        'page arguments' => array('webform-submission', 3, 'submission'),
-        'access arguments' => array('access devel information'),
-        'type' => MENU_LOCAL_TASK,
-        'file' => 'token.pages.inc',
-        'file path' => backdrop_get_path('module', 'token'),
-        'weight' => 5,
-      );
-    }
   }
 
   return $items;
@@ -4096,36 +4083,7 @@ function webform_variable_get($variable) {
  */
 function theme_webform_token_help($variables) {
   $groups = $variables['groups'];
-  module_load_include('inc', 'token', 'token.pages');
-
-  // Assume dialogs are not supported, show as a fieldset.
-  $help = array(
-    '#title' => t('Token values'),
-    '#type' => 'fieldset',
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-    '#attributes' => array('class' => array('collapsible', 'collapsed')),
-    'help' => array(
-      '#markup' => '<p>' . t('This field supports dynamic token values. Common values might be [current-user:mail] or [node:title].') . '</p>',
-    ),
-    'token_tree' => array(
-      '#theme' => 'token_tree',
-      '#token_types' => $groups,
-    ),
-  );
-
-  if (!module_exists('token')) {
-    // No token module at all. Display a simple suggestion to enable it.
-    $help['help']['#markup'] .= '<p>' . t('A full listing of tokens may be listed here by installing the <a href="http://drupal.org/project/token">Token module</a>.') . '</p>';
-    unset($help['token_tree']);
-  }
-  elseif (function_exists('token_page_output_tree')) {
-    // Token supports dialogs: display simply as a link.
-    $help = $help['token_tree'];
-    $help['#dialog'] = TRUE;
-  }
-
-  return render($help);
+  return theme('token_tree_link', array('token_types' => $groups));
 }
 
 function _webform_safe_name($name) {
