@@ -213,7 +213,7 @@ function template_preprocess_webform_results_submissions(&$vars) {
  * Create a table containing all submitted values for a webform node.
  */
 function webform_results_table($node, $pager_count = 0) {
-  
+
   // Determine whether views or hard-coded tables should be used for the submissions table.
   if (!webform_variable_get('webform_table')) {
     // Load and preview the results view with a node id argument
@@ -747,7 +747,7 @@ function webform_results_download_form_submit(&$form, &$form_state) {
 
     // Allow a non-UI configuration to override the batch size.
     $batch_size = config_get('webform.settings', 'webform_export_batch_size');
-    
+
     $options['range']['batch_size'] = $batch_size;
   }
 
@@ -762,7 +762,7 @@ function webform_results_download_form_submit(&$form, &$form_state) {
  * Returns a temporary export filename.
  */
 function _webform_export_tempname() {
-  return backdrop_tempnam(config_get('webform.settings', 'webform_export_path'));
+  return backdrop_tempnam(config_get('webform.settings', 'webform_export_path'), 'webform_');
 }
 
 /**
