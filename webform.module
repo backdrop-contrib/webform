@@ -29,6 +29,33 @@ function webform_config_info() {
 }
 
 /**
+ * Implements hook_autoload_info()
+ */
+function webform_autoload_info() {
+  return array(
+    'webform_exporter_delimited' => 'includes/exporters/webform_exporter_delimited.inc',
+    'webform_exporter_excel_delimited' => 'includes/exporters/webform_exporter_excel_delimited.inc',
+    'webform_exporter_excel_xlsx' => 'includes/exporters/webform_exporter_excel_xlsx.inc',
+    'webform_exporter' => 'includes/exporters/webform_exporter.inc',
+    'webform_handler_area_result_pager' => 'views/webform_handler_area_result_pager.inc',
+    'webform_handler_field_form_body' => 'views/webform_handler_field_form_body.inc',
+    'webform_handler_field_is_draft' => 'views/webform_handler_field_is_draft.inc',
+    'webform_handler_field_node_link_edit' => 'views/webform_handler_field_node_link_edit.inc',
+    'webform_handler_field_node_link_results' => 'views/webform_handler_field_node_link_results.inc',
+    'webform_handler_field_submission_count' => 'views/webform_handler_field_submission_count.inc',
+    'webform_handler_field_submission_data' => 'views/webform_handler_field_submission_data.inc',
+    'webform_handler_field_submission_link' => 'views/webform_handler_field_submission_link.inc',
+    'webform_handler_field_webform_status' => 'views/webform_handler_field_webform_status.inc',
+    'webform_handler_filter_is_draft' => 'views/webform_handler_filter_is_draft.inc',
+    'webform_handler_filter_submission_data' => 'views/webform_handler_filter_submission_data.inc',
+    'webform_handler_filter_webform_status' => 'views/webform_handler_filter_webform_status.inc',
+    'webform_handler_numeric_data' => 'views/webform_handler_numeric_data.inc',
+    'webform_handler_relationship_submission_data' => 'views/webform_handler_relationship_submission_data.inc',
+    'webform_views_plugin_row_submission_view' => 'views/webform_plugin_row_submission_view.inc',
+  );
+}
+
+/**
  * Implements hook_menu().
  */
 function webform_menu() {
@@ -387,7 +414,7 @@ function webform_menu_load($nid) {
   }
   $node = node_load($nid);
   if (!isset($node->type) || !config_get('webform.settings', 'webform_node_' . $node->type, FALSE)) {
-    return FALSE;    
+    return FALSE;
   }
   return $node;
 }
@@ -621,7 +648,7 @@ function webform_node_update_access($node, $account = NULL) {
 
 /**
  * Implements hook_admin_paths().
- */   
+ */
 function webform_admin_paths() {
   if (config_get('webform.settings', 'node_admin_theme')) {
     return array(
@@ -1699,7 +1726,7 @@ function webform_user_role_delete($role) {
  * Implements hook_form_alter().
  */
 function webform_form_alter(&$form, $form_state, $form_id) {
-  $matches = array();   
+  $matches = array();
   if (isset($form['#node']->type) && $form_id == $form['#node']->type . '_node_form' && config_get('webform.settings', 'webform_node_' . $form['#node']->type)) {
     $node = $form['#node'];
     // Preserve all Webform options currently set on the node.
@@ -1804,7 +1831,7 @@ function webform_node_view($node, $view_mode) {
     $enabled = FALSE;
   }
   else {
-    // Check if the user's role can submit this webform.   
+    // Check if the user's role can submit this webform.
     if (webform_variable_get('webform_submission_access_control')) {
       foreach ($node->webform['roles'] as $rid) {
         $allowed_roles[$rid] = in_array($rid, $user->roles) ? TRUE : FALSE;
@@ -1963,7 +1990,7 @@ function theme_webform_view_messages($variables) {
       // No roles are allowed to submit the form.
       $message = t('Submissions for this form are closed.');
     }
-    elseif ($user->uid == 0) {    
+    elseif ($user->uid == 0) {
       // The user is anonymous, so (at least) needs to log in to view the form.
       $login = url('user/login', array('query' => backdrop_get_destination()));
       $register = url('user/register', array('query' => backdrop_get_destination()));
@@ -4017,7 +4044,7 @@ function webform_variable_get($variable) {
     case 'webform_node_types':
       $result = webform_node_types();
       break;
-    case 'webform_node_types_primary':   
+    case 'webform_node_types_primary':
       $result = config_get('webform.settings', 'webform_node_types_primary');
       break;
     case 'webform_export_format':
@@ -4029,7 +4056,7 @@ function webform_variable_get($variable) {
     case 'webform_csv_delimiter':
       $result = config_get('webform.settings', 'webform_csv_delimiter');
       break;
-    case 'webform_export_wordwrap':    
+    case 'webform_export_wordwrap':
       $result = config_get('webform.settings', 'webform_export_wordwrap');
       break;
     case 'webform_excel_legacy_exporter':
