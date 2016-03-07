@@ -234,9 +234,10 @@ function webform_admin_settings() {
 //   array_unshift($form['#submit'], 'webform_admin_settings_submit');
   $form['#submit'][] = 'webform_admin_settings_submit';
 
-  $form['submit'] = array(
+  $form['actions']['#type'] = 'actions';
+  $form['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Save'),
+    '#value' => t('Save configuration'),
   );
 
   return $form;
@@ -246,15 +247,6 @@ function webform_admin_settings() {
  * Submit handler for the webform_admin_settings() form.
  */
 function webform_admin_settings_submit($form, &$form_state) {
-$config = config('webform.settings');
-foreach ($form_state['values'] as $key => $value)
-{
-$config->set($key, $value);
-}
-$config->save();
-backdrop_set_message(t('The configuration options have been saved.'));
-  
-  
   $disabled_components = array();
   foreach ($form_state['values']['components'] as $name => $enabled) {
     if (!$enabled) {
@@ -267,6 +259,12 @@ backdrop_set_message(t('The configuration options have been saved.'));
 
   // Trim out empty options in the progress bar options.
   $form_state['values']['webform_progressbar_style'] = array_keys(array_filter($form_state['values']['webform_progressbar_style']));
+  $config = config('webform.settings');
+  foreach ($form_state['values'] as $key => $value) {
+    $config->set($key, $value);
+  }
+  $config->save();
+  backdrop_set_message(t('The configuration options have been saved.'));
 }
 
 /**
