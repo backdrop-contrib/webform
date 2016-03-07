@@ -409,13 +409,13 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE) {
     if ($component['extra']['multiple']) {
       // Set display as a checkbox set.
       $element['#type'] = 'checkboxes';
-      $element['#theme_wrappers'] = array_merge(array('checkboxes'), $element['#theme_wrappers']);
+      $element['#theme_wrappers'] = array_merge(array('container__checkboxes'), $element['#theme_wrappers']);
       $element['#process'] = array_merge(element_info_property('checkboxes', '#process'), array('webform_expand_select_ids'));
     }
     else {
       // Set display as a radio set.
       $element['#type'] = 'radios';
-      $element['#theme_wrappers'] = array_merge(array('radios'), $element['#theme_wrappers']);
+      $element['#theme_wrappers'] = array_merge(array('container__radios'), $element['#theme_wrappers']);
       $element['#process'] = array_merge(element_info_property('radios', '#process'), array('webform_expand_select_ids'));
     }
   }
