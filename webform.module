@@ -877,7 +877,7 @@ function webform_library() {
   // Webform administration.
   $libraries['admin'] = array(
     'title' => 'Webform: Administration',
-    'website' => 'http://drupal.org/project/webform',
+    'website' => 'https://backdropcms.org/project/webform',
     'version' => '1.0',
     'js' => array(
       $module_path . '/js/webform-admin.js' => array('group' => JS_DEFAULT),

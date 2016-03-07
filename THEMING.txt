@@ -2,8 +2,8 @@ Overview
 --------
 Webform supports theming similar to the CCK or Views modules. Any webform
 may be themed on the server side, though doing so may require a reasonable
-amount of knowledge about the Drupal Form API. More information about the Form
-API may be found at http://api.drupal.org/api/file/developer/topics/forms_api.html
+amount of knowledge about the Backdrop Form API. More information about the Form
+API may be found at https://api.backdropcms.org/form_api
 
 Theme submission e-mails
 -----------------------
@@ -104,8 +104,8 @@ Theme display of a webform submission display
 ---------------------------------------------
 
 Theming the display of a webform submission works the same way as theming a
-webform form. Webform uses Drupal "renderable" style arrays for the display of
-submissions, just like most forms in Drupal.
+webform form. Webform uses Backdrop "renderable" style arrays for the display of
+submissions, just like most forms in Backdrop.
 
 The template file for theming submissions is webform-submission.tpl.php. You can
 use webform-submission-[node id here].tpl.php for individual nodes if desired.
