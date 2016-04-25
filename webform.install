@@ -684,12 +684,11 @@ function webform_uninstall() {
 /**
  * Set the minimum upgrade version.
  *
- * Currently you cannot upgrade from 2.x in Drupal 6 to 3.x in Drupal 7. However
- * there are no database changes between the 3.x versions, so no update is
- * needed at all to move from 3.x in Drupal 6 to Drupal 7.
+ * Ensure you've upgraded to the 7.x-4.x version of webform in Drupal 7 before
+ * attempting to upgrade to Backdrop.
  */
 function webform_update_last_removed() {
-  return 6313;
+  return 7430;
 }
 
 function webform_update_1000() {
@@ -777,4 +776,20 @@ $config = config('webform.settings');
   update_variable_del('webform_node_types');
   update_variable_del('webform_export_batch_size');
   update_variable_del('webform_export_path');
+}
+
+/**
+ * Update webform_roles table
+ */
+function webform_update_1001() {
+  db_drop_primary_key('webform_roles');
+  db_change_field('webform_roles', 'rid', 'rid',
+    array(
+      'description' => 'The role identifier.',
+      'type' => 'varchar',
+      'length' => 16,
+      'not null' => TRUE,
+      'default' => 'anonymous',
+    ),
+    array('primary key' => array('nid', 'rid')));
 }
