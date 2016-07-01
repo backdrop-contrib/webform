@@ -870,8 +870,7 @@ function webform_component_delete($node, $component) {
 
   // Delete any conditionals dependent on this component.
   module_load_include('inc', 'webform', 'includes/webform.conditionals');
-  foreach ($node->webform['conditionals'] as $rgid => $conditional) {
-    $delete_conditional = FALSE;
+  foreach ($node->webform['conditionals'] as $rgid => &$conditional) {
     $specs = array(
       array(
         'field' => 'rules',
@@ -889,21 +888,32 @@ function webform_component_delete($node, $component) {
       ),
     );
     foreach ($specs as $spec) {
-      $count = count($conditional[$spec['field']]);
-      foreach ($conditional[$spec['field']] as $key => $thing) {
+      $deleted = array();
+      $field = $spec['field'];
+      foreach ($conditional[$field] as $key => $thing) {
         if ($thing[$spec['component_type']] === 'component' && $thing[$spec['component']] == $component['cid']) {
-          if ($count == 1) {
-            // Delete the conditional if this component is the only source or target.
-            webform_conditional_delete($node, $conditional);
-            break 2;
-          }
-          db_delete($spec['table'])
-            ->condition('nid', $node->nid)
-            ->condition('rgid', $rgid)
-            ->condition($spec['index'], $key)
-            ->execute();
-          $count--;
+          $deleted[$key] = $key;
+          unset($conditional[$field][$key]);
         }
+      }
+      if ($spec['field'] == 'rules') {
+        // Rules deleted because of the source component being deleted may have left
+        // empty sub-conditionals. Delete them, and then the entire rule group if
+        // there aren't any rules left.
+        $deleted += webform_delete_empty_subconditionals($conditional);
+      }
+      // Delete the conditional if this component is the only source / target.
+      if (empty($conditional[$field])) {
+        webform_conditional_delete($node, $conditional);
+        break; // Loop exit.
+      }
+      // Remove the deleted rules / actions from the database.
+      foreach ($deleted as $key) {
+        db_delete($spec['table'])
+          ->condition('nid', $node->nid)
+          ->condition('rgid', $rgid)
+          ->condition($spec['index'], $key)
+          ->execute();
       }
     }
   }
