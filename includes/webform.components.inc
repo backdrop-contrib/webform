@@ -197,6 +197,12 @@ function template_preprocess_webform_components_form(&$variables) {
   }
   else {
     $rows[] = array(array('data' => t('No Components, add a component below.'), 'colspan' => 9));
+    // When there are no components, tabledrag.js will look to the add component
+    // row to locate the weight column. Because of the name/form_key colspan
+    // it will mis-count the columns and locate the Required column instead of
+    // the Weight column.
+    unset($add_form['data'][0]['colspan']);
+    array_splice($add_form['data'], 1, 0, '&nbsp;');
   }
 
   // Append the add form if not already printed.
