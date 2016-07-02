@@ -4122,7 +4122,7 @@ function webform_get_cid(&$node, $form_key, $pid) {
 /**
  * Find the label of a given page based on page breaks.
  *
- * @param $webform
+ * @param $node
  *   The webform node.
  * @param $form_state
  *   The form's state, if available
