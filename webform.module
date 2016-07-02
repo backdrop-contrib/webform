@@ -882,7 +882,7 @@ function webform_theme() {
       'file' => 'includes/webform.report.inc',
     ),
     'webform_results_table' => array(
-      'variables' => array('node' => NULL, 'components' => NULL, 'submissions' => NULL, 'node' => NULL, 'total_count' => NULL, 'pager_count' => NULL),
+      'variables' => array('node' => NULL, 'components' => NULL, 'submissions' => NULL, 'total_count' => NULL, 'pager_count' => NULL),
       'file' => 'includes/webform.report.inc',
     ),
     'webform_results_download_range' => array(
