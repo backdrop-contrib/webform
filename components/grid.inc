@@ -489,7 +489,8 @@ function theme_webform_display_grid($variables) {
           }
         }
         $value = implode(', ', $values);
-      } else {
+      }
+      else {
         $element[$question_key]['#title'] = '';
         $value = drupal_render($element[$question_key]);
       }
