@@ -5288,7 +5288,7 @@ function webform_clone_node_alter(&$node, $context) {
  * @param string $detect_key
  *   A key that will always be present in the posted data when an actual form
  *   submission has been made.
- * @param string parent_key
+ * @param string $parent_key
  *   Omit to not preflight the form, or the array key for the parent of where
  *   the preflight warning should be inserted into the form.
  */
