@@ -5402,7 +5402,7 @@ function webform_count_input_vars($element) {
  * Counts terminals in an array. Useful for counting how many input_vars were
  * returned in $_POST.
  *
- * @params $a
+ * @param $a
  *   Array or array element to be counted
  * @return integer
  *   Number of non-array elements within $a.
