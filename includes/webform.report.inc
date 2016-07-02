@@ -1059,7 +1059,7 @@ function webform_results_download_headers($node, $options) {
  *   $pager_count variables. Note that the current page number is determined
  *   by the super-global $_GET['page'] variable.
  */
-function webform_results_download_rows($node, $options, $serial_start = 0, $last_sid = NULL) {
+function webform_results_download_rows($node, $options, $serial_start = 0, &$last_sid = NULL) {
   // Get all the required submissions for the download.
   $filters['nid'] = $node->nid;
   if (isset($options['sids'])) {
