@@ -731,12 +731,21 @@ function webform_conditional_element_add($form, &$form_state) {
   // right spot.
   $rids = array_keys($parent_values);
   $offset = array_search($rid, $rids);
-  $default_rule = array(
-      'source' => NULL,
-      'source_type' => 'component',
-      'operator' => NULL,
-      'value' => NULL,
-  );
+  $default_rule = isset($button['#subconditional'])
+                    ? array(
+                        'source' => NULL,
+                        'source_type' => 'component',
+                        'operator' => NULL,
+                        'value' => NULL,
+                      )
+                    : array(
+                        'target_type' => 'component',
+                        'target' => NULL,
+                        'invert' => NULL,
+                        'action' => NULL,
+                        'argument' => NULL,
+                      );
+
   if (empty($button['#subconditional'])) {
     $new[0] = $parent_values[$rid]['source_type'] == 'component' ? $parent_values[$rid] : $default_rule;
   }
