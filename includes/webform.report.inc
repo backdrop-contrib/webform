@@ -467,10 +467,10 @@ function webform_results_download_form($form, &$form_state, $node) {
     '#options' => array(
       -1 => t('None'),
       0 => t('Label'),
-      1 => t('Field Key'),
+      1 => t('Form Key'),
     ),
     '#default_value' => 0,
-    '#description' => t('Choose whether to show the label or field key in each column header.'),
+    '#description' => t('Choose whether to show the label or form key in each column header.'),
   );
 
   $form['select_options'] = array(
