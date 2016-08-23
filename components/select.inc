@@ -984,7 +984,7 @@ function _webform_select_options_callback($name, $component, $flat = FALSE) {
   }
 
   // Execute the callback function.
-  if (isset($info[$name]['options callback']) && function_exists($info[$name]['options callback'])) {
+  if (isset($info[$name]['options callback']) && is_callable($info[$name]['options callback'])) {
     $function = $info[$name]['options callback'];
 
     $arguments = array();
