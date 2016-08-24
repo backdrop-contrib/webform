@@ -1539,11 +1539,18 @@ function webform_node_update($node) {
         webform_component_insert($node->webform['components'][$cid]);
       }
       elseif (in_array($cid, $deleted_cids)) {
-        webform_component_delete($node, $original->webform['components'][$cid]);
+        // Delete components only after all updates have been processed.
       }
       elseif ($node->webform['components'][$cid] != $original->webform['components'][$cid]) {
         webform_component_update($node->webform['components'][$cid]);
       }
+    }
+
+    // Delete components now that any parent changes have been saved. When
+    // components are moved and deleted in one operation in FormBuilder, this
+    // ensures that only the current children are deleted.
+    foreach ($deleted_cids as $cid) {
+      webform_component_delete($node, $original->webform['components'][$cid]);
     }
   }
 
