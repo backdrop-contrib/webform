@@ -2448,9 +2448,6 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $r
   $form['#attributes']['class'][] = 'webform-client-form';
   $form['#attributes']['class'][] = 'webform-client-form-' . $node->nid;
 
-  // Set the encoding type (necessary for file uploads).
-  $form['#attributes']['enctype'] = 'multipart/form-data';
-
   // Sometimes when displaying a webform as a teaser or block, a custom action
   // property is set to direct the user to the node page.
   if (!empty($node->webform['action'])) {
