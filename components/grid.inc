@@ -299,7 +299,9 @@ function webform_expand_grid($element) {
   if (!empty($element['#qrand'])) {
     _webform_shuffle_options($weights);
   }
-  $weight = min($weights);
+  if ($weights) {
+    $weight = min($weights);
+  }
   foreach ($weights as $key => $old_weight) {
     $element[$key]['#options'] = webform_grid_remove_options($options, $element[$key]['#options']);
     $element[$key]['#weight'] = $weight++;
