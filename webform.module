@@ -1553,15 +1553,19 @@ function webform_node_update($node) {
 
     // Conditionals don't have unique site-wide IDs or configuration, so our
     // update here is a bit more aggressive than for components and e-mails.
+    // Delete any conditionals no longer in the webform or that have changed.
     foreach ($original->webform['conditionals'] as $rgid => $conditional) {
-      if (!isset($node->webform['conditionals'][$rgid]) || $original->webform['conditionals'][$rgid] != $node->webform['conditionals'][$rgid]) {
+      if (!isset($node->webform['conditionals'][$rgid]) || $conditional != $node->webform['conditionals'][$rgid]) {
         webform_conditional_delete($node, $conditional);
       }
     }
+    // Insert any conditionals not in the original or that have changed.
     foreach ($node->webform['conditionals'] as $rgid => $conditional) {
       $conditional['nid'] = $node->nid;
       $conditional['rgid'] = $rgid;
-      webform_conditional_insert($conditional);
+      if (!isset($original->webform['conditionals'][$rgid]) || $original->webform['conditionals'][$rgid] != $conditional) {
+       webform_conditional_insert($conditional);
+      }
     }
   }
 
