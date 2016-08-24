@@ -5234,15 +5234,15 @@ function _webform_submission_serial_next_value($nid) {
 }
 
 /**
- * Returns the next serial number to be used, based upon actual submissions in
- * the database.
+ * Returns the next submission serial number to be used, based on the
+ * submissions in the database.
  *
  * @param int $nid
  *   The Node ID of the Webform.
  *
  * $return int
- *   The largest serial number used by a submission for a given node, 1 when no
- *   submissions.
+ *   The largest serial number used by a submission plus 1 for the specified
+ *   node or 1 when there are no submissions.
  */
 function _webform_submission_serial_next_value_used($nid) {
   $max_serial = db_select('webform_submissions');
