@@ -1613,7 +1613,13 @@ function webform_update_7403(&$sandbox) {
               'target' => $component['cid'],
               'weight' => 0,
             );
-            drupal_write_record('webform_conditional', $conditional);
+
+            // Cannot use drupal_write_record for webform_conditional because
+            // the current schema has fewer fields than the schema in use during
+            // this hook_update_N function.
+            db_insert('webform_conditional')
+              ->fields($conditional)
+              ->execute();
             foreach ($rules as $rule) {
               drupal_write_record('webform_conditional_rules', $rule);
             }
