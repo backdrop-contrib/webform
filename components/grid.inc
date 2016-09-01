@@ -795,9 +795,14 @@ function webform_validate_grid($element, $form_state) {
     foreach ($element['#parents'] as $key) {
       $values = isset($values[$key]) ? $values[$key] : $values;
     }
-    $nr_values = array_reduce($values, function($count, $item) { return $count + (int)!is_null($item); }, 0);
-    if (count($element['#grid_questions']) != $nr_values) {
-      form_error($element, t('!name field is required.', array('!name' => $element['#title'])));
+    // Remove any values that aren't grid question (i.e. nested components)
+    $grid_questions = $element['#grid_questions'];
+    $values = array_intersect_key($values, $grid_questions);
+    // Remove any unanswered grid questions.
+    $answers = array_filter($values, function($item) { return !is_null($item); });
+    // Give required errors for any questions that aren't answered.
+    foreach (array_diff_key($grid_questions, $answers) as $question_key => $question) {
+      form_error($element[$question_key], t('!question field within !name is required.', array('!question' => $question, '!name' => $element['#title'])));
     }
   }
 }
