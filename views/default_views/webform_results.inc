@@ -142,7 +142,7 @@ $handler->display->display_options['arguments']['nid']['summary_options']['items
 $handler->display->display_options['arguments']['nid']['specify_validation'] = TRUE;
 $handler->display->display_options['arguments']['nid']['validate']['type'] = 'node';
 $translatables['webform_results'] = array(
- t('Master'),
+  t('Master'),
   t('more'),
   t('Apply'),
   t('Reset'),

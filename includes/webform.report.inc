@@ -444,9 +444,9 @@ function webform_results_download_form($form, &$form_state, $node) {
     '#type' => 'container',
     'warning' => array(
       '#markup' => '<p>' .
-                   t('<strong>Warning:</strong> Opening delimited text files with spreadsheet applications may expose you to <a href="!link">formula injection</a> or other security vulnerabilities. When the submissions contain data from untrusted users and the downloaded file will be used with spreadsheets, use Microsoft Excel format.',
-                     array('!link' => url('https://www.google.com/search?q=spreadsheet+formula+injection'))) .
-                 '</p>',
+        t('<strong>Warning:</strong> Opening delimited text files with spreadsheet applications may expose you to <a href="!link">formula injection</a> or other security vulnerabilities. When the submissions contain data from untrusted users and the downloaded file will be used with spreadsheets, use Microsoft Excel format.',
+        array('!link' => url('https://www.google.com/search?q=spreadsheet+formula+injection'))) .
+        '</p>',
     ),
     'delimiter' => array(
       '#type' => 'select',
@@ -766,7 +766,7 @@ function theme_webform_results_download_range($variables) {
   $element['range_type']['range_serial']['#theme_wrappers'] = array('webform_inline_radio');
   $last_serial = $download_info['serial'] ? $download_info['serial'] : drupal_placeholder(t('none'));
   $element['range_type']['range_serial']['#title'] = t('Submissions by number from !start and optionally to: !end &nbsp; (Last downloaded: !serial)',
-                                                       array('!start' => drupal_render($element['start']), '!end' => drupal_render($element['end']), '!serial' => $last_serial));
+    array('!start' => drupal_render($element['start']), '!end' => drupal_render($element['end']), '!serial' => $last_serial));
 
   // date range
   $element['range_type']['range_date']['#theme_wrappers'] = array('webform_inline_radio');

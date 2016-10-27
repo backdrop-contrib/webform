@@ -6,7 +6,7 @@
  */
 
 /**
- * Private implementation of hook_webform_select_options_info().
+ * Implements hook_webform_select_options_info().
  *
  * @see webform_webform_select_options_info()
  */

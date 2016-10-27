@@ -685,7 +685,7 @@ function webform_results_clear_access($node, $account = NULL) {
  * be granted, FALSE if it should absolutely be denied, or NULL if node_access
  * and 'edit webform components' permission should determine access.
  *
- * @see hook_webform_update_access().
+ * @see hook_webform_update_access()
  */
 function webform_node_update_access($node, $account = NULL) {
   global $user;
@@ -1571,7 +1571,7 @@ function webform_node_update($node) {
       $conditional['nid'] = $node->nid;
       $conditional['rgid'] = $rgid;
       if (!isset($original->webform['conditionals'][$rgid]) || $original->webform['conditionals'][$rgid] != $conditional) {
-       webform_conditional_insert($conditional);
+        webform_conditional_insert($conditional);
       }
     }
   }
@@ -1815,10 +1815,10 @@ function webform_node_load($nodes, $types) {
 }
 
 /**
-* Implements hook_user_role_delete().
-*
-* Removes references to deleted role from existing webforms.
-*/
+ * Implements hook_user_role_delete().
+ *
+ * Removes references to deleted role from existing webforms.
+ */
 function webform_user_role_delete($role) {
   db_delete('webform_roles')->condition('rid', $role->rid)->execute();
 }
@@ -2111,7 +2111,7 @@ function theme_webform_view_messages($variables) {
   }
   elseif ($node->webform['confidential'] && user_is_logged_in()) {
     $message = t('This form is confidential. You must <a href="!url">Log out</a> to submit it.',
-                 array('!url' => url('/user/logout', array('query' => array('destination' => request_uri())))));
+      array('!url' => url('/user/logout', array('query' => array('destination' => request_uri())))));
   }
   // If open and not allowed to submit the form, give an explanation.
   elseif (array_search(TRUE, $allowed_roles) === FALSE && $user->uid != 1) {
@@ -2276,7 +2276,7 @@ function webform_block_view($delta = '') {
         '#node' => $node,
         '#sid' => $_SESSION['webform_confirmation'][$nid]['sid'],
       );
-    } 
+    }
     elseif (strlen(trim(strip_tags($node->webform['confirmation'])))) {
       // Display confirmation link drupal status messages, but in the block.
       $message = webform_replace_tokens($node->webform['confirmation'],
@@ -2287,9 +2287,9 @@ function webform_block_view($delta = '') {
       $content = array(
         'confirmation_message' => array(
           '#markup' => "<div class=\"messages status webform-confirmation\">\n" .
-                       '<h2 class="element-invisible">' . t('Status message') . "</h2>\n" .
-                       $message .
-                       "</div>\n",
+            '<h2 class="element-invisible">' . t('Status message') . "</h2>\n" .
+            $message .
+            "</div>\n",
           '#weight' => -1,
         ),
         'webform_view' => $content,
@@ -3292,9 +3292,9 @@ function webform_client_form_submit($form, &$form_state) {
   $submission->is_draft = $is_draft;
   $submission->highest_valid_page = 0;
   if ($is_draft) {
-     $submission->highest_valid_page = end($form_state['clicked_button']['#parents']) == 'next' && $form_state['values']['op'] != '__AUTOSAVE__'
-                                          ? $form_state['webform']['page_num']
-                                          : $form_state['webform']['page_num'] - 1;
+    $submission->highest_valid_page = end($form_state['clicked_button']['#parents']) == 'next' && $form_state['values']['op'] != '__AUTOSAVE__'
+      ? $form_state['webform']['page_num']
+      : $form_state['webform']['page_num'] - 1;
   }
 
   // If there is no data to be saved (such as on a multipage form with no fields
@@ -3481,8 +3481,8 @@ function template_preprocess_webform_form(&$vars) {
     module_load_include('inc', 'webform', 'includes/webform.conditionals');
     $submission_data = isset($vars['form']['#conditional_values']) ? $vars['form']['#conditional_values'] : array();
     $settings = webform_conditional_prepare_javascript($vars['form']['#node'],
-                                                       $submission_data,
-                                                       $vars['form']['details']['page_num']['#value']);
+      $submission_data,
+      $vars['form']['details']['page_num']['#value']);
     drupal_add_js(array('webform' => array('conditionals' => array('webform-client-form-' . $vars['nid'] => $settings))), 'setting');
   }
 
@@ -3813,10 +3813,10 @@ function theme_webform_inline_radio_label($variables) {
     $attributes['class'][] = 'element-invisible';
   }
 
-   $attributes['class'][] = 'webform-inline-radio';
-   if (!empty($element['#id'])) {
-     $attributes['for'] = $element['#id'];
-   }
+  $attributes['class'][] = 'webform-inline-radio';
+  if (!empty($element['#id'])) {
+    $attributes['for'] = $element['#id'];
+  }
 
   // The leading whitespace helps visually separate fields from inline labels.
   return ' <label' . drupal_attributes($attributes) . '>' . $t('!title !required', array('!title' => $title, '!required' => $required)) . "</label>\n";
@@ -3901,7 +3901,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
   return $strict ? webform_filter_xss($output) : $output;
 }
 
-/*
+/**
  * Replace tokens with Webform contexts populated.
  *
  * @param $string
@@ -5317,9 +5317,9 @@ function webform_input_vars_check(&$form, $form_state, $detect_key, $parent_key 
                           : t('This form could not be submitted because it exceeds the server configuration. Contact the administrator.'),
                       'error');
     watchdog('webform',
-             'POST truncated to @count input vars. PHP max_input_vars is @limit. Increase max_input_vars.',
-             $subs,
-             WATCHDOG_ERROR);
+      'POST truncated to @count input vars. PHP max_input_vars is @limit. Increase max_input_vars.',
+      $subs,
+      WATCHDOG_ERROR);
   }
 }
 
@@ -5342,10 +5342,10 @@ function webform_pre_render_input_vars($element) {
       );
       $warning = array(
         '#markup' => '<div class="messages warning">' .
-                     (user_access('administer site configuration')
-                        ? t('This form contains @count input elements. PHP max_input_vars is @limit and should be increased.', $subs)
-                        : t('This form may be too long to work properly. Contact the administrator.'))
-                     . '</div>',
+          (user_access('administer site configuration')
+          ? t('This form contains @count input elements. PHP max_input_vars is @limit and should be increased.', $subs)
+          : t('This form may be too long to work properly. Contact the administrator.'))
+          . '</div>',
         '#weight' => -1,
       );
       if ($element['#input_var_waring_parent']) {
@@ -5355,9 +5355,9 @@ function webform_pre_render_input_vars($element) {
         $element['input_vars_warning'] = $warning;
       }
       watchdog('webform',
-               'Page contains @count input elements but PHP max_input_vars is only @limit. Increase max_input_vars.',
-               $subs,
-               WATCHDOG_ERROR);
+        'Page contains @count input elements but PHP max_input_vars is only @limit. Increase max_input_vars.',
+        $subs,
+        WATCHDOG_ERROR);
     }
   }
   return $element;

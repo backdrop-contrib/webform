@@ -118,7 +118,7 @@ function _webform_edit_time($component) {
 }
 
 /**
- * Implements hook_form_id_validate.
+ * Implements hook_form_id_validate().
  *
  * Validate start and end times.
  */
@@ -214,7 +214,7 @@ function webform_expand_time($element) {
     }
     else {
       $hours = array_intersect_key($hours, array_flip(range($start_hour, 23))) +
-               array_intersect_key($hours, array_flip(range(0, $end_hour)));
+        array_intersect_key($hours, array_flip(range(0, $end_hour)));
     }
   }
 
@@ -325,7 +325,7 @@ function webform_validate_time($element, $form_state) {
 
     // Enforce the start and end times, if any.
     $timestamp = strtotime($element['hour']['#value'] . ':' . $element['minute']['#value'] . ' ' .
-                           (isset($element['ampm']) ?  $element['ampm']['#value'] : ''));
+      (isset($element['ampm']) ?  $element['ampm']['#value'] : ''));
     $start_time = strtotime($element['#start_time']);
     $end_time = strtotime($element['#end_time']);
     $subs = array(

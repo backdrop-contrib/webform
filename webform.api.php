@@ -49,7 +49,7 @@ function hook_webform_select_options_info() {
 /**
  * Alter the list of select list options provided by Webform and other modules.
  *
- * @see hook_webform_select_options_info().
+ * @see hook_webform_select_options_info()
  */
 function hook_webform_select_options_info_alter(&$items) {
   // Remove the days of the week options.
@@ -642,7 +642,7 @@ function hook_webform_submission_access($node, $submission, $op = 'view', $accou
  * Access via this hook is in addition (adds permission) to the standard
  * webform access.
  *
- * @see webform_results_access().
+ * @see webform_results_access()
  *
  * @param $node
  *   The Webform node to check access on.
@@ -667,7 +667,7 @@ function hook_webform_results_access($node, $account) {
  * Access via this hook is in addition (adds permission) to the standard
  * webform access (delete all webform submissions).
  *
- * @see webform_results_clear_access().
+ * @see webform_results_clear_access()
  *
  * @param object $node
  *   The Webform node to check access on.
@@ -695,7 +695,7 @@ function hook_webform_results_clear_access($node, $account) {
  * access as this will be the only test. For example, 'return TRUE;' would grant
  * annonymous access to creating webform components, which seldom be desired.
  *
- * @see webform_node_update_access().
+ * @see webform_node_update_access()
  *
  * @param object $node
  *   The Webform node to check access on.

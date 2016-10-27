@@ -40,7 +40,7 @@ class webform_exporter {
    */
   function wrappable($row, $column, $value) {
     return strpos($value, "\n") !== FALSE ||
-           $this->export_wordwrap && ($row > 2 || $column > 0 || $this->options['header_keys'] < 0);
+      $this->export_wordwrap && ($row > 2 || $column > 0 || $this->options['header_keys'] < 0);
   }
 
   /**
