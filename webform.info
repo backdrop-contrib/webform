@@ -39,3 +39,4 @@ files[] = tests/conditionals.test
 files[] = tests/permissions.test
 files[] = tests/submission.test
 files[] = tests/webform.test
+files[] = tests/WebformGeneralTestCase.test
