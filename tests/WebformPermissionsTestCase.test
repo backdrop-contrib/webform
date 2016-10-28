@@ -22,7 +22,7 @@ class WebformPermissionsTestCase extends WebformTestCase {
    */
   function testWebformSubmitAccess() {
     $this->webformReset();
-    $node = $this->testWebformForm();
+    $node = $this->webformForm();
     $node->webform['roles'] = array(2);
     node_save($node);
 

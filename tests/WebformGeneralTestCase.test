@@ -63,7 +63,7 @@ class WebformGeneralTestCase extends WebformTestCase {
 
     // Add a new component to the node and check that a record is made in the
     // webform table.
-    $components = $this->testWebformComponents();
+    $components = $this->webformComponents();
     $textarea = $components['textarea'];
     $textarea['type'] = 'textarea';
     $textarea['form_key'] = 'textarea';

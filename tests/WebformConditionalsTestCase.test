@@ -24,7 +24,7 @@ class WebformConditionalsTestCase extends WebformTestCase {
     $this->drupalLogin($this->webform_users['admin']);
     $this->webformReset();
 
-    $test_components = $this->testWebformComponents();
+    $test_components = $this->webformComponents();
     $test_specs = array(
       'match conditional values' => TRUE,
       'mismatch conditional values' => FALSE,
@@ -62,7 +62,7 @@ class WebformConditionalsTestCase extends WebformTestCase {
    *   operation to trigger or not. If TRUE, the submission should succeed.
    *   If FALSE, validation errors are expected to be triggered. The input
    *   $value will be compared against the "sample values" input provided by
-   *   testWebformComponents().
+   *   webformComponents().
    *
    * @return void
    *   This function executes its own assert statements to show results.
@@ -82,7 +82,7 @@ class WebformConditionalsTestCase extends WebformTestCase {
     $components = array();
     $components[] = $component;
 
-    $test_components = $this->testWebformComponents();
+    $test_components = $this->webformComponents();
     $textfield = $test_components['textfield']['component'];
 
     // Add a test textfield on the first page.
@@ -139,7 +139,7 @@ class WebformConditionalsTestCase extends WebformTestCase {
     node_save($node);
 
     // Submit our test data.
-    $edit = $this->testWebformPost(array($component['form_key'] => $input_values));
+    $edit = $this->webformPost(array($component['form_key'] => $input_values));
     $this->drupalPost('node/' . $node->nid, $edit, 'Next Page >', array(), array(), 'webform-client-form-' . $node->nid);
 
     // Ensure we reached the second page for matched conditionals.

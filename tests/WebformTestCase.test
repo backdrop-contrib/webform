@@ -117,7 +117,7 @@ class WebformTestCase extends DrupalWebTestCase {
    * @return array
    *   An array of each component settings.
    */
-  function testWebformComponents() {
+  function webformComponents() {
     if (isset($this->_webform_components)) {
       return $this->_webform_components;
     }
@@ -987,7 +987,7 @@ class WebformTestCase extends DrupalWebTestCase {
     return $this->_webform_components;
   }
 
-  function testWebformForm() {
+  function webformForm() {
     if (isset($this->_webform_node)) {
       return $this->_webform_node;
     }
@@ -1011,7 +1011,7 @@ class WebformTestCase extends DrupalWebTestCase {
     );
 
     $cid = 0;
-    foreach ($this->testWebformComponents() as $key => $component_info) {
+    foreach ($this->webformComponents() as $key => $component_info) {
       $cid++;
       $settings['webform']['components'][$cid] = $component_info['component'];
       $settings['webform']['components'][$cid]['cid'] = $cid;
@@ -1028,14 +1028,14 @@ class WebformTestCase extends DrupalWebTestCase {
    *
    * @param $input_values
    *   An array of input values keyed by the component form key. If none
-   *   are specified, the defaults will be pulled from testWebformComponents().
+   *   are specified, the defaults will be pulled from webformComponents().
    */
-  function testWebformPost($input_values = NULL) {
+  function webformPost($input_values = NULL) {
     $edit = array();
 
     if (empty($input_values)) {
       $input_values = array();
-      foreach ($this->testWebformComponents() as $key => $component_info) {
+      foreach ($this->webformComponents() as $key => $component_info) {
         $input_values[$key] = $component_info['sample values'];
       }
     }

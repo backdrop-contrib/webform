@@ -56,7 +56,7 @@ class WebformSubmissionTestCase extends WebformTestCase {
 
     // Create the Webform test node, and set all components to be required
     // with no default value.
-    $node = $this->testWebformForm();
+    $node = $this->webformForm();
     $node = node_load($node->nid);
     foreach ($node->webform['components'] as &$component) {
       $component['value'] = '';
@@ -90,8 +90,8 @@ class WebformSubmissionTestCase extends WebformTestCase {
     module_load_include('inc', 'webform', 'includes/webform.submissions');
 
     // Create a new Webform test node.
-    $node = $this->testWebformForm();
-    $submission_values = $value_type == 'sample' ? $this->testWebformPost() : array();
+    $node = $this->webformForm();
+    $submission_values = $value_type == 'sample' ? $this->webformPost() : array();
 
     // Visit the node page with the "foo=bar" query, to test
     // [current-page:query:?] default values.
@@ -113,7 +113,7 @@ class WebformSubmissionTestCase extends WebformTestCase {
     drupal_static_reset('webform_get_submission');
     $actual_submission = webform_get_submission($node->nid, $sid);
 
-    $component_info = $this->testWebformComponents();
+    $component_info = $this->webformComponents();
     foreach ($node->webform['components'] as $cid => $component) {
       $stable_value = $value_type == 'sample' ? $component_info[$component['form_key']]['database values'] : $component_info[$component['form_key']]['database default values'];
       $actual_value = $actual_submission->data[$cid];
@@ -135,12 +135,12 @@ class WebformSubmissionTestCase extends WebformTestCase {
     module_load_include('inc', 'webform', 'includes/webform.submissions');
 
     // Create a new Webform test node.
-    $node = $this->testWebformForm();
+    $node = $this->webformForm();
 
     // Visit the node page.
     $this->drupalGet('node/' . $node->nid);
 
-    foreach ($this->testWebformComponents() as $key => $component_info) {
+    foreach ($this->webformComponents() as $key => $component_info) {
       if (isset($component_info['error values'])) {
         foreach ($component_info['error values'] as $value => $error_message) {
           $submission_values = array();
