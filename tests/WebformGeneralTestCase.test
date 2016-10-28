@@ -7,7 +7,7 @@
 
 class WebformGeneralTestCase extends WebformTestCase {
   /**
-   * Implements getInfo().
+   * {@inheritdoc}
    */
   public static function getInfo() {
     return array(
@@ -80,6 +80,9 @@ class WebformGeneralTestCase extends WebformTestCase {
     $this->assertFalse($this->webformRecordExists($node->nid), t('Webform record deleted after deleting last component.'));
   }
 
+  /**
+   * @return bool
+   */
   function webformRecordExists($nid) {
     return (bool) db_query("SELECT nid FROM {webform} WHERE nid = :nid", array(':nid' => $nid))->fetchField();
   }

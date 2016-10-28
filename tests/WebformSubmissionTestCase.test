@@ -7,7 +7,7 @@
 
 class WebformSubmissionTestCase extends WebformTestCase {
   /**
-   * Implements getInfo().
+   * {@inheritdoc}
    */
   public static function getInfo() {
     return array(

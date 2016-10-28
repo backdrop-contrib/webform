@@ -7,7 +7,7 @@
 
 class WebformPermissionsTestCase extends WebformTestCase {
   /**
-   * Implements getInfo().
+   * {@inheritdoc}
    */
   public static function getInfo() {
     return array(
@@ -19,7 +19,7 @@ class WebformPermissionsTestCase extends WebformTestCase {
 
   /**
    * Create a webform node in which authenticated users have access to submit.
-  */
+   */
   function testWebformSubmitAccess() {
     $this->webformReset();
     $node = $this->testWebformForm();
@@ -43,9 +43,4 @@ class WebformPermissionsTestCase extends WebformTestCase {
     // Something in SimpleTest isn't handling the string correctly.
     $this->assertText('to view this form.', t('Anonymous user is not allowed to submit form.'), t('Webform'));
   }
-
-  /**
-   * Create webform
-   */
-
 }

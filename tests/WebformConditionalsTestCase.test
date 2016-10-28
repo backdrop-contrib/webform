@@ -7,7 +7,7 @@
 
 class WebformConditionalsTestCase extends WebformTestCase {
   /**
-   * Implements getInfo().
+   * {@inheritdoc}
    */
   public static function getInfo() {
     return array(
@@ -63,8 +63,9 @@ class WebformConditionalsTestCase extends WebformTestCase {
    *   If FALSE, validation errors are expected to be triggered. The input
    *   $value will be compared against the "sample values" input provided by
    *   testWebformComponents().
-   * @return
-   *   None. This function executes its own assert statements to show results.
+   *
+   * @return void
+   *   This function executes its own assert statements to show results.
    */
   private function webformTestConditionalComponent($component, $input_values, $operator, $conditional_values, $should_match) {
     // Create the Webform test node and add a same-page conditional followed

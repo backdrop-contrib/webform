@@ -11,7 +11,7 @@ class WebformTestCase extends DrupalWebTestCase {
   public $webform_users;
 
   /**
-   * Implements setUp().
+   * {@inheritdoc}
    */
   function setUp($added_modules = array()) {
     // Enable Webform and Token module if available.
@@ -81,7 +81,7 @@ class WebformTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Implemenation of tearDown().
+   * {@inheritdoc}
    */
   function tearDown() {
     // Delete the webform admin and any created nodes.
@@ -100,9 +100,6 @@ class WebformTestCase extends DrupalWebTestCase {
     parent::tearDown();
   }
 
-  /**
-   *
-   */
   function webformReset() {
     $this->_webform_node = NULL;
     $this->_webform_components = NULL;
@@ -504,7 +501,7 @@ class WebformTestCase extends DrupalWebTestCase {
           'pid' => '0',
           'weight' => '-10',
         ),
-        // TODO: I'd like to test a value, but SimpleTest can't set multiple values.
+        // @todo: I'd like to test a value, but SimpleTest can't set multiple values.
         'sample values' => NULL,
         'database values' => array('one', 'two'),
         'database default values' => array('one', 'two'),
@@ -721,7 +718,7 @@ class WebformTestCase extends DrupalWebTestCase {
           'weight' => '-15',
         ),
         // Manually hard-code the input if token is not available.
-        // TODO: Update after http://drupal.org/node/1347790 is finished.
+        // @todo: Update after http://drupal.org/node/1347790 is finished.
         'sample values' => module_exists('token') ? NULL : 'bar',
         'database values' => array('bar'),
         'database default values' => module_exists('token') ? array('bar') : array(''),
@@ -742,7 +739,7 @@ class WebformTestCase extends DrupalWebTestCase {
         'sample values' => 'Female',
         'database values' => array('Female'),
         // The default value will be blank if token does not exist.
-        // TODO: Update after http://drupal.org/node/1347790 is finished.
+        // @todo: Update after http://drupal.org/node/1347790 is finished.
         'database default values' => module_exists('token') ? array($this->webform_users['admin']->gender[LANGUAGE_NONE][0]['value']) : array(''),
       ),
 
