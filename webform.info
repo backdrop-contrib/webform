@@ -34,9 +34,9 @@ files[] = views/webform_handler_relationship_submission_data.inc
 files[] = views/webform_plugin_row_submission_view.inc
 files[] = views/webform.views.inc
 
-files[] = tests/components.test
-files[] = tests/conditionals.test
-files[] = tests/permissions.test
-files[] = tests/submission.test
-files[] = tests/webform.test
+files[] = tests/WebformComponentsTestCase.test
+files[] = tests/WebformConditionalsTestCase.test
 files[] = tests/WebformGeneralTestCase.test
+files[] = tests/WebformPermissionsTestCase.test
+files[] = tests/WebformSubmissionTestCase.test
+files[] = tests/WebformTestCase.test
