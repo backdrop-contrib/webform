@@ -5,8 +5,6 @@
  * Webform module component tests.
  */
 
-include_once(dirname(__FILE__) . '/webform.test');
-
 class WebformComponentsTestCase extends WebformTestCase {
   /**
    * Implements getInfo().
@@ -17,13 +15,6 @@ class WebformComponentsTestCase extends WebformTestCase {
       'description' => t('Add and remove components from a webform.'),
       'group' => t('Webform'),
     );
-  }
-
-  /**
-   * Implements setUp().
-   */
-  function setUp($added_modules = array()) {
-    parent::setUp($added_modules);
   }
 
   /**

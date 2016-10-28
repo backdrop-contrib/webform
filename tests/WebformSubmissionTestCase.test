@@ -5,8 +5,6 @@
  * Webform module submission tests.
  */
 
-include_once(dirname(__FILE__) . '/webform.test');
-
 class WebformSubmissionTestCase extends WebformTestCase {
   /**
    * Implements getInfo().
@@ -17,20 +15,6 @@ class WebformSubmissionTestCase extends WebformTestCase {
       'description' => t('Submits a sample webform and checks the database integrity.'),
       'group' => t('Webform'),
     );
-  }
-
-  /**
-   * Implements setUp().
-   */
-  function setUp($added_modules = array()) {
-    parent::setUp($added_modules);
-  }
-
-  /**
-   * Implements tearDown().
-   */
-  function tearDown() {
-    parent::tearDown();
   }
 
   /**

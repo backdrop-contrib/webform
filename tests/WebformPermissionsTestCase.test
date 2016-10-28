@@ -5,8 +5,6 @@
  * Webform module permission tests.
  */
 
-include_once(dirname(__FILE__) . '/webform.test');
-
 class WebformPermissionsTestCase extends WebformTestCase {
   /**
    * Implements getInfo().
@@ -17,20 +15,6 @@ class WebformPermissionsTestCase extends WebformTestCase {
       'description' => t('Create webforms and check editing and access permissions.'),
       'group' => t('Webform'),
     );
-  }
-
-  /**
-   * Implements setUp().
-   */
-  function setUp($added_modules = array()) {
-    parent::setUp($added_modules);
-  }
-
-  /**
-   * Implements tearDown().
-   */
-  function tearDown() {
-    parent::tearDown();
   }
 
   /**

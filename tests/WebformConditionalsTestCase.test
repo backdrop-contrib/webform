@@ -5,8 +5,6 @@
  * Webform module conditional tests.
  */
 
-include_once(dirname(__FILE__) . '/webform.test');
-
 class WebformConditionalsTestCase extends WebformTestCase {
   /**
    * Implements getInfo().
@@ -17,20 +15,6 @@ class WebformConditionalsTestCase extends WebformTestCase {
       'description' => t('Generates webforms to test conditional showing and hiding of fields.'),
       'group' => t('Webform'),
     );
-  }
-
-  /**
-   * Implements setUp().
-   */
-  function setUp($added_modules = array()) {
-    parent::setUp($added_modules);
-  }
-
-  /**
-   * Implements tearDown().
-   */
-  function tearDown() {
-    parent::tearDown();
   }
 
   /**
