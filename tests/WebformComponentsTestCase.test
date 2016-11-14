@@ -83,5 +83,39 @@ class WebformComponentsTestCase extends WebformTestCase {
       $components[6]['name'] . '_2' => array(6 => $components[6]['name'], 7 => $components[7]['name']),
     );
     $this->assertIdentical($webform_component_list, $test_list, 'webform_component_list() returns expected value.');
+
+    // Test webform_component_parent_keys().
+    $components = array(
+      1 => array(
+        'form_key' => $this->randomName(),
+        'name' => $this->randomName(),
+        'pid' => 0,
+      ),
+      2 => array(
+        'form_key' => $this->randomName(),
+        'name' => $this->randomName(),
+        'pid' => 1,
+      ),
+      3 => array(
+        'form_key' => $this->randomName(),
+        'name' => $this->randomName(),
+        'pid' => 2,
+      ),
+    );
+
+    $node = new stdClass();
+    $node->webform['components'] = $components;
+
+    $parents = webform_component_parent_keys($node, $components[3]);
+    $test_parents = array($components[1]['form_key'], $components[2]['form_key'], $components[3]['form_key']);
+    $this->assertIdentical($parents, $test_parents, 'webform_component_parent_keys() returns expected form_keys.');
+
+    $parents = webform_component_parent_keys($node, $components[3], 'name');
+    $test_parents = array($components[1]['name'], $components[2]['name'], $components[3]['name']);
+    $this->assertIdentical($parents, $test_parents, 'webform_component_parent_keys() returns expected names.');
+
+    $parents = webform_component_parent_keys($node, $components[3], TRUE);
+    $test_parents = array($components[1], $components[2], $components[3]);
+    $this->assertIdentical($parents, $test_parents, 'webform_component_parent_keys() returns expected component arrays.');
   }
 }

@@ -1151,13 +1151,26 @@ function theme_webform_component_select($variables) {
 }
 
 /**
- * Find a components parents within a node.
+ * Find a component's parents within a node.
+ *
+ * @param object $node
+ *   The webform node.
+ * @param array $component
+ *   The component to start with.
+ * @param string|true $what_to_return
+ *   If TRUE, return complete component arrays. Otherwise, return the property
+ *   of each component named in this parametre.
+ *
+ * @return array
+ *   An array with a value for each parent and for the start component, in order
+ *   ending with start component. What the value is is controlled by
+ *   $what_to_return.
  */
-function webform_component_parent_keys($node, $component) {
-  $parents = array($component['form_key']);
+function webform_component_parent_keys($node, array $component, $what_to_return = 'form_key') {
+  $parents = array(($what_to_return === TRUE) ? $component : $component[$what_to_return]);
   $pid = $component['pid'];
   while ($pid) {
-    $parents[] = $node->webform['components'][$pid]['form_key'];
+    $parents[] = ($what_to_return === TRUE) ? $node->webform['components'][$pid] : $node->webform['components'][$pid][$what_to_return];
     $pid = $node->webform['components'][$pid]['pid'];
   }
   return array_reverse($parents);
