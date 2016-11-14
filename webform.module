@@ -4110,14 +4110,17 @@ function webform_check_record(&$node) {
 }
 
 /**
- * Given a form_key and a list of form_key parents, determine the cid.
+ * Given a component's form_key and its parent's cid, determine its cid.
  *
  * @param $node
- *   A fully loaded node object.
+ *   The webform node object.
  * @param $form_key
- *   The form key for which we're finding a cid.
- * @param $parent
+ *   The form key for which to find the cid.
+ * @param $pid
  *   The cid of the parent component.
+ *
+ * @return int
+ *   The cid of the component.
  */
 function webform_get_cid(&$node, $form_key, $pid) {
   foreach ($node->webform['components'] as $cid => $component) {
