@@ -1043,6 +1043,13 @@ function webform_component_list($node, $component_filter = NULL, $prepend_group 
     // If this component is a pagebreak, then generate an option group, ensuring a unique name.
     if ($pagebreak_groups && $component['type'] == 'pagebreak') {
       $page_name = $component['name'];
+
+      // When a $page_name consists only of digits, append a space to ensure it
+      // is never the same as a $cid.
+      if ((string) $page_name === (string) (int) $page_name) {
+        $page_name .= ' ';
+      }
+
       $copy = 1;
       while (in_array($page_name, $page_names)) {
         $page_name = $component['name'] . '_' . ++$copy;

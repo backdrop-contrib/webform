@@ -17,12 +17,71 @@ class WebformComponentsTestCase extends WebformTestCase {
     );
   }
 
-  /**
-   * Implements testWebformDummy(). if it is not present,
-   * then the test runs fine, but when combined with other tests
-   * the whole block fails, since there would be no output.
-   */
-  function testWebformDummy() {
-    $this->pass = t('WebformComponentsTest pass.');
+  function testWebformComponents() {
+    // Test webform_component_list().
+    // Create a form consisting of three textfields separated by pagebreaks.
+    $test_components = $this->webformComponents();
+    $textfield = $test_components['textfield']['component'];
+
+    // Page 1 textfield.
+    $textfield['page_num'] = 1;
+    $textfield['name'] = $this->randomName();
+    $textfield['form_key'] = $this->randomName();
+    $components[1] = $textfield;
+    // Page 2 break.
+    $components[2] = array(
+      'type' => 'pagebreak',
+      'form_key' => 'pagebreak_' . $this->randomName(),
+      'pid' => 0,
+      'name' => $this->randomName(),
+      'page_num' => 2,
+    );
+    // Page 2 textfield.
+    $textfield['name'] = $this->randomName();
+    $textfield['form_key'] = $this->randomName();
+    $textfield['page_num'] = 2;
+    $components[3] = $textfield;
+    // Page 3 break.
+    $components[4] = array(
+      'type' => 'pagebreak',
+      'form_key' => 'pagebreak_' . $this->randomName(),
+      'pid' => 0,
+      // Name is the cid of another component. Should get a space added when it
+      // is used as a key in the value returned from webform_component_list().
+      'name' => '1',
+      'page_num' => 3,
+    );
+    // Page 3 textfield.
+    $textfield['name'] = $this->randomName();
+    $textfield['form_key'] = $this->randomName();
+    $textfield['page_num'] = 3;
+    $components[5] = $textfield;
+    // Page 4 break.
+    $components[6] = array(
+      'type' => 'pagebreak',
+      'form_key' => 'pagebreak_' . $this->randomName(),
+      'pid' => 0,
+      // Name is the same as Page 3 break. Tests that name is made unique.
+      'name' => '1',
+      'page_num' => 4,
+    );
+    // Page 4 textfield.
+    $textfield['name'] = $this->randomName();
+    $textfield['form_key'] = $this->randomName();
+    $textfield['page_num'] = 4;
+    $components[7] = $textfield;
+
+    // Generate a component list.
+    $node = new stdClass();
+    $node->webform['components'] = $components;
+    $webform_component_list = webform_component_list($node, NULL, TRUE, TRUE);
+    // Test return value.
+    $test_list = array(
+      1 => $components[1]['name'],
+      $components[2]['name'] => array(2 => $components[2]['name'], 3 => $components[3]['name']),
+      $components[4]['name'] . ' ' => array(4 => $components[4]['name'], 5 => $components[5]['name']),
+      $components[6]['name'] . '_2' => array(6 => $components[6]['name'], 7 => $components[7]['name']),
+    );
+    $this->assertIdentical($webform_component_list, $test_list, 'webform_component_list() returns expected value.');
   }
 }
