@@ -1301,6 +1301,7 @@ function webform_results_download($node, $export_info) {
       $export_name  = t('Untitled');
     }
     $export_info['exporter']->set_headers($export_name);
+    ob_clean();
     @readfile($export_info['file_name']);  // The @ makes it silent.
     @unlink($export_info['file_name']);  // Clean up, the @ makes it silent.
   }
