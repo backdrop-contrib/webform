@@ -54,7 +54,7 @@ function webform_submission_data($node, $submitted) {
  */
 function webform_submission_create($node, $account, $form_state, $is_preview = FALSE, $prototype = NULL) {
   $data = webform_submission_data($node, $form_state['values']['submitted']);
-  if ($prototype) {
+  if (is_object($prototype)) {
     $submission = clone $prototype;
     $submission->preview = $is_preview;
     $submission->data = $data;
