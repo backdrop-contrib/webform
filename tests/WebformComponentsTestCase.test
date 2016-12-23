@@ -117,5 +117,62 @@ class WebformComponentsTestCase extends WebformTestCase {
     $parents = webform_component_parent_keys($node, $components[3], TRUE);
     $test_parents = array($components[1], $components[2], $components[3]);
     $this->assertIdentical($parents, $test_parents, 'webform_component_parent_keys() returns expected component arrays.');
+
+
+    // Test webform_get_cid().
+    $settings = array(
+      'title' => 'Test webform with multiple instances of a Form Key',
+      'type' => 'webform',
+    );
+    $node = $this->drupalCreateNode($settings);
+
+    // Add a new textarea component.
+    $components = $this->webformComponents();
+    $textarea = $components['textarea'];
+    $textarea['type'] = 'textarea';
+    $textarea['form_key'] = 'testing_key';
+    $textarea['cid'] = 1;
+    $textarea['pid'] = 0;
+    $textarea = array_merge(webform_component_invoke('textarea', 'defaults'), $textarea);
+    $node->webform['components'][1] = $textarea;
+
+    // Add a new fieldset component.
+    $fieldset = array(
+      'cid' => 2,
+      'pid' => 0,
+      'form_key' => 'another_key',
+      'name' => 'Fieldset',
+      'type' => 'fieldset',
+      'value' => '',
+      'required' => '0',
+      'weight' => '0',
+    );
+    $node->webform['components'][2] = $fieldset;
+
+    // Add a new textfield component as child of the fieldset.
+    $textfield = $components['textfield'];
+    $textfield['type'] = 'textfield';
+    $textfield['form_key'] = 'testing_key';
+    $textfield['cid'] = 3;
+    $textfield['pid'] = 2;
+    $textfield = array_merge(webform_component_invoke('textarea', 'defaults'), $textfield);
+    $node->webform['components'][3] = $textfield;
+
+    // Add another textfield component.
+    $textfield = $components['textfield'];
+    $textfield['type'] = 'textfield';
+    $textfield['form_key'] = 'dummy_key';
+    $textfield['cid'] = 4;
+    $textfield['pid'] = 0;
+    $textfield = array_merge(webform_component_invoke('textarea', 'defaults'), $textfield);
+    $node->webform['components'][4] = $textfield;
+
+    node_save($node);
+
+    // Test webform_get_cid() with providing a parent cid.
+    $this->assertTrue(webform_get_cid($node, 'testing_key', 2) == 3, t('Returned expected Webform component id for a given form_key and parent (pid).'));
+
+    // Test webform_get_cid() without providing a parent cid.
+    $this->assertTrue(webform_get_cid($node, 'testing_key') == array(1, 3), t('Returned expected Webform component ids array for a given form_key.'));
   }
 }
