@@ -646,6 +646,7 @@ function _webform_edit_grid_unique_validate($element) {
   // Grids may contain nested multiple value select components.
   // Create a flat array of values.
   $values = array();
+  $element['#value'] = (array) $element['#value'];
   array_walk_recursive($element['#value'], function ($a) use (&$values) { $values[] = $a; });
 
   $nr_unique = count(array_unique($values));
