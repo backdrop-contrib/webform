@@ -130,10 +130,13 @@ function webform_get_view($node, $view_id) {
 /**
  * Theme the list of links for selecting the number of results per page.
  *
- * @param $total_count
- *   The total number of results available.
- * @param $pager_count
- *   The current number of results displayed per page.
+ * @param array $variables
+ *   Array with keys:
+ *     - "total_count": The total number of results available.
+ *     - "pager_count": The current number of results displayed per page.
+ *
+ * @return string
+ *   Pager.
  */
 function theme_webform_results_per_page($variables) {
   $total_count = $variables['total_count'];
@@ -262,6 +265,9 @@ function theme_webform_results_table_header($variables) {
  *   The total number of submissions to this webform.
  * @param $pager_count
  *   The number of results to be shown per page.
+ *
+ * @return string
+ *   HTML string with result data.
  */
 function theme_webform_results_table($variables) {
   drupal_add_library('webform', 'admin');
@@ -1058,12 +1064,12 @@ function webform_results_download_headers($node, $options) {
  * @param array $options
  *   A list of options that define the output format. These are generally passed
  *   through from the GUI interface.
- * @param $serial_start
+ * @param int $serial_start
  *   The starting position for the Serial column in the output.
  * @param $last_sid
  *   If set to a non-NULL value, the last sid will be returned.
  *
- * @return $rows
+ * @return array $rows
  *   An array of rows built according to the provided $serial_start and
  *   $pager_count variables. Note that the current page number is determined
  *   by the super-global $_GET['page'] variable.
@@ -1102,7 +1108,7 @@ function webform_results_download_rows($node, $options, $serial_start = 0, &$las
  * @param array $submissions
  *   An associative array of loaded submissions, indexed by sid.
  *
- * @return $rows
+ * @return array $rows
  *   An array of rows built according to the provided $serial_start and
  *   $pager_count variables. Note that the current page number is determined
  *   by the super-global $_GET['page'] variable.
@@ -1165,6 +1171,9 @@ function webform_results_download_rows_process($node, $options, $serial_start, $
  *
  * @param $options
  *   Filter down the list of columns based on a provided column list.
+ *
+ * @return array
+ *   List of generic columns plus columns added by other modules
  */
 function webform_results_download_submission_information($node, $options = array()) {
   $submission_information = module_invoke_all('webform_results_download_submission_information_info');
@@ -1255,6 +1264,9 @@ function webform_webform_results_download_submission_information_data($token, $s
  * @param array $options
  *   A list of options that define the output format. These are generally passed
  *   through from the GUI interface.
+ *
+ * @return array
+ *   Option for creating downloadable version of the webform data.
  */
 function webform_results_download_default_options($node, $format) {
   $submission_information = webform_results_download_submission_information($node);
@@ -1346,7 +1358,7 @@ function webform_results_export_success($node, $export_info) {
  * @param $node
  *   The webform $node whose export file is being downloaded.
  *
- * @return
+ * @return null|string
  *   Either an export file is downloaded with the appropriate HTTP headers set,
  *   or an error page is shown if now export is available to download.
  */
@@ -1564,6 +1576,9 @@ function webform_results_batch_finished($success, $results, $operations) {
  *   A webform component. If passed in, additional information may be returned
  *   relating specifically to that component's analysis, such as a list of
  *   "Other" values within a select list.
+ *
+ * @return string
+ *   Provides a simple analysis of all submissions to a webform.
  */
 function webform_results_analysis($node, $sids = array(), $analysis_component = NULL) {
   if (!is_array($sids)) {
@@ -1673,6 +1688,8 @@ function template_preprocess_webform_analysis_component(&$variables) {
  *       of header labels.
  *     - table_rows: If this component has a table that should be rendered, an
  *       array of values
+ *
+ * @return string
  */
 function theme_webform_analysis_component_basic($variables) {
   $data = $variables['data'];
@@ -1871,6 +1888,8 @@ function webform_download_sids_count($nid, $range_options, $uid = NULL) {
  *   The user id of the user whose last download information should be used,
  *   or the current user if NULL. This is unrelated to which user submitted
  *   the submissions.
+ *
+ * @return QueryAlterableInterface
  */
 function webform_download_sids_query($nid, $range_options, $uid = NULL) {
   $query = db_select('webform_submissions', 'ws')

@@ -602,8 +602,6 @@ function _webform_csv_data_number($component, $export_options, $value) {
  *   The form element. May either be a select or a webform_number element.
  * @param $form_state
  *   The full form state for the webform.
- * @return
- *   None. Calls a form_set_error if the number is not valid.
  */
 function _webform_validate_number($element, &$form_state) {
   // Trim spaces for basic cleanup.
@@ -869,6 +867,8 @@ function webform_number_format($value, $decimals = NULL, $point = '.', $separato
  *   The string value to be standardized into a numeric string.
  * @param $point
  *   The point separator between the whole number and the decimals.
+ *
+ * @return mixed|string
  */
 function webform_number_standardize($value, $point) {
   // For simplicity, strip everything that's not the decimal point.

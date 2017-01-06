@@ -764,6 +764,10 @@ function webform_component_delete_form_submit($form, &$form_state) {
  *
  * @param $component
  *   A full component containing fields from the component form.
+ *
+ * @return false|int
+ *   On success return identifier for the components within node.
+ *   FALSE on failure
  */
 function webform_component_insert(&$component) {
   // Allow modules to modify the component before saving.
@@ -946,6 +950,10 @@ function webform_component_delete($node, $component) {
  *   The node object containing the current webform.
  * @param $component
  *   A full component containing fields from the component form.
+ *
+ * @return false|int
+ *   On success return identifier for the components within node.
+ *   FALSE on failure
  */
 function webform_component_clone(&$node, &$component) {
   $original_cid = $component['cid'];
@@ -1024,6 +1032,8 @@ function webform_component_property($type, $property) {
  * @param $pagebreak_groups
  *   Determine if pagebreaks should be converted to option groups in the
  *   returned list of options.
+ *
+ * @return array
  */
 function webform_component_list($node, $component_filter = NULL, $prepend_group = TRUE, $pagebreak_groups = FALSE) {
   $options = array();

@@ -541,7 +541,7 @@ function webform_get_submission_access_token($submission) {
  * @param $node
  *   The webform node object.
  *
- * @return
+ * @return bool
  *  Boolean whether the user has access to the confirmation page.
  */
 function webform_confirmation_page_access($node) {
@@ -603,7 +603,7 @@ function webform_confirmation_page_access($node) {
  * @param $account
  *   Optional. A user object or NULL to use the currently logged-in user.
  *
- * @return
+ * @return bool
  *   Boolean whether the user has access to a webform submission.
  */
 function webform_submission_access($node, $submission, $op = 'view', $account = NULL) {
@@ -2065,6 +2065,8 @@ function _webform_allowed_roles($node, &$user_is_allowed) {
  *   The rendered form.
  * @param $enabled
  *   If the form allowed to be completed by the current user.
+ *
+ * @return string
  */
 function theme_webform_view($variables) {
   // Only show the form if this user is allowed access.
@@ -3965,6 +3967,10 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
  *
  * @param string $text
  *   The text to have its tokens removed.
+ *
+ * @return mixed|string
+ *   Replace tokens with actual value.
+ *
  * @see token_replace()
  */
 function webform_replace_tokens_clear($text) {
@@ -4730,6 +4736,9 @@ function webform_component_include($component_type) {
  *   The callback to execute.
  * @param ...
  *   Any additional parameters required by the $callback.
+ *
+ * @return mixed
+ *   Return value of the callback on success and FALSE on failure.
  */
 function webform_component_invoke($type, $callback) {
   $args = func_get_args();
@@ -4749,6 +4758,8 @@ function webform_component_invoke($type, $callback) {
  *   The component type as a string.
  * @param $callback
  *   The callback to check.
+ *
+ * @return bool
  */
 function webform_component_implements($type, $callback) {
   $function = '_webform_' . $callback . '_' . $type;
@@ -4872,6 +4883,9 @@ function webform_set_breadcrumb($node, $submission = NULL) {
  *   - hour (in 24hr notation)
  *   - minute
  *   - second
+ *
+ * @return array
+ *   Date in array formate.
  */
 function webform_date_array($string, $type = NULL) {
   $pattern = '/((\d{4}?)-(\d{2}?)-(\d{2}?))?(T?(\d{2}?):(\d{2}?):(\d{2}?))?/';
@@ -4906,6 +4920,9 @@ function webform_date_array($string, $type = NULL) {
  * @param $type
  *   If wanting a specific string format back specify either "date" or "time".
  *   Otherwise a full ISO 8601 date and time string will be returned.
+ *
+ * @return string
+ *   Date in string format
  */
 function webform_date_string($array, $type = NULL) {
   $string = '';

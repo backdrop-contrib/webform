@@ -389,6 +389,7 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE, $submis
  *   An associative array containing:
  *   - element: A render element representing the file.
  *
+ * @return string
  */
 function theme_webform_managed_file($variables) {
   $element = $variables['element'];
