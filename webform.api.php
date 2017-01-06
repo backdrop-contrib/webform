@@ -29,7 +29,8 @@
  *   should be keyed by the "name" of the pre-defined list. The values should
  *   be an array with the following additional keys:
  *     - title: The translated title for this list.
- *     - options callback: The name of the function that will return the list.
+ *     - options callback: The name of a function implementing
+ *       callback_webform_options() that will return the list.
  *     - options arguments: Any additional arguments to send to the callback.
  *     - file: Optional. The file containing the options callback, relative to
  *       the module root.
@@ -57,12 +58,9 @@ function hook_webform_select_options_info_alter(&$items) {
 }
 
 /**
- * This is an example function to demonstrate a webform options callback.
+ * Define a list of options that Webform may use in a select component.
  *
- * This function returns a list of options that Webform may use in a select
- * component. In order to be called, the function name
- * ("webform_options_example" in this case), needs to be specified as a callback
- * in hook_webform_select_options_info().
+ * Callback for hook_webform_select_options_info().
  *
  * @param $component
  *   The Webform component array for the select component being displayed.
@@ -78,7 +76,7 @@ function hook_webform_select_options_info_alter(&$items) {
  *   An array of key => value pairs suitable for a select list's #options
  *   FormAPI property.
  */
-function webform_options_example($component, $flat, $arguments) {
+function callback_webform_options($component, $flat, $arguments) {
   $options = array(
     'one' => t('Pre-built option one'),
     'two' => t('Pre-built option two'),
