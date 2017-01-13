@@ -4,7 +4,6 @@
  * @file
  * Webform module component tests.
  */
-
 class WebformComponentsTestCase extends WebformTestCase {
   /**
    * {@inheritdoc}

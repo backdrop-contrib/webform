@@ -4,7 +4,6 @@
  * @file
  * Webform module permission tests.
  */
-
 class WebformPermissionsTestCase extends WebformTestCase {
   /**
    * {@inheritdoc}

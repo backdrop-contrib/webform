@@ -4,7 +4,6 @@
  * @file
  * Webform module conditional tests.
  */
-
 class WebformConditionalsTestCase extends WebformTestCase {
   /**
    * {@inheritdoc}
