@@ -3029,6 +3029,15 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
         form_error($elements, t('!name cannot be longer than %max characters but is currently %length characters long.', array('!name' => empty($elements['#title']) ? $elements['#parents'][0] : $elements['#title'], '%max' => $elements['#maxlength'], '%length' => drupal_strlen($elements['#value']))));
       }
 
+      // Verify that the value is not shorter than #minlength. The value may
+      // still be empty (required is a separate validation option).
+      if (isset($elements['#minlength'])) {
+        $length = drupal_strlen($elements['#value']);
+        if ($length > 0 && $length < $elements['#minlength']) {
+          form_error($elements, t('!name cannot be shorter than %min characters but is currently %length characters long.', array('!name' => empty($elements['#title']) ? $elements['#parents'][0] : $elements['#title'], '%min' => $elements['#minlength'], '%length' => drupal_strlen($elements['#value']))));
+        }
+      }
+
       if (isset($elements['#options']) && isset($elements['#value'])) {
         if ($elements['#type'] == 'select') {
           $options = form_options_flatten($elements['#options']);
