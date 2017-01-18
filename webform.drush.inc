@@ -102,7 +102,6 @@ function drush_webform_export($nid = FALSE) {
       break;
   }
 
-
   // Get the preferred completion type
   $options['range']['completion_type'] = drush_get_option('completion-type', NULL); 
   if (isset($options['range']['completion_type']) && !in_array($options['range']['completion_type'], array('finished', 'draft', 'all'))) {
@@ -110,8 +109,8 @@ function drush_webform_export($nid = FALSE) {
   }
 
   // Set the export options.
-  $options['range']['batch_size'] = drush_get_option('batch-size', 10000);    
-  $options['file_name'] = drush_get_option('file', tempnam(config_get('webform.settings', 'file_directory_temp')));
+  $options['range']['batch_size'] = drush_get_option('batch-size', 10000);
+  $options['file_name'] = drush_get_option('file', tempnam(config_get('system.core', 'file_temporary_path')));
 
   $batch = webform_results_export_batch($node, $format, $options);
   batch_set($batch);

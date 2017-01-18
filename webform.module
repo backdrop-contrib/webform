@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * This module provides a simple way to create forms and questionnaires.
  *
  * The initial development of this module was sponsered by ÅF Industri AB, Open
@@ -637,7 +638,7 @@ function webform_node_update_access($node, $account = NULL) {
  * Implements hook_admin_paths().
  */
 function webform_admin_paths() {
-  if (config_get('webform.settings', 'node_admin_theme')) {
+  if (config_get('system.core', 'node_admin_theme')) {
     return array(
       'node/*/webform' => TRUE,
       'node/*/webform/*' => TRUE,
@@ -1785,8 +1786,9 @@ function webform_node_view($node, $view_mode) {
     return;
   }
 
-  // Do not include the form in the search index if indexing is disabled.
-  if (module_exists('search') && $view_mode == 'search_index' && !webform_variable_get('webform_search_index')) {
+  // If the webform is not set to display in this view mode, return early.
+  $extra_fields = field_extra_fields_get_display('node', $node->type, $view_mode);
+  if (empty($extra_fields['webform']['visible'])) {
     return;
   }
 
@@ -1800,7 +1802,8 @@ function webform_node_view($node, $view_mode) {
   $closed = FALSE;
   $allowed_roles = array();
 
-  // If a teaser, tell the form to load subsequent pages on the node page.
+  // If a teaser, tell the form to load subsequent pages on the node page. A
+  // special exception is made for this view mode only.
   if ($view_mode == 'teaser' && !isset($node->webform['action'])) {
     $query = array_diff_key($_GET, array('q' => ''));
     $node->webform['action'] = url('node/' . $node->nid, array('query' => $query));
@@ -1967,7 +1970,6 @@ function theme_webform_view_messages($variables) {
 
   $type = 'warning';
 
-
   if ($closed) {
     $message = t('Submissions for this form are closed.');
   }
@@ -1981,7 +1983,7 @@ function theme_webform_view_messages($variables) {
       // The user is anonymous, so (at least) needs to log in to view the form.
       $login = url('user/login', array('query' => backdrop_get_destination()));
       $register = url('user/register', array('query' => backdrop_get_destination()));
-      if (config_get('webform.settings', 'user_register')) {
+      if (config_get('system.core', 'user_register') == 0) {
         $message = t('You must <a href="!login">login</a> to view this form.', array('!login' => $login));
       }
       else {
@@ -2325,6 +2327,9 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
         $input_values[$cid] = is_array($data) ? $data : array($data);
       }
     }
+
+    // Allow values from other pages to be sent to browser for conditionals.
+    $form['#conditional_values'] = $input_values;
 
     if ($page_count > 1) {
       $page_labels = webform_page_labels($node, $form_state);
@@ -2958,7 +2963,7 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
  * without realizing that the form hasn't been submitted.
  *
  * THEORY OF OPERATION:
- * The Backdrop 7 Form API lacks an easy way to rebuild the form in the event of
+ * The Backdrop Form API lacks an easy way to rebuild the form in the event of
  * validation errors. The opertions is thus:
  *
  * 1) The form is first displayed. If it is an existing draft,
@@ -3119,7 +3124,7 @@ function webform_client_form_pages($form, &$form_state) {
         if ($component['type'] == 'pagebreak') {
           if ($forward
                ? ($component['page_num'] > $form_state['storage']['page_num'])
-               : ($component['page_num'] <= $form_state['storage']['page_num'])){
+               : ($component['page_num'] <= $form_state['storage']['page_num'])) {
             $previous_pagebreak = $component;
           }
         }
@@ -3138,7 +3143,7 @@ function webform_client_form_pages($form, &$form_state) {
                 }
               }
               else {
-                $page_num = max (1, $page_num);
+                $page_num = max(1, $page_num);
               }
             }
             $form_state['storage']['page_num'] = $page_num;
@@ -3380,7 +3385,7 @@ function template_preprocess_webform_form(&$vars) {
 
   if (!empty($vars['form']['#node']->webform['conditionals'])) {
     module_load_include('inc', 'webform', 'includes/webform.conditionals');
-    $submission_data = isset($vars['form']['#parameters'][1]['storage']['submitted']) ? $vars['form']['#parameters'][1]['storage']['submitted'] : array();
+    $submission_data = isset($vars['form']['#conditional_values']) ? $vars['form']['#conditional_values'] : array();
     $settings = webform_conditional_prepare_javascript($vars['form']['#node'], $submission_data);
     backdrop_add_js(array('webform' => array('conditionals' => array('webform-client-form-' . $vars['nid'] => $settings))), 'setting');
   }
@@ -3813,7 +3818,7 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
   if ($email) {
     $token_data['webform-email'] = $email;
   }
-  return token_replace($string, $token_data, array('clear' => true, 'sanitize' => $sanitize));
+  return token_replace($string, $token_data, array('clear' => TRUE, 'sanitize' => $sanitize));
 }
 
 /**
@@ -3998,9 +4003,6 @@ function webform_variable_get($variable) {
     case 'webform_allowed_tags':
       $result = config_get('webform.settings', 'webform_allowed_tags');
       break;
-    case 'webform_search_index':
-      $result = config_get('webform.settings', 'webform_search_index');
-      break;
     case 'webform_email_address_format':
       $result = config_get('webform.settings', 'webform_email_address_format');
       break;
@@ -4053,10 +4055,10 @@ function webform_variable_get($variable) {
       $result = config_get('webform.settings', 'webform_progressbar_style');
       break;
     case 'webform_progressbar_label_first':
-      $result = config_get('webform.settings', 'webform_progressbar_label_first');
+      $result = t(config_get('webform.settings', 'webform_progressbar_label_first'));
       break;
     case 'webform_progressbar_label_confirmation':
-      $result = config_get('webform.settings', 'webform_progressbar_label_confirmation');
+      $result = t(config_get('webform.settings', 'webform_progressbar_label_confirmation'));
       break;
     case 'webform_table':
       $result = config_get('webform.settings', 'webform_table');
@@ -4578,7 +4580,7 @@ function webform_date_string($array, $type = NULL) {
  */
 function webform_date_format($size = 'medium') {
     // Format date according to site's given format.
-    $format = config_get('webform.settings', 'date_format_' . $size);
+    $format = config_get('system.date', 'formats.' . $size . '.pattern');
     $time = 'aABgGhHisueIOPTZ';
     $day_of_week = 'Dlw';
     $special = ',-: ';
@@ -4600,7 +4602,7 @@ function webform_strtodate($format, $string, $timezone_name = NULL) {
   global $user;
 
   // Adjust the time based on the user or site timezone.
-  if (config_get('webform.settings', 'configurable_timezones') && $timezone_name == 'user' && $user->uid) {
+  if (config_get('system.date', 'user_timezone_configurable') && $timezone_name == 'user' && $user->uid) {
     $timezone_name = isset($GLOBALS['user']->timezone) ? $GLOBALS['user']->timezone : 'UTC';
   }
   // If the timezone is still empty or not set, use the site timezone.
@@ -4966,7 +4968,7 @@ function webform_pre_render_input_vars($element) {
  * @return integer
  *   The number of elements in the form that will result in $_POST entries.
  */
-function webform_count_input_vars($element){
+function webform_count_input_vars($element) {
   static $input_types = array(
     'checkbox' => 1,
     'date' => 1,
