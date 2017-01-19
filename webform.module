@@ -1575,7 +1575,7 @@ function webform_node_defaults() {
     'preview_excluded_components' => array(),
     'status' => '1',
     'record_exists' => FALSE,
-    'roles' => array('1', '2'),
+    'roles' => array('anonymous', 'authenticated'),
     'emails' => array(),
     'components' => array(),
     'conditionals' => array(),

@@ -691,6 +691,9 @@ function webform_update_last_removed() {
   return 7430;
 }
 
+/**
+ * Update webforms from Drupal to Backdrop.
+ */
 function webform_update_1000() {
   $config = config('webform.settings');
 
