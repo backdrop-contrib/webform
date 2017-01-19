@@ -639,10 +639,10 @@ function webform_requirements($phase) {
  */
 function webform_install() {
 
-config_set('webform.settings', 'webform_default_from_name', config_get('system.core', 'site_name'));
-config_set('webform.settings', 'webform_default_from_address', config_get('system.core', 'site_mail'));
+  config_set('webform.settings', 'webform_default_from_name', config_get('system.core', 'site_name'));
+  config_set('webform.settings', 'webform_default_from_address', config_get('system.core', 'site_mail'));
 
-module_load_include('inc', 'node', 'content_types');
+  module_load_include('inc', 'node', 'content_types');
   db_update('system')
     ->condition('name', 'webform')
     ->condition('type', 'module')
@@ -691,8 +691,11 @@ function webform_update_last_removed() {
   return 7430;
 }
 
+/**
+ * Update webforms from Drupal to Backdrop.
+ */
 function webform_update_1000() {
-$config = config('webform.settings');
+  $config = config('webform.settings');
 
   // migrate variables
   $config->set('webform_install_create_content_type', update_variable_get('webform_install_create_content_type', TRUE));
@@ -729,9 +732,13 @@ $config = config('webform.settings');
   $config->set('webform_update_batch_size', update_variable_get('webform_update_batch_size', 100));
   $config->set('webform_disabled_components', update_variable_get('webform_disabled_components', array()));
 
-  $config->set('webform_node_types', update_variable_get('webform_node_types', array('webform')));
   $config->set('webform_export_batch_size', update_variable_get('webform_export_batch_size', 100));
   $config->set('webform_export_path', update_variable_get('webform_export_path', 'temporary://'));
+
+  foreach (node_type_get_names() as $type => $name) {
+    $config->set('webform_node_' . $type, update_variable_get('webform_node_' . $type));
+    update_variable_del('webform_node_' . $type);
+  }
 
   $config->save();
 
@@ -792,4 +799,15 @@ function webform_update_1001() {
       'default' => 'anonymous',
     ),
     array('primary key' => array('nid', 'rid')));
+}
+
+/**
+ * Remove variables no longer used: webform_node_types, webform_search_index.
+ */
+function webform_update_1002() {
+  $config = config('webform.settings');
+  // Remove unused variables
+  $config->clear('webform_node_types');
+  $config->clear('webform_search_index');
+  $config->save();
 }
