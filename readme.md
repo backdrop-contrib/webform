@@ -102,10 +102,7 @@ CREDITS
 
 This module is based on the Webform module for Drupal, originally written and maintained by a large number of contributors, including:
 
-- Quicksketch <https://www.drupal.org/u/quicksketch>
-
-Current Maintainers on Drupal:
-
+- quicksketch <https://www.drupal.org/u/quicksketch>
 - fenstrat <https://www.drupal.org/u/fenstrat>
 - danchadwick <https://www.drupal.org/u/danchadwick>
 - torotil <https://www.drupal.org/u/torotil>
@@ -113,7 +110,8 @@ Current Maintainers on Drupal:
 MAINTAINERS
 -----------
 
-- Quicksketch <https://www.drupal.org/u/quicksketch>
+- quicksketch <https://github.com/quicksketch>
+- herbdool <https://github.com/herbdool>
 
 Ported to Backdrop by:
 
