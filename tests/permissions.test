@@ -39,7 +39,7 @@ class WebformPermissionsTestCase extends WebformTestCase {
   function testWebformSubmitAccess() {
     $this->webformReset();
     $node = $this->testWebformForm();
-    $node->webform['roles'] = array(2);
+    $node->webform['roles'] = array('authenticated');
     node_save($node);
 
     // Test that the authenticated user is able to access.
