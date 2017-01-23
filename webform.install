@@ -659,6 +659,9 @@ function webform_install() {
       'custom' => TRUE,
       'modified' => TRUE,
       'locked' => FALSE,
+      'settings' => array(
+        'comment_default' => '1', // Disable comments by default on Webform nodes.
+      ),
     );
     $webform_type = node_type_set_defaults($webform_type);
     node_type_save($webform_type);
@@ -667,8 +670,6 @@ function webform_install() {
     }
     // Enable webform components by default on Webform nodes.
     config_set('webform.settings', 'webform_node_webform', TRUE);
-    // Disable comments by default on Webform nodes.
-    config_set('webform.settings', 'comment_webform', '0');
   }
 }
 
@@ -701,7 +702,6 @@ function webform_update_1000() {
   $config->set('webform_install_create_content_type', update_variable_get('webform_install_create_content_type', TRUE));
   $config->set('webform_install_add_body_field', update_variable_get('webform_install_add_body_field', FALSE));
   $config->set('webform_node_webform', update_variable_get('webform_node_webform',TRUE));
-  $config->set('comment_webform', update_variable_get('comment_webform', 0));
   $config->set('webform_blocks', update_variable_get('webform_blocks', array()));
   $config->set('webform_tracking_mode', update_variable_get('webform_tracking_mode', 'cookie'));
   $config->set('webform_allowed_tags', update_variable_get('webform_allowed_tags', array('a', 'em', 'strong', 'code', 'img')));
@@ -741,7 +741,6 @@ function webform_update_1000() {
   update_variable_del('webform_install_create_content_type');
   update_variable_del('webform_install_add_body_field');
   update_variable_del('webform_node_webform');
-  update_variable_del('comment_webform');
   update_variable_del('webform_blocks');
 
   update_variable_del('webform_tracking_mode');
@@ -773,7 +772,6 @@ function webform_update_1000() {
   update_variable_del('webform_disabled_components');
   update_variable_del('webform_use_cookies');
 
-  update_variable_del('webform_tracking_mode');
   update_variable_del('webform_node_types');
   update_variable_del('webform_export_batch_size');
   update_variable_del('webform_export_path');
@@ -805,4 +803,14 @@ function webform_update_1002() {
   return module_exists('search')
           ? t('Webform forms will now be included in the search index only if the Webform "field" is displayed in the "Search index" view mode.')
           : NULL;
+}
+
+/**
+ * Remove unused variables
+ */
+function webform_update_1003() {
+  $config - config('webform.settings');
+  $config->clear('comment_webform');
+  $config->clear('webform_use_cookies');
+  $config->save();
 }
