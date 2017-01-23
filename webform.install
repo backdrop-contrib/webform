@@ -702,7 +702,6 @@ $config = config('webform.settings');
   $config->set('webform_blocks', update_variable_get('webform_blocks', array()));
   $config->set('webform_tracking_mode', update_variable_get('webform_tracking_mode', 'cookie'));
   $config->set('webform_allowed_tags', update_variable_get('webform_allowed_tags', array('a', 'em', 'strong', 'code', 'img')));
-  $config->set('webform_search_index', update_variable_get('webform_search_index', 1));
   $config->set('webform_email_address_format', update_variable_get('webform_email_address_format', 'long'));
   $config->set('webform_default_from_name', update_variable_get('webform_default_from_name', config_get('system.core', 'site_name')));
 
@@ -744,7 +743,6 @@ $config = config('webform.settings');
 
   update_variable_del('webform_tracking_mode');
   update_variable_del('webform_allowed_tags');
-  update_variable_del('webform_search_index');
   update_variable_del('webform_email_address_format');
   update_variable_del('webform_default_from_name');
 
@@ -792,4 +790,16 @@ function webform_update_1001() {
       'default' => 'anonymous',
     ),
     array('primary key' => array('nid', 'rid')));
+}
+
+/**
+ * Remove the administrator option "Include webform forms in search index" and rely on the Search Index view mode instead.
+ */
+function webform_update_1002() {
+  $config = config('webform.settings');
+  $config->clear('webform_search_index');
+  $config->save();
+  return module_exists('search')
+          ? t('Webform forms will now be included in the search index only if the Webform "field" is displayed in the "Search index" view mode.')
+          : NULL;
 }
