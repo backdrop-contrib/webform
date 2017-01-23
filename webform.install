@@ -809,7 +809,7 @@ function webform_update_1002() {
  * Remove unused variables
  */
 function webform_update_1003() {
-  $config - config('webform.settings');
+  $config = config('webform.settings');
   $config->clear('comment_webform');
   $config->clear('webform_use_cookies');
   $config->save();
