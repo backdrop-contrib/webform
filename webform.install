@@ -639,10 +639,10 @@ function webform_requirements($phase) {
  */
 function webform_install() {
 
-config_set('webform.settings', 'webform_default_from_name', config_get('system.core', 'site_name'));
-config_set('webform.settings', 'webform_default_from_address', config_get('system.core', 'site_mail'));
+  config_set('webform.settings', 'webform_default_from_name', config_get('system.core', 'site_name'));
+  config_set('webform.settings', 'webform_default_from_address', config_get('system.core', 'site_mail'));
 
-module_load_include('inc', 'node', 'content_types');
+  module_load_include('inc', 'node', 'content_types');
   db_update('system')
     ->condition('name', 'webform')
     ->condition('type', 'module')
@@ -691,8 +691,11 @@ function webform_update_last_removed() {
   return 7430;
 }
 
+/**
+ * Update webforms from Drupal to Backdrop.
+ */
 function webform_update_1000() {
-$config = config('webform.settings');
+  $config = config('webform.settings');
 
   // migrate variables
   $config->set('webform_install_create_content_type', update_variable_get('webform_install_create_content_type', TRUE));
