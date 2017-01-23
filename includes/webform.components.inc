@@ -245,7 +245,7 @@ function _webform_components_form_rows($node, $cid, $component, $level, &$form, 
   $row_data = array(
     array('data' => $indents . filter_xss($component['name']), 'class' => array('webform-component-name')),
     array('data' => check_plain($form_key), 'class' => array('webform-component-formkey')) +
-          ($component['form_key'] == $form_key ? array() : array('title' => $component['form_key'])),
+          ((string) $component['form_key'] === (string) $form_key ? array() : array('title' => $component['form_key'])),
     array('data' => $form['add']['type']['#options'][$component['type']], 'class' => array('webform-component-type')),
     array('data' => ($value == '') ? '-' : check_plain($value), 'class' => array('webform-component-value')) +
           ($component['value'] == $value ? array() : array('title' => $component['value'])),
@@ -302,8 +302,8 @@ function webform_components_form_validate($form, &$form_state) {
   $parents = array();
   if (isset($form_state['values']['components'])) {
     foreach ($form_state['values']['components'] as $cid => $component) {
-      $form_key = $form['#node']->webform['components'][$cid]['form_key'];
-      if (isset($parents[$component['pid']]) && ($existing = array_search($form_key, $parents[$component['pid']])) && $existing !== FALSE) {
+      $form_key = (string) $form['#node']->webform['components'][$cid]['form_key'];
+      if (isset($parents[$component['pid']]) && ($existing = array_search($form_key, $parents[$component['pid']], TRUE)) && $existing !== FALSE) {
         if (!isset($duplicates[$form_key])) {
           $duplicates[$form_key] = array($existing);
         }

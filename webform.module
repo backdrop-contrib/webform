@@ -4223,7 +4223,7 @@ function webform_get_cid(&$node, $form_key, $pid = NULL) {
   if ($pid === NULL) {
     $cids = array();
     foreach ($node->webform['components'] as $cid => $component) {
-      if ($component['form_key'] == $form_key) {
+      if ((string) $component['form_key'] === (string) $form_key) {
         $cids[] = $cid;
       }
     }
@@ -4231,7 +4231,7 @@ function webform_get_cid(&$node, $form_key, $pid = NULL) {
   }
   else {
     foreach ($node->webform['components'] as $cid => $component) {
-      if ($component['form_key'] == $form_key && $component['pid'] == $pid) {
+      if ((string) $component['form_key'] === (string) $form_key && $component['pid'] == $pid) {
         return $cid;
       }
     }
