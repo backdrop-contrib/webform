@@ -1,8 +1,8 @@
 {
     "_config_name": "webform.settings",
-    "webform_install_create_content_type": "TRUE",
-    "webform_install_add_body_field": "FALSE",
-    "webform_node_webform": "TRUE",
+    "webform_install_create_content_type": true,
+    "webform_install_add_body_field": false,
+    "webform_node_webform": true,
     "webform_blocks": [],
     "webform_tracking_mode": "cookie",
     "webform_allowed_tags": [
@@ -16,8 +16,8 @@
     "webform_default_from_name": "",
     "webform_default_from_address": "",
     "webform_default_subject": "Form submission from: [node:title]",
-    "webform_email_replyto": "TRUE",
-    "webform_email_html_capable": "FALSE",
+    "webform_email_replyto": 1,
+    "webform_email_html_capable": 0,
     "webform_default_format": "0",
     "webform_format_override": "0",
     "webform_email_select_max": "50",
