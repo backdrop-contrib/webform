@@ -3,7 +3,6 @@
     "webform_install_create_content_type": "TRUE",
     "webform_install_add_body_field": "FALSE",
     "webform_node_webform": "TRUE",
-    "comment_webform": "0",
     "webform_blocks": [],
     "webform_tracking_mode": "cookie",
     "webform_allowed_tags": [
@@ -13,7 +12,6 @@
         "code",
         "img"
     ],
-    "webform_search_index": "1",
     "webform_email_address_format": "long",
     "webform_default_from_name": "",
     "webform_default_from_address": "",
@@ -35,14 +33,10 @@
     ],
     "webform_progressbar_label_first": "Start",
     "webform_progressbar_label_confirmation": "Complete",
-
     "webform_table": "FALSE",
     "webform_submission_access_control": "1",
     "webform_update_batch_size": "100",
     "webform_disabled_components": [],
-    "webform_use_cookies": "",
-
-    "webform_tracking_mode": "",
     "webform_node_types": ["webform"],
     "webform_export_batch_size": 100,
     "webform_export_path": "temporary://"
