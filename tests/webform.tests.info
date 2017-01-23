@@ -1,0 +1,29 @@
+[WebformComponentsTestCase]
+name = Webform components
+description = Add and remove components from a webform.
+group = Webform
+file = components.test
+
+[WebformConditionalsTestCase]
+name = Webform Conditionals
+description = Generates webforms to test conditional showing and hiding of fields.
+group = Webform
+file = conditionals.test
+
+[WebformTestCase]
+name = Webform General
+description = Checks global Webform settings and content types.
+group = Webform
+file = webform.test
+
+[WebformPermissionsTestCase]
+name = Webform Permissions
+description = Create webforms and check editing and access permissions.
+group = Webform
+file = permissions.test
+
+[WebformSubmissionTestCase]
+name = Webform Submission
+description = Submits a sample webform and checks the database integrity.
+group = Webform
+file = submission.test
