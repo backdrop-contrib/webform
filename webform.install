@@ -665,7 +665,7 @@ function webform_install() {
     );
     $webform_type = node_type_set_defaults($webform_type);
     node_type_save($webform_type);
-    if (config_get('webform.settings', 'webform_install_create_content_type')) {
+    if (config_get('webform.settings', 'webform_install_add_body_field')) {
       node_add_body_field($webform_type);
     }
     // Enable webform components by default on Webform nodes.
