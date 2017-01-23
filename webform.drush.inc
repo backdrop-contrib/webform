@@ -110,8 +110,8 @@ function drush_webform_export($nid = FALSE) {
   }
 
   // Set the export options.
-  $options['range']['batch_size'] = drush_get_option('batch-size', 10000);    
-  $options['file_name'] = drush_get_option('file', tempnam(config_get('webform.settings', 'file_directory_temp')));
+  $options['range']['batch_size'] = drush_get_option('batch-size', 10000);
+  $options['file_name'] = drush_get_option('file', tempnam(config_get('system.core', 'file_temporary_path')));
 
   $batch = webform_results_export_batch($node, $format, $options);
   batch_set($batch);

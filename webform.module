@@ -637,7 +637,7 @@ function webform_node_update_access($node, $account = NULL) {
  * Implements hook_admin_paths().
  */
 function webform_admin_paths() {
-  if (config_get('webform.settings', 'node_admin_theme')) {
+  if (config_get('system.core', 'node_admin_theme')) {
     return array(
       'node/*/webform' => TRUE,
       'node/*/webform/*' => TRUE,
@@ -1983,7 +1983,7 @@ function theme_webform_view_messages($variables) {
       // The user is anonymous, so (at least) needs to log in to view the form.
       $login = url('user/login', array('query' => backdrop_get_destination()));
       $register = url('user/register', array('query' => backdrop_get_destination()));
-      if (config_get('webform.settings', 'user_register')) {
+      if (config_get('system.core', 'user_register') == 'admin_only') {
         $message = t('You must <a href="!login">login</a> to view this form.', array('!login' => $login));
       }
       else {
@@ -4580,7 +4580,7 @@ function webform_date_string($array, $type = NULL) {
  */
 function webform_date_format($size = 'medium') {
     // Format date according to site's given format.
-    $format = config_get('webform.settings', 'date_format_' . $size);
+    $format = config_get('system.date', 'formats.' . $size . '.pattern');
     $time = 'aABgGhHisueIOPTZ';
     $day_of_week = 'Dlw';
     $special = ',-: ';
@@ -4602,12 +4602,12 @@ function webform_strtodate($format, $string, $timezone_name = NULL) {
   global $user;
 
   // Adjust the time based on the user or site timezone.
-  if (config_get('webform.settings', 'configurable_timezones') && $timezone_name == 'user' && $user->uid) {
+  if (config_get('system.date', 'user_timezone_configurable') && $timezone_name == 'user' && $user->uid) {
     $timezone_name = isset($GLOBALS['user']->timezone) ? $GLOBALS['user']->timezone : 'UTC';
   }
   // If the timezone is still empty or not set, use the site timezone.
   if (empty($timezone_name) || $timezone_name == 'user') {
-    $timezone_name = config_get('system.date', 'date_default_timezone');
+    $timezone_name = config_get('system.date', 'default_timezone');
   }
 
   if (!empty($timezone_name) && class_exists('DateTimeZone')) {

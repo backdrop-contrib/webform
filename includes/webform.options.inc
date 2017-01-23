@@ -49,7 +49,7 @@ function webform_options_days($component, $flat, $arguments) {
   );
 
   // Order according to site settings for first day
-  if ($first_day = config_get('webform.settings', 'date_first_day')) {
+  if ($first_day = config_get('system.date', 'first_day')) {
     $week = array_splice($days, $first_day);
     $days = array_merge($week, $days);
   }

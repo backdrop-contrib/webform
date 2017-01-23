@@ -71,7 +71,7 @@ function _webform_edit_date($component) {
     '#description' => t('If using relative dates for a default value (e.g. "today") base the current day on this timezone.'),
     '#options' => array('user' => t('User timezone'), 'site' => t('Website timezone')),
     '#weight' => 2,
-    '#access' => config_get('webform.settings', 'configurable_timezones'),
+    '#access' => config_get('system.date', 'user_timezone_configurable'),
   );
 
   $form['display']['datepicker'] = array(
@@ -263,7 +263,7 @@ function theme_webform_date($variables) {
     if ($element['#end_date']) {
       $calendar_class[] = 'webform-calendar-end-' . $element['#end_date'];
     }
-    $calendar_class[] ='webform-calendar-day-' . config_get('webform.settings', 'date_first_day');
+    $calendar_class[] ='webform-calendar-day-' . config_get('system.date', 'first_day');
 
     $calendar = theme('webform_calendar', array('component' => $element['#webform_component'], 'calendar_classes' => $calendar_class));
   }
