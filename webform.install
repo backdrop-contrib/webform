@@ -688,7 +688,7 @@ function webform_uninstall() {
  * attempting to upgrade to Backdrop.
  */
 function webform_update_last_removed() {
-  return 7430;
+  return 7421;
 }
 
 /**
