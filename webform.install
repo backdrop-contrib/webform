@@ -814,3 +814,59 @@ function webform_update_1003() {
   $config->clear('webform_use_cookies');
   $config->save();
 }
+
+/**
+ * Create webform_webforms view if it doesn't exist already.
+ * Default webform to using the administrative views instead of tables.
+ */
+function webform_update_1004() {
+
+  $config = config('webform.settings');
+  $config->set('webform_table', FALSE);
+  $config->save();
+
+  // See if there is already a webform_webforms view on this site.
+  $config_webform = config('views.view.webform_webforms');
+  if ($config_webform->isNew()) {
+    // If not, create the new webform_webforms view.
+    $path = backdrop_get_path('module', 'webform') . '/config/';
+    $contents = file_get_contents($path . 'views.view.webform_webforms.json');
+    $data = json_decode($contents, true);
+    $config_webform->setData($data);
+    $config_webform->save();
+  }
+}
+
+/**
+ * Create webform_results view if it doesn't exist already.
+ */
+function webform_update_1005() {
+
+  // See if there is already a webform_results view on this site.
+  $config_results = config('views.view.webform_results');
+  if ($config_results->isNew()) {
+    // If not, create the new webform_webforms view.
+    $path = backdrop_get_path('module', 'webform') . '/config/';
+    $contents = file_get_contents($path . 'views.view.webform_results.json');
+    $data = json_decode($contents, true);
+    $config_results->setData($data);
+    $config_results->save();
+  }
+}
+
+/**
+ * Create webform_submissions views if it doesn't exist already.
+ */
+function webform_update_1006() {
+
+  // See if there is already a webform_submissions view on this site.
+  $config_submissions = config('views.view.webform_submissions');
+  if ($config_submissions->isNew()) {
+    // If not, create the new webform_webforms view.
+    $path = backdrop_get_path('module', 'webform') . '/config/';
+    $contents = file_get_contents($path . 'views.view.webform_submissions.json');
+    $data = json_decode($contents, true);
+    $config_submissions->setData($data);
+    $config_submissions->save();
+  }
+}

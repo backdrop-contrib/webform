@@ -33,7 +33,7 @@
     ],
     "webform_progressbar_label_first": "Start",
     "webform_progressbar_label_confirmation": "Complete",
-    "webform_table": "FALSE",
+    "webform_table": false,
     "webform_submission_access_control": "1",
     "webform_update_batch_size": "100",
     "webform_disabled_components": [],
