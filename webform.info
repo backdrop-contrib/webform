@@ -1,7 +1,6 @@
 name = Webform
 description = Enables the creation of forms and questionnaires.
 backdrop = 1.x
-version = 1.x-1.1
 package = Webform
 configure = admin/config/content/webform
 type = module
