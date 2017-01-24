@@ -4665,18 +4665,6 @@ function webform_views_api() {
 }
 
 /**
- * Implements hook_views_default_views().
- */
-function webform_views_default_views() {
-  $path = './' . backdrop_get_path('module', 'webform') . '/views/default_views/*.inc';
-  $views = array();
-  foreach (glob($path) as $views_filename) {
-    require_once($views_filename);
-  }
-  return $views;
-}
-
-/**
  * Implements hook_field_extra_fields().
  */
 function webform_field_extra_fields() {
