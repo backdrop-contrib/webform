@@ -423,6 +423,11 @@ function webform_validate_date($element, $form_state) {
       return;
     }
 
+    // Ensure date is made up of integers.
+    foreach (array('year', 'month', 'day') as $date_part) {
+      $element[$date_part]['#value'] = (int) $element[$date_part]['#value'];
+    }
+
     // Check for a valid date.
     if (!checkdate($element['month']['#value'], $element['day']['#value'], $element['year']['#value'])) {
       form_error($element, t('Entered !name is not a valid date.', array('!name' => $element['#title'])));
