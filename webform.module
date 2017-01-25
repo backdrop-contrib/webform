@@ -3742,6 +3742,12 @@ function theme_webform_element($variables) {
     TRUE => !empty($element['#description']) ? ' <div class="description">' . $element['#description'] . "</div>\n" : '',
   );
 
+  // If #children does not contain an element with a matching @id, do not
+  // include @for in the label.
+  if (strpos($element['#children'], ' id="' . $variables['element']['#id'] . '"') === FALSE) {
+    $variables['element']['#id'] = NULL;
+  }
+
   switch ($element['#title_display']) {
     case 'inline':
       $output .= $description[$above];

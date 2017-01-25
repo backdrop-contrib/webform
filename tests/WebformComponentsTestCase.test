@@ -173,5 +173,17 @@ class WebformComponentsTestCase extends WebformTestCase {
 
     // Test webform_get_cid() without providing a parent cid.
     $this->assertTrue(webform_get_cid($node, 'testing_key') == array(1, 3), t('Returned expected Webform component ids array for a given form_key.'));
+
+
+    // Create and visit a new Webform test node.
+    $node = $this->webformForm();
+    $this->drupalGet('node/' . $node->nid);
+
+    // Check that each label @for points to an element.
+    $labels = $this->xpath('//label/@for');
+    foreach ($labels as $label) {
+      $for = $this->xpath("//*[@id=':id']", array(':id' => $label['for']));
+      $this->assertTrue($for, 'Label with @for "' . $label['for'] . '" points to an element.');
+    }
   }
 }
