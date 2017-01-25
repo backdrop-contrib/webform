@@ -412,9 +412,9 @@ function webform_configure_form_validate($form, &$form_state) {
   }
 
   // Ensure only positive integers are entered as submission limits.
-  foreach (array('total_submit_limit', 'submit_limit') as $field) {
+  foreach (array('total_submit_limit' => 'enforce_total_limit', 'submit_limit' => 'enforce_limit') as $field => $enforce_fk) {
     $limit = $form['submission'][$field][$field]['#value'];
-    if ($limit !== '' && (int) $limit < 1 && (int) $limit !== -1) {
+    if ($form['submission'][$field][$enforce_fk]['#value'] !== 'no' && $limit !== '' && (int) $limit < 1 && (int) $limit !== -1) {
       form_error($form['submission'][$field][$field], t('The submission limit must be at least 1.'));
     }
   }
