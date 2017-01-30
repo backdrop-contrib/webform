@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * This module provides a simple way to create forms and questionnaires.
  *
  * The initial development of this module was sponsered by ÅF Industri AB, Open
@@ -525,7 +526,8 @@ function webform_confirmation_page_access($node) {
         return TRUE;
       }
     }
-  } else {
+  }
+  else {
     // No submission exists (such as auto-deleted by another module, such as
     // webform_clear), just ensure that the user has access to view the node page.
     if (node_access('view', $node)) {
@@ -1698,6 +1700,7 @@ function webform_node_load($nodes, $types) {
       }
     }
   }
+
 }
 
 /**
@@ -2008,7 +2011,6 @@ function theme_webform_view_messages($variables) {
     else {
       $message = t('You may not submit another entry at this time.');
     }
-    $type = 'error';
   }
   elseif ($total_limit_exceeded && !$cached) {
     if ($node->webform['total_submit_interval'] == -1 && $node->webform['total_submit_limit'] > 1) {
@@ -2017,7 +2019,6 @@ function theme_webform_view_messages($variables) {
     else {
       $message = t('You may not submit another entry at this time.');
     }
-    $type = 'error';
   }
 
   // If the user has submitted before, give them a link to their submissions.
@@ -2330,6 +2331,9 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $i
 
     // Allow values from other pages to be sent to browser for conditionals.
     $form['#conditional_values'] = $input_values;
+
+    // Generate conditional topological order & report any errors.
+    webform_get_conditional_sorter($node)->reportErrors();
 
     if ($page_count > 1) {
       $page_labels = webform_page_labels($node, $form_state);
@@ -2862,10 +2866,13 @@ function webform_client_form_validate($form, &$form_state) {
     foreach ($new_values as $cid => $values) {
       $input_values[$cid] = $values;
     }
+    // Ensure that all conditionally-hidden values are removed.
+    $input_values = webform_get_conditional_sorter($node)->executeConditionals($input_values, $form_state['webform']['page_num']);
   }
   else {
     $input_values = NULL;
   }
+
 
   // Run all #element_validate and #required checks. These are skipped initially
   // by setting #validated = TRUE on all components when they are added.
@@ -3059,23 +3066,23 @@ function webform_client_form_pages($form, &$form_state) {
   // Assume the form is completed unless the page logic says otherwise.
   $form_state['webform_completed'] = TRUE;
 
+  // Merge any stored submission data for multistep forms.
+  $original_values = is_array($form_state['values']['submitted']) ? $form_state['values']['submitted'] : array();
+  if (isset($form_state['storage']['submitted'])) {
+    // Array + operator keeps all elements of left operand and discards any duplicate elements in right operand.
+    $original_values += $form_state['storage']['submitted'];
+  }
+
+  // Execute conditionals on submission values.
+  $form_state['values']['submitted'] = webform_get_conditional_sorter($node)->executeConditionals($original_values);
+
   // Check for a multi-page form that is not yet complete.
   $submit_op = !empty($form['actions']['submit']['#value']) ? $form['actions']['submit']['#value'] : t('Submit');
   $draft_op = !empty($form['actions']['draft']['#value']) ? $form['actions']['draft']['#value'] : t('Save Draft');
   if (!in_array($form_state['values']['op'], array($submit_op, $draft_op, '__AUTOSAVE__'))) {
-    // Store values from the current page in the form state storage.
-    if (is_array($form_state['values']['submitted'])) {
-      foreach ($form_state['values']['submitted'] as $key => $val) {
-        $form_state['storage']['submitted'][$key] = $val;
-      }
-    }
 
-    // Update form state values with those from storage.
-    if (isset($form_state['storage']['submitted'])) {
-      foreach ($form_state['storage']['submitted'] as $key => $val) {
-        $form_state['values']['submitted'][$key] = $val;
-      }
-    }
+    // Store values from the current page in the form state storage.
+    $form_state['storage']['submitted'] = $form_state['values']['submitted'];
 
     // Set the page number.
     if (!isset($form_state['storage']['page_num'])) {
@@ -3124,7 +3131,7 @@ function webform_client_form_pages($form, &$form_state) {
         if ($component['type'] == 'pagebreak') {
           if ($forward
                ? ($component['page_num'] > $form_state['storage']['page_num'])
-               : ($component['page_num'] <= $form_state['storage']['page_num'])){
+               : ($component['page_num'] <= $form_state['storage']['page_num'])) {
             $previous_pagebreak = $component;
           }
         }
@@ -3143,7 +3150,7 @@ function webform_client_form_pages($form, &$form_state) {
                 }
               }
               else {
-                $page_num = max (1, $page_num);
+                $page_num = max(1, $page_num);
               }
             }
             $form_state['storage']['page_num'] = $page_num;
@@ -3156,22 +3163,6 @@ function webform_client_form_pages($form, &$form_state) {
 
     // The form is done if the page number is greater than the page count.
     $form_state['webform_completed'] = $form_state['storage']['page_num'] > $form_state['storage']['page_count'];
-  }
-
-  // Merge any stored submission data for multistep forms.
-  if (isset($form_state['storage']['submitted'])) {
-    $original_values = is_array($form_state['values']['submitted']) ? $form_state['values']['submitted'] : array();
-    unset($form_state['values']['submitted']);
-
-    foreach ($form_state['storage']['submitted'] as $key => $val) {
-      $form_state['values']['submitted'][$key] = $val;
-    }
-    foreach ($original_values as $key => $val) {
-      $form_state['values']['submitted'][$key] = $val;
-    }
-
-    // Remove the variable so it doesn't show up in the additional processing.
-    unset($original_values);
   }
 
   // Inform the submit handlers that a draft will be saved.
@@ -3216,8 +3207,13 @@ function webform_client_form_submit($form, &$form_state) {
     // Merge with new submission data. The + operator maintains numeric keys.
     // This maintains existing data with just-submitted data when a user resumes
     // a submission previously saved as a draft.
-    $new_data = webform_submission_data($node, $form_state['values']['submitted']);
-    $submission->data = $new_data + $submission->data;
+    // Remove any existing data on this and previous pages. If components are hidden, they may
+    // be in the $submission->data but absent entirely from $new_data;
+    $page_map = webform_get_conditional_sorter($node)->getPageMap();
+    for ($page_nr = 1; $page_nr <= $form_state['webform']['page_num']; $page_nr++) {
+      $submission->data = array_diff_key($submission->data, $page_map[$page_nr]);
+    }
+    $submission->data = webform_submission_data($node, $form_state['values']['submitted']) + $submission->data;
   }
   else {
     // Create a new submission object.
@@ -3383,10 +3379,12 @@ function template_preprocess_webform_form(&$vars) {
     $vars['nid'] = $vars['form']['submission']['#value']->nid;
   }
 
-  if (!empty($vars['form']['#node']->webform['conditionals'])) {
+  if (!empty($vars['form']['#node']->webform['conditionals']) && empty($vars['form']['preview'])) {
     module_load_include('inc', 'webform', 'includes/webform.conditionals');
     $submission_data = isset($vars['form']['#conditional_values']) ? $vars['form']['#conditional_values'] : array();
-    $settings = webform_conditional_prepare_javascript($vars['form']['#node'], $submission_data);
+    $settings = webform_conditional_prepare_javascript($vars['form']['#node'],
+                                                       $submission_data,
+                                                       $vars['form']['details']['page_num']['#value']);
     backdrop_add_js(array('webform' => array('conditionals' => array('webform-client-form-' . $vars['nid'] => $settings))), 'setting');
   }
 
@@ -3773,6 +3771,19 @@ function _webform_fetch_draft_sid($nid, $uid) {
 }
 
 /**
+ * Returns a new or cached WebformConditionals object for the specified node.
+ *
+ * @param object $node
+ *   The loaded webform node.
+ * @returns object
+ *   Object of type WebformConditionals, possibly with the conditionals already
+ *   analyzed for dependencies.
+ */
+function webform_get_conditional_sorter($node) {
+  return WebformConditionals::factory($node);
+}
+
+/**
  * This function is deprecated! Use webform_replace_tokens() instead.
  *
  * @deprecated
@@ -3818,7 +3829,7 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
   if ($email) {
     $token_data['webform-email'] = $email;
   }
-  return token_replace($string, $token_data, array('clear' => true, 'sanitize' => $sanitize));
+  return token_replace($string, $token_data, array('clear' => TRUE, 'sanitize' => $sanitize));
 }
 
 /**
@@ -4956,7 +4967,7 @@ function webform_pre_render_input_vars($element) {
  * @return integer
  *   The number of elements in the form that will result in $_POST entries.
  */
-function webform_count_input_vars($element){
+function webform_count_input_vars($element) {
   static $input_types = array(
     'checkbox' => 1,
     'date' => 1,
