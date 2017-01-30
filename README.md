@@ -60,7 +60,7 @@ Ported to Backdrop by:
 Credits
 -------
 
-This module is based on the Webform module for Drupal, originally written and maintained by a large number of contributors, including:
+This module is based on the Webform module for Drupal--starting at version 7.x-4.4--originally written and maintained by a large number of contributors, including:
 
 - quicksketch <https://www.drupal.org/u/quicksketch>
 - fenstrat <https://www.drupal.org/u/fenstrat>
