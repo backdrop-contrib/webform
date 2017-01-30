@@ -463,6 +463,10 @@ function webform_expand_select_ids($element) {
  * Implements _webform_display_component().
  */
 function _webform_display_select($component, $value, $format = 'html') {
+  // Sort values by numeric key. These may be in alphabetic order from the database query,
+  // which is not numeric order for keys '10' and higher.
+  $value = (array) $value;
+  ksort($value, SORT_NUMERIC);
   return array(
     '#title' => $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
@@ -472,7 +476,7 @@ function _webform_display_select($component, $value, $format = 'html') {
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
     '#format' => $format,
     '#options' => _webform_select_options($component, !$component['extra']['aslist']),
-    '#value' => (array) $value,
+    '#value' => $value,
     '#translatable' => array('title', 'options'),
   );
 }
@@ -690,6 +694,7 @@ function _webform_table_select($component, $value) {
   $options = _webform_select_options($component, TRUE);
 
   $value = (array) $value;
+  ksort($value, SORT_NUMERIC);
   $items = array();
   // Set the value as a single string.
   foreach ($value as $option_value) {
