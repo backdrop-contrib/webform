@@ -731,7 +731,6 @@ function webform_update_1000() {
   $config->set('webform_update_batch_size', update_variable_get('webform_update_batch_size', 100));
   $config->set('webform_disabled_components', update_variable_get('webform_disabled_components', array()));
 
-  $config->set('webform_node_types', update_variable_get('webform_node_types', array('webform')));
   $config->set('webform_export_batch_size', update_variable_get('webform_export_batch_size', 100));
   $config->set('webform_export_path', update_variable_get('webform_export_path', 'temporary://'));
 
@@ -772,7 +771,6 @@ function webform_update_1000() {
   update_variable_del('webform_disabled_components');
   update_variable_del('webform_use_cookies');
 
-  update_variable_del('webform_node_types');
   update_variable_del('webform_export_batch_size');
   update_variable_del('webform_export_path');
 }
@@ -869,4 +867,23 @@ function webform_update_1006() {
     $config_submissions->setData($data);
     $config_submissions->save();
   }
+}
+
+/**
+ * Remove unused variables
+ */
+function webform_update_1007() {
+  $config = config('webform.settings');
+
+  // Deprecated in a previous update
+  $config->clear('webform_node_types');
+
+  // Remove the values that should never be saved in config.
+  $config->clear('submit');
+  $config->clear('op');
+  $config->clear('form_id');
+  $config->clear('form_build_id');
+  $config->clear('form_token');
+
+  $config->save();
 }
