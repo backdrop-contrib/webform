@@ -252,7 +252,9 @@ function webform_admin_settings_submit($form, &$form_state) {
   $form_state['values']['webform_progressbar_style'] = array_keys(array_filter($form_state['values']['webform_progressbar_style']));
   $config = config('webform.settings');
   foreach ($form_state['values'] as $key => $value) {
-    $config->set($key, $value);
+    if (substr($key, 0, 8) === 'webform_') {
+      $config->set($key, $value);
+    }
   }
   $config->save();
   backdrop_set_message(t('The configuration options have been saved.'));

@@ -37,7 +37,6 @@
     "webform_submission_access_control": "1",
     "webform_update_batch_size": "100",
     "webform_disabled_components": [],
-    "webform_node_types": ["webform"],
     "webform_export_batch_size": 100,
     "webform_export_path": "temporary://"
 }
