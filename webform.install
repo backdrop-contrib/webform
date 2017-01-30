@@ -686,6 +686,20 @@ function webform_uninstall() {
   // Delete uploaded files.
   $filepath = file_build_uri('webform');
   file_unmanaged_delete_recursive($filepath);
+
+  // Remove views
+  // We need to be explicit so we don't remove a user's custom views.
+  $names = array(
+    'views.view.webform_results',
+    'views.view.webform_submissions',
+    'views.view.webform_webforms',
+  );
+  foreach ($names as $config_name) {
+    $config = config($config_name);
+    $config->delete();
+  }
+  // Clear admin bar cache to remove views from menu
+  cache('admin_bar')->flush();
 }
 
 /**
