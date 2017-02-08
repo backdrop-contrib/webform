@@ -86,7 +86,7 @@ function _webform_edit_time($component) {
     '#type' => 'radios',
     '#title' => t('Default value timezone'),
     '#default_value' => $component['extra']['timezone'],
-    '#description' => t('If using relative dates for a default value (e.g. "now") base the current time on this timezone.'),
+    '#description' => t('If using relative dates for a default value (for example, "now") base the current time on this timezone.'),
     '#options' => array('user' => t('User timezone'), 'site' => t('Website timezone')),
     '#weight' => 2,
     '#access' => variable_get('configurable_timezones', 1),

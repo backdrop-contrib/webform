@@ -70,7 +70,7 @@ function _webform_edit_date($component) {
     '#type' => 'radios',
     '#title' => t('Default value timezone'),
     '#default_value' => empty($component['extra']['timezone']) ? 'user' : $component['extra']['timezone'],
-    '#description' => t('If using relative dates for a default value (e.g. "today") base the current day on this timezone.'),
+    '#description' => t('If using relative dates for a default value (for example, "today") base the current day on this timezone.'),
     '#options' => array('user' => t('User timezone'), 'site' => t('Website timezone')),
     '#weight' => 2,
     '#access' => variable_get('configurable_timezones', 1),

@@ -464,7 +464,7 @@ function webform_menu_load($nid) {
  * @param string $arg
  *   The argument supplied by the caller.
  * @param array $map
- *   Array of path fragments (e.g. e.g. array('node','123','edit') for
+ *   Array of path fragments (for example, array('node','123','edit') for
  *   'node/123/edit').
  * @param int $index
  *   Which element of $map corresponds to $arg.
@@ -3074,8 +3074,8 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
     if (isset($required)) {
       $elements['#required'] = $required;
 
-      // Some components, e.g. grids, have nested sub-elements. Extend required
-      // to any sub-components.
+      // Some components, for example, grids, have nested sub-elements. Extend
+      // required to any sub-components.
       foreach (element_children($elements) as $key) {
         if (isset($elements[$key]) && $elements[$key] && !isset($elements[$key]['#webform_component'])) {
           // Child is *not* a component.
@@ -3203,9 +3203,9 @@ function webform_client_form_postvalidate(&$form, &$form_state) {
       $node->webform['auto_save'] &&
       !$form_state['values']['details']['finished'] &&
       !empty($form_state['values']['op'])) {
-    // Validation errors are present, prevalidation succeeded (e.g. submission
-    // limits are ok), auto-save is enabled, this form isn't finished (i.e. is
-    // or soon will be a draft) and a button was pushed (not ajax).
+    // Validation errors are present, prevalidation succeeded (for example
+    // submission limits are ok), auto-save is enabled, this form isn't finished
+    // (this is, is or soon will be a draft) and a button was pushed (not ajax).
     //
     // Process submission on a copy of the form and form_state to prevent the
     // submission handlers from making unintended changes. Use a button that
@@ -4053,8 +4053,8 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
  * to be called with the option 'clear' => FALSE, to not remove input filters.
  * For security reasons webform_replace_tokens() is called before
  * check_markup(), where input filters get replaced. Tokens won't be replaced if
- * there is no value provided. These tokens i.e. [current-page:query:*] needs to
- * be removed to not show up in the output.
+ * there is no value provided. These tokens, that is, [current-page:query:*]
+ * needs to be removed to not show up in the output.
  *
  * Note: This function was previously named webform_clear_tokens, which
  * conflicted with the webform_clear module, being called as hook_tokens.
@@ -4955,7 +4955,7 @@ function webform_set_breadcrumb($node, $submission = NULL) {
     // Setting the current menu href will cause the submission title and current
     // tab (if not the default tab) to be added to the active path when the
     // webform is in the default location in the menu (node/NID). The title
-    // is desirable, but the tab name (e.g. Edit or Delete) isn't.
+    // is desirable, but the tab name (for example Edit or Delete) isn't.
     if (preg_match('/href=".*"/', end($breadcrumb), $matches)) {
       foreach ($breadcrumb as $index => $link) {
         if (stripos($link, $matches[0]) !== FALSE) {

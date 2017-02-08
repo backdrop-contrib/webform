@@ -16,6 +16,9 @@ class WebformComponentsTestCase extends WebformTestCase {
     );
   }
 
+  /**
+   * Webform module component tests.
+   */
   function testWebformComponents() {
     // Test webform_component_list().
     // Create a form consisting of three textfields separated by pagebreaks.

@@ -1027,7 +1027,7 @@ function webform_component_property($type, $property) {
  *   email, required, conditional) on which this list of components will be
  *   restricted.
  * @param $prefix_group
- *   TRUE to indent with a hyphen, or 'path" to Prepend enclosing group (e.g.
+ *   TRUE to indent with a hyphen, or 'path" to Prepend enclosing group (for example,
  *   fieldset) name(s)
  * @param $pagebreak_groups
  *   Determine if pagebreaks should be converted to option groups in the
@@ -1044,7 +1044,7 @@ function webform_component_list($node, $component_filter = NULL, $prepend_group 
   $feature = is_string($component_filter) ? $component_filter : NULL;
 
   foreach ($components as $cid => $component) {
-    // If this component is a group (e.g. fieldset), then remember its name, including any parents.
+    // If this component is a group (for example, fieldset), then remember its name, including any parents.
     if ($prepend_group && webform_component_feature($component['type'], 'group')) {
       $parent_names[$cid] = ($component['pid'] ? $parent_names[$component['pid']] : '') .
                             ($prepend_group === 'path' ? $component['name'] . ': ' : '-');

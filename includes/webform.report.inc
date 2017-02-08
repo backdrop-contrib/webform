@@ -862,7 +862,7 @@ function webform_results_download_form_submit(&$form, &$form_state) {
  */
 function webform_export_batch_size($node) {
   // Start the batch size at 50,000 per batch, but divide by number of
-  // components in the form. e.g. If a form had 10 components, it would
+  // components in the form. For example, if a form had 10 components, it would
   // export 5,000 submissions at a time.
   $batch_size = ceil(50000 / max(1, count($node->webform['components'])));
 

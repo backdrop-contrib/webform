@@ -171,7 +171,7 @@ function _webform_edit_number($component) {
     '#type' => 'checkbox',
     '#title' => t('Integer'),
     '#return_value' => 1,
-    '#description' => t('Permit only integer values as input. e.g. 12.34 would be invalid.'),
+    '#description' => t('Permit only integer values as input. For example, 12.34 would be invalid.'),
     '#weight' => 1.5,
     '#default_value' => $component['extra']['integer'],
     '#parents' => array('extra', 'integer'),
@@ -180,7 +180,7 @@ function _webform_edit_number($component) {
     '#type' => 'textfield',
     '#title' => t('Minimum'),
     '#default_value' => $component['extra']['min'],
-    '#description' => t('Minimum numeric value. e.g. 0 would ensure positive numbers.'),
+    '#description' => t('Minimum numeric value. For example, 0 would ensure positive numbers.'),
     '#size' => 5,
     '#maxlength' => 10,
     '#weight' => 2.1,
@@ -202,7 +202,7 @@ function _webform_edit_number($component) {
     '#type' => 'textfield',
     '#title' => t('Step'),
     '#default_value' => $component['extra']['step'],
-    '#description' => t('Limit options to a specific increment. e.g. a step of "5" would allow values 5, 10, 15, etc.'),
+    '#description' => t('Limit options to a specific increment. For example, a step of "5" would allow values 5, 10, 15, etc.'),
     '#size' => 5,
     '#maxlength' => 10,
     '#weight' => 3,
@@ -527,7 +527,7 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE, 
       $limit[$key] = _webform_number_format($component, $value);
     }
 
-    // Column headings (override potential theme uppercase, e.g. Seven in D7).
+    // Column headings (override potential theme uppercase, for example, Seven in D7).
     $header = array(
       t('Normal Distribution'),
       array('data' => '-4' . $sigma, 'style' => 'text-transform: lowercase;'),

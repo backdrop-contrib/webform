@@ -433,8 +433,8 @@ function webform_submission_delete_form_submit($form, &$form_state) {
   webform_submission_delete($node, $submission);
   drupal_set_message(t('Submission deleted.'));
 
-  // If no destination query was supplied in the URL (e.g. Edit tab), redirect
-  // to the most-privledged destination.
+  // If no destination query was supplied in the URL (for example, Edit tab),
+  // redirect to the most-privledged destination.
   $form_state['redirect'] = 'node/' . $node->nid .
                             (webform_results_access($node) ? '/webform-results' : '/submissions');
 }
