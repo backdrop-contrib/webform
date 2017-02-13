@@ -1452,6 +1452,10 @@ function webform_results_batch_rows($node, $format = 'delimited', $options = arr
   $query->fields('u', array('name'));
   $query->fields('ws');
 
+  if (!empty($options['sids'])) {
+    $query->condition('ws.sid', $options['sids'], 'IN');
+  }
+
   $submissions = webform_get_submissions_load($query);
 
   $rows = webform_results_download_rows_process($node, $options, $context['sandbox']['serial'], $submissions);
