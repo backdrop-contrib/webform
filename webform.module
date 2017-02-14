@@ -4613,7 +4613,7 @@ function webform_strtodate($format, $string, $timezone_name = NULL) {
   global $user;
 
   // Adjust the time based on the user or site timezone.
-  if (config_get('system.date', 'user_timezone_configurable') && $timezone_name == 'user' && $user->uid) {
+  if (config_get('system.date', 'user_configurable_timezones') && $timezone_name == 'user' && $user->uid) {
     $timezone_name = isset($GLOBALS['user']->timezone) ? $GLOBALS['user']->timezone : 'UTC';
   }
   // If the timezone is still empty or not set, use the site timezone.
