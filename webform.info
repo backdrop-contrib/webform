@@ -4,3 +4,4 @@ backdrop = 1.x
 package = Webform
 configure = admin/config/content/webform
 type = module
+php = 5.3

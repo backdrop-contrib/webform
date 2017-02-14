@@ -98,8 +98,8 @@ Backdrop.webform.conditional = function(context) {
       $currentForm.bind('change', { 'settings': settings }, Backdrop.webform.conditionalCheck);
 
       // Trigger all the elements that cause conditionals on this form.
-      $.each(Backdrop.settings.webform.conditionals[formKey]['sourceMap'], function(elementKey) {
-        $currentForm.find('.' + elementKey).find('input,select,textarea').filter(':first').trigger('change');
+      $.each(Backdrop.settings.webform.conditionals[formKey]['ruleGroups'], function(rgid_key, rule_group) {
+        Backdrop.webform.doCondition($form, settings, rgid_key);
       });
     })
   });
@@ -115,76 +115,69 @@ Backdrop.webform.conditionalCheck = function(e) {
   var $form = $triggerElement.closest('form');
   var triggerElementKey = $triggerElement.attr('class').match(/webform-component--[^ ]+/)[0];
   var settings = e.data.settings;
-
-
   if (settings.sourceMap[triggerElementKey]) {
-    $.each(settings.sourceMap[triggerElementKey], function(n, rgid_key) {
-      var ruleGroup = settings.ruleGroups[rgid_key];
-
-      // Perform the comparison callback and build the results for this group.
-      var conditionalResult = true;
-      var conditionalResults = [];
-      $.each(ruleGroup['rules'], function(m, rule) {
-        var elementKey = rule['source'];
-        var element = $form.find('.' + elementKey)[0];
-        var existingValue = settings.values[elementKey] ? settings.values[elementKey] : null;
-        conditionalResults.push(window['Backdrop']['webform'][rule.callback](element, existingValue, rule['value'] ));
-      });
-
-      // Filter out false values.
-      var filteredResults = [];
-      for (var i = 0; i < conditionalResults.length; i++) {
-        if (conditionalResults[i]) {
-          filteredResults.push(conditionalResults[i]);
-        }
-      }
-
-      // Calculate the and/or result.
-      if (ruleGroup['andor'] === 'or') {
-        conditionalResult = filteredResults.length > 0;
-      }
-      else {
-        conditionalResult = filteredResults.length === conditionalResults.length;
-      }
-
-      // Flip the result of the action is to hide.
-      var showComponent;
-      if (ruleGroup['action'] == 'hide') {
-        showComponent = !conditionalResult;
-      }
-      else {
-        showComponent = conditionalResult;
-      }
-
-      var $target = $form.find('.' + ruleGroup['target']);
-      var $targetElements;
-      if (showComponent != $target.is(':visible')) {
-        if (showComponent) {
-          $targetElements = $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled');
-          $.fn.prop ? $targetElements.prop('disabled', false) : $targetElements.removeAttr('disabled');
-          $target.show();
-        }
-        else {
-          $targetElements = $target.find(':input').addClass('webform-conditional-disabled');
-          $.fn.prop ? $targetElements.prop('disabled', true) : $targetElements.attr('disabled', true);
-          $target.hide();
-        }
-        // Trigger change if not already in recurive infinite loop
-        var target = $target.get(0);
-        target.changeDepth = target.changeDepth || 0;
-        if (target.changeDepth < 10) {
-          target.changeDepth++;
-          $target.trigger('change');
-          target.changeDepth--;
-        } else {
-          alert(Backdrop.t("An infinite loop was detected in this webform's conditionals. Contact the administrator."));
-        }
-      }
-
+    $.each(settings.ruleGroups, function(rgid_key, rule_group) {
+      Backdrop.webform.doCondition($form, settings, rgid_key);
     });
   }
-
 };
+
+/**
+ * Processes one condition.
+ */
+Backdrop.webform.doCondition = function($form, settings, rgid_key) {
+  var ruleGroup = settings.ruleGroups[rgid_key];
+
+  // Perform the comparison callback and build the results for this group.
+  var conditionalResult = true;
+  var conditionalResults = [];
+  $.each(ruleGroup['rules'], function(m, rule) {
+    var elementKey = rule['source'];
+    var element = $form.find('.' + elementKey)[0];
+    var existingValue = settings.values[elementKey] ? settings.values[elementKey] : null;
+    conditionalResults.push(window['Backdrop']['webform'][rule.callback](element, existingValue, rule['value'] ));
+  });
+
+  // Filter out false values.
+  var filteredResults = [];
+  for (var i = 0; i < conditionalResults.length; i++) {
+    if (conditionalResults[i]) {
+      filteredResults.push(conditionalResults[i]);
+    }
+  }
+
+  // Calculate the and/or result.
+  if (ruleGroup['andor'] === 'or') {
+    conditionalResult = filteredResults.length > 0;
+  }
+  else {
+    conditionalResult = filteredResults.length === conditionalResults.length;
+  }
+
+  // Flip the result of the action is to hide.
+  var showComponent;
+  if (ruleGroup['action'] == 'hide') {
+    showComponent = !conditionalResult;
+  }
+  else {
+    showComponent = conditionalResult;
+  }
+
+  var $target = $form.find('.' + ruleGroup['target']);
+  var $targetElements;
+  if (showComponent != Backdrop.webform.isVisible($target)) {
+    if (showComponent) {
+      $targetElements = $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled');
+      $.fn.prop ? $targetElements.prop('disabled', false) : $targetElements.removeAttr('disabled');
+      $target.show();
+    }
+    else {
+      $targetElements = $target.find(':input').addClass('webform-conditional-disabled');
+      $.fn.prop ? $targetElements.prop('disabled', true) : $targetElements.attr('disabled', true);
+      $target.hide();
+    }
+  }
+}
 
 Backdrop.webform.conditionalOperatorStringEqual = function(element, existingValue, ruleValue) {
   var returnValue = false;
@@ -331,13 +324,23 @@ Backdrop.webform.conditionalOperatorTimeAfter = function(element, existingValue,
 };
 
 /**
+ * Utility to return current visibility. Uses actual visibility, except for
+ * hidden components which use the applied disabled class.
+ */
+Backdrop.webform.isVisible = function($element) {
+  return $element.hasClass('webform-component-hidden')
+            ? !$element.find('input').first().hasClass('webform-conditional-disabled')
+            : $element.is(':visible');
+}
+
+/**
  * Utility function to get a string value from a select/radios/text/etc. field.
  */
 Backdrop.webform.stringValue = function(element, existingValue) {
   var value = [];
   if (element) {
     var $element = $(element);
-    if ($element.is(':visible')) {
+    if (Backdrop.webform.isVisible($element)) {
       // Checkboxes and radios.
       $element.find('input[type=checkbox]:checked,input[type=radio]:checked').each(function() {
         value.push(this.value);
