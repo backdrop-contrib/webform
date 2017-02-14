@@ -422,6 +422,21 @@ class WebformConditionals {
               // without building it. It is possible that the component include file
               // hasn't been included yet. See #2529246.
               webform_component_include($source_component['type']);
+
+              // Load missing include files for conditional types.
+              // In the case of the 'string', 'date', and 'time' conditional types, it is
+              // not necessary to load their include files for conditional behavior
+              // because the required functions are already loaded
+              // in webform.conditionals.inc.
+              switch ($conditional_type) {
+                case 'numeric':
+                  module_load_include('inc', 'webform', 'components/number');
+                  break;
+                case 'select':
+                  module_load_include('inc', 'webform', 'components/select');
+                  break;
+              }
+
               $this->executionStackAccumulate($comparison_callback($source_values, $rule['value'], $source_component));
 
               // Record page number to later determine any intra-page dependency on this source.
