@@ -71,7 +71,7 @@ function _webform_edit_date($component) {
     '#description' => t('If using relative dates for a default value (e.g. "today") base the current day on this timezone.'),
     '#options' => array('user' => t('User timezone'), 'site' => t('Website timezone')),
     '#weight' => 2,
-    '#access' => config_get('system.date', 'user_timezone_configurable'),
+    '#access' => config_get('system.date', 'user_configurable_timezones'),
   );
 
   $form['display']['datepicker'] = array(
