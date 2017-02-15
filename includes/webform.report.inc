@@ -1303,7 +1303,7 @@ function webform_results_download_default_options($node, $format) {
 function webform_results_download($node, $export_info) {
   // If the exporter provides a custom download method, use that.
   if (method_exists($export_info['exporter'], 'download')) {
-    $export_info['exporter']->download($node);
+    $export_info['exporter']->download($node, $export_info);
   }
   // Otherwise use the set_headers() method to set headers and then read in the
   // file directly. Delete it when complete.
