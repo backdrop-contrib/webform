@@ -34,6 +34,7 @@ function webform_config_info() {
  */
 function webform_autoload_info() {
   return array(
+    'WebformConditionals' => 'includes/webform.webformconditionals.inc',
     'webform_exporter_delimited' => 'includes/exporters/webform_exporter_delimited.inc',
     'webform_exporter_excel_delimited' => 'includes/exporters/webform_exporter_excel_delimited.inc',
     'webform_exporter_excel_xlsx' => 'includes/exporters/webform_exporter_excel_xlsx.inc',
