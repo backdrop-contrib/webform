@@ -66,8 +66,9 @@ class WebformConditionals {
     // Generate T-Orders for each page
     $new_entry = array('in' => array(), 'out' => array(), 'rgid' => -1);
     $page_num = 0;
-    $sorted = array();
-    $page_map = array();
+    // If the first component is a page break, then no component is on page 1. Create empty arrays for page 1.
+    $sorted = array(1 => array());
+    $page_map = array(1 => array());
     $component = reset($components);
     while ($component) {
       $cid = $component['cid'];
@@ -210,7 +211,7 @@ class WebformConditionals {
     }
     return $this->pageMap;
   }
-  
+
   /**
    * Displays and error messages from the previously-generated sort order.
    *
@@ -221,7 +222,7 @@ class WebformConditionals {
     if ($this->errors) {
       if (webform_node_update_access($this->node)) {
         foreach ($this->errors as $page_num => $page_errors) {
-          drupal_set_message(format_plural(count($page_errors),
+          backdrop_set_message(format_plural(count($page_errors),
                                            'Conditional error on page @num:',
                                            'Conditional errors on page @num:',
                                            array('@num' => $page_num)) .
@@ -229,7 +230,7 @@ class WebformConditionals {
         }
       }
       else {
-         drupal_set_message(t('This form is improperly configured. Contact the administrator.'), 'warning');
+         backdrop_set_message(t('This form is improperly configured. Contact the administrator.'), 'warning');
       }
     }
   }
@@ -280,9 +281,9 @@ class WebformConditionals {
     $this->getChildrenMap();
 
     module_load_include('inc', 'webform', 'includes/webform.conditionals');
-    
+
     $components = $this->node->webform['components'];
-    $conditionals = array_values($this->node->webform['conditionals']);
+    $conditionals = $this->node->webform['conditionals'];
     $operators = webform_conditional_operators();
 
 
@@ -290,7 +291,7 @@ class WebformConditionals {
     $last_page = $page_num ? $page_num : count($this->topologicalOrder);
     for ($page = $first_page; $page <= $last_page; $page++) {
       foreach ($this->topologicalOrder[$page] as $conditional_spec) {
-        
+
         $conditional = $conditionals[$conditional_spec['rgid']];
         $conditional_result = TRUE;
 
