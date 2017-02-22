@@ -165,12 +165,13 @@ function webform_conditionals_form_validate($form, &$form_state) {
     return;
   }
 
-  foreach ($form_state['complete_form']['conditionals'] as $conditional_key => $element) {
+  $components = $form['#node']->webform['components'];
+  foreach ($form_state['complete form']['conditionals'] as $conditional_key => $element) {
     if (substr($conditional_key, 0, 1) !== '#' && $conditional_key !== 'new') {
       $conditional = $element['conditional'];
       foreach ($conditional['rules'] as $rule_key => $rule) {
         if (substr($rule_key, 0, 1) !== '#' && $rule['source']['#value'] === $conditional['target']['#value']) {
-          form_set_error('conditionals][' . $conditional_key . '][rules][' . $rule_key . '][source', t('The subject of the conditional cannot be the same as the component that is shown or hidden (%target).', array('%target' => $conditional['target']['#options'][$conditional['target']['#value']])));
+          form_set_error('conditionals][' . $conditional_key . '][rules][' . $rule_key . '][source', t('The subject of the conditional cannot be the same as the component that is shown or hidden (%target).', array('%target' => $components[$conditional['target']['#value']]['name'])));
         }
       }
     }
@@ -935,9 +936,11 @@ function webform_conditional_prepare_javascript($node, $submission_data, $page_n
         $rid_key = 'rid_' . $rule['rid'];
 
         // If this source has a value set, add that as a setting.
+        // NULL or array(NULL) should be sent as an empty array to simplify the jQuery.
         if (isset($submission_data[$source_component['cid']])) {
           $source_value = $submission_data[$source_component['cid']];
-          $settings['values'][$source_id] = is_array($source_value) ? $source_value : array($source_value);
+          $source_value = is_array($source_value) ? $source_value : array($source_value);
+          $settings['values'][$source_id] = $source_value === array(NULL) ? array() : $source_value;
         }
 
         $conditional_type = webform_component_property($source_component['type'], 'conditional_type');

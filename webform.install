@@ -687,6 +687,22 @@ function webform_uninstall() {
   $filepath = file_build_uri('webform');
   file_unmanaged_delete_recursive($filepath);
 
+  // Delete the content type "webform" if:
+  //   a) there are no existing nodes of type webform and
+  //   b) no additional fields have been defined for node type webform, beyond
+  //      the default body field.
+  $query = new EntityFieldQuery();
+  $results = $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'webform')
+    ->range(0,1)
+    ->execute();
+  $instances = field_info_instances('node', 'webform');
+  unset($instances['body']);
+  if (!$results && !$instances) {
+    node_type_delete('webform');
+    backdrop_flush_all_caches();
+  }
+
   // Remove views
   // We need to be explicit so we don't remove a user's custom views.
   $names = array(
