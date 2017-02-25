@@ -2850,6 +2850,7 @@ function webform_client_form_validate($form, &$form_state) {
     // Prevalidation failed. The form cannot be submitted. Do not attemp futher validation.
     return;
   }
+
   if ($form_state['webform']['preview'] && $form_state['webform']['page_count'] === $form_state['webform']['page_num']) {
     // Form has already passed validation and is on the preview page.
     return;
@@ -3833,6 +3834,7 @@ function webform_replace_tokens($string, $node = NULL, $submission = NULL, $emai
   if ($email) {
     $token_data['webform-email'] = $email;
   }
+
   $clear = is_bool($sanitize);
   $string = token_replace($string, $token_data, array('clear' => $clear, 'sanitize' => $sanitize === TRUE));
   if (!$clear) {
