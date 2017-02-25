@@ -98,9 +98,7 @@ Backdrop.webform.conditional = function(context) {
       $currentForm.bind('change', { 'settings': settings }, Backdrop.webform.conditionalCheck);
 
       // Trigger all the elements that cause conditionals on this form.
-      $.each(Backdrop.settings.webform.conditionals[formKey]['ruleGroups'], function(rgid_key, rule_group) {
-        Backdrop.webform.doCondition($form, settings, rgid_key);
-      });
+      Backdrop.webform.doConditions($form, settings);
     })
   });
 };
@@ -116,67 +114,116 @@ Backdrop.webform.conditionalCheck = function(e) {
   var triggerElementKey = $triggerElement.attr('class').match(/webform-component--[^ ]+/)[0];
   var settings = e.data.settings;
   if (settings.sourceMap[triggerElementKey]) {
-    $.each(settings.ruleGroups, function(rgid_key, rule_group) {
-      Backdrop.webform.doCondition($form, settings, rgid_key);
-    });
+    Backdrop.webform.doConditions($form, settings);
   }
 };
 
 /**
- * Processes one condition.
+ * Processes all conditional.
  */
-Backdrop.webform.doCondition = function($form, settings, rgid_key) {
-  var ruleGroup = settings.ruleGroups[rgid_key];
+Backdrop.webform.doConditions = function($form, settings) {
+  // Track what has be set/shown for each target component.
+  var targetLocked = [];
 
-  // Perform the comparison callback and build the results for this group.
-  var conditionalResult = true;
-  var conditionalResults = [];
-  $.each(ruleGroup['rules'], function(m, rule) {
-    var elementKey = rule['source'];
-    var element = $form.find('.' + elementKey)[0];
-    var existingValue = settings.values[elementKey] ? settings.values[elementKey] : null;
-    conditionalResults.push(window['Backdrop']['webform'][rule.callback](element, existingValue, rule['value'] ));
-  });
+  $.each(settings.ruleGroups, function(rgid_key, rule_group) {
+    var ruleGroup = settings.ruleGroups[rgid_key];
 
-  // Filter out false values.
-  var filteredResults = [];
-  for (var i = 0; i < conditionalResults.length; i++) {
-    if (conditionalResults[i]) {
-      filteredResults.push(conditionalResults[i]);
+    // Perform the comparison callback and build the results for this group.
+    var conditionalResult = true;
+    var conditionalResults = [];
+    $.each(ruleGroup['rules'], function(m, rule) {
+      var elementKey = rule['source'];
+      var element = $form.find('.' + elementKey)[0];
+      var existingValue = settings.values[elementKey] ? settings.values[elementKey] : null;
+      conditionalResults.push(window['Backdrop']['webform'][rule.callback](element, existingValue, rule['value'] ));
+    });
+
+    // Filter out false values.
+    var filteredResults = [];
+    for (var i = 0; i < conditionalResults.length; i++) {
+      if (conditionalResults[i]) {
+        filteredResults.push(conditionalResults[i]);
+      }
     }
-  }
 
-  // Calculate the and/or result.
-  if (ruleGroup['andor'] === 'or') {
-    conditionalResult = filteredResults.length > 0;
-  }
-  else {
-    conditionalResult = filteredResults.length === conditionalResults.length;
-  }
-
-  // Flip the result of the action is to hide.
-  var showComponent;
-  if (ruleGroup['action'] == 'hide') {
-    showComponent = !conditionalResult;
-  }
-  else {
-    showComponent = conditionalResult;
-  }
-
-  var $target = $form.find('.' + ruleGroup['target']);
-  var $targetElements;
-  if (showComponent != Backdrop.webform.isVisible($target)) {
-    if (showComponent) {
-      $targetElements = $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled');
-      $.fn.prop ? $targetElements.prop('disabled', false) : $targetElements.removeAttr('disabled');
-      $target.show();
+    // Calculate the and/or result.
+    if (ruleGroup['andor'] === 'or') {
+      conditionalResult = filteredResults.length > 0;
     }
     else {
-      $targetElements = $target.find(':input').addClass('webform-conditional-disabled');
-      $.fn.prop ? $targetElements.prop('disabled', true) : $targetElements.attr('disabled', true);
-      $target.hide();
+      conditionalResult = filteredResults.length === conditionalResults.length;
     }
-  }
+
+    $.each(ruleGroup['actions'], function(aid, action) {
+      var $target = $form.find('.' + action['target']);
+      var actionResult = action['invert'] ? !conditionalResult : conditionalResult;
+      switch (action['action']) {
+        case 'show':
+          if (actionResult != Backdrop.webform.isVisible($target)) {
+            var $targetElements = actionResult
+                                    ? $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled')
+                                    : $target.find(':input').addClass('webform-conditional-disabled');
+            $targetElements.webformProp('disabled', !actionResult);
+            $target.toggleClass('webform-conditional-hidden', !actionResult);
+            if (actionResult) {
+              $target.show();
+            }
+            else {
+              $target.hide();
+              // Record that the target was hidden.
+              targetLocked[action['target']] = 'hide';
+            }
+          }
+          break;
+        case 'require':
+          var $requiredSpan = $target.find('.form-required, .form-optional').first();
+          if (actionResult != $requiredSpan.hasClass('form-required')) {
+            var $targetInputElements = $target.find("input:text,textarea,input[type='email'],select,input:radio,input:file");
+            // Rather than hide the required tag, remove it so that other jQuery can respond via Backdrop behaviors.
+            Backdrop.detachBehaviors($requiredSpan);
+            $targetInputElements
+              .webformProp('required', actionResult)
+              .toggleClass('required', actionResult);
+            if (actionResult) {
+              $requiredSpan.replaceWith('<span class="form-required" title="' + Backdrop.t('This field is required.') + '">*</span>');
+            }
+            else {
+              $requiredSpan.replaceWith('<span class="form-optional"></span>');
+            }
+            Backdrop.attachBehaviors($requiredSpan);
+          }
+          break;
+        case 'set':
+          var isLocked = targetLocked[action['target']];
+          var $texts = $target.find("input:text,textarea,input[type='email']");
+          var $selects = $target.find('select,select option,input:radio,input:checkbox');
+          if (actionResult) {
+            var multiple = $.map(action['argument'].split(','), $.trim);
+            $selects.webformVal(multiple);
+            $texts.val([action['argument']]);
+            // A special case is made for markup. It is sanitized with filter_xss_admin on the server.
+            // otherwise text() should be used to avoid an XSS vulnerability. text() however would
+            // preclude the use of tags like <strong> or <a>
+            $target.filter('.webform-component-markup').html(action['argument']);
+          }
+          if (!isLocked) {
+            // If not previously hidden or set, disable the element readonly or readonly-like behavior.
+            $selects.webformProp('disabled', actionResult);
+            $texts.webformProp('readonly', actionResult);
+            targetLocked[action['target']] = actionResult ? 'set' : false;
+          }
+          break;
+      }
+    }); // End look on each action for one conditional
+  }); // End loop on each conditional
+}
+
+/**
+ * Event handler to prevent propogation of events, typically click for disabling
+ * radio and checkboxes.
+ */
+Backdrop.webform.stopEvent = function() {
+  return false;
 }
 
 Backdrop.webform.conditionalOperatorStringEqual = function(element, existingValue, ruleValue) {
@@ -265,6 +312,28 @@ Backdrop.webform.conditionalOperatorStringNotEmpty = function(element, existingV
   return !Backdrop.webform.conditionalOperatorStringEmpty(element, existingValue, ruleValue);
 };
 
+Backdrop.webform.conditionalOperatorSelectGreaterThan = function(element, existingValue, ruleValue) {
+  var currentValue = Backdrop.webform.stringValue(element, existingValue);
+  return Backdrop.webform.compare_select(currentValue[0], ruleValue, element) > 0;
+};
+
+Backdrop.webform.conditionalOperatorSelectGreaterThanEqual = function(element, existingValue, ruleValue) {
+  var currentValue = Backdrop.webform.stringValue(element, existingValue);
+  var comparison = Backdrop.webform.compare_select(currentValue[0], ruleValue, element);
+  return comparison > 0 || comparison === 0;
+};
+
+Backdrop.webform.conditionalOperatorSelectLessThan = function(element, existingValue, ruleValue) {
+  var currentValue = Backdrop.webform.stringValue(element, existingValue);
+  return Backdrop.webform.compare_select(currentValue[0], ruleValue, element) < 0;
+};
+
+Backdrop.webform.conditionalOperatorSelectLessThanEqual = function(element, existingValue, ruleValue) {
+  var currentValue = Backdrop.webform.stringValue(element, existingValue);
+  var comparison = Backdrop.webform.compare_select(currentValue[0], ruleValue, element);
+  return comparison < 0 || comparison === 0;
+};
+
 Backdrop.webform.conditionalOperatorNumericEqual = function(element, existingValue, ruleValue) {
   // See float comparison: http://php.net/manual/en/language.types.float.php
   var currentValue = Backdrop.webform.stringValue(element, existingValue);
@@ -286,9 +355,19 @@ Backdrop.webform.conditionalOperatorNumericGreaterThan = function(element, exist
   return parseFloat(currentValue[0]) > parseFloat(ruleValue);
 };
 
+Backdrop.webform.conditionalOperatorNumericGreaterThanEqual = function(element, existingValue, ruleValue) {
+  return Backdrop.webform.conditionalOperatorNumericGreaterThan(element, existingValue, ruleValue) ||
+         Backdrop.webform.conditionalOperatorNumericEqual(element, existingValue, ruleValue);
+};
+
 Backdrop.webform.conditionalOperatorNumericLessThan = function(element, existingValue, ruleValue) {
   var currentValue = Backdrop.webform.stringValue(element, existingValue);
   return parseFloat(currentValue[0]) < parseFloat(ruleValue);
+};
+
+Backdrop.webform.conditionalOperatorNumericLessThanEqual = function(element, existingValue, ruleValue) {
+  return Backdrop.webform.conditionalOperatorNumericLessThan(element, existingValue, ruleValue) ||
+         Backdrop.webform.conditionalOperatorNumericEqual(element, existingValue, ruleValue);
 };
 
 Backdrop.webform.conditionalOperatorDateEqual = function(element, existingValue, ruleValue) {
@@ -296,9 +375,18 @@ Backdrop.webform.conditionalOperatorDateEqual = function(element, existingValue,
   return currentValue === ruleValue;
 };
 
+Backdrop.webform.conditionalOperatorDateNotEqual = function(element, existingValue, ruleValue) {
+  return !Backdrop.webform.conditionalOperatorDateEqual(element, existingValue, ruleValue);
+};
+
 Backdrop.webform.conditionalOperatorDateBefore = function(element, existingValue, ruleValue) {
   var currentValue = Backdrop.webform.dateValue(element, existingValue);
   return (currentValue !== false) && currentValue < ruleValue;
+};
+
+Backdrop.webform.conditionalOperatorDateBeforeEqual = function(element, existingValue, ruleValue) {
+  var currentValue = Backdrop.webform.dateValue(element, existingValue);
+  return (currentValue !== false) && (currentValue < ruleValue || currentValue === ruleValue);
 };
 
 Backdrop.webform.conditionalOperatorDateAfter = function(element, existingValue, ruleValue) {
@@ -306,9 +394,18 @@ Backdrop.webform.conditionalOperatorDateAfter = function(element, existingValue,
   return (currentValue !== false) && currentValue > ruleValue;
 };
 
+Backdrop.webform.conditionalOperatorDateAfterEqual = function(element, existingValue, ruleValue) {
+  var currentValue = Backdrop.webform.dateValue(element, existingValue);
+  return (currentValue !== false) && (currentValue > ruleValue || currentValue === ruleValue);
+};
+
 Backdrop.webform.conditionalOperatorTimeEqual = function(element, existingValue, ruleValue) {
   var currentValue = Backdrop.webform.timeValue(element, existingValue);
   return currentValue === ruleValue;
+};
+
+Backdrop.webform.conditionalOperatorTimeNotEqual = function(element, existingValue, ruleValue) {
+  return !Backdrop.webform.conditionalOperatorTimeEqual(element, existingValue, ruleValue);
 };
 
 Backdrop.webform.conditionalOperatorTimeBefore = function(element, existingValue, ruleValue) {
@@ -317,11 +414,57 @@ Backdrop.webform.conditionalOperatorTimeBefore = function(element, existingValue
   return (currentValue !== false) && (currentValue < ruleValue);
 };
 
+Backdrop.webform.conditionalOperatorTimeBeforeEqual = function(element, existingValue, ruleValue) {
+  // Date and time operators intentionally exclusive for "before".
+  var currentValue = Backdrop.webform.timeValue(element, existingValue);
+  return (currentValue !== false) && (currentValue < ruleValue || currentValue === ruleValue);
+};
+
 Backdrop.webform.conditionalOperatorTimeAfter = function(element, existingValue, ruleValue) {
   // Date and time operators intentionally inclusive for "after".
   var currentValue = Backdrop.webform.timeValue(element, existingValue);
-  return (currentValue !== false) && (currentValue >= ruleValue);
+  return (currentValue !== false) && (currentValue > ruleValue);
 };
+
+Backdrop.webform.conditionalOperatorTimeAfterEqual = function(element, existingValue, ruleValue) {
+  // Date and time operators intentionally inclusive for "after".
+  var currentValue = Backdrop.webform.timeValue(element, existingValue);
+  return (currentValue !== false) && (currentValue > ruleValue || currentValue === ruleValue);
+};
+
+/**
+ * Utility function to compare values of a select component.
+ * @param string a
+ *   First select option key to compare
+ * @param string b
+ *   Second select option key to compare
+ * @param array options
+ *   Associative array where the a and b are within the keys
+ * @return integer based upon position of $a and $b in $options
+ *   -N if $a above (<) $b
+ *   0 if $a = $b
+ *   +N if $a is below (>) $b
+ */
+Backdrop.webform.compare_select = function(a, b, element) {
+  var optionList = [];
+  $('option,input:radio,input:checkbox', element).each(function() {
+    optionList.push($(this).val());
+  })
+  var a_position = optionList.indexOf(a);
+  var b_position = optionList.indexOf(b);
+  if (a_position < 0 && b_position < 0) {
+    return null;
+  }
+  else if (a_position < 0) {
+    return 1;
+  }
+  else if (b_position < 0) {
+    return -1;
+  }
+  else {
+    return a_position - b_position;
+  }
+}
 
 /**
  * Utility to return current visibility. Uses actual visibility, except for
@@ -330,7 +473,7 @@ Backdrop.webform.conditionalOperatorTimeAfter = function(element, existingValue,
 Backdrop.webform.isVisible = function($element) {
   return $element.hasClass('webform-component-hidden')
             ? !$element.find('input').first().hasClass('webform-conditional-disabled')
-            : $element.is(':visible');
+            : $element.closest('.webform-conditional-hidden').length == 0;
 }
 
 /**
@@ -349,7 +492,12 @@ Backdrop.webform.stringValue = function(element, existingValue) {
       if (!value.length) {
         var selectValue = $element.find('select').val();
         if (selectValue) {
-          value.push(selectValue);
+          if ($.isArray(selectValue)) {
+            value = selectValue;
+          }
+          else {
+            value.push(selectValue);
+          }
         }
       }
       // Simple text fields. This check is done last so that the select list in
@@ -381,7 +529,7 @@ Backdrop.webform.dateValue = function(element, existingValue) {
   var value = false;
   if (element) {
     var $element = $(element);
-    if ($element.is(':visible')) {
+    if (Backdrop.webform.isVisible($element)) {
       var day = $element.find('[name*=day]').val();
       var month = $element.find('[name*=month]').val();
       var year = $element.find('[name*=year]').val();
@@ -415,7 +563,7 @@ Backdrop.webform.timeValue = function(element, existingValue) {
   var value = false;
   if (element) {
     var $element = $(element);
-    if ($element.is(':visible')) {
+    if (Backdrop.webform.isVisible($element)) {
       var hour = $element.find('[name*=hour]').val();
       var minute = $element.find('[name*=minute]').val();
       var ampm = $element.find('[name*=ampm]:checked').val();
@@ -446,5 +594,37 @@ Backdrop.webform.timeValue = function(element, existingValue) {
   }
   return value;
 };
+
+/**
+ * Make a prop shim for jQuery < 1.9.
+ */
+$.fn.webformProp = function(name, value) {
+  if (value) {
+    $.fn.prop ? this.prop(name, true) : this.attr(name, true);
+  }
+  else {
+    $.fn.prop ? this.prop(name, false) : this.removeAttr(name);
+  }
+  return this;
+}
+
+/**
+ * Make a multi-valued val() function for setting checkboxes, radios, and select
+ * elements.
+ */
+$.fn.webformVal = function(values) {
+  this.each(function() {
+    var $this = $(this);
+    var value = $this.val();
+    var on = $.inArray($this.val(), values) != -1;
+    if (this.nodeName == 'OPTION') {
+      $this.webformProp('selected', on ? value : false);
+    }
+    else {
+      $this.val(on ? [value] : false);
+    }
+  });
+  return this;
+}
 
 })(jQuery);

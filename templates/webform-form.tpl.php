@@ -9,7 +9,7 @@
  * all webforms on your site.
  *
  * Available variables:
- * - $form: The complete form array.
+ * - $form: The complete_form array.
  * - $nid: The node ID of the Webform.
  *
  * The $form array contains two main pieces:
