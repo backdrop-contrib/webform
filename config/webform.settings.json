@@ -13,6 +13,7 @@
         "img"
     ],
     "webform_email_address_format": "long",
+    "webform_email_address_individual": 0,
     "webform_default_from_name": "",
     "webform_default_from_address": "",
     "webform_default_subject": "Form submission from: [node:title]",
@@ -26,6 +27,7 @@
     "webform_csv_delimiter": "\t",
     "webform_export_wordwrap": "0",
     "webform_excel_legacy_exporter": "0",
+    "webform_date_type": "medium",
     "webform_progressbar_style": [
         "progressbar_bar",
         "progressbar_pagebreak_labels",

@@ -1,4 +1,4 @@
-(function ($) {
+Backdrop(function ($) {
 
 /**
  * Webform node form interface enhancments.
@@ -18,6 +18,9 @@ Backdrop.behaviors.webformAdmin.attach = function(context) {
   Backdrop.webform.downloadExport(context);
   // Enhancements for the conditionals administrative page.
   Backdrop.webform.conditionalAdmin(context);
+  // Trigger radio/checkbox change when label click automatically selected by
+  // browser.
+  Backdrop.webform.radioLabelAutoClick(context);
 }
 
 Backdrop.webform = Backdrop.webform || {};
@@ -46,6 +49,7 @@ Backdrop.webform.setActive = function(context) {
   }
 };
 
+// Update e-mail templates between default and custom.
 Backdrop.webform.updateTemplate = function(context) {
   var defaultTemplate = $('#edit-templates-default').val();
   var $templateSelect = $('#webform-template-fieldset select#edit-template-option', context);
@@ -141,15 +145,28 @@ Backdrop.webform.conditionalAdmin = function(context) {
     if ($target.is('.webform-conditional-andor select')) {
       Backdrop.webform.conditionalAndOrChange.apply(e.target);
     }
+
+    if ($target.is('.webform-conditional-action select')) {
+      Backdrop.webform.conditionalActionChange.apply(e.target);
+    }
   });
 
+  // Add event handlers to delete the entire row if the last rule or action is removed.
   $context.find('.webform-conditional-rule-remove:not(.webform-conditional-processed)').bind('click', function() {
+    this.webformRemoveClass = '.webform-conditional-rule-remove';
+    window.setTimeout($.proxy(Backdrop.webform.conditionalRemove, this), 100);
+  }).addClass('webform-conditional-processed');
+  $context.find('.webform-conditional-action-remove:not(.webform-conditional-processed)').bind('click', function() {
+    this.webformRemoveClass = '.webform-conditional-action-remove';
     window.setTimeout($.proxy(Backdrop.webform.conditionalRemove, this), 100);
   }).addClass('webform-conditional-processed');
 
   // Trigger default handlers on the source element, this in turn will trigger
   // the operator handlers.
   $context.find('.webform-conditional-source select').trigger('change');
+
+  // Trigger defaults handlers on the action element.
+  $context.find('.webform-conditional-action select').trigger('change');
 
   // When adding a new table row, make it draggable and hide the weight column.
   if ($context.is('tr.ajax-new-content') && $context.find('.webform-conditional').length === 1) {
@@ -167,8 +184,8 @@ Backdrop.webform.conditionalAdmin = function(context) {
  */
 Backdrop.webform.conditionalRemove = function() {
   // See if there are any remaining rules in this element.
-  var ruleCount = $(this).parents('.webform-conditional:first').find('.webform-conditional-rule-remove').length;
-  if (ruleCount <= 1) {
+  var rowCount = $(this).parents('.webform-conditional:first').find(this.webformRemoveClass).length;
+  if (rowCount <= 1) {
     var $tableRow = $(this).parents('tr:first');
     var $table = $('#webform-conditionals-table');
     if ($tableRow.length && $table.length) {
@@ -197,12 +214,15 @@ Backdrop.webform.conditionalSourceChange = function() {
   var $newList = $originalList.filter('optgroup[label=' + dataType + ']');
   var newHTML = $newList[0].innerHTML;
 
-  // Update the options and fire the change event handler on the list to update the value field,
-  // only if the options have changed. This avoids resetting existing selections.
+  // Update the options and fire the change event handler on the list to update
+  // the value field, only if the options have changed. This avoids resetting
+  // existing selections.
   if (newHTML != $operator.html()) {
     $operator.html(newHTML);
-    $operator.trigger('change');
   }
+  // Trigger the change in case the source component changed from one select
+  // component to another.
+  $operator.trigger('change');
 
 }
 
@@ -219,6 +239,7 @@ Backdrop.webform.conditionalOperatorChange = function() {
 
   // Given the dataType and operator, we can determine the form key.
   var formKey = Backdrop.settings.webform.conditionalValues.operators[dataType][operator]['form'];
+  var formSource = typeof Backdrop.settings.webform.conditionalValues.forms[formKey] == 'undefined' ? false : source;
 
   // On initial request, save the default field as printed on the original page.
   if (!$value[0]['webformConditionalOriginal']) {
@@ -226,13 +247,15 @@ Backdrop.webform.conditionalOperatorChange = function() {
     originalValue = $value.find('input:first').val();
   }
   // On changes to an existing operator, check if the form key is different
-  // before bothering with replacing the form with an identical version.
-  else if ($value[0]['webformConditionalFormKey'] == formKey) {
+  // (and any per-source form, such as a select option list) before replacing
+  // the form with an identical version.
+  else if ($value[0]['webformConditionalFormKey'] == formKey && $value[0]['webformConditionalFormSource'] == formSource) {
     return;
   }
 
   // Store the current form key for checking the next time the operator changes.
   $value[0]['webformConditionalFormKey'] = formKey;
+  $value[0]['webformConditionalFormSource'] = formSource;
 
   // If using the default (a textfield), restore the original field.
   if (formKey === 'default') {
@@ -242,17 +265,14 @@ Backdrop.webform.conditionalOperatorChange = function() {
   else if (formKey === false) {
     $value[0].innerHTML = '&nbsp;';
   }
-  // Lastly check if there is a specialized form for this source and operator.
+  // If there is a per-source form for this operator (e.g. option lists), use
+  // the specialized value form.
+  else if (typeof Backdrop.settings.webform.conditionalValues.forms[formKey] == 'object') {
+    $value[0].innerHTML = Backdrop.settings.webform.conditionalValues.forms[formKey][source];
+  }
+  // Otherwise all the sources use a generic field (e.g. a text field).
   else {
-    // If there is a per-source form for this operator (e.g. option lists), use
-    // the specialized value form.
-    if (typeof Backdrop.settings.webform.conditionalValues.forms[formKey] == 'object') {
-      $value[0].innerHTML = Backdrop.settings.webform.conditionalValues.forms[formKey][source];
-    }
-    // Otherwise all the sources use a generic field (e.g. a text field).
-    else {
-      $value[0].innerHTML = Backdrop.settings.webform.conditionalValues.forms[formKey];
-    }
+    $value[0].innerHTML = Backdrop.settings.webform.conditionalValues.forms[formKey];
   }
 
   // Set the name attribute to match the original placeholder field.
@@ -272,6 +292,28 @@ Backdrop.webform.conditionalAndOrChange = function() {
 }
 
 /**
+ * Event callback to show argument only for appropriate actions.
+ */
+Backdrop.webform.conditionalActionChange = function() {
+  var action = $(this).val();
+  var $argument = $(this).parents('.webform-conditional:first').find('.webform-conditional-argument input');
+  var isShown = $argument.is(':visible');
+  switch (action) {
+    case 'show':
+    case 'require':
+      if (isShown) {
+        $argument.hide();
+      }
+      break;
+    case 'set':
+      if (!isShown) {
+        $argument.show();
+      }
+      break;
+  }
+}
+
+/**
  * Given a table's DOM element, restripe the odd/even classes.
  */
 Backdrop.webform.restripeTable = function(table) {
@@ -285,4 +327,19 @@ Backdrop.webform.restripeTable = function(table) {
     .filter(':even').filter('.even')
       .removeClass('even').addClass('odd');
 };
+
+/**
+ * Triggers a change event when a label receives a click.
+ *
+ * When the browser automatically selects a radio button when it's label is
+ * clicked, the FAPI states jQuery code doesn't receive an event. This function
+ * ensures that automatically-selected radio buttons keep in sync with the
+ * FAPI states.
+ */
+Backdrop.webform.radioLabelAutoClick = function(context) {
+  $('label').once('webform-label').click(function(){
+    $(this).prev('input:radio').change();
+  });
+}
+
 })(jQuery);
