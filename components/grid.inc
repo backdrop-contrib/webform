@@ -104,7 +104,7 @@ function _webform_edit_grid($component) {
       '#type' => 'textarea',
       '#title' => t('Options'),
       '#default_value' => $component['extra']['options'],
-      '#description' => t('Options to select across the top. One option per line. <strong>Key-value pairs MUST be specified as "safe_key|Some readable option"</strong>. Use of only alphanumeric characters and underscores is recommended in keys.') . ' ' .theme('webform_token_help'),
+      '#description' => t('Options to select across the top. One option per line. <strong>Key-value pairs MUST be specified as "safe_key|Some readable option"</strong>. Use of only alphanumeric characters and underscores is recommended in keys.') . ' ' . theme('webform_token_help'),
       '#cols' => 60,
       '#rows' => 5,
       '#weight' => -3,

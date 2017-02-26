@@ -316,7 +316,8 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
     // Verify that this submission is not attempting to send any spam hacks.
     foreach ($addresses_final as $address) {
       if (_webform_submission_spam_check($address, $email['subject'], $email['from'], $email['headers'])) {
-        watchdog('webform', 'Possible spam attempt from @remote_addr' . "<br />\n" . nl2br(htmlentities($email['message'])), array('@remote_add' => ip_address()));
+        watchdog('webform', 'Possible spam attempt from @remote !message',
+                 array('@remote' => ip_address(), '!message'=> "<br />\n" . nl2br(htmlentities($email['message']))));
         backdrop_set_message(t('Illegal information. Data not submitted.'), 'error');
         return FALSE;
       }
@@ -638,7 +639,7 @@ function webform_submission_render($node, $submission, $email, $format, $exclude
       unset($components[$cid]);
     }
     if ($email && $email['exclude_empty']) {
-      foreach($submission->data as $cid => $data) {
+      foreach ($submission->data as $cid => $data) {
         if (!isset($data[0]) || $data[0] == '') {
           unset($components[$cid]);
         }

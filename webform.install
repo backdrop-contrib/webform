@@ -770,7 +770,7 @@ function webform_uninstall() {
   $query = new EntityFieldQuery();
   $results = $query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'webform')
-    ->range(0,1)
+    ->range(0, 1)
     ->execute();
   $instances = field_info_instances('node', 'webform');
   unset($instances['body']);
@@ -787,6 +787,7 @@ function webform_uninstall() {
     'views.view.webform_webforms',
     'views.view.webform_analysis'
   );
+
   foreach ($names as $config_name) {
     $config = config($config_name);
     $config->delete();

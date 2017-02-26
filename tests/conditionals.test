@@ -89,7 +89,7 @@ class WebformConditionalsTestCase extends WebformTestCase {
     $match_string = (is_array($conditional_values) ? print_r($conditional_values, 1) : $conditional_values);
     $conditional_string = $should_match ? 'should' : 'should not';
     $settings = array(
-      'title' => 'Test conditional webform: ' . $component['type'] . ' "' . $input_string .'"' . $conditional_string . ' be ' . $operator . ' "' . $match_string . '"',
+      'title' => 'Test conditional webform: ' . $component['type'] . ' "' . $input_string . '"' . $conditional_string . ' be ' . $operator . ' "' . $match_string . '"',
       'type' => 'webform',
       'webform' => webform_node_defaults(),
     );
