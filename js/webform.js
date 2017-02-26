@@ -199,6 +199,7 @@
             var isLocked = targetLocked[action['target']];
             var $texts = $target.find("input:text,textarea,input[type='email']");
             var $selects = $target.find('select,select option,input:radio,input:checkbox');
+            var $markups = $target.filter('.webform-component-markup');
             if (actionResult) {
               var multiple = $.map(action['argument'].split(','), $.trim);
               $selects.webformVal(multiple);
@@ -206,7 +207,18 @@
               // A special case is made for markup. It is sanitized with filter_xss_admin on the server.
               // otherwise text() should be used to avoid an XSS vulnerability. text() however would
               // preclude the use of tags like <strong> or <a>
-              $target.filter('.webform-component-markup').html(action['argument']);
+              $markups.html(action['argument']);
+            }
+            else {
+              // Markup not set? Then restore original markup as provided in
+              // the attribute data-webform-markup.
+              $markups.each(function() {
+                var $this = $(this);
+                var original = $this.data('webform-markup');
+                if (original !== undefined) {
+                  $this.html(original);
+                }
+              });
             }
             if (!isLocked) {
               // If not previously hidden or set, disable the element readonly or readonly-like behavior.
@@ -454,18 +466,7 @@
     });
     var a_position = optionList.indexOf(a);
     var b_position = optionList.indexOf(b);
-    if (a_position < 0 && b_position < 0) {
-      return null;
-    }
-    else if (a_position < 0) {
-      return 1;
-    }
-    else if (b_position < 0) {
-      return -1;
-    }
-    else {
-      return a_position - b_position;
-    }
+    return (a_position < 0 || b_position < 0) ? null : a_position - b_position;
   };
 
   /**

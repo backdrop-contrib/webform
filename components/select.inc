@@ -488,7 +488,7 @@ function webform_expand_select_ids($element) {
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_select($component, $value, $format = 'html') {
+function _webform_display_select($component, $value, $format = 'html', $submission = array()) {
   // Sort values by numeric key. These may be in alphabetic order from the database query,
   // which is not numeric order for keys '10' and higher.
   $value = (array) $value;
@@ -740,6 +740,24 @@ function _webform_table_select($component, $value) {
   }
 
   return implode('<br />', $items);
+}
+
+/**
+ * Implements _webform_action_set_component().
+ */
+function _webform_action_set_select($component, &$element, &$form_state, $value) {
+  // Set the value as an array for multiple select or single value otherwise.
+  if ($element['#type'] == 'checkboxes') {
+    $checkbox_values = $element['#options'];
+    array_walk($checkbox_values, function(&$value, $key) use ($value) {
+      $value = (int)(strval($key) === $value);
+    });
+  }
+  else {
+    $value = $component['extra']['multiple'] ? array($value) : $value;
+  }
+  $element['#value'] = $value;
+  form_set_value($element, $value, $form_state);
 }
 
 /**

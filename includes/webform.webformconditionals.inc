@@ -28,6 +28,8 @@ class WebformConditionals {
   protected $childrenMap;
   protected $visibilityMap;
   protected $requiredMap;
+  protected $setMap;
+  protected $markupMap;
 
   public $errors;
 
@@ -315,14 +317,18 @@ class WebformConditionals {
       array_walk_recursive($this->visibilityMap, function (&$status) {
         $status = WebformConditionals::componentShown;
       });
-      // Create an empty required map
+      // Create empty required, set, and markup maps.
       $this->requiredMap = array_fill(1, count($this->pageMap), array());
+      $this->setMap = $this->requiredMap;
+      $this->markupMap = $this->requiredMap;
 
     } else {
       array_walk($this->visibilityMap[$page_num], function (&$status) {
         $status = WebformConditionals::componentShown;
       });
       $this->requiredMap[$page_num] = array();
+      $this->setMap[$page_num] = array();
+      $this->markupMap[$page_num] = array();
     }
 
     module_load_include('inc', 'webform', 'includes/webform.conditionals');
@@ -370,6 +376,10 @@ class WebformConditionals {
 
           // Perform the comparison callback and build the results for this group.
           $comparison_callback = $operator_info[$rule['operator']]['comparison callback'];
+          // Contrib caching, such as entitycache, may have loaded the node
+          // without building it. It is possible that the component include file
+          // hasn't been included yet. See #2529246.
+          webform_component_include($source_component['type']);
           $conditional_results[] = $comparison_callback($source_values, $rule['value'], $source_component);
 
           // Record page number to later determine any intra-page dependency on this source.
@@ -398,8 +408,18 @@ class WebformConditionals {
               $this->requiredMap[$page_num][$target] = $action_result;
               break;
             case 'set':
-              if ($action_result && empty($targetLocked[$target]) && $components[$target]['type'] != 'markup') {
-                $input_values[$target][0] = $action['argument'];
+              if ($components[$target]['type'] == 'markup') {
+                $this->markupMap[$page_num][$target] = FALSE;
+              }
+              if ($action_result && empty($targetLocked[$target])) {
+                if ($components[$target]['type'] == 'markup') {
+                  $this->markupMap[$page_num][$target] = $action['argument'];
+                } else {
+                  $input_values[$target] = isset($input_values[$target]) && is_array($input_values[$target])
+                                              ? array($action['argument'])
+                                              : $action['argument'];
+                  $this->setMap[$page_num][$target] = TRUE;
+                }
               }
               break;
           }
@@ -461,13 +481,13 @@ class WebformConditionals {
   }
 
   /**
-   * Returns whether a given component is always required, always opption, or
+   * Returns whether a given component is always required, always optional, or
    * unchanged by conditional logic.
    *
    * Assumes that the conditionals have already been executed on the given page.
    *
    * @param integer $cid
-   *   The component id of the component whose required state is being sought
+   *   The component id of the component whose required state is being sought.
    * @param integer $page_num
    *   The page number that the component is on.
    * @return boolean
@@ -480,6 +500,48 @@ class WebformConditionals {
       watchdog('webform', 'WebformConditionals::componentRequired called prior to evaluating a submission.', 'error');
     }
     return isset($this->requiredMap[$page_num][$cid]) ? $this->requiredMap[$page_num][$cid] : NULL;
+  }
+
+    /**
+   * Returns whether a given component has been set by conditional logic.
+   *
+   * Assumes that the conditionals have already been executed on the given page.
+   *
+   * @param integer $cid
+   *   The component id of the component whose set state is being sought.
+   * @param integer $page_num
+   *   The page number that the component is on.
+   * @return boolean
+   *   Whether the component was set based on conditionals.
+   */
+  function componentSet($cid, $page_num) {
+    if (!$this->setMap) {
+      // The conditionals have not yet been executed on a submission.
+      $this->executeConditionals(array(), 0);
+      watchdog('webform', 'WebformConditionals::componentSet called prior to evaluating a submission.', 'error');
+    }
+    return isset($this->setMap[$page_num][$cid]) ? $this->setMap[$page_num][$cid] : NULL;
+  }
+
+    /**
+   * Returns the calculated markup as set by conditional logic.
+   *
+   * Assumes that the conditionals have already been executed on the given page.
+   *
+   * @param integer $cid
+   *   The component id of the component whose set state is being sought.
+   * @param integer $page_num
+   *   The page number that the component is on.
+   * @return string
+   *   The conditional markup, or NULL if none.
+   */
+  function componentMarkup($cid, $page_num) {
+    if (!$this->markupMap) {
+      // The conditionals have not yet been executed on a submission.
+      $this->executeConditionals(array(), 0);
+      watchdog('webform', 'WebformConditionals::componentMarkup called prior to evaluating a submission.', 'error');
+    }
+    return isset($this->markupMap[$page_num][$cid]) ? $this->markupMap[$page_num][$cid] : NULL;
   }
 
 }

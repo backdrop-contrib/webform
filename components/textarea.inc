@@ -152,7 +152,7 @@ function _webform_render_textarea($component, $value = NULL, $filter = TRUE, $su
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_textarea($component, $value, $format = 'html') {
+function _webform_display_textarea($component, $value, $format = 'html', $submission = array()) {
   return array(
     '#title' => $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
@@ -223,6 +223,14 @@ function _webform_analysis_textarea($component, $sids = array(), $single = FALSE
  */
 function _webform_table_textarea($component, $value) {
   return empty($value[0]) ? '' : check_plain($value[0]);
+}
+
+/**
+ * Implements _webform_action_set_component().
+ */
+function _webform_action_set_textarea($component, &$element, &$form_state, $value) {
+  $element['#value'] = $value;
+  form_set_value($element, $value, $form_state);
 }
 
 /**

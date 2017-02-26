@@ -491,6 +491,14 @@ function webform_schema() {
         'type' => 'text',
         'not null' => TRUE,
       ),
+      'status' => array(
+        'description' => 'Whether this email is enabled.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
     ),
     'primary key' => array('nid', 'eid'),
   );
@@ -741,11 +749,18 @@ function webform_install() {
     );
     $webform_type = node_type_set_defaults($webform_type);
     node_type_save($webform_type);
+    // Enable webform components by default on Webform nodes.
+    config_set('webform.settings', 'webform_node_webform', TRUE);
+    // Now that a webform node type has been created, reset the cache of the
+    // node types that support webforms. This is needed for tests which will
+    // create nodes in the same execution.
+    backdrop_static_reset('webform_node_types');
     if (config_get('webform.settings', 'webform_install_add_body_field')) {
       node_add_body_field($webform_type);
     }
-    // Enable webform components by default on Webform nodes.
-    config_set('webform.settings', 'webform_node_webform', TRUE);
+  }
+  else {
+    config_set('webform.settings', 'webform_node_types_primary', array());
   }
 
   // Note: MS SQL Server does not support size-limited indexes and the column
@@ -1251,4 +1266,24 @@ function webform_update_1016() {
     $config_analysis->setData($data);
     $config_analysis->save();
   }
+}
+
+/**
+ * Add a column to the emails table to allow disabling.
+ */
+function webform_update_1200() {
+  // Add status column to webform_emails.
+  // From webform_update_7430
+  if (!db_field_exists('webform_emails', 'status')) {
+    $spec = array(
+      'description' => 'Whether this email is enabled.',
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'size' => 'tiny',
+      'not null' => TRUE,
+      'default' => 1,
+    );
+    db_add_field('webform_emails', 'status', $spec);
+  }
+  return t('Webform emails may now be disabled.');
 }
