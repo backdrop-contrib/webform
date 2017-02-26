@@ -328,11 +328,6 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE, $subm
     '#translatable' => array('title', 'description', 'options'),
   );
 
-  // Add HTML5 required attribute, if needed and possible (not working on multiple checkboxes).
-  if ($component['required'] && ($component['extra']['aslist'] || !$component['extra']['multiple'])) {
-    $element['#attributes']['required'] = 'required';
-  }
-
   // Convert the user-entered options list into an array.
   $default_value = $filter ? webform_replace_tokens($component['value'], $node) : $component['value'];
   $options = _webform_select_options($component, !$component['extra']['aslist'], $filter);
@@ -345,11 +340,19 @@ function _webform_render_select($component, $value = NULL, $filter = TRUE, $subm
     _webform_shuffle_options($options);
   }
 
+  // Add HTML5 required attribute, if needed and possible (not working on more than one checkboxes).
+  if ($component['required'] && ($component['extra']['aslist'] || !$component['extra']['multiple'] || count($options) == 1)) {
+    $element['#attributes']['required'] = 'required';
+  }
+
   // Add default options if using a select list with no default. This trigger's
   // Backdrop's adding of the option for us. See @form_process_select().
   if ($component['extra']['aslist'] && !$component['extra']['multiple'] && $default_value === '') {
     $element['#empty_value'] = '';
-    $element['#empty_option'] = $component['extra']['empty_option'];
+    if (strlen($component['extra']['empty_option'])) {
+      $element['#empty_option'] =  $component['extra']['empty_option'];
+      $element['#translatable'][] = 'empty_option';
+    }
   }
 
   // Set the component options.

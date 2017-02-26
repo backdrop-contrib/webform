@@ -257,6 +257,7 @@ function _webform_validate_email($form_element, &$form_state) {
                          implode('][', $form_element ['#parents']),
                          TRUE,  // Required validation is done elsewhere.
                          $component['extra']['multiple'],
+                         FALSE, // No tokens are allowed in user input.
                          $format);
 }
 

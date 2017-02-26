@@ -1,8 +1,10 @@
 <?php
 
 /**
+ * @file
  * Implementation of hook_drush_command().
  */
+
 function webform_drush_command() {
   $items = array();
 

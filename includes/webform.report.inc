@@ -351,9 +351,8 @@ function webform_results_clear_form_submit($form, &$form_state) {
   webform_results_clear($form_state['values']['nid']);
   $node = node_load($form_state['values']['nid']);
   $title = $node->title;
-  $message = t('Webform %title entries cleared.', array('%title' => $title));
-  backdrop_set_message($message);
-  watchdog('webform', $message);
+  backdrop_set_message(t('Webform %title entries cleared.', array('%title' => $title)));
+  watchdog('webform', 'Webform %title entries cleared.', array('%title' => $title));
   $form_state['redirect'] = 'node/' . $form_state['values']['nid'] . '/webform-results';
 }
 
@@ -635,7 +634,7 @@ function webform_results_download_range_validate($element, $form_state) {
     'batch_size' => 1,
     'batch_number' => 0,
   );
-  if (!webform_download_sids_count($form_state['values']['node']->nid, $range_options)) {
+  if (!form_get_errors() && !webform_download_sids_count($form_state['values']['node']->nid, $range_options)) {
     form_error($element['range_type'], t('The specified range will not return any results.'));
   }
 
@@ -854,8 +853,10 @@ function webform_results_export($node, $format = 'delimited', $options = array()
     $col_count = count($row) > $col_count ? count($row) : $col_count;
   }
 
-  // Write data from submissions.
-  $rows = webform_results_download_rows($node, $options);
+  // Write data from submissions. $last_is is non_NULL to trigger returning it
+  // by reference.
+  $last_sid = TRUE;
+  $rows = webform_results_download_rows($node, $options, 0, $last_sid);
   foreach ($rows as $row) {
     $exporter->add_row($handle, $row, $row_count);
     $row_count++;
@@ -872,7 +873,7 @@ function webform_results_export($node, $format = 'delimited', $options = array()
   $export_info['file_name'] = $file_name;
   $export_info['row_count'] = $row_count;
   $export_info['col_count'] = $col_count;
-  $export_info['last_sid'] = end($submissions) ? key($submissions) : NULL;
+  $export_info['last_sid'] = $last_sid;
   $export_info['exporter'] = $exporter;
 
   return $export_info;
@@ -983,16 +984,18 @@ function webform_results_download_headers($node, $options) {
  *   through from the GUI interface.
  * @param $serial_start
  *   The starting position for the Serial column in the output.
+ * @param $last_sid
+ *   If set to a non-NULL value, the last sid will be returned.
  *
  * @return $rows
  *   An array of rows built according to the provided $serial_start and
  *   $pager_count variables. Note that the current page number is determined
  *   by the super-global $_GET['page'] variable.
  */
-function webform_results_download_rows($node, $options, $serial_start = 0) {
+function webform_results_download_rows($node, $options, $serial_start = 0, $last_sid = NULL) {
   // Get all the required submissions for the download.
   $filters['nid'] = $node->nid;
-  if (isset($options['sids'])){
+  if (isset($options['sids'])) {
     $filters['sid'] = $options['sids'];
   }
   elseif (!empty($options['completion_type']) && $options['completion_type'] !== 'all') {
@@ -1000,6 +1003,10 @@ function webform_results_download_rows($node, $options, $serial_start = 0) {
   }
 
   $submissions = webform_get_submissions($filters, NULL);
+
+  if (isset($last_sid)) {
+    $last_sid = end($submissions) ? key($submissions) : NULL;
+  }
 
   return webform_results_download_rows_process($node, $options, $serial_start, $submissions);
 }
@@ -1796,7 +1803,7 @@ function webform_download_sids_query($nid, $range_options, $uid = NULL) {
     case 'range':
       // Submissions Start-End.
       $query->condition('ws.sid', $range_options['start'], '>=');
-      if ($range_options['end']){
+      if ($range_options['end']) {
         $query->condition('ws.sid', $range_options['end'], '<=');
       }
       $query->orderBy('ws.sid', 'ASC');
@@ -1804,7 +1811,7 @@ function webform_download_sids_query($nid, $range_options, $uid = NULL) {
     case 'range_serial':
       // Submissions Start-End, using serial numbers.
       $query->condition('ws.serial', $range_options['start'], '>=');
-      if ($range_options['end']){
+      if ($range_options['end']) {
         $query->condition('ws.serial', $range_options['end'], '<=');
       }
       $query->orderBy('ws.serial', 'ASC');
@@ -1894,5 +1901,5 @@ function webform_download_latest_start_sid($nid, $latest_count, $completion_type
   }
 
   $latest_sids = $query->execute()->fetchCol();
-  return min($latest_sids);
+  return $latest_sids ? min($latest_sids) : 1;
 }
