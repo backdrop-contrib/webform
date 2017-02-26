@@ -2855,6 +2855,11 @@ function webform_client_form_validate($form, &$form_state) {
     return;
   }
 
+  if ($form_state['webform']['preview'] && $form_state['webform']['page_count'] === $form_state['webform']['page_num']) {
+    // Form has already passed validation and is on the preview page.
+    return;
+  }
+
   module_load_include('inc', 'webform', 'includes/webform.submissions');
   $node = $form['#node'];
 

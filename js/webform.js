@@ -628,4 +628,36 @@
     return this;
   };
 
+/**
+ * Make a prop shim for jQuery < 1.9.
+ */
+$.fn.webformProp = function(name, value) {
+  if (value) {
+    $.fn.prop ? this.prop(name, true) : this.attr(name, true);
+  }
+  else {
+    $.fn.prop ? this.prop(name, false) : this.removeAttr(name);
+  }
+  return this;
+}
+
+/**
+ * Make a multi-valued val() function for setting checkboxes, radios, and select
+ * elements.
+ */
+$.fn.webformVal = function(values) {
+  this.each(function() {
+    var $this = $(this);
+    var value = $this.val();
+    var on = $.inArray($this.val(), values) != -1;
+    if (this.nodeName == 'OPTION') {
+      $this.webformProp('selected', on ? value : false);
+    }
+    else {
+      $this.val(on ? [value] : false);
+    }
+  });
+  return this;
+}
+
 })(jQuery);
