@@ -198,7 +198,18 @@ function drush_webform_clear($nid = FALSE) {
  * Implements hook_drush_sql_sync_sanitize().
  */
 function webform_drush_sql_sync_sanitize($source) {
+  // Fetch list of all table.
+  $all_tables = drush_sql_get_class()->listTables();
+  $tables_to_truncate = array('webform_submitted_data', 'webform_submissions');
+
+  $truncate_webform_tables_query = array();
+  foreach ($tables_to_truncate as $table) {
+    if (in_array($table, $all_tables, TRUE)) {
+      $truncate_webform_tables_query[] = 'TRUNCATE ' . $table . ';';
+    }
+  }
+
   drush_sql_register_post_sync_op('webform_submitted_data',
     dt('Delete all data submitted to webforms (depending on the site config, may contain sensitive data).'),
-    "TRUNCATE webform_submitted_data; TRUNCATE webform_submissions;");
+    implode(' ', $truncate_webform_tables_query));
 }
