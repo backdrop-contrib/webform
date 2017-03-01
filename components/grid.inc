@@ -537,6 +537,9 @@ function theme_webform_grid($variables) {
     if ($right_titles) {
       $row[] = array('data' => isset($question_titles[1]) ? webform_filter_xss($question_titles[1]) : '', 'class' => array('webform-grid-question'));
     }
+    if ($right_titles) {
+      $row[] = array('data' => isset($question_titles[1]) ? webform_filter_xss($question_titles[1]) : '', 'class' => array('webform-grid-question'));
+    }
     $rows[] = $row;
   }
 
