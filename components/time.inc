@@ -365,7 +365,7 @@ function _webform_submit_time($component, $value) {
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_time($component, $value, $format = 'html') {
+function _webform_display_time($component, $value, $format = 'html', $submission = array()) {
   $value = webform_date_array(isset($value[0]) ? $value[0] : '', 'time');
   if ($component['extra']['hourformat'] == '12-hour') {
     $value = webform_time_convert($value, '12-hour');

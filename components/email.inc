@@ -257,13 +257,14 @@ function _webform_validate_email($form_element, &$form_state) {
                          implode('][', $form_element ['#parents']),
                          TRUE,  // Required validation is done elsewhere.
                          $component['extra']['multiple'],
+                         FALSE, // No tokens are allowed in user input.
                          $format);
 }
 
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_email($component, $value, $format = 'html') {
+function _webform_display_email($component, $value, $format = 'html', $submission = array()) {
   return array(
     '#title' => $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',

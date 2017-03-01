@@ -103,7 +103,7 @@ function _webform_render_hidden($component, $value = NULL, $filter = TRUE, $subm
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_hidden($component, $value, $format = 'html') {
+function _webform_display_hidden($component, $value, $format = 'html', $submission = array()) {
   $element = array(
     '#title' => $component['name'],
     '#markup' => isset($value[0]) ? $value[0] : NULL,
@@ -168,6 +168,14 @@ function _webform_analysis_hidden($component, $sids = array(), $single = FALSE, 
  */
 function _webform_table_hidden($component, $value) {
   return check_plain(empty($value[0]) ? '' : $value[0]);
+}
+
+/**
+ * Implements _webform_action_set_component().
+ */
+function _webform_action_set_hidden($component, &$element, &$form_state, $value) {
+  $element['#value'] = $value;
+  form_set_value($element, $value, $form_state);
 }
 
 /**

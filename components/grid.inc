@@ -264,7 +264,7 @@ function webform_expand_grid($element) {
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_grid($component, $value, $format = 'html') {
+function _webform_display_grid($component, $value, $format = 'html', $submission = array()) {
   $node = node_load($component['nid']);
   $questions = _webform_select_options_from_text($component['extra']['questions'], TRUE);
   $questions = _webform_select_replace_tokens($questions, $node);
@@ -529,9 +529,13 @@ function theme_webform_grid($variables) {
     // Render each radio button in the row.
     $radios = form_process_radios($question_element);
     foreach (element_children($radios) as $key) {
-      $radios[$key]['#title'] = $question_element['#title'] . ' - ' . $radios[$key]['#title'];
+      $radio_title = $radios[$key]['#title'];
+      $radios[$key]['#title'] = $question_element['#title'] . ' - ' . $radio_title;
       $radios[$key]['#title_display'] = 'invisible';
-      $row[] = array('data' => backdrop_render($radios[$key]), 'class' => array('checkbox', 'webform-grid-option'));
+      $row[] = array('data' => backdrop_render($radios[$key]), 'class' => array('checkbox', 'webform-grid-option'), 'data-label' => array($radio_title));
+    }
+    if ($right_titles) {
+      $row[] = array('data' => isset($question_titles[1]) ? webform_filter_xss($question_titles[1]) : '', 'class' => array('webform-grid-question'));
     }
     if ($right_titles) {
       $row[] = array('data' => isset($question_titles[1]) ? webform_filter_xss($question_titles[1]) : '', 'class' => array('webform-grid-question'));
@@ -561,4 +565,3 @@ function _webform_grid_right_titles($element) {
 function _webform_grid_question_header($text) {
   return implode('/', array_filter(explode('|', $text)));
 }
-

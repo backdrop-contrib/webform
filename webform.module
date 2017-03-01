@@ -479,6 +479,9 @@ function webform_menu_email_load($eid, $nid) {
         $email['email'] = $_GET['email'];
       }
     }
+    if (isset($_GET['status'])) {
+      $email['status'] = $_GET['status'];
+    }
   }
 
   return $email;
@@ -1050,6 +1053,9 @@ function webform_webform_component_info() {
       ),
       'file' => 'components/number.inc',
       'conditional_type' => 'numeric',
+      'features' => array(
+        'conditional_action_set' => TRUE,
+      ),
     ),
     'pagebreak' => array(
       'label' => t('Page break'),
@@ -1357,10 +1363,13 @@ function webform_file_download($uri) {
  *   An array of node type names.
  */
 function webform_node_types() {
-  $types = array();
-  foreach (node_type_get_names() as $type => $name) {
-    if (config_get('webform.settings', 'webform_node_' . $type)) {
-      $types[] = $type;
+  $types = &backdrop_static(__FUNCTION__, NULL);
+  if (!isset($types)) {
+    $types = array();
+    foreach (node_type_get_names() as $type => $name) {
+      if (config_get('webform.settings', 'webform_node_' . $type)) {
+        $types[] = $type;
+      }
     }
   }
   return $types;
@@ -2051,7 +2060,7 @@ function theme_webform_view_messages($variables) {
     $message = t('Submissions for this form are closed.');
   }
   elseif ($node->webform['confidential'] && user_is_logged_in()) {
-    $message = t('This form is confidential. You much <a href="!url">Log out</a> to submit it.',
+    $message = t('This form is confidential. You must <a href="!url">Log out</a> to submit it.',
                  array('!url' => url('/user/logout', array('query' => array('destination' => request_uri())))));
   }
   // If open and not allowed to submit the form, give an explanation.
@@ -2706,7 +2715,7 @@ function _webform_client_form_add_component($node, $component, $component_value,
   if ($format != 'form') {
     // This component is display only.
     $data = empty($input_values[$cid]) ? NULL : $input_values[$cid];
-    if ($display_element = webform_component_invoke($component['type'], 'display', $component, $data, $format)) {
+    if ($display_element = webform_component_invoke($component['type'], 'display', $component, $data, $format, $form['#submission'])) {
       // Set access based on the private property.
       $display_element += array('#access' => TRUE);
       $display_element['#access'] = $display_element['#access'] && $component_access;
@@ -2855,11 +2864,6 @@ function webform_client_form_validate($form, &$form_state) {
     return;
   }
 
-  if ($form_state['webform']['preview'] && $form_state['webform']['page_count'] === $form_state['webform']['page_num']) {
-    // Form has already passed validation and is on the preview page.
-    return;
-  }
-
   module_load_include('inc', 'webform', 'includes/webform.submissions');
   $node = $form['#node'];
 
@@ -2895,16 +2899,35 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
     $sorter = webform_get_conditional_sorter($form_state['complete_form']['#node']);
     $cid = $elements['#webform_component']['cid'];
     $page_num = $form_state['values']['details']['page_num'];
-    // Webform-specific enhancement, only validate the field if it was used in this submission.
-    // This both skips validation on the field and sets the value of the field to NULL, preventing any dangerous input.
-    // Short-circuit validation for a hidden component (hidden by rules dependent upon component on previous pages),
-    // or a component this is dependent upon values on the current page, but is hidden based upon their current values.
+    // Webform-specific enhancements:
+    // 1) Only validate the field if it was used in this submission.
+    //    This both skips validation on the field and sets the value of the
+    //    field to NULL, preventing any dangerous input. Short-circuit
+    //    validation for a hidden component (hidden by rules dependent upon
+    //    component on previous pages), or a component this is dependent upon
+    //    values on the current page, but is hidden based upon their current
+    //    values.
+    // 2) Only valididate if the field has not been set by conditionals.
+    //    The user will be unable to fix the validation without surmising the
+    //    logic and changing the trigger for the conditional. Also, it isn't
+    //    possible to set $element['#value'] without component-specific
+    //    knowledge of how the data is stored because $input_values is already
+    //    webform-normalized to contain values in arrays.
     if ($sorter->componentVisibility($cid, $page_num) != WebformConditionals::componentShown) {
       form_set_value($elements, NULL, $form_state);
       return;
     }
+    if ($sorter->componentSet($cid, $page_num)) {
+      $component = $elements['#webform_component'];
+      $value = $input_values[$cid];
+      $value = is_array($value) ? $value[0] : $value;
+      // webform_component_invoke cannot be called with reference arguments. Call directly.
+      // webform_component_invoke($component['type'], 'action_set', $component, $elements, $form_state, $value);
+      $function = '_webform_action_set_' . $component['type'];
+      $function($component, $elements, $form_state, $value);
+    }
 
-    // Check for changes in requires status made by conditionals.
+    // Check for changes in required status made by conditionals.
     $required = $sorter->componentRequired($cid, $page_num);
     if (isset($required)) {
       $elements['#required'] = $required;
@@ -3491,9 +3514,10 @@ function template_preprocess_webform_element(&$variables) {
   // Ensure defaults.
   $element += array(
     '#title_display' => 'before',
-    '#wrapper_attributes' => array(
-      'class' => array(),
-    ),
+    '#wrapper_attributes' => array(),
+  );
+  $element['#wrapper_attributes'] += array(
+    'class' => array(),
   );
 
   // All elements using this for display only are given the "display" type.
@@ -3545,13 +3569,6 @@ function theme_webform_element($variables) {
   $output = '<div ' . backdrop_attributes($element['#wrapper_attributes']) . '>' . "\n";
   $prefix = isset($element['#field_prefix']) ? '<span class="field-prefix">' . webform_filter_xss($element['#field_prefix']) . '</span> ' : '';
   $suffix = isset($element['#field_suffix']) ? ' <span class="field-suffix">' . webform_filter_xss($element['#field_suffix']) . '</span>' : '';
-
-  // managed_file uses a different id, make sure the label points to the correct id.
-  if (isset($element['#type']) && $element['#type'] === 'managed_file') {
-    if (!empty($variables['element']['#id'])) {
-      $variables['element']['#id'] .= '-upload';
-    }
-  }
 
   switch ($element['#title_display']) {
     case 'inline':

@@ -82,7 +82,7 @@ function webform_fieldset_prerender($element) {
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_fieldset($component, $value, $format = 'html') {
+function _webform_display_fieldset($component, $value, $format = 'html', $submission = array()) {
   if ($format == 'text') {
     $element = array(
       '#title' => $component['name'],

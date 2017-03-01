@@ -44,7 +44,7 @@ function _webform_edit_markup($component) {
     '#type' => 'text_format',
     '#title' => t('Value'),
     '#default_value' => $component['value'],
-    '#description' => t('Markup allows you to enter custom HTML or PHP logic into your form.') . theme('webform_token_help'),
+    '#description' => t('Markup allows you to enter custom HTML into your form.') . theme('webform_token_help', array('groups' => array('node', 'submission'))),
     '#weight' => -1,
     '#format' => $component['extra']['format'],
     '#element_validate' => array('_webform_edit_markup_validate'),
@@ -80,33 +80,83 @@ function _webform_edit_markup_validate($form, &$form_state) {
  * Implements _webform_render_component().
  */
 function _webform_render_markup($component, $value = NULL, $filter = TRUE, $submission = NULL) {
-  $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
 
   $element = array(
     '#type' => 'markup',
     '#title' => $filter ? NULL : $component['name'],
     '#weight' => $component['weight'],
-    '#markup' => $filter ? webform_replace_tokens($component['value'], $node, NULL, NULL, $component['extra']['format']) : $component['value'],
+    '#markup' => $component['value'],
     '#format' => $component['extra']['format'],
     '#theme_wrappers' => array('webform_element'),
     '#translatable' => array('title', 'markup'),
     '#access' => $component['extra']['display_on'] != 'display',
+    '#webform_nid' => isset($component['nid']) ? $component['nid'] : NULL,
+    '#webform_submission' => $submission,
+    '#webform_format' => $component['extra']['format'],
   );
+
+  if ($filter) {
+    $element['#after_build'] = array('_webform_render_markup_after_build');
+  }
 
   return $element;
 }
 
+ /**
+ * Helper function to replace tokens in markup component.
+ *
+ * Required to have access to current form values from $form_state.
+ */
+function _webform_render_markup_after_build($form_element, &$form_state){
+  global $user;
+  $node = node_load($form_element['#webform_nid']);
+  $submission = NULL;
+
+  // Convert existing submitted data to an in-progress submission.
+  if (!empty($form_state['storage']['submitted'])) {
+    module_load_include('inc', 'webform', 'includes/webform.submissions');
+    $submission = webform_submission_create($node, $user, $form_state, TRUE, $form_element['#webform_submission']);
+  }
+
+  // Replace tokens using the current or generated submission.
+  $value = webform_replace_tokens($form_element['#markup'], $node, $submission, NULL, $form_element['#webform_format']);
+
+  // If the markup value has been set by a conditional, display that value.
+  $component = $form_element['#webform_component'];
+  if ($node) {
+    $sorter = webform_get_conditional_sorter($node);
+    $conditional_value = $sorter->componentMarkup($component['cid'], $component['page_num']);
+    if (isset($conditional_value)) {
+      // Provide original value, should conditional logic no longer set the value.
+      $form_element['#wrapper_attributes']['data-webform-markup'] = $value;
+      if (is_string($conditional_value)) {
+        $value = check_markup($conditional_value, $component['extra']['format']);
+      }
+    }
+  }
+
+  $form_element['#markup'] = $value;
+  return $form_element;
+}
+
+
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_markup($component, $value, $format = 'html') {
+function _webform_display_markup($component, $value, $format = 'html', $submission = array()) {
   $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
+  $value = webform_replace_tokens($component['value'], $node, $submission, NULL, $component['extra']['format']);
+
+  // If the markup value has been set by a conditional, display that value.
+  if ($node && is_string($conditional_value = webform_get_conditional_sorter($node)->componentMarkup($component['cid'], $component['page_num']))) {
+    $value = check_markup($conditional_value, $component['extra']['format']);
+  }
 
   return array(
     '#weight' => $component['weight'],
     '#theme' => 'webform_display_markup',
     '#format' => $format,
-    '#value' => webform_replace_tokens($component['value'], $node, NULL, NULL, $component['extra']['format']),
+    '#value' => $value,
     '#translatable' => array('title'),
     '#access' => $component['extra']['display_on'] != 'form',
   );

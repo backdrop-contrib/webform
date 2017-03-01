@@ -462,7 +462,7 @@ function _webform_submit_date($component, $value) {
 /**
  * Implements _webform_display_component().
  */
-function _webform_display_date($component, $value, $format = 'html') {
+function _webform_display_date($component, $value, $format = 'html', $submission = array()) {
   $value = webform_date_array(isset($value[0]) ? $value[0] : '', 'date');
 
   return array(
