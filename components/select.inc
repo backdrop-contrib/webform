@@ -26,6 +26,7 @@ function _webform_defaults_select() {
       'other_text' => t('Other...'),
       'title_display' => 0,
       'description' => '',
+      'description_above' => FALSE,
       'custom_keys' => FALSE,
       'options_source' => '',
       'private' => FALSE,
@@ -754,7 +755,7 @@ function _webform_action_set_select($component, &$element, &$form_state, $value)
   // Set the value as an array for multiple select or single value otherwise.
   if ($element['#type'] == 'checkboxes') {
     $checkbox_values = $element['#options'];
-    array_walk($checkbox_values, function(&$value, $key) use ($value) {
+    array_walk($checkbox_values, function(&$value, $key) use($value) {
       $value = (int)(strval($key) === $value);
     });
   }
@@ -821,7 +822,9 @@ function _webform_csv_data_select($component, $export_options, $value) {
 
   if ($component['extra']['multiple']) {
     foreach ($options as $key => $item) {
-      $index = array_search($key, (array) $value);
+      // Strict search is needed to avoid a key of 0 from matching an empty
+      // value.
+      $index = array_search((string)$key, (array)$value, TRUE);
       if ($index !== FALSE) {
         if ($export_options['select_format'] == 'separate') {
           $return[] = 'X';

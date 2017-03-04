@@ -27,6 +27,7 @@ function _webform_defaults_time() {
       'minuteincrements' => 1,
       'title_display' => 0,
       'description' => '',
+      'description_above' => FALSE,
       'private' => FALSE,
       'analysis' => FALSE,
     ),
