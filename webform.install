@@ -1021,91 +1021,100 @@ function webform_update_1007() {
  * Convert conditionals to be able to support multiple actions per conditional. Backup your database before proceeding. WARNING: Sites with many, many conditionals should execute this update via drush to avoid a PHP timeout.
  */
 function webform_update_1008() {
-  // From webform_update_7423.
-  // Create webform_conditional_actions table.
-  // The table might already exist if this update previously timed-out
-  if (!db_table_exists('webform_conditional_actions')) {
-    $schema['webform_conditional_actions'] = array(
-      'description' => 'Holds information about conditional actions.',
-      'fields' => array(
-        'nid' => array(
-          'description' => 'The node identifier of a webform.',
-          'type' => 'int',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
-        'rgid' => array(
-          'description' => 'The rule group identifier for this group of rules.',
-          'type' => 'int',
-          'size' => 'small',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
-        'aid' => array(
-          'description' => 'The rule identifier for this conditional action.',
-          'type' => 'int',
-          'size' => 'small',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
-        'target_type' => array(
-          'description' => 'The type of target to be affected. Currently always "component". Indicates what type of ID the "target" column contains.',
-          'type' => 'varchar',
-          'length' => 128,
-        ),
-        'target' => array(
-          'description' => 'The ID of the target to be affected. Typically a component ID.',
-          'type' => 'varchar',
-          'length' => 128,
-        ),
-        'invert' => array(
-          'description' => 'If inverted, execute when rule(s) are false.',
-          'type' => 'int',
-          'size' => 'small',
-          'unsigned' => TRUE,
-          'not null' => TRUE,
-          'default' => 0,
-        ),
-        'action' => array(
-          'description' => 'The action to be performed on the target.',
-          'type' => 'varchar',
-          'length' => 128,
-        ),
-        'argument' => array(
-          'description' => 'Optional argument for action.',
-          'type' => 'text',
-        ),
-      ),
-      'primary key' => array('nid', 'rgid', 'aid'),
-    );
-    db_create_table('webform_conditional_actions', $schema['webform_conditional_actions']);
-  }
+  if (db_field_exists('webform_conditional', 'action') &&
+      db_field_exists('webform_conditional', 'target_type') &&
+      db_field_exists('webform_conditional', 'target')) {
 
-  // In a site with many, many conditionals, the db_insert may timeout. Start a transaction to ensure atomic action.
-  $tx = db_transaction();
-  // Copy target information from existing webform_conditional table to new webfrom_condtional_actions table.
-  $select = db_select('webform_conditional', 'c')
-    ->fields('c', array('nid', 'rgid', 'action', 'target_type', 'target'))
-    ->orderBy('nid')->orderBy('rgid');
-  $select->addExpression("''", 'argument');
-  db_insert('webform_conditional_actions')
-    ->from($select)
-    ->execute();
-
-  // Commit the insert
-  unset($tx);
-
-  // Remove unneeded columns from webform_conditional.
-  foreach (array('action', 'target_type', 'target') as $fieldname) {
-    if (db_field_exists('webform_conditional', $fieldname)) {
-      db_drop_field('webform_conditional', $fieldname);
+    // From webform_update_7423.
+    // Create webform_conditional_actions table.
+    // The table might already exist if this update previously timed-out
+    if (!db_table_exists('webform_conditional_actions')) {
+      $schema['webform_conditional_actions'] = array(
+        'description' => 'Holds information about conditional actions.',
+        'fields' => array(
+          'nid' => array(
+            'description' => 'The node identifier of a webform.',
+            'type' => 'int',
+            'unsigned' => TRUE,
+            'not null' => TRUE,
+            'default' => 0,
+          ),
+          'rgid' => array(
+            'description' => 'The rule group identifier for this group of rules.',
+            'type' => 'int',
+            'size' => 'small',
+            'unsigned' => TRUE,
+            'not null' => TRUE,
+            'default' => 0,
+          ),
+          'aid' => array(
+            'description' => 'The rule identifier for this conditional action.',
+            'type' => 'int',
+            'size' => 'small',
+            'unsigned' => TRUE,
+            'not null' => TRUE,
+            'default' => 0,
+          ),
+          'target_type' => array(
+            'description' => 'The type of target to be affected. Currently always "component". Indicates what type of ID the "target" column contains.',
+            'type' => 'varchar',
+            'length' => 128,
+          ),
+          'target' => array(
+            'description' => 'The ID of the target to be affected. Typically a component ID.',
+            'type' => 'varchar',
+            'length' => 128,
+          ),
+          'invert' => array(
+            'description' => 'If inverted, execute when rule(s) are false.',
+            'type' => 'int',
+            'size' => 'small',
+            'unsigned' => TRUE,
+            'not null' => TRUE,
+            'default' => 0,
+          ),
+          'action' => array(
+            'description' => 'The action to be performed on the target.',
+            'type' => 'varchar',
+            'length' => 128,
+          ),
+          'argument' => array(
+            'description' => 'Optional argument for action.',
+            'type' => 'text',
+          ),
+        ),
+        'primary key' => array('nid', 'rgid', 'aid'),
+      );
+      db_create_table('webform_conditional_actions', $schema['webform_conditional_actions']);
     }
-  }
 
-  return t('Webform database tables were successfully adjusted to allow more than one action for each conditional.');
+    // In a site with many, many conditionals, the db_insert may timeout. Start
+    // a transaction to ensure atomic action.
+    $tx = db_transaction();
+
+    // Copy target information from existing webform_conditional table to new
+    // webfrom_condtional_actions table.
+    $select = db_select('webform_conditional', 'c')
+      ->fields('c', array('nid', 'rgid', 'action', 'target_type', 'target'))
+      ->orderBy('nid')->orderBy('rgid');
+    $select->addExpression("''", 'argument');
+
+    db_insert('webform_conditional_actions')
+      ->from($select)
+      ->execute();
+
+    // Commit the insert
+    unset($tx);
+
+    // Remove unneeded columns from webform_conditional.
+    foreach (array('action', 'target_type', 'target') as $fieldname) {
+      if (db_field_exists('webform_conditional', $fieldname)) {
+        db_drop_field('webform_conditional', $fieldname);
+      }
+    }
+
+    return t('Webform database tables were successfully adjusted to allow more than one action for each conditional.');
+  }
 }
 
 /**
