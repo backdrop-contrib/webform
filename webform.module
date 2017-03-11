@@ -4166,7 +4166,7 @@ function webform_variable_get($variable) {
       $result = config_get('webform.settings', 'webform_csv_delimiter');
       break;
     case 'webform_csv_line_ending':
-      $result = variable_get('webform_csv_line_ending', "\n");
+      $result = config_get('webform.settings', 'webform_csv_line_ending');
       break;
     case 'webform_export_wordwrap':
       $result = config_get('webform.settings', 'webform_export_wordwrap');
