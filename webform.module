@@ -2232,7 +2232,8 @@ function webform_block_view($delta = '') {
         '#node' => $node,
         '#sid' => $_SESSION['webform_confirmation'][$nid]['sid'],
       );
-    } elseif (strlen(trim(strip_tags($node->webform['confirmation'])))) {
+    }
+    elseif (strlen(trim(strip_tags($node->webform['confirmation'])))) {
       // Display confirmation link backdrop status messages, but in the block.
       $message = webform_replace_tokens($node->webform['confirmation'],
                                         $node,
