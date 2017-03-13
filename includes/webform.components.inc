@@ -386,7 +386,6 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
   backdrop_set_title(t('Edit component: @name', array('@name' => $component['name'])), PASS_THROUGH);
 
   $form['#node'] = $node;
-  $form['#attached']['library'][] = array('webform', 'admin');
   $form['#tree'] = TRUE;
 
   // Print the correct field type specification.
@@ -473,6 +472,17 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     }
     $form['display']['title_display']['#weight'] = 8;
     $form['display']['title_display']['#parents'] = array('extra', 'title_display');
+  }
+
+  if (webform_component_feature($component['type'], 'description')) {
+    $form['display']['description_above'] = array(
+      '#type' => 'checkbox',
+      '#default_value' => !empty($component['extra']['description_above']),
+      '#title' => t('Description above field'),
+      '#description' => t('Place the description above &mdash; rather than below &mdash; the field.'),
+      '#weight' => 8.5,
+      '#parents' => array('extra', 'description_above'),
+    );
   }
 
   if (webform_component_feature($component['type'], 'private')) {
@@ -590,6 +600,9 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     unset($form['validation']);
   }
   $form = array_merge($form, $additional_form_elements);
+  // Ensure that the webform admin library is attached, possibly in addition to
+  // component-specific attachments.
+  $form['#attached']['library'][] = array('webform', 'admin');
 
   // Add the submit button.
   $form['actions'] = array(

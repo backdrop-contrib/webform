@@ -25,6 +25,7 @@
     "webform_node_types_primary": ["webform"],
     "webform_export_format": "excel",
     "webform_csv_delimiter": "\t",
+    "webform_csv_line_ending": "\n",
     "webform_export_wordwrap": "0",
     "webform_excel_legacy_exporter": "0",
     "webform_date_type": "medium",

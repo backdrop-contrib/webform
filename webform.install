@@ -1296,3 +1296,11 @@ function webform_update_1200() {
   }
   return t('Webform emails may now be disabled.');
 }
+
+/**
+ * Move webform_csv_line_ending variable to config.
+ */
+ function webform_update_1300() {
+   config_set('webform.settings', 'webform_csv_line_ending', update_variable_get('webform_csv_line_ending', "\n"));
+   update_variable_del('webform_csv_line_ending');
+ }

@@ -835,6 +835,7 @@ function _webform_defaults_component() {
       'optrand' => 0,
       'qrand' => 0,
       'description' => '',
+      'description_above' => FALSE,
       'private' => FALSE,
       'analysis' => TRUE,
     ),
@@ -1354,6 +1355,39 @@ function hook_webform_html_capable_mail_systems_alter(&$systems) {
   if (module_exists('my_module')) {
     $systems[] = 'MyModuleMailSystem';
   }
+}
+
+/**
+ * Define a list of webform exporters.
+ *
+ * @return array
+ *   A list of the available exporters provided by the module.
+ *
+ * @see webform_webform_exporters()
+ */
+function hook_webform_exporters() {
+  $exporters = array(
+    'webform_exporter_custom' => array(
+      'title' => t('Webform exporter name'),
+      'description' => t('The description for this exporter.'),
+      'handler' => 'webform_exporter_custom',
+      'file' => drupal_get_path('module', 'yourmodule') . '/includes/webform_exporter_custom.inc',
+      'weight' => 10,
+    ),
+  );
+
+  return $exporters;
+}
+
+/**
+ * Modify the list of webform exporters definitions.
+ *
+ * @param  array &$exporters
+ *   A list of all available webform exporters.
+ */
+function hook_webform_exporters_alter(&$exporters) {
+  $exporters['excel']['handler'] = 'customized_excel_exporter';
+  $exporters['excel']['file'] = drupal_get_path('module', 'yourmodule') . '/includes/customized_excel_exporter.inc';
 }
 
 /**
