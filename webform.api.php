@@ -1371,7 +1371,7 @@ function hook_webform_exporters() {
       'title' => t('Webform exporter name'),
       'description' => t('The description for this exporter.'),
       'handler' => 'webform_exporter_custom',
-      'file' => drupal_get_path('module', 'yourmodule') . '/includes/webform_exporter_custom.inc',
+      'file' => backdrop_get_path('module', 'yourmodule') . '/includes/webform_exporter_custom.inc',
       'weight' => 10,
     ),
   );
@@ -1387,7 +1387,7 @@ function hook_webform_exporters() {
  */
 function hook_webform_exporters_alter(&$exporters) {
   $exporters['excel']['handler'] = 'customized_excel_exporter';
-  $exporters['excel']['file'] = drupal_get_path('module', 'yourmodule') . '/includes/customized_excel_exporter.inc';
+  $exporters['excel']['file'] = backdrop_get_path('module', 'yourmodule') . '/includes/customized_excel_exporter.inc';
 }
 
 /**

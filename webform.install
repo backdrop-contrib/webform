@@ -708,10 +708,24 @@ function webform_requirements($phase) {
   // users from upgrading from 3.x if their PHP version is too old.
   if (version_compare(phpversion(), '5.3') < 0) {
     $requirements['webform_php'] = array(
-      'title' => $t('Webform PHP requirements'),
+      'title' => $t('Webform PHP requirement'),
       'value' => phpversion(),
       'severity' => REQUIREMENT_ERROR,
       'description' => $t('Webform requires PHP 5.3 or higher.'),
+    );
+  }
+  // Ensure that views is enabled as it is a new .info requirement starting
+  // with version 7.x-4.0rc1. On installation, the .info file is sufficient to
+  // cause the dependencies to be installed. On update, update.php will
+  // respect this hook_requirements implementation, but as of drush 6.3.0 and
+  // drush 7.0.0, drush updatedb will not. See:
+  // https://github.com/drush-ops/drush/issues/1427
+  if ($phase != 'install' && !module_exists('views')) {
+    $requirements['webform_views'] = array(
+      'title' => $t('Webform Views requirement'),
+      'value' => $t('Missing'),
+      'severity' => REQUIREMENT_ERROR,
+      'description' => $t('Webform requires Views, which is not installed and enabled.'),
     );
   }
 
@@ -860,7 +874,7 @@ function webform_update_1000() {
   $config->set('webform_update_batch_size', update_variable_get('webform_update_batch_size', 100));
   $config->set('webform_disabled_components', update_variable_get('webform_disabled_components', array()));
 
-  $config->set('webform_export_batch_size', update_variable_get('webform_export_batch_size', 100));
+  $config->set('webform_export_batch_size', update_variable_get('webform_export_batch_size', ''));
   $config->set('webform_export_path', update_variable_get('webform_export_path', 'temporary://'));
 
   $config->save();
@@ -1304,3 +1318,28 @@ function webform_update_1200() {
    config_set('webform.settings', 'webform_csv_line_ending', update_variable_get('webform_csv_line_ending', "\n"));
    update_variable_del('webform_csv_line_ending');
  }
+
+ /**
+  * Move webform_token_access variable to config.
+  */
+function webform_update_1400() {
+  $config = config('webform.settings');
+  $config->set('webform_token_access', update_variable_get('webform_token_access', '1'));
+  update_variable_del('webform_token_access');
+  $config->save();
+}
+
+/**
+ * Remove webform_export_batch_size from config. Batch size is by default calculated dynamically
+ * and the variable should only exist if it's been intentionally set. This was set to a default of 100
+ * erroneously. To fix we're removing the variable if it is set to 100 since it's likely it wasn't intentional.
+ *
+ */
+function webform_update_1401() {
+ $config = config('webform.settings');
+ $batch_size = $config->get('webform_export_batch_size');
+ if (isset($batch_size) && ($batch_size == '100' || $batch_size == '')) {
+   $config->clear('webform_export_batch_size');
+ }
+ $config->save();
+}
