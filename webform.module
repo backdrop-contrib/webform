@@ -847,7 +847,7 @@ function webform_theme() {
       'file' => 'includes/webform.report.inc',
     ),
     'webform_results_table' => array(
-      'variables' => array('node' => NULL, 'components' => NULL, 'submissions' => NULL, 'node' => NULL, 'total_count' => NULL, 'pager_count' => NULL),
+      'variables' => array('node' => NULL, 'components' => NULL, 'submissions' => NULL, 'total_count' => NULL, 'pager_count' => NULL),
       'file' => 'includes/webform.report.inc',
     ),
     'webform_results_download_range' => array(
@@ -2698,6 +2698,8 @@ function webform_client_form_process($form, $form_state) {
  * This function assists in the building of the client form, as well as the
  * display of results, and the text of e-mails.
  *
+ * @param $node
+ *   The current webform node.
  * @param $component
  *   The component to be added to the form.
  * @param $component_value
@@ -2716,6 +2718,8 @@ function webform_client_form_process($form, $form_state) {
  *   - form: Show as an editable form.
  *   - html: Show as HTML results.
  *   - text: Show as plain text.
+ * @param $page_num
+ *   The page number. Defaults to 0.
  * @param $filter
  *   Whether the form element properties should be filtered. Only set to FALSE
  *   if needing the raw properties for editing.
@@ -4085,7 +4089,7 @@ function webform_get_cid(&$node, $form_key, $pid) {
 /**
  * Find the label of a given page based on page breaks.
  *
- * @param $webform
+ * @param $node
  *   The webform node.
  * @param $form_state
  *   The form's state, if available
@@ -5210,7 +5214,7 @@ function webform_clone_node_alter(&$node, $context) {
  * @param string $detect_key
  *   A key that will always be present in the posted data when an actual form
  *   submission has been made.
- * @param string parent_key
+ * @param string $parent_key
  *   Omit to not preflight the form, or the array key for the parent of where
  *   the preflight warning should be inserted into the form.
  */
@@ -5324,7 +5328,7 @@ function webform_count_input_vars($element) {
  * Counts terminals in an array. Useful for counting how many input_vars were
  * returned in $_POST.
  *
- * @params $a
+ * @param $a
  *   Array or array element to be counted
  * @return integer
  *   Number of non-array elements within $a.
