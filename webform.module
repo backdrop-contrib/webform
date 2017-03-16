@@ -1385,7 +1385,9 @@ function webform_node_types() {
  * Implements hook_node_type_delete().
  */
 function webform_node_type_delete($info) {
-  variable_del('webform_node_' . $info->type);
+  $config = config('webform.settings');
+  $config->clear('webform_node_' . $info->type);
+  $config->save();
 }
 
 /**
@@ -1824,6 +1826,13 @@ function webform_form_node_type_form_alter(&$form, $form_state) {
         'data-disabled-description' => t('Disabled'),
       ),
     );
+    $form['#submit'][] = 'webform_form_node_type_form_submit';
+  }
+}
+
+function webform_form_node_type_form_submit(&$form, $form_state) {
+  if (isset($form_state['values']['webform_node'])) {
+    config_set('webform.settings', 'webform_node_' . $form_state['values']['type'], (bool) $form_state['values']['webform_node']);
   }
 }
 
