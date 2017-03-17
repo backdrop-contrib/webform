@@ -197,6 +197,12 @@ function template_preprocess_webform_components_form(&$variables) {
   }
   else {
     $rows[] = array(array('data' => t('No Components, add a component below.'), 'colspan' => 9));
+    // When there are no components, tabledrag.js will look to the add component
+    // row to locate the weight column. Because of the name/form_key colspan
+    // it will mis-count the columns and locate the Required column instead of
+    // the Weight column.
+    unset($add_form['data'][0]['colspan']);
+    array_splice($add_form['data'], 1, 0, '&nbsp;');
   }
 
   // Append the add form if not already printed.
@@ -870,8 +876,7 @@ function webform_component_delete($node, $component) {
 
   // Delete any conditionals dependent on this component.
   module_load_include('inc', 'webform', 'includes/webform.conditionals');
-  foreach ($node->webform['conditionals'] as $rgid => $conditional) {
-    $delete_conditional = FALSE;
+  foreach ($node->webform['conditionals'] as $rgid => &$conditional) {
     $specs = array(
       array(
         'field' => 'rules',
@@ -889,21 +894,32 @@ function webform_component_delete($node, $component) {
       ),
     );
     foreach ($specs as $spec) {
-      $count = count($conditional[$spec['field']]);
-      foreach ($conditional[$spec['field']] as $key => $thing) {
+      $deleted = array();
+      $field = $spec['field'];
+      foreach ($conditional[$field] as $key => $thing) {
         if ($thing[$spec['component_type']] === 'component' && $thing[$spec['component']] == $component['cid']) {
-          if ($count == 1) {
-            // Delete the conditional if this component is the only source or target.
-            webform_conditional_delete($node, $conditional);
-            break 2;
-          }
-          db_delete($spec['table'])
-            ->condition('nid', $node->nid)
-            ->condition('rgid', $rgid)
-            ->condition($spec['index'], $key)
-            ->execute();
-          $count--;
+          $deleted[$key] = $key;
+          unset($conditional[$field][$key]);
         }
+      }
+      if ($spec['field'] == 'rules') {
+        // Rules deleted because of the source component being deleted may have left
+        // empty sub-conditionals. Delete them, and then the entire rule group if
+        // there aren't any rules left.
+        $deleted += webform_delete_empty_subconditionals($conditional);
+      }
+      // Delete the conditional if this component is the only source / target.
+      if (empty($conditional[$field])) {
+        webform_conditional_delete($node, $conditional);
+        break; // Loop exit.
+      }
+      // Remove the deleted rules / actions from the database.
+      foreach ($deleted as $key) {
+        db_delete($spec['table'])
+          ->condition('nid', $node->nid)
+          ->condition('rgid', $rgid)
+          ->condition($spec['index'], $key)
+          ->execute();
       }
     }
   }
