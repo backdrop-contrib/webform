@@ -3035,7 +3035,7 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
     elseif (isset($elements['#element_validate'])) {
       foreach ($elements['#element_validate'] as $function) {
         if (is_callable($function))  {
-          $function($elements, $form_state, $form_state['complete form']);
+          $function($elements, $form_state, $form_state['complete_form']);
         }
       }
     }
