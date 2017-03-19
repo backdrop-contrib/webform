@@ -428,7 +428,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
   $form['form_key'] = array(
     '#type' => 'textfield',
     '#default_value' => empty($component['form_key']) ? _webform_safe_name($component['name']) : $component['form_key'],
-    '#title' => t('Field Key'),
+    '#title' => t('Form Key'),
     '#description' => t('Enter a machine readable key for this form element. May contain only alphanumeric characters and underscores. This key will be used as the name attribute of the form element. This value has no effect on the way data is saved, but may be helpful if doing custom form processing.'),
     '#required' => TRUE,
     '#weight' => -9,
@@ -638,12 +638,12 @@ function webform_component_edit_form_validate($form, &$form_state) {
   $node = $form['#node'];;
 
   if (!preg_match('/^[a-z0-9_]+$/i', $form_state['values']['form_key'])) {
-    form_set_error('form_key', t('The field key %field_key is invalid. Please include only lowercase alphanumeric characters and underscores.', array('%field_key' => $form_state['values']['form_key'])));
+    form_set_error('form_key', t('The form key %form_key is invalid. Please include only lowercase alphanumeric characters and underscores.', array('%form_key' => $form_state['values']['form_key'])));
   }
 
   foreach ($node->webform['components'] as $cid => $component) {
     if (($component['cid'] != $form_state['values']['cid'] || $form_state['values']['clone']) && ($component['pid'] == $form_state['values']['pid']) && (strcasecmp($component['form_key'], $form_state['values']['form_key']) == 0)) {
-      form_set_error('form_key', t('The field key %field_key is already in use by the field labeled %existing_field. Please use a unique key.', array('%field_key' => $form_state['values']['form_key'], '%existing_field' => $component['name'])));
+      form_set_error('form_key', t('The form key %form_key is already in use by the field labeled %existing_field. Please use a unique key.', array('%form_key' => $form_state['values']['form_key'], '%existing_field' => $component['name'])));
     }
   }
 }

@@ -1506,11 +1506,18 @@ function webform_node_update($node) {
         webform_component_insert($node->webform['components'][$cid]);
       }
       elseif (in_array($cid, $deleted_cids)) {
-        webform_component_delete($node, $original->webform['components'][$cid]);
+        // Delete components only after all updates have been processed.
       }
       elseif ($node->webform['components'][$cid] != $original->webform['components'][$cid]) {
         webform_component_update($node->webform['components'][$cid]);
       }
+    }
+
+    // Delete components now that any parent changes have been saved. When
+    // components are moved and deleted in one operation in FormBuilder, this
+    // ensures that only the current children are deleted.
+    foreach ($deleted_cids as $cid) {
+      webform_component_delete($node, $original->webform['components'][$cid]);
     }
   }
 
@@ -1520,15 +1527,19 @@ function webform_node_update($node) {
 
     // Conditionals don't have unique site-wide IDs or configuration, so our
     // update here is a bit more aggressive than for components and e-mails.
+    // Delete any conditionals no longer in the webform or that have changed.
     foreach ($original->webform['conditionals'] as $rgid => $conditional) {
-      if (!isset($node->webform['conditionals'][$rgid]) || $original->webform['conditionals'][$rgid] != $node->webform['conditionals'][$rgid]) {
+      if (!isset($node->webform['conditionals'][$rgid]) || $conditional != $node->webform['conditionals'][$rgid]) {
         webform_conditional_delete($node, $conditional);
       }
     }
+    // Insert any conditionals not in the original or that have changed.
     foreach ($node->webform['conditionals'] as $rgid => $conditional) {
       $conditional['nid'] = $node->nid;
       $conditional['rgid'] = $rgid;
-      webform_conditional_insert($conditional);
+      if (!isset($original->webform['conditionals'][$rgid]) || $original->webform['conditionals'][$rgid] != $conditional) {
+       webform_conditional_insert($conditional);
+      }
     }
   }
 
@@ -2420,9 +2431,6 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $r
   $form['#attributes']['class'][] = 'webform-client-form';
   $form['#attributes']['class'][] = 'webform-client-form-' . $node->nid;
 
-  // Set the encoding type (necessary for file uploads).
-  $form['#attributes']['enctype'] = 'multipart/form-data';
-
   // Sometimes when displaying a webform as a teaser or block, a custom action
   // property is set to direct the user to the node page.
   if (!empty($node->webform['action'])) {
@@ -3026,8 +3034,8 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
     // #value data.
     elseif (isset($elements['#element_validate'])) {
       foreach ($elements['#element_validate'] as $function) {
-        if (function_exists($function))  {
-          $function($elements, $form_state, $form_state['complete_form']);
+        if (is_callable($function))  {
+          $function($elements, $form_state, $form_state['complete form']);
         }
       }
     }
@@ -3630,18 +3638,18 @@ function theme_webform_element($variables) {
     case 'before':
     case 'invisible':
       $output .= ' ' . theme('form_element_label', $variables);
-      $output .= ' ' . $prefix . $description[$above] . $element['#children'] . $suffix . "\n";
+      $output .= ' ' . $description[$above] . $prefix . $element['#children'] . $suffix . "\n";
       break;
 
     case 'after':
-      $output .= ' ' . $prefix . $description[$above] . $element['#children'] . $suffix;
+      $output .= ' ' . $description[$above] . $prefix . $element['#children'] . $suffix;
       $output .= ' ' . theme('form_element_label', $variables) . "\n";
       break;
 
     case 'none':
     case 'attribute':
       // Output no label and no required marker, only the children.
-      $output .= ' ' . $prefix . $description[$above] . $element['#children'] . $suffix . "\n";
+      $output .= ' ' . $description[$above] . $prefix . $element['#children'] . $suffix . "\n";
       break;
   }
 
@@ -5169,15 +5177,15 @@ function _webform_submission_serial_next_value($nid) {
 }
 
 /**
- * Returns the next serial number to be used, based upon actual submissions in
- * the database.
+ * Returns the next submission serial number to be used, based on the
+ * submissions in the database.
  *
  * @param int $nid
  *   The Node ID of the Webform.
  *
  * $return int
- *   The largest serial number used by a submission for a given node, 1 when no
- *   submissions.
+ *   The largest serial number used by a submission plus 1 for the specified
+ *   node or 1 when there are no submissions.
  */
 function _webform_submission_serial_next_value_used($nid) {
   $max_serial = db_select('webform_submissions');
