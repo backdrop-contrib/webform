@@ -288,7 +288,7 @@ function webform_email_edit_form($form, $form_state, $node, $email = array(), $c
           '#theme' => 'webform_email_component_mapping',
           '#attributes' => array('class' => array('webform-email-mapping')),
           '#webform_allow_empty' => $field === 'email',
-          '#type' => 'container',
+          '#type' => 'fieldset',
           '#states' => array(
             'visible' => array(
               'input[name=' . $field . '_option' . ']' => array('value' => 'component'),
