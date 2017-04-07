@@ -9,7 +9,7 @@
  *   displayed.
  * - $progressbar_percent: TRUE if the percentage complete should be displayed.
  * - $progressbar_bar: TRUE if the bar should be displayed.
- * - $progressbar_pagebreak_labels: TRUE if the page break labels shoud be
+ * - $progressbar_pagebreak_labels: TRUE if the page break labels should be
  *   displayed.
 
  * - $page_num: The current page number.

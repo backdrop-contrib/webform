@@ -584,7 +584,7 @@ function webform_views_pre_view($view, $display_id, $args) {
 
     // If this display's style is a table, add columns for click-sorting.
     // Note: Test for count($new_columns) is necessary because prior to PHP 5.6,
-    // array_fill requires a positve number of elements to insert.
+    // array_fill requires a positive number of elements to insert.
     if ($display->handler->get_option('style_plugin') == 'table' && count($new_columns)) {
       $style_options = $display->handler->get_option('style_options');
       $style_options['columns'] += $new_columns;

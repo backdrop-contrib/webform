@@ -4,7 +4,7 @@
  * @file
  * This module provides a simple way to create forms and questionnaires.
  *
- * The initial development of this module was sponsered by ÅF Industri AB, Open
+ * The initial development of this module was sponsored by ÅF Industry AB, Open
  * Source City and Karlstad University Library. Continued development sponsored
  * by Lullabot.
  *
@@ -649,7 +649,7 @@ function webform_results_clear_access($node, $account = NULL) {
  * Menu access callback. Ensure a sure has access to update a webform node.
  *
  * Unlike webform_results_access and webform_results_clear_access, access is
- * completely overridden by the any implmentation of hook_webform_update_access.
+ * completely overridden by the any implementation of hook_webform_update_access.
  *
  * If hook_webform_update_access is implemented by one or more other modules,
  * the results must be unanimously TRUE for access to be granted; otherwise it
@@ -3014,7 +3014,7 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
     //    component on previous pages), or a component this is dependent upon
     //    values on the current page, but is hidden based upon their current
     //    values.
-    // 2) Only valididate if the field has not been set by conditionals.
+    // 2) Only validate if the field has not been set by conditionals.
     //    The user will be unable to fix the validation without surmising the
     //    logic and changing the trigger for the conditional. Also, it isn't
     //    possible to set $element['#value'] without component-specific
@@ -3134,7 +3134,7 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
  * without realizing that the form hasn't been submitted.
  *
  * THEORY OF OPERATION:
- * The Backdrop 7 Form API lacks an easy way to rebuild the form in the event of
+ * The Backdrop Form API lacks an easy way to rebuild the form in the event of
  * validation errors. The opertions is thus:
  *
  * 1) The form is first displayed. If it is an existing draft,

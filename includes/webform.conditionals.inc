@@ -35,7 +35,7 @@ function webform_conditionals_form($form, &$form_state, $node) {
 
   // Check the current topological sort order for the conditionals and report any errors,
   // but only for actual form submissions and not for ajax-related form builds, such as
-  // adding or removing a condtion or conditional group.
+  // adding or removing a condition or conditional group.
   if (empty($form_state['triggering_element']['#ajax'])) {
     $node->webform['conditionals'] = $conditionals;
     webform_get_conditional_sorter($node)->reportErrors($conditionals);
@@ -1727,7 +1727,7 @@ function webform_conditional_value_datetime($input_values) {
  *   +N if $a is below (>) $b
  */
 function webform_compare_select($a, $b, $options) {
-  // Select keys that are integer-like strings are numberic indices in PHP.
+  // Select keys that are integer-like strings are numeric indices in PHP.
   // Convert the array keys to an array of strings.
   $options_array = array_map(function($i) {return (string) $i; }, array_keys($options));
   $a_position = array_search($a, $options_array, TRUE);

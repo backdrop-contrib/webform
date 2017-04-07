@@ -177,7 +177,7 @@ function _webform_render_email($component, $value = NULL, $filter = TRUE, $submi
     // rendered as text.
     $element['#attributes']['type'] = 'text';
 
-    // html5 patterns have implied delimters and start and end patterns.
+    // html5 patterns have implied delimiters and start and end patterns.
     // The are also case sensitive, not global, and not multi-line.
     // See https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/HTML5/Constraint_validation
     // See http://stackoverflow.com/questions/19605773/html5-email-validation

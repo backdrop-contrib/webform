@@ -812,8 +812,8 @@ function webform_get_submissions_query($filters = array(), $header = NULL, $page
  */
 function webform_get_submissions_load($pager_query) {
   // If the "$pager_query" is actually an unextended select query, then instead
-  // of querying the webform_submissions_data table with a pontentially huge
-  // array of sids in an IN clause, use the select query directy as this will
+  // of querying the webform_submissions_data table with a potentially huge
+  // array of sids in an IN clause, use the select query directly as this will
   // be much faster. Extended queries don't work in join clauses. The query
   // is assumed to include the sid.
   if ($pager_query instanceof SelectQuery) {

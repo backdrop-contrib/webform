@@ -14,7 +14,7 @@ function webform_configure_form($form, &$form_state, $node) {
 
   $form['#attached']['library'][] = array('webform', 'admin');
 
-  // Refresh the entity cache to get the lastest submission number.
+  // Refresh the entity cache to get the latest submission number.
   $nid = $node->nid;
   entity_get_controller('node')->resetCache(array($nid));
   $node = node_load($nid);

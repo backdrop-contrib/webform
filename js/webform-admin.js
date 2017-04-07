@@ -1,7 +1,7 @@
 
 /**
  * @file
- * Webform node form interface enhancments.
+ * Webform node form interface enhancements.
  */
 
 (function ($) {

@@ -35,7 +35,7 @@ class webform_exporter {
    * @param string $value
    *   The value of the cell.
    * @return boolean
-   *   Whether the cell position is elegible for wordwrapping.
+   *   Whether the cell position is eligible for wordwrapping.
    */
   function wrappable($row, $column, $value) {
     return strpos($value, "\n") !== FALSE ||
