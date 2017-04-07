@@ -4261,6 +4261,14 @@ function webform_page_labels($node, $form_state = array()) {
   $page_labels[0] = t($node->webform['progressbar_label_first']);
   foreach ($node->webform['components'] as $component) {
     if ($component['type'] == 'pagebreak') {
+      if (module_exists('webform_localization')) {
+        module_load_include('inc', 'webform_localization', 'includes/webform_localization.i18n');
+        $string = webform_localization_i18n_string_name($component['nid'], $component['cid'], '#title');
+        $component['name'] = i18n_string($string, $component['name'], array(
+          'update' => TRUE,
+          'sanitize' => FALSE,
+        ));
+      }
       $page_labels[$page_count] = $component['name'];
       $page_count++;
     }
