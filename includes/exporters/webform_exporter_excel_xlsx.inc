@@ -30,11 +30,6 @@ class webform_exporter_excel_xlsx extends webform_exporter {
       if (strlen($value) === 0) {
         // Skip empty cells.
       }
-      elseif (is_numeric($value) && $value[0] !== '+') {
-        $output .= '<c r="' . $cell_position . '"><v>';
-        $output .= $value;
-        $output .= '</v></c>';
-      }
       elseif (preg_match(self::DATE_REGEX_ANY, $value)) {
         // An Excel timestamp is the number of days since Jan 1, 1900, with
         // the decimal portion indicating the time (ddddd.tttttt).
