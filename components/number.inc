@@ -245,7 +245,7 @@ function theme_webform_number($variables) {
   }
 
   // Step property *must* be a full number with 0 prefix if a decimal.
-  if (!empty($element['#step']) && !is_int($element['#step'] * 1)) {
+  if (!empty($element['#step']) && filter_var((float) $element['#step'], FILTER_VALIDATE_INT) === FALSE) {
     $decimals = strlen($element['#step']) - strrpos($element['#step'], '.') - 1;
     $element['#step'] = sprintf('%1.' . $decimals . 'F', $element['#step']);
   }
@@ -315,7 +315,7 @@ function _webform_render_number($component, $value = NULL, $filter = TRUE, $subm
   }
 
   // Ensure #step starts with a zero if a decimal.
-  if (!is_int($element['#step'] * 1)) {
+  if (filter_var((float) $element['#step'], FILTER_VALIDATE_INT) === FALSE) {
     $decimals = strlen($element['#step']) - strrpos($element['#step'], '.') - 1;
     $element['#step'] = sprintf('%1.' . $decimals . 'F', $element['#step']);
   }
@@ -641,7 +641,7 @@ function _webform_validate_number($element, &$form_state) {
       }
 
       // Integer test.
-      if ($element['#integer'] && !is_int($numeric_value * 1)) {
+      if ($element['#integer'] && filter_var((float) $numeric_value, FILTER_VALIDATE_INT) === FALSE) {
         form_error($element, t('!name field value of @value must be an integer.', array('!name' => $element['#title'], '@value' => $value)));
       }
 
@@ -705,7 +705,7 @@ function _webform_edit_number_validate($element, &$form_state) {
         if (!is_numeric($values['min'])) {
           form_error($element, t('Minimum must be numeric.'));
         }
-        if ($values['integer'] && !is_int($values['min'] * 1)) {
+        if ($values['integer'] && filter_var((float) $values['min'], FILTER_VALIDATE_INT) === FALSE) {
           form_error($element, t('Minimum must have an integer value.'));
         }
       }
@@ -720,7 +720,7 @@ function _webform_edit_number_validate($element, &$form_state) {
         if (!is_numeric($values['max'])) {
           form_error($element, t('Maximum must be numeric.'));
         }
-        if ($values['integer'] && !is_int($values['max'] * 1)) {
+        if ($values['integer'] && filter_var((float) $values['max'], FILTER_VALIDATE_INT) === FALSE) {
           form_error($element, t('Maximum must have an integer value.'));
         }
       }
@@ -731,7 +731,7 @@ function _webform_edit_number_validate($element, &$form_state) {
           form_error($element, t('Step must be numeric.'));
         }
         else {
-          if ($values['integer'] && !is_int($values['step'] * 1)) {
+          if ($values['integer'] && filter_var((float) $values['step'], FILTER_VALIDATE_INT) === FALSE) {
             form_error($element, t('Step must have an integer value.'));
           }
         }
@@ -846,7 +846,7 @@ function webform_number_format($value, $decimals = NULL, $point = '.', $separato
   // If no decimal places are specified, do a best guess length of decimals.
   if (is_null($decimals) || $decimals === '') {
     // If it's an integer, no decimals needed.
-    if (is_int(($value . '') * 1)) {
+    if (filter_var((float) $value, FILTER_VALIDATE_INT) !== FALSE) {
       $decimals = 0;
     }
     else {
