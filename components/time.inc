@@ -125,7 +125,7 @@ function _webform_edit_time($component) {
 function _webform_edit_time_validate($form, &$form_state) {
   // Validate that the start and end times are valid. Don't validate the default
   // time because with token substitution, it might not be valid at component
-  // definition time. The end time may be before the start time to faciliate
+  // definition time. The end time may be before the start time to facilitate
   // time ranges spanning midnight.
   foreach (array('start_time', 'end_time') as $field) {
     $time[$field] = FALSE;

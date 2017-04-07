@@ -178,7 +178,7 @@ class WebformConditionals {
           $id = array_shift($start_nodes);
           // If the node represents an actual conditional, it can now be added
           // to the end of the sorted order because anything it depends upon has
-          // already been calcuated.
+          // already been calculated.
           if ($nodes[$id]['rgid']) {
             foreach ($nodes[$id]['rgid'] as $rgid) {
               $sorted[$page_num][] = array(
@@ -211,7 +211,7 @@ class WebformConditionals {
           }
         }
 
-      } // End finshing previous page
+      } // End finishing previous page
 
     } // End component loop
 
@@ -271,7 +271,7 @@ class WebformConditionals {
    *
    * Called after the component tree has been made and then flattened again.
    * Alas, the children data is removed when the tree is flattened. The
-   * components are indexecd by cid but in tree order. Because cid's are
+   * components are indexed by cid but in tree order. Because cid's are
    * numeric, they may not appear in IDE's or debuggers in their actual order.
    */
   function getChildrenMap() {
@@ -290,7 +290,7 @@ class WebformConditionals {
   }
 
   /**
-   * Deletes the value of the given component, plus any descendents.
+   * Deletes the value of the given component, plus any descendants.
    */
   protected function deleteFamily(&$input_values, $parent_id, &$page_visiblity_page) {
     if (isset($input_values[$parent_id])) {
@@ -328,7 +328,7 @@ class WebformConditionals {
   }
 
   /**
-   * Adds a rule's result to the current sub-condtional.
+   * Adds a rule's result to the current sub-conditional.
    */
   function executionStackAccumulate($result) {
     $this->resultStack[$this->stackPointer]['results'][] = $result;
@@ -357,7 +357,7 @@ class WebformConditionals {
     $this->getOrder();
     $this->getChildrenMap();
     if (!$this->visibilityMap || $page_num == 0) {
-      // Create a new visitibily map, with all components shown.
+      // Create a new visibility map, with all components shown.
       $this->visibilityMap = $this->pageMap;
       array_walk_recursive($this->visibilityMap, function (&$status) {
         $status = WebformConditionals::componentShown;
@@ -507,7 +507,7 @@ class WebformConditionals {
    * Assumes that the conditionals have already been executed on the given page.
    *
    * @param integer $cid
-   *   The component id of the component whose visibilty is being sought.
+   *   The component id of the component whose visibility is being sought.
    * @param integer $page_num
    *   The page number that the component is on.
    * @return integer

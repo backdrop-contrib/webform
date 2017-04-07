@@ -149,7 +149,7 @@
     }
 
     /**
-     * Adds a rule's result to the current sub-condtional.
+     * Adds a rule's result to the current sub-conditional.
      */
     function executionStackAccumulate(result) {
       resultStack[stackPointer]['results'].push(result);
@@ -278,7 +278,7 @@
   };
 
   /**
-   * Event handler to prevent propogation of events, typically click for disabling
+   * Event handler to prevent propagation of events, typically click for disabling
    * radio and checkboxes.
    */
   Drupal.webform.stopEvent = function () {

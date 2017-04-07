@@ -234,7 +234,7 @@ function hook_webform_submission_actions($node, $submission) {
 /**
  * Modify the draft to be presented for editing.
  *
- * When drafts are enabled for the webform, by default, a pre-existig draft is
+ * When drafts are enabled for the webform, by default, a pre-existing draft is
  * presented when the webform is displayed to that user. To allow multiple
  * drafts, implement this alter function to set the $sid to NULL, or use your
  * application's business logic to determine whether a new draft or which of
@@ -256,7 +256,7 @@ function hook_webform_draft_alter(&$sid, $context) {
  * Alter the display of a Webform submission.
  *
  * This function applies to both e-mails sent by Webform and normal display of
- * submissions when viewing through the adminsitrative interface.
+ * submissions when viewing through the administrative interface.
  *
  * @param $renderable
  *   The Webform submission in a renderable array, similar to FormAPI's
@@ -1336,14 +1336,14 @@ function _webform_view_field_component($component, $fields) {
  * changes views by implementing this same views hook, the relative order of
  * execution of the two implementations will depend upon the module weights of
  * the two modules. Using hook_webform_view_alter instead guarantees an
- * opportuinty to modify the view AFTER webform.
+ * opportunity to modify the view AFTER webform.
  *
  * @param object $view
  *   The view object.
  * @param string $display_id
  *   The display_id that was expanded by webform.
  * @param array $args
- *   The argumentst that were passed to the view.
+ *   The arguments that were passed to the view.
  */
 function hook_webform_view_alter($view, $display_id, $args) {
   // Don't show component with cid == 4

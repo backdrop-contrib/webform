@@ -260,7 +260,7 @@ function webform_expand_date($element) {
     $range[$start_end] = array_combine(array('year', 'month', 'day', 'date'), $parts);
   }
 
-  // The start date is not guaranteeed to be early than the end date for
+  // The start date is not guaranteed to be early than the end date for
   // historical reasons.
   if ($range['start']['date'] > $range['end']['date']) {
     $temp = $range['start'];
@@ -285,7 +285,7 @@ function webform_expand_date($element) {
       }
       unset($month_options); // Drop PHP reference.
       if ($delta_months <= 1) {
-        // The start and end date are either on the same month or consequtive
+        // The start and end date are either on the same month or consecutive
         // months. See if the days should be pruned.
         $day_options = &$element['day']['#options'];
         if ($range['start']['month'] == $range['end']['month']) {

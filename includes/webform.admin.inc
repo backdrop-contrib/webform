@@ -346,7 +346,7 @@ function webform_admin_type_list() {
 }
 
 /**
- * Generate a list of all webforms avaliable on this site.
+ * Generate a list of all webforms available on this site.
  */
 function theme_webform_admin_content($variables) {
   $nodes = $variables['nodes'];
