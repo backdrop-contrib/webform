@@ -47,6 +47,7 @@ function webform_webform_exporters() {
 
   // The new Excel exporter is only available if ZipArchive is available.
   if (!class_exists('ZipArchive')) {
+    drupal_set_message(t('@format downloads are not available because this install of PHP lacks Zip archive support.', array('@format' => $exporters['excel']['title'])), 'warning');
     unset($exporters['excel']);
   }
   // By default the legacy Excel exporter is disabled.
