@@ -700,7 +700,7 @@ function webform_requirements($phase) {
     $requirements['webform_zip'] = array(
       'title' => $t('Zip archive support'),
       'value' => $t('Missing'),
-      'severity' => REQUIREMENT_WARNING,
+      'severity' => REQUIREMENT_INFO,
       'description' => $t('PHP does not have the zip archive extension available. Webform module requires zip support for exporting submissions to Microsoft Excel.'),
     );
   }
