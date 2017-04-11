@@ -4849,7 +4849,8 @@ function webform_component_include($component_type) {
     $components = webform_components(TRUE);
     $included[$component_type] = TRUE;
 
-    if (($info = $components[$component_type]) && isset($info['file'])) {
+    if (isset($components[$component_type]['file'])) {
+      $info = $components[$component_type];
       $pathinfo = pathinfo($info['file']);
       $basename = basename($pathinfo['basename'], '.' . $pathinfo['extension']);
       $path = (!empty($pathinfo['dirname']) ? $pathinfo['dirname'] . '/' : '') . $basename;
