@@ -100,8 +100,7 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
   $element['table']['#rows'] = $rows;
   $element['table']['#operation_total'] = $operation_total;
 
-  return drupal_render($element);
-
+  return $element;
 }
 
 /**
@@ -236,9 +235,16 @@ function webform_results_table($node, $pager_count = 0) {
   $submissions = webform_get_submissions($node->nid, $header, $pager_count);
   $total_count = webform_get_submission_count($node->nid, NULL, NULL);
 
-  $output = theme('webform_results_table', array('node' => $node, 'components' => $node->webform['components'], 'submissions' => $submissions, 'total_count' => $total_count, 'pager_count' => $pager_count));
+  $output[] = array(
+    '#theme' => 'webform_results_table',
+    '#node' => $node,
+    '#components' => $node->webform['components'],
+    '#submissions' => $submissions,
+    '#total_count' => $total_count,
+    '#pager_count' => $pager_count,
+  );
   if ($pager_count) {
-    $output .= theme('pager');
+    $output[] = array('#theme' => 'pager');
   }
   return $output;
 }
@@ -315,7 +321,6 @@ function theme_webform_results_table($variables) {
   if (count($rows) == 0) {
     $rows[] = array(array('data' => t('There are no submissions for this form. <a href="!url">View this form</a>.', array('!url' => url('node/' . $node->nid))), 'colspan' => 4));
   }
-
 
   $output = '';
   $output .= theme('webform_results_per_page', array('total_count' => $total_count, 'pager_count' => $pager_count));
@@ -1581,8 +1586,8 @@ function webform_results_batch_finished($success, $results, $operations) {
  *   relating specifically to that component's analysis, such as a list of
  *   "Other" values within a select list.
  *
- * @return string
- *   Provides a simple analysis of all submissions to a webform.
+ * @return array
+ *   Renderable array: A simple analysis of all submissions to a webform.
  */
 function webform_results_analysis($node, $sids = array(), $analysis_component = NULL) {
   if (!is_array($sids)) {
@@ -1651,7 +1656,7 @@ function webform_results_analysis($node, $sids = array(), $analysis_component = 
   }
 
   drupal_alter('webform_analysis', $analysis);
-  return drupal_render($analysis);
+  return $analysis;
 }
 
 /**

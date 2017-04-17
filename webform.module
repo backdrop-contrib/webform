@@ -2388,7 +2388,7 @@ function webform_block_view($delta = '') {
   // a renderable so that if the block is empty it is hidden.
   $block = array(
     'subject' => check_plain($node->title),
-    'content' => drupal_render($content),
+    'content' => $content,
   );
   return $block;
 }
