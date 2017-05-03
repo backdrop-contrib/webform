@@ -2,6 +2,8 @@
     "_config_name": "views.view.webform_analysis",
     "name": "webform_analysis",
     "description": "Limit submissions for the webform node's analysis. Query must have sid as a field. Don't duplicate sids in result.",
+    "module": "webform",
+    "storage": 4,
     "tag": "webform",
     "disabled": false,
     "base_table": "webform_submissions",

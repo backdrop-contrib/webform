@@ -1343,3 +1343,24 @@ function webform_update_1401() {
  }
  $config->save();
 }
+
+/**
+ * Add settings to the webform views configuration files so that they are represented as provided by
+ * modules rather than custom.
+ */
+function webform_update_1402() {
+  $names = array(
+    'views.view.webform_results',
+    'views.view.webform_submissions',
+    'views.view.webform_webforms',
+    'views.view.webform_analysis'
+  );
+
+  foreach ($names as $config_name) {
+    $config = config($config_name);
+    $config->set('module', 'webform');
+    $config->set('storage', 4);
+    $config->save();
+  }
+
+}
