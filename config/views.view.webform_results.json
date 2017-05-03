@@ -2,6 +2,8 @@
     "_config_name": "views.view.webform_results",
     "name": "webform_results",
     "description": "",
+    "module": "webform",
+    "storage": 4,
     "tag": "webform",
     "disabled": false,
     "base_table": "webform_submissions",
