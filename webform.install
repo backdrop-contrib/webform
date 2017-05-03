@@ -1348,7 +1348,7 @@ function webform_update_1401() {
  * Add settings to the webform views configuration files so that they are represented as provided by
  * modules rather than custom.
  */
-function webform_update_1402() {
+function webform_update_1500() {
   $names = array(
     'views.view.webform_results',
     'views.view.webform_submissions',
