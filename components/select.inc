@@ -1023,7 +1023,7 @@ function _webform_select_options_from_text($text, $flat = FALSE) {
     $group = NULL;
     foreach ($rows as $option) {
       $option = trim($option);
-      /**
+      /*
        * If the Key of the option is within < >, treat as an optgroup
        *
        * <Group 1>

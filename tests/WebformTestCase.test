@@ -4,16 +4,15 @@
  * @file
  * Webform module tests.
  */
-
-class WebformTestCase extends BackdropWebTestCase {
+abstract class WebformTestCase extends BackdropWebTestCase {
   private $_webform_node;
   private $_webform_components;
-  public $webform_users;
+  protected $webform_users;
 
   /**
-   * Implements setUp().
+   * {@inheritdoc}
    */
-  function setUp($added_modules = array()) {
+  protected function setUp($added_modules = array()) {
     $modules = array('webform');
     parent::setUp(array_merge($modules, $added_modules));
 
@@ -75,9 +74,9 @@ class WebformTestCase extends BackdropWebTestCase {
   }
 
   /**
-   * Implemenation of tearDown().
+   * {@inheritdoc}
    */
-  function tearDown() {
+  protected function tearDown() {
     // Delete the webform admin and any created nodes.
     foreach ($this->webform_users as $account) {
       $uid = $account->uid;
@@ -94,10 +93,7 @@ class WebformTestCase extends BackdropWebTestCase {
     parent::tearDown();
   }
 
-  /**
-   *
-   */
-  function webformReset() {
+  protected function webformReset() {
     $this->_webform_node = NULL;
     $this->_webform_components = NULL;
   }
@@ -114,7 +110,7 @@ class WebformTestCase extends BackdropWebTestCase {
    * @return array
    *   An array of each component settings.
    */
-  function testWebformComponents() {
+  protected function webformComponents() {
     if (isset($this->_webform_components)) {
       return $this->_webform_components;
     }
@@ -498,7 +494,7 @@ class WebformTestCase extends BackdropWebTestCase {
           'pid' => '0',
           'weight' => '-10',
         ),
-        // TODO: I'd like to test a value, but SimpleTest can't set multiple values.
+        // @todo: I'd like to test a value, but SimpleTest can't set multiple values.
         'sample values' => NULL,
         'database values' => array('one', 'two'),
         'database default values' => array('one', 'two'),
@@ -714,7 +710,6 @@ class WebformTestCase extends BackdropWebTestCase {
           'pid' => '0',
           'weight' => '-15',
         ),
-        // Manually hard-code the input if token is not available.
         'sample values' => NULL,
         'database values' => array('bar'),
         'database default values' => array('bar'),
@@ -734,7 +729,6 @@ class WebformTestCase extends BackdropWebTestCase {
         ),
         'sample values' => 'Female',
         'database values' => array('Female'),
-        // The default value will be blank if token does not exist.
         'database default values' => array($this->webform_users['admin']->gender[LANGUAGE_NONE][0]['value']),
       ),
 
@@ -982,7 +976,7 @@ class WebformTestCase extends BackdropWebTestCase {
     return $this->_webform_components;
   }
 
-  function testWebformForm() {
+  protected function webformForm() {
     if (isset($this->_webform_node)) {
       return $this->_webform_node;
     }
@@ -1006,7 +1000,7 @@ class WebformTestCase extends BackdropWebTestCase {
     );
 
     $cid = 0;
-    foreach ($this->testWebformComponents() as $key => $component_info) {
+    foreach ($this->webformComponents() as $key => $component_info) {
       $cid++;
       $settings['webform']['components'][$cid] = $component_info['component'];
       $settings['webform']['components'][$cid]['cid'] = $cid;
@@ -1023,14 +1017,14 @@ class WebformTestCase extends BackdropWebTestCase {
    *
    * @param $input_values
    *   An array of input values keyed by the component form key. If none
-   *   are specified, the defaults will be pulled from testWebformComponents().
+   *   are specified, the defaults will be pulled from webformComponents().
    */
-  function testWebformPost($input_values = NULL) {
+  protected function webformPost($input_values = NULL) {
     $edit = array();
 
     if (empty($input_values)) {
       $input_values = array();
-      foreach ($this->testWebformComponents() as $key => $component_info) {
+      foreach ($this->webformComponents() as $key => $component_info) {
         $input_values[$key] = $component_info['sample values'];
       }
     }
@@ -1054,90 +1048,7 @@ class WebformTestCase extends BackdropWebTestCase {
   /**
    * Utility function to print out the current page being tested.
    */
-  function webformPrintPage() {
+  protected function webformPrintPage() {
     $this->verbose($this->backdropGetContent());
-  }
-}
-
-/**
- * Test general functionality of Webform.
- */
-class WebformGeneralTestCase extends WebformTestCase {
-  /**
-   * Implements getInfo().
-   */
-  public static function getInfo() {
-    return array(
-      'name' => t('Webform'),
-      'description' => t('Checks global Webform settings and content types.'),
-      'group' => t('Webform'),
-    );
-  }
-
-  /**
-   * Test creating a new Webform node.
-   */
-  function testWebformCreate() {
-    $settings = array(
-      'title' => 'Test webform, no components',
-      'type' => 'webform',
-    );
-    $node = $this->backdropCreateNode($settings);
-
-    // Because this is a "webform" type node, it should have an entry in the
-    // database even though it's using the default settings.
-    $this->assertTrue($this->webformRecordExists($node->nid), t('Webform record made in the database for the new webform node.'));
-
-    // Make a change to the node, ensure that the record stays intact.
-    $node->title .= '!';
-    node_save($node);
-    $this->assertTrue($this->webformRecordExists($node->nid), t('Webform record still in the database after modifying webform node.'));
-  }
-
-  /**
-   * Test webform-enabling a different node type and testing behavior.
-   */
-  function testWebformCreateNewType() {
-    // Enable webforms on the page content type.
-    config_set('webform.settings', 'webform_node_webform', TRUE);
-    config_set('webform.settings', 'webform_node_page', TRUE);
-
-    $settings = array(
-      'title' => 'Test webform-enabled page',
-      'type' => 'page',
-    );
-    $node = $this->backdropCreateNode($settings);
-
-    // Because this is a webform-enabled type node but does not yet have any
-    // components, it should not have an entry in the database because it is
-    // using the default settings.
-    $this->assertFalse($this->webformRecordExists($node->nid), t('Webform record not in the database for the new page node.'));
-
-    // Make a change to the node, ensure that the record stays empty.
-    $node->title .= '!';
-    node_save($node);
-    $this->assertFalse($this->webformRecordExists($node->nid), t('Webform record still not in the database after modifying page node.'));
-
-    // Add a new component to the node and check that a record is made in the
-    // webform table.
-    $components = $this->testWebformComponents();
-    $textarea = $components['textarea'];
-    $textarea['type'] = 'textarea';
-    $textarea['form_key'] = 'textarea';
-    $textarea['cid'] = 1;
-    $textarea['pid'] = 0;
-    $textarea = array_merge(webform_component_invoke('textarea', 'defaults'), $textarea);
-    $node->webform['components'][1] = $textarea;
-    node_save($node);
-    $this->assertTrue($this->webformRecordExists($node->nid), t('Webform record now exists after adding a new component.'));
-
-    // Remove the new component and ensure that the record is deleted.
-    $node->webform['components'] = array();
-    node_save($node);
-    $this->assertFalse($this->webformRecordExists($node->nid), t('Webform record deleted after deleting last component.'));
-  }
-
-  function webformRecordExists($nid) {
-    return (bool) db_query("SELECT nid FROM {webform} WHERE nid = :nid", array(':nid' => $nid))->fetchField();
   }
 }

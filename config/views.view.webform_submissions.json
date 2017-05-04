@@ -176,6 +176,7 @@
                         "id": "edit_submission",
                         "table": "webform_submissions",
                         "field": "edit_submission",
+                        "label": "",
                         "element_label_colon": false,
                         "access_check": 1
                     },
@@ -183,6 +184,7 @@
                         "id": "delete_submission",
                         "table": "webform_submissions",
                         "field": "delete_submission",
+                        "label": "",
                         "element_label_colon": false,
                         "access_check": 1
                     }

@@ -411,9 +411,9 @@ function webform_configure_form_validate($form, &$form_state) {
   }
 
   // Ensure only positive integers are entered as submission limits.
-  foreach (array('total_submit_limit', 'submit_limit') as $field) {
+  foreach (array('total_submit_limit' => 'enforce_total_limit', 'submit_limit' => 'enforce_limit') as $field => $enforce_fk) {
     $limit = $form['submission'][$field][$field]['#value'];
-    if ($limit !== '' && (int) $limit < 1 && (int) $limit !== -1) {
+    if ($form['submission'][$field][$enforce_fk]['#value'] !== 'no' && $limit !== '' && (int) $limit < 1 && (int) $limit !== -1) {
       form_error($form['submission'][$field][$field], t('The submission limit must be at least 1.'));
     }
   }
@@ -426,7 +426,7 @@ function webform_configure_form_validate($form, &$form_state) {
     // Note that FAPI doesn't actually support error highlighting on radio or
     // checkbox form elements.
     form_error($form['advanced']['confidential'],
-               t('Choose a "Per user submission limit" or "Confidential submissions", but not both. Or ask the adminstrator to track anonymous users by cookie, rather than IP address only.'));
+      t('Choose a "Per user submission limit" or "Confidential submissions", but not both. Or ask the adminstrator to track anonymous users by cookie, rather than IP address only.'));
   }
 }
 
@@ -520,7 +520,7 @@ function webform_configure_form_submit($form, &$form_state) {
   $next_serial = (int)$form_state['values']['next_serial'];
   if ($next_serial < $next_min) {
     backdrop_set_message(t('The next submission number was increased to @min to make it higher than existing submissions.',
-                         array('@min' => $next_min)));
+      array('@min' => $next_min)));
     $next_serial = $next_min;
   }
   $node->webform['next_serial'] = $next_serial;
