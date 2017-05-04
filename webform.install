@@ -1364,3 +1364,12 @@ function webform_update_1500() {
   }
 
 }
+
+/**
+ * Update webform_submissions view so it shows overridden because of update to default view.
+ */
+function webform_update_1600() {
+  $config = config('views.view.webform_submissions');
+  $config->set('storage', 2);
+  $config->save();
+}

@@ -100,7 +100,7 @@
         $currentForm.bind('change', {'settings': settings}, Backdrop.webform.conditionalCheck);
 
         // Trigger all the elements that cause conditionals on this form.
-        Backdrop.webform.doConditions($form, settings);
+        Backdrop.webform.doConditions($currentForm, settings);
       });
     });
   };
