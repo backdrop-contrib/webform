@@ -209,6 +209,9 @@
                                       : $target.find(':input').addClass('webform-conditional-disabled');
               $targetElements.webformProp('disabled', !actionResult);
               $target.toggleClass('webform-conditional-hidden', !actionResult);
+              // Anything hidden needs to be disabled so that child elements of
+              // fieldsets do not block submission by being required.
+              $target.webformProp('disabled', !actionResult);
               if (actionResult) {
                 $target.show();
               }
