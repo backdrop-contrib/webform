@@ -304,6 +304,7 @@
           $argument.hide();
         }
         break;
+
       case 'set':
         if (!isShown) {
           $argument.show();

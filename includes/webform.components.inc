@@ -245,10 +245,10 @@ function _webform_components_form_rows($node, $cid, $component, $level, &$form, 
   $row_data = array(
     array('data' => $indents . filter_xss($component['name']), 'class' => array('webform-component-name')),
     array('data' => check_plain($form_key), 'class' => array('webform-component-formkey')) +
-          ((string) $component['form_key'] === (string) $form_key ? array() : array('title' => $component['form_key'])),
+    ((string) $component['form_key'] === (string) $form_key ? array() : array('title' => $component['form_key'])),
     array('data' => $form['add']['type']['#options'][$component['type']], 'class' => array('webform-component-type')),
     array('data' => ($value == '') ? '-' : check_plain($value), 'class' => array('webform-component-value')) +
-          ($component['value'] == $value ? array() : array('title' => $component['value'])),
+    ($component['value'] == $value ? array() : array('title' => $component['value'])),
     array('data' => backdrop_render($form['components'][$cid]['required']), 'class' => array('webform-component-required', 'checkbox')),
     array('data' => backdrop_render($form['components'][$cid]['cid']) . backdrop_render($form['components'][$cid]['pid']) . backdrop_render($form['components'][$cid]['weight'])),
     array('data' => l(t('Edit'), 'node/' . $node->nid . '/webform/components/' . $cid, array('query' => backdrop_get_destination())), 'class' => array('webform-component-edit')),
@@ -692,7 +692,7 @@ function webform_component_edit_form_submit($form, &$form_state) {
   // Since Webform components have been updated but the node itself has not
   // been saved, it is necessary to explicitly clear the cache to make sure
   // the updated webform is visible to anonymous users. This resets the page
-  // and block caches (only);
+  // and block caches (only).
   cache_clear_all();
 
   // Refresh the entity cache, should it be cached in persistent storage.
@@ -721,9 +721,11 @@ function webform_component_delete_form($form, $form_state, $node, $component) {
   if (webform_component_feature($component_type, 'group')) {
     $question = t('Delete the %name fieldset?', array('%name' => $node->webform['components'][$cid]['name']));
     $description = t('This will immediately delete the %name @type component and all nested components within %name from the %webform webform. This cannot be undone.',
-      array('%name' => $node->webform['components'][$cid]['name'],
+      array(
+        '%name' => $node->webform['components'][$cid]['name'],
         '@type' => webform_component_property($component_type, 'label'),
-        '%webform' => $node->title));
+        '%webform' => $node->title,
+      ));
   }
   else {
     $question = t('Delete the %name component?', array('%name' => $node->webform['components'][$cid]['name']));
@@ -750,7 +752,7 @@ function webform_component_delete_form_submit($form, &$form_state) {
   // Since Webform components have been updated but the node itself has not
   // been saved, it is necessary to explicitly clear the cache to make sure
   // the updated webform is visible to anonymous users. This resets the page
-  // and block caches (only);
+  // and block caches (only).
   cache_clear_all();
 
   // Refresh the entity cache, should it be cached in persistent storage.
@@ -843,7 +845,7 @@ function webform_component_update($component) {
       'value' => isset($component['value']) ? $component['value'] : '',
       'extra' => serialize($component['extra']),
       'required' => $component['required'],
-      'weight' => $component['weight']
+      'weight' => $component['weight'],
     ))
     ->condition('nid', $component['nid'])
     ->condition('cid', $component['cid'])
@@ -853,6 +855,9 @@ function webform_component_update($component) {
   module_invoke_all('webform_component_update', $component);
 }
 
+/**
+ *
+ */
 function webform_component_delete($node, $component) {
   // Check if a delete function is available for this component. If so,
   // load all submissions and allow the component to delete each one.
@@ -915,7 +920,8 @@ function webform_component_delete($node, $component) {
       // Delete the conditional if this component is the only source / target.
       if (empty($conditional[$field])) {
         webform_conditional_delete($node, $conditional);
-        break; // Loop exit.
+        // Loop exit.
+        break;
       }
       // Remove the deleted rules / actions from the database.
       foreach ($deleted as $key) {
@@ -1156,7 +1162,6 @@ function theme_webform_component_select($variables) {
     $element['#children'] .= '<div class="webform-component-select-suffix">' . backdrop_render($element['suffix']) . '</div>';
   }
 
-
   return theme('fieldset', array('element' => $element));
 }
 
@@ -1218,7 +1223,8 @@ function webform_validate_unique($element, $form_state) {
       ->condition('nid', $nid)
       ->condition('cid', $element['#webform_component']['cid'])
       ->condition('data', $element['#value'])
-      ->range(0, 1); // More efficient than using countQuery() for data checks.
+      // More efficient than using countQuery() for data checks.
+      ->range(0, 1);
     if ($sid) {
       $query->condition('sid', $sid, '<>');
     }

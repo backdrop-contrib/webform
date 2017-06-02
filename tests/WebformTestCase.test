@@ -93,6 +93,9 @@ abstract class WebformTestCase extends BackdropWebTestCase {
     parent::tearDown();
   }
 
+  /**
+   *
+   */
   protected function webformReset() {
     $this->_webform_node = NULL;
     $this->_webform_components = NULL;
@@ -160,8 +163,10 @@ abstract class WebformTestCase extends BackdropWebTestCase {
           'type' => 'grid',
           'value' => '',
           'extra' => array(
-            'questions' => "0|Ålphå\n1|ıé†å\n2|Îé¬†å", // Left side
-            'options' => "0|øne\n1|twö\n2|ǼBƇ\n3|€Euro", // Top
+            // Left side.
+            'questions' => "0|Ålphå\n1|ıé†å\n2|Îé¬†å",
+            // Top.
+            'options' => "0|øne\n1|twö\n2|ǼBƇ\n3|€Euro",
           ),
           'required' => '0',
           'pid' => '2',
@@ -178,8 +183,10 @@ abstract class WebformTestCase extends BackdropWebTestCase {
           'type' => 'grid',
           'value' => '',
           'extra' => array(
-            'questions' => "one|What's your option?\ntwo|Agåin?\nthree|One more time!", // Left side.
-            'options' => "one|Option one\ntwo|Option 2\nthree| Three is me", // Top
+            // Left side.
+            'questions' => "one|What's your option?\ntwo|Agåin?\nthree|One more time!",
+            // Top.
+            'options' => "one|Option one\ntwo|Option 2\nthree| Three is me",
           ),
           'required' => '0',
           'pid' => '0',
@@ -210,7 +217,8 @@ abstract class WebformTestCase extends BackdropWebTestCase {
         'database default values' => array('two'),
         // Conditionals match against the 'sample values'.
         'match conditional values' => array(
-          'equal' => array('one', 'three'), // ANDed together match.
+          // ANDed together match.
+          'equal' => array('one', 'three'),
           'not_equal' => array('two'),
         ),
         'mismatch conditional values' => array(
@@ -976,25 +984,28 @@ abstract class WebformTestCase extends BackdropWebTestCase {
     return $this->_webform_components;
   }
 
+ /**
+  *
+  */
   protected function webformForm() {
     if (isset($this->_webform_node)) {
       return $this->_webform_node;
     }
 
     $settings = array(
-     'type' => 'webform',
-     'language'  => LANGUAGE_NONE,
-     'uid' => '1',
-     'status' => '1',
-     'promote' => '1',
-     'moderate' => '0',
-     'sticky' => '0',
-     'tnid' => '0',
-     'translate' => '0',
-     'title' => 'Test Webform',
-     'log' => '',
-     'format' => '1',
-     'webform' => array(
+      'type' => 'webform',
+      'language'  => LANGUAGE_NONE,
+      'uid' => '1',
+      'status' => '1',
+      'promote' => '1',
+      'moderate' => '0',
+      'sticky' => '0',
+      'tnid' => '0',
+      'translate' => '0',
+      'title' => 'Test Webform',
+      'log' => '',
+      'format' => '1',
+      'webform' => array(
         'confirmation' => 'Thanks!',
       ) + webform_node_defaults(),
     );
@@ -1051,4 +1062,5 @@ abstract class WebformTestCase extends BackdropWebTestCase {
   protected function webformPrintPage() {
     $this->verbose($this->backdropGetContent());
   }
+
 }

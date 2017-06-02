@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- *   Webform module install/schema hooks.
+ * Webform module install/schema hooks.
  */
 
 /**
@@ -51,25 +51,25 @@ function webform_schema() {
         'default' => 1,
       ),
       'block' => array(
-         'description' => 'Boolean value for whether this form be available as a block.',
-         'type' => 'int',
-         'size' => 'tiny',
-         'not null' => TRUE,
-         'default' => 0,
+        'description' => 'Boolean value for whether this form be available as a block.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
       ),
       'allow_draft' => array(
-         'description' => 'Boolean value for whether submissions to this form be saved as a draft.',
-         'type' => 'int',
-         'size' => 'tiny',
-         'not null' => TRUE,
-         'default' => 0,
+        'description' => 'Boolean value for whether submissions to this form be saved as a draft.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
       ),
       'auto_save' => array(
-         'description' => 'Boolean value for whether submissions to this form should be auto-saved between pages.',
-         'type' => 'int',
-         'size' => 'tiny',
-         'not null' => TRUE,
-         'default' => 0,
+        'description' => 'Boolean value for whether submissions to this form should be auto-saved between pages.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
       ),
       'submit_notice' => array(
         'description' => 'Boolean value for whether to show or hide the previous submissions notification.',
@@ -553,18 +553,18 @@ function webform_schema() {
         'default' => 0,
       ),
       'is_draft' => array(
-         'description' => 'Is this a draft of the submission?',
-         'type' => 'int',
-         'size' => 'tiny',
-         'not null' => TRUE,
-         'default' => 0,
+        'description' => 'Is this a draft of the submission?',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 0,
       ),
       'highest_valid_page' => array(
-         'description' => 'For drafts, the highest validated page number.',
-         'type' => 'int',
-         'size' => 'small',
-         'not null' => TRUE,
-         'default' => 0,
+        'description' => 'For drafts, the highest validated page number.',
+        'type' => 'int',
+        'size' => 'small',
+        'not null' => TRUE,
+        'default' => 0,
       ),
       'submitted' => array(
         'description' => 'Timestamp when the form was first saved as draft or submitted.',
@@ -649,7 +649,7 @@ function webform_schema() {
   );
 
   $schema['webform_last_download'] = array(
-   'description' => 'Stores last submission number per user download.',
+    'description' => 'Stores last submission number per user download.',
     'fields' => array(
       'nid' => array(
         'description' => 'The node identifier of a webform.',
@@ -659,20 +659,20 @@ function webform_schema() {
         'default' => 0,
       ),
       'uid' => array(
-       'description' => 'The user identifier.',
+        'description' => 'The user identifier.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
-     'sid' => array(
+      'sid' => array(
         'description' => 'The last downloaded submission number.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
-     'requested' => array(
+      'requested' => array(
         'description' => 'Timestamp of last download request.',
         'type' => 'int',
         'unsigned' => TRUE,
@@ -685,7 +685,6 @@ function webform_schema() {
 
   return $schema;
 }
-
 
 /**
  * Implements hook_requirements().

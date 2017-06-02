@@ -59,148 +59,148 @@ function _webform_theme_file() {
  * Implements _webform_edit_component().
  */
 function _webform_edit_file($component) {
-    $form = array();
-    $form['#element_validate'] = array('_webform_edit_file_check_directory');
-    $form['#after_build'] = array('_webform_edit_file_check_directory');
+  $form = array();
+  $form['#element_validate'] = array('_webform_edit_file_check_directory');
+  $form['#after_build'] = array('_webform_edit_file_check_directory');
 
-    $form['validation']['size'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Max upload size'),
-      '#default_value' => $component['extra']['filtering']['size'],
-      '#description' => t('Enter the max file size a user may upload such as 2 MB or 800 KB. Your server has a max upload size of @size.', array('@size' => format_size(file_upload_max_size()))),
-      '#size' => 10,
-      '#parents' => array('extra', 'filtering', 'size'),
-      '#element_validate' => array('_webform_edit_file_size_validate'),
-      '#weight' => 1,
-    );
+  $form['validation']['size'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Max upload size'),
+    '#default_value' => $component['extra']['filtering']['size'],
+    '#description' => t('Enter the max file size a user may upload such as 2 MB or 800 KB. Your server has a max upload size of @size.', array('@size' => format_size(file_upload_max_size()))),
+    '#size' => 10,
+    '#parents' => array('extra', 'filtering', 'size'),
+    '#element_validate' => array('_webform_edit_file_size_validate'),
+    '#weight' => 1,
+  );
 
-    $form['validation']['extensions'] = array(
-      '#element_validate' => array('_webform_edit_file_extensions_validate'),
-      '#parents' => array('extra', 'filtering'),
-      '#theme' => 'webform_edit_file_extensions',
-      '#theme_wrappers' => array('form_element'),
-      '#title' => t('Allowed file extensions'),
-      '#attached' => array(
-        'js' => array(backdrop_get_path('module', 'webform') . '/js/webform-admin.js'),
-        'css' => array(backdrop_get_path('module', 'webform') . '/css/webform-admin.css'),
-      ),
-      '#type' => 'webform_file_extensions',
-      '#weight' => 2,
-    );
+  $form['validation']['extensions'] = array(
+    '#element_validate' => array('_webform_edit_file_extensions_validate'),
+    '#parents' => array('extra', 'filtering'),
+    '#theme' => 'webform_edit_file_extensions',
+    '#theme_wrappers' => array('form_element'),
+    '#title' => t('Allowed file extensions'),
+    '#attached' => array(
+      'js' => array(backdrop_get_path('module', 'webform') . '/js/webform-admin.js'),
+      'css' => array(backdrop_get_path('module', 'webform') . '/css/webform-admin.css'),
+    ),
+    '#type' => 'webform_file_extensions',
+    '#weight' => 2,
+  );
 
-    // Find the list of all currently valid extensions.
-    $current_types = isset($component['extra']['filtering']['types']) ? $component['extra']['filtering']['types'] : array();
+  // Find the list of all currently valid extensions.
+  $current_types = isset($component['extra']['filtering']['types']) ? $component['extra']['filtering']['types'] : array();
 
-    $types = array('gif', 'jpg', 'png');
-    $form['validation']['extensions']['types']['webimages'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('Web images'),
-      '#options' => backdrop_map_assoc($types),
-      '#default_value' => array_intersect($current_types, $types),
-    );
+  $types = array('gif', 'jpg', 'png');
+  $form['validation']['extensions']['types']['webimages'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Web images'),
+    '#options' => backdrop_map_assoc($types),
+    '#default_value' => array_intersect($current_types, $types),
+  );
 
-    $types = array('bmp', 'eps', 'tif', 'pict', 'psd');
-    $form['validation']['extensions']['types']['desktopimages'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('Desktop images'),
-      '#options' => backdrop_map_assoc($types),
-      '#default_value' => array_intersect($current_types, $types),
-    );
+  $types = array('bmp', 'eps', 'tif', 'pict', 'psd');
+  $form['validation']['extensions']['types']['desktopimages'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Desktop images'),
+    '#options' => backdrop_map_assoc($types),
+    '#default_value' => array_intersect($current_types, $types),
+  );
 
-    $types = array('txt', 'rtf', 'html', 'pdf', 'doc', 'docx', 'odt', 'ppt', 'pptx', 'odp', 'xls', 'xlsx', 'ods', 'xml');
-    $form['validation']['extensions']['types']['documents'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('Documents'),
-      '#options' => backdrop_map_assoc($types),
-      '#default_value' => array_intersect($current_types, $types),
-    );
+  $types = array('txt', 'rtf', 'html', 'pdf', 'doc', 'docx', 'odt', 'ppt', 'pptx', 'odp', 'xls', 'xlsx', 'ods', 'xml');
+  $form['validation']['extensions']['types']['documents'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Documents'),
+    '#options' => backdrop_map_assoc($types),
+    '#default_value' => array_intersect($current_types, $types),
+  );
 
-    $types = array('avi', 'mov', 'mp3', 'ogg', 'wav');
-    $form['validation']['extensions']['types']['media'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('Media'),
-      '#options' => backdrop_map_assoc($types),
-      '#default_value' => array_intersect($current_types, $types),
-    );
+  $types = array('avi', 'mov', 'mp3', 'ogg', 'wav');
+  $form['validation']['extensions']['types']['media'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Media'),
+    '#options' => backdrop_map_assoc($types),
+    '#default_value' => array_intersect($current_types, $types),
+  );
 
-    $types = array('bz2', 'dmg', 'gz', 'jar', 'rar', 'sit', 'tar', 'zip');
-    $form['validation']['extensions']['types']['archives'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('Archives'),
-      '#options' => backdrop_map_assoc($types),
-      '#default_value' => array_intersect($current_types, $types),
-    );
+  $types = array('bz2', 'dmg', 'gz', 'jar', 'rar', 'sit', 'tar', 'zip');
+  $form['validation']['extensions']['types']['archives'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Archives'),
+    '#options' => backdrop_map_assoc($types),
+    '#default_value' => array_intersect($current_types, $types),
+  );
 
-    $form['validation']['extensions']['addextensions'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Additional extensions'),
-      '#default_value' => $component['extra']['filtering']['addextensions'],
-      '#description' => t('Enter a list of additional file extensions for this upload field, separated by commas.<br /> Entered extensions will be appended to checked items above.'),
-      '#size' => 20,
-      '#weight' => 3,
-    );
+  $form['validation']['extensions']['addextensions'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Additional extensions'),
+    '#default_value' => $component['extra']['filtering']['addextensions'],
+    '#description' => t('Enter a list of additional file extensions for this upload field, separated by commas.<br /> Entered extensions will be appended to checked items above.'),
+    '#size' => 20,
+    '#weight' => 3,
+  );
 
-    $scheme_options = array();
-    foreach (file_get_stream_wrappers(STREAM_WRAPPERS_WRITE_VISIBLE) as $scheme => $stream_wrapper) {
-      $scheme_options[$scheme] = $stream_wrapper['name'];
-    }
-    $form['extra']['scheme'] = array(
-      '#type' => 'radios',
-      '#title' => t('Upload destination'),
-      '#options' => $scheme_options,
-      '#default_value' => $component['extra']['scheme'],
-      '#description' => t('Private file storage has significantly more overhead than public files, but restricts file access to users who can view submissions.'),
-      '#weight' => 4,
-      '#access' => count($scheme_options) > 1,
-    );
-    $form['extra']['directory'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Upload directory'),
-      '#default_value' => $component['extra']['directory'],
-      '#description' => t('You may optionally specify a sub-directory to store your files.') . ' ' . theme('webform_token_help'),
-      '#weight' => 5,
-      '#field_prefix' => 'webform/',
-    );
+  $scheme_options = array();
+  foreach (file_get_stream_wrappers(STREAM_WRAPPERS_WRITE_VISIBLE) as $scheme => $stream_wrapper) {
+    $scheme_options[$scheme] = $stream_wrapper['name'];
+  }
+  $form['extra']['scheme'] = array(
+    '#type' => 'radios',
+    '#title' => t('Upload destination'),
+    '#options' => $scheme_options,
+    '#default_value' => $component['extra']['scheme'],
+    '#description' => t('Private file storage has significantly more overhead than public files, but restricts file access to users who can view submissions.'),
+    '#weight' => 4,
+    '#access' => count($scheme_options) > 1,
+  );
+  $form['extra']['directory'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Upload directory'),
+    '#default_value' => $component['extra']['directory'],
+    '#description' => t('You may optionally specify a sub-directory to store your files.') . ' ' . theme('webform_token_help'),
+    '#weight' => 5,
+    '#field_prefix' => 'webform/',
+  );
 
-    $form['extra']['rename'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Rename files'),
-      '#default_value' => $component['extra']['rename'],
-      '#description' => t('You may optionally use tokens to create a pattern used to rename files upon submission. Omit the extension; it will be added automatically.') . ' ' . theme('webform_token_help', array('groups' => array('node', 'submission'))),
-      '#weight' => 6,
-      '#element_validate' => array('_webform_edit_file_rename_validate'),
-      '#access' => webform_variable_get('webform_token_access'),
-    );
+  $form['extra']['rename'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Rename files'),
+    '#default_value' => $component['extra']['rename'],
+    '#description' => t('You may optionally use tokens to create a pattern used to rename files upon submission. Omit the extension; it will be added automatically.') . ' ' . theme('webform_token_help', array('groups' => array('node', 'submission'))),
+    '#weight' => 6,
+    '#element_validate' => array('_webform_edit_file_rename_validate'),
+    '#access' => webform_variable_get('webform_token_access'),
+  );
 
-    $form['display']['progress_indicator'] = array(
-      '#type' => 'radios',
-      '#title' => t('Progress indicator'),
-      '#options' => array(
-        'throbber' => t('Throbber'),
-        'bar' => t('Bar with progress meter'),
-      ),
-      '#default_value' => $component['extra']['progress_indicator'],
-      '#description' => t('The throbber display does not show the status of uploads but takes up less space. The progress bar is helpful for monitoring progress on large uploads.'),
-      '#weight' => 16,
-      '#access' => file_progress_implementation(),
-      '#parents' => array('extra', 'progress_indicator'),
-    );
+  $form['display']['progress_indicator'] = array(
+    '#type' => 'radios',
+    '#title' => t('Progress indicator'),
+    '#options' => array(
+      'throbber' => t('Throbber'),
+      'bar' => t('Bar with progress meter'),
+    ),
+    '#default_value' => $component['extra']['progress_indicator'],
+    '#description' => t('The throbber display does not show the status of uploads but takes up less space. The progress bar is helpful for monitoring progress on large uploads.'),
+    '#weight' => 16,
+    '#access' => file_progress_implementation(),
+    '#parents' => array('extra', 'progress_indicator'),
+  );
 
-    // TODO: Make managed_file respect the "size" parameter.
-    /*
-    $form['display']['width'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Width'),
-      '#default_value' => $component['extra']['width'],
-      '#description' => t('Width of the file field.') . ' ' . t('Leaving blank will use the default size.'),
-      '#size' => 5,
-      '#maxlength' => 10,
-      '#weight' => 4,
-      '#parents' => array('extra', 'width')
-    );
-    */
+  // TODO: Make managed_file respect the "size" parameter.
+  /*
+  $form['display']['width'] = array(
+  '#type' => 'textfield',
+  '#title' => t('Width'),
+  '#default_value' => $component['extra']['width'],
+  '#description' => t('Width of the file field.') . ' ' . t('Leaving blank will use the default size.'),
+  '#size' => 5,
+  '#maxlength' => 10,
+  '#weight' => 4,
+  '#parents' => array('extra', 'width')
+  );
+   */
 
-    return $form;
+  return $form;
 }
 
 /**
@@ -271,7 +271,7 @@ function _webform_edit_file_extensions_validate($element, &$form_state) {
     foreach (array_keys($element['types'][$category]['#value']) as $extension) {
       if ($element['types'][$category][$extension]['#value']) {
         $extensions[] = $extension;
-        // jpeg is an exception. It is allowed anytime jpg is allowed.
+        // "jpeg" is an exception. It is allowed anytime "jpg" is allowed.
         if ($extension == 'jpg') {
           $extensions[] = 'jpeg';
         }
@@ -397,10 +397,11 @@ function theme_webform_managed_file($variables) {
   $attributes = array();
 
   // For webform use, do not add the id to the wrapper.
-  //if (isset($element['#id'])) {
-  //  $attributes['id'] = $element['#id'];
-  //}
-
+  // @code
+  // if (isset($element['#id'])) {
+  //   $attributes['id'] = $element['#id'];
+  // }
+  // @endcode
   if (!empty($element['#attributes']['class'])) {
     $attributes['class'] = (array) $element['#attributes']['class'];
   }
@@ -413,7 +414,6 @@ function theme_webform_managed_file($variables) {
   $output .= '</div>';
   return $output;
 }
-
 
 /**
  * Implements _webform_submit_component().
@@ -467,7 +467,7 @@ function _webform_display_file($component, $value, $format = 'html', $submission
 }
 
 /**
- * Format the output of text data for this component
+ * Format the output of text data for this component.
  */
 function theme_webform_display_file($variables) {
   $element = $variables['element'];
@@ -493,11 +493,12 @@ function _webform_delete_file($component, $value) {
  */
 function _webform_attachments_file($component, $value) {
   $file = (array) webform_get_file($value[0]);
-  //This is necessary until the next release of mimemail is out, see [#1388786]
+  // This is necessary until the next release of mimemail is out, see [#1388786].
   $file['filepath'] = $file['uri'];
   $files = array($file);
   return $files;
 }
+
 /**
  * Implements _webform_analysis_component().
  */
@@ -531,7 +532,7 @@ function _webform_analysis_file($component, $sids = array(), $single = FALSE, $j
 
   $rows[0] = array(t('Left Blank'), ($submissions - $nonblanks));
   $rows[1] = array(t('User uploaded file'), $nonblanks);
-  $other[0] = array(t('Average uploaded file size'), ($sizetotal != 0 ? (int) (($sizetotal/$nonblanks)/1024) . ' KB' : '0'));
+  $other[0] = array(t('Average uploaded file size'), ($sizetotal != 0 ? (int) (($sizetotal / $nonblanks) / 1024) . ' KB' : '0'));
   return array(
     'table_rows' => $rows,
     'other_data' => $other,
@@ -546,7 +547,7 @@ function _webform_table_file($component, $value) {
   $file = webform_get_file($value[0]);
   if (!empty($file->fid)) {
     $output = '<a href="' . webform_file_url($file->uri) . '">' . check_plain(webform_file_name($file->uri)) . '</a>';
-    $output .= ' (' . (int) ($file->filesize/1024) . ' KB)';
+    $output .= ' (' . (int) ($file->filesize / 1024) . ' KB)';
   }
   return $output;
 }
@@ -568,7 +569,7 @@ function _webform_csv_headers_file($component, $export_options) {
  */
 function _webform_csv_data_file($component, $export_options, $value) {
   $file = webform_get_file($value[0]);
-  return empty($file->filename) ? array('', '') : array(webform_file_url($file->uri), (int) ($file->filesize/1024));
+  return empty($file->filename) ? array('', '') : array(webform_file_url($file->uri), (int) ($file->filesize / 1024));
 }
 
 /**
@@ -634,7 +635,6 @@ function webform_file_rename($node, $submission) {
     }
   }
 }
-
 
 /**
  * Renames the uploaded file name using tokens.

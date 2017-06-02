@@ -248,6 +248,7 @@ function theme_webform_email($variables) {
  *   The e-mail form element.
  * @param $form_state
  *   The full form state for the webform.
+ *
  * @return
  *   None. Calls a form_set_error if the e-mail is not valid.
  */
@@ -255,10 +256,12 @@ function _webform_validate_email($form_element, &$form_state) {
   $component = $form_element['#webform_component'];
   $format = webform_variable_get('webform_email_address_format') == 'long' ? $component['extra']['format'] : 'short';
   webform_email_validate($form_element['#value'],
-    implode('][', $form_element ['#parents']),
-    TRUE,  // Required validation is done elsewhere.
+    implode('][', $form_element['#parents']),
+    // Required validation is done elsewhere.
+    TRUE,
     $component['extra']['multiple'],
-    FALSE, // No tokens are allowed in user input.
+    // No tokens are allowed in user input.
+    FALSE,
     $format);
 }
 
@@ -320,7 +323,7 @@ function _webform_analysis_email($component, $sids = array(), $single = FALSE, $
   $rows[0] = array(t('Left Blank'), ($submissions - $nonblanks));
   $rows[1] = array(t('User entered value'), $nonblanks);
 
-  $other[0] = array(t('Average submission length in words (ex blanks)'), ($nonblanks != 0 ? number_format($wordcount/$nonblanks, 2) : '0'));
+  $other[0] = array(t('Average submission length in words (ex blanks)'), ($nonblanks != 0 ? number_format($wordcount / $nonblanks, 2) : '0'));
 
   return array(
     'table_rows' => $rows,

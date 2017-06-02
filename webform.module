@@ -569,9 +569,9 @@ function webform_confirmation_page_access($node) {
  *
  * @param Node $node
  *   The webform node object.
- * @param stdClass $submission
+ * @param object $submission
  *   The webform submission object.
- * @param stdClass $op
+ * @param object $op
  *   The operation to perform. Must be one of view, edit, delete, list.
  * @param array $account
  *   Optional. A user object or NULL to use the currently logged-in user.
@@ -2044,7 +2044,7 @@ function webform_node_view($node, $view_mode) {
       'allowed_roles' => $allowed_roles,
       'closed' => $closed,
       'cached' => $cached,
-        )
+    )
     );
   }
 
@@ -2101,7 +2101,7 @@ function _webform_allowed_roles($node, &$user_is_allowed) {
  *
  * @param Node $node
  *   The webform node object.
- * @param stdClass $page
+ * @param object $page
  *   If this webform node is being viewed as the main content of the page.
  * @param array $form
  *   The rendered form.
@@ -2331,9 +2331,9 @@ function webform_block_view($delta = '') {
       $content = array(
         'confirmation_message' => array(
           '#markup' => "<div class=\"messages status webform-confirmation\">\n" .
-            '<h2 class="element-invisible">' . t('Status message') . "</h2>\n" .
-            $message .
-            "</div>\n",
+          '<h2 class="element-invisible">' . t('Status message') . "</h2>\n" .
+          $message .
+          "</div>\n",
           '#weight' => -1,
         ),
         'webform_view' => $content,
@@ -4411,7 +4411,7 @@ function _webform_transliterate($name) {
   // If transliteration is available, use it to convert names to ASCII.
   return function_exists('transliteration_get')
             ? transliteration_get($name, '')
-            : str_replace(array('€', 'ƒ', 'Š', 'Ž', 'š', 'ž', 'Ÿ', '¢', '¥', 'µ', 'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'à', 'á', 'â', 'ã', 'ä', 'å', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', 'Œ',  'œ',  'Æ',  'Ð',  'Þ',  'ß',  'æ',  'ð',  'þ'),
+            : str_replace(array('€', 'ƒ', 'Š', 'Ž', 'š', 'ž', 'Ÿ', '¢', '¥', 'µ', 'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'à', 'á', 'â', 'ã', 'ä', 'å', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', 'Œ', 'œ', 'Æ', 'Ð', 'Þ', 'ß', 'æ', 'ð', 'þ'),
                           array('E', 'f', 'S', 'Z', 's', 'z', 'Y', 'c', 'Y', 'u', 'A', 'A', 'A', 'A', 'A', 'A', 'C', 'E', 'E', 'E', 'E', 'I', 'I', 'I', 'I', 'N', 'O', 'O', 'O', 'O', 'O', 'O', 'U', 'U', 'U', 'U', 'Y', 'a', 'a', 'a', 'a', 'a', 'a', 'c', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'n', 'o', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'y', 'y', 'OE', 'oe', 'AE', 'DH', 'TH', 'ss', 'ae', 'dh', 'th'),
                           $name);
 }
@@ -5432,10 +5432,10 @@ function webform_pre_render_input_vars($element) {
       );
       $warning = array(
         '#markup' => '<div class="messages warning">' .
-          (user_access('administer site configuration')
+        (user_access('administer site configuration')
           ? t('This form contains @count input elements. PHP max_input_vars is @limit and should be increased.', $subs)
           : t('This form may be too long to work properly. Contact the administrator.'))
-          . '</div>',
+        . '</div>',
         '#weight' => -1,
       );
       if ($element['#input_var_waring_parent']) {
@@ -5493,8 +5493,10 @@ function webform_count_input_vars($element) {
   );
   $children = array_intersect_key($element, array_flip(element_children($element)));
   return $children
-          ? array_reduce($children, function($carry, $item) {return $carry + webform_count_input_vars($item);}, 0)
-          : (isset($element['#type']) && isset($input_types[$element['#type']]) ? $input_types[$element['#type']] : 0);
+    ? array_reduce($children, function ($carry, $item) {
+      return $carry + webform_count_input_vars($item);
+    }, 0)
+    : (isset($element['#type']) && isset($input_types[$element['#type']]) ? $input_types[$element['#type']] : 0);
 }
 
 /**
@@ -5509,6 +5511,8 @@ function webform_count_input_vars($element) {
  */
 function webform_count_terminals($a) {
   return is_array($a)
-            ? array_reduce($a, function($carry, $item) {return $carry + webform_count_terminals($item);}, 0)
-            : 1;
+    ? array_reduce($a, function ($carry, $item) {
+      return $carry + webform_count_terminals($item);
+    }, 0)
+    : 1;
 }
