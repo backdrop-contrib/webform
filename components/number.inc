@@ -240,7 +240,9 @@ function theme_webform_number($variables) {
   if (!isset($element['#attributes']['type'])) {
     // HTML5 number fields are no long used pending better browser support.
     // See issues #2290029, #2202905.
+    // @code
     // $element['#attributes']['type'] = 'number';
+    // @endcode
     $element['#attributes']['type'] = 'text';
   }
 
@@ -327,7 +329,7 @@ function _webform_render_number($component, $value = NULL, $filter = TRUE, $subm
     // Set the size property based on #max, to ensure consistent behavior for
     // browsers that do not support type = number.
     if ($element['#max']) {
-      $element['#size'] =  strlen($element['#max']) + 1;
+      $element['#size'] = strlen($element['#max']) + 1;
     }
   }
   else {
@@ -433,9 +435,9 @@ function _webform_analysis_number($component, $sids = array(), $single = FALSE, 
   $result = $query->execute();
   foreach ($result as $data) {
     $value = trim($data['data']);
-    $number = (float)$value;
-    $non_empty += (integer)($value !== '');
-    $non_zero += (integer)($number != 0.0);
+    $number = (float) $value;
+    $non_empty += (integer) ($value !== '');
+    $non_zero += (integer) ($number != 0.0);
     $sum += $number;
     $population[] = $number;
     $submissions++;
@@ -710,6 +712,7 @@ function _webform_edit_number_validate($element, &$form_state) {
         }
       }
       break;
+
     case 'max':
       if ($values['max'] == '') {
         if (isset($values['type']) && $values['type'] === 'select') {
@@ -725,6 +728,7 @@ function _webform_edit_number_validate($element, &$form_state) {
         }
       }
       break;
+
     case 'step':
       if ($values['step'] !== '') {
         if (!is_numeric($values['step'])) {
@@ -765,13 +769,14 @@ function _webform_number_select_options($component) {
     $options[$f . ''] = $f . '';
   }
 
-  // TODO: HTML5 browsers apparently do not include the max value if it does
+  // @todo: HTML5 browsers apparently do not include the max value if it does
   // not line up with step. Restore this if needed in the future.
   // Add end limit if it's been skipped due to step.
-  //if (end($options) != $max) {
-  //  $options[$f] = $max;
-  //}
-
+  // @code
+  // if (end($options) != $max) {
+  //   $options[$f] = $max;
+  // }
+  // @endcode
   if ($flipped) {
     $options = array_reverse($options, TRUE);
   }
@@ -801,12 +806,11 @@ function _webform_number_format($component, $value) {
  */
 function webform_number_format_match($value, $point, $separator) {
   // A valid number is:
-  //   1. optional minus sign
-  //   2. optional space
+  //   1. optional minus sign.
+  //   2. optional space.
   //   3. the rest of the string can't be just a decimal or blank.
-  //   3. optional integer portion, with thousands separators
-  //   4. optional decimal portion, starting is a decimal separator
-
+  //   4. optional integer portion, with thousands separators.
+  //   5. optional decimal portion, starting is a decimal separator.
   // Don't use preg_quote because a space is a valid thousands separator and
   // needs quoting for the 'x' option to preg_match.
   $thousands = $separator ? "\\$separator?" : '';
@@ -925,8 +929,8 @@ function webform_compare_floats($number_1, $number_2) {
     return NULL;
   }
 
-  $number_1 = (float)$number_1;
-  $number_2 = (float)$number_2;
+  $number_1 = (float) $number_1;
+  $number_2 = (float) $number_2;
 
   $epsilon = 0.000001;
   if (abs($number_1 - $number_2) < $epsilon) {

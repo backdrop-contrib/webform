@@ -5,6 +5,9 @@
  * This exporter creates an XLSX file readable by newer versions of Excel.
  */
 
+/**
+ *
+ */
 class webform_exporter_excel_xlsx extends webform_exporter {
   /**
    * Regular expression that checks for a valid ISO 8601 date/time.
@@ -13,7 +16,10 @@ class webform_exporter_excel_xlsx extends webform_exporter {
   const DATE_REGEX_DATE = '/^((\d{4})(-(\d{2}))(-(\d{2})))$/';
   const DATE_REGEX_TIME = '/^(([T \s]?(\d{2}))(:(\d{2}))(:(\d{2}))?)?$/';
 
-  function add_row(&$file_handle, $data, $row_count) {
+  /**
+   *
+   */
+  public function add_row(&$file_handle, $data, $row_count) {
     $row = $row_count + 1;
     $col = 'A';
 
@@ -95,20 +101,27 @@ class webform_exporter_excel_xlsx extends webform_exporter {
     @fwrite($file_handle, $output);
   }
 
-  function bof(&$file_handle) {
-    // Our beginning of file needs to include unknown data (the number of
-    // columns and rows) at this point. Instead of writing the true BOF, we
-    // output enough empty space to fill in the BOF later.
-    // See webform_exporter_excel_xlsx::eof().
+  /**
+   * Output space for the BOF.
+   *
+   * Our beginning of file needs to include unknown data (the number of columns
+   * and rows) at this point. Instead of writing the true BOF, we output enough
+   * empty space to fill in the BOF later. See
+   * webform_exporter_excel_xlsx::eof().
+   */
+  public function bof(&$file_handle) {
     $output = str_repeat(' ', 1024);
     @fwrite($file_handle, $output . "\n");
   }
 
-  function eof(&$file_handle, $row_count, $col_count) {
-    // We output a chunk of empty data in webform_exporter_excel_xlsx::bof()
-    // to leave room for our real header, which includes the important
-    // <dimension> tag. This is required for proper importing into Google Docs.
-
+  /**
+   * Output the BOF and end the file.
+   *
+   * We output a chunk of empty data in webform_exporter_excel_xlsx::bof() to
+   * leave room for our real header, which includes the important <dimension>
+   * tag. This is required for proper importing into Google Docs.
+   */
+  public function eof(&$file_handle, $row_count, $col_count) {
     // Convert column count to letter representation.
     $col = 'A';
     for ($n = 1; $n < $col_count; $n++) {
@@ -132,7 +145,10 @@ class webform_exporter_excel_xlsx extends webform_exporter {
     fwrite($file_handle, $eof);
   }
 
-  function post_process(&$results) {
+  /**
+   *
+   */
+  public function post_process(&$results) {
     // Our download file is currently a single XML sheet file. We need to add
     // the peripheral XML files to make this into a XLSX directory, then zip it.
     $file_uri = $results['file_name'];
@@ -141,7 +157,7 @@ class webform_exporter_excel_xlsx extends webform_exporter {
     // ZipArchive does not support stream wrappers, convert to filesystem path.
     $zip_filepath = drupal_realpath($zip_uri);
     $file_filepath = drupal_realpath($file_uri);
-    $zip = new ZipArchive;
+    $zip = new ZipArchive();
     if ($zip->open($zip_filepath, ZipArchive::CREATE) === TRUE) {
       // Create a bare-bones Office Open XML format directory structure. This is
       // based on the sample simple XLSX file at
@@ -172,7 +188,10 @@ class webform_exporter_excel_xlsx extends webform_exporter {
     }
   }
 
-  function set_headers($filename) {
+  /**
+   *
+   */
+  public function set_headers($filename) {
     drupal_add_http_header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     drupal_add_http_header('Content-Disposition', "attachment; filename=$filename.xlsx");
     drupal_add_http_header('Pragma', 'public');
@@ -182,7 +201,7 @@ class webform_exporter_excel_xlsx extends webform_exporter {
   /**
    * Return all the parts needed to assemble a bare-bones XLSX package.
    */
-  function xlsx_parts() {
+  public function xlsx_parts() {
     $parts['_rels'] = '';
     $parts['_rels/.rels'] = <<<EOL
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>

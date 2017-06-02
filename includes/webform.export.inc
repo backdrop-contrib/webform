@@ -2,7 +2,7 @@
 
 /**
  * @file
- *   Provides several different handlers for exporting webform results.
+ * Provides several different handlers for exporting webform results.
  */
 
 /**
@@ -80,7 +80,8 @@ function webform_export_fetch_definition($format = NULL) {
     drupal_alter('webform_exporters', $cache);
     foreach ($cache as $key => $exporter) {
       $cache[$key] += array('weight' => 0);
-      $cache[$key]['name'] = $key; // Used in sorting.
+      // Used in sorting.
+      $cache[$key]['name'] = $key;
     }
     uasort($cache, '_webform_components_sort');
   }

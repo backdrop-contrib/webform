@@ -554,7 +554,7 @@ function webform_get_submission_access_token($submission) {
 /**
  * Access function for confirmation pages.
  *
- * @param stdClass $node
+ * @param object $node
  *   The webform node object.
  *
  * @return bool
@@ -611,11 +611,11 @@ function webform_confirmation_page_access($node) {
 /**
  * Access function for Webform submissions.
  *
- * @param stdClass $node
+ * @param object $node
  *   The webform node object.
- * @param stdClass $submission
+ * @param object $submission
  *   The webform submission object.
- * @param stdClass $op
+ * @param object $op
  *   The operation to perform. Must be one of view, edit, delete, list.
  * @param array $account
  *   Optional. A user object or NULL to use the currently logged-in user.
@@ -2079,7 +2079,7 @@ function webform_node_view($node, $view_mode) {
       'allowed_roles' => $allowed_roles,
       'closed' => $closed,
       'cached' => $cached,
-        )
+    )
     );
   }
 
@@ -2098,7 +2098,7 @@ function webform_node_view($node, $view_mode) {
 /**
  * Helper. Generates an array of allowed roles.
  *
- * @param stdClass $node
+ * @param object $node
  *   The loaded node object containing a webform.
  * @param bool $user_is_allowed
  *   Reference to boolean to be set to whether the current user is allowed.
@@ -2133,9 +2133,9 @@ function _webform_allowed_roles($node, &$user_is_allowed) {
 /**
  * Output the Webform into the node content.
  *
- * @param stdClass $node
+ * @param object $node
  *   The webform node object.
- * @param stdClass $page
+ * @param object $page
  *   If this webform node is being viewed as the main content of the page.
  * @param array $form
  *   The rendered form.
@@ -2154,7 +2154,7 @@ function theme_webform_view($variables) {
 /**
  * Display a message to a user if they are not allowed to fill out a form.
  *
- * @param stdClass $node
+ * @param object $node
  *   The webform node object.
  * @param $page
  *   If this webform node is being viewed as the main content of the page.
@@ -2364,9 +2364,9 @@ function webform_block_view($delta = '') {
       $content = array(
         'confirmation_message' => array(
           '#markup' => "<div class=\"messages status webform-confirmation\">\n" .
-            '<h2 class="element-invisible">' . t('Status message') . "</h2>\n" .
-            $message .
-            "</div>\n",
+          '<h2 class="element-invisible">' . t('Status message') . "</h2>\n" .
+          $message .
+          "</div>\n",
           '#weight' => -1,
         ),
         'webform_view' => $content,
@@ -2477,7 +2477,7 @@ function webform_block_save($delta = '', $edit = array()) {
  *   The current form array (always empty).
  * @param $form_state
  *   The current form values of a submission, used in multipage webforms.
- * @param stdClass $node
+ * @param object $node
  *   The current webform node.
  * @param $submission
  *   An object containing information about the form submission if we're
@@ -2815,7 +2815,7 @@ function webform_client_form_process($form, $form_state) {
  * This function assists in the building of the client form, as well as the
  * display of results, and the text of e-mails.
  *
- * @param stdClass $node
+ * @param object $node
  *   The current webform node.
  * @param $component
  *   The component to be added to the form.
@@ -3498,7 +3498,7 @@ function webform_client_form_submit($form, &$form_state) {
 /**
  * Post processes the submission tree with any updates from components.
  *
- * @param stdClass $node
+ * @param object $node
  *   The full webform node.
  * @param $form_values
  *   The form values for the form.
@@ -3919,7 +3919,7 @@ function theme_webform_inline_radio_label($variables) {
 /**
  * Theme the headers when sending an email from webform.
  *
- * @param stdClass $node
+ * @param object $node
  *   The complete node object for the webform.
  * @param $submission
  *   The webform submission of the user.
@@ -3976,7 +3976,7 @@ function _webform_fetch_draft_sid($nid, $uid) {
 /**
  * Returns a new or cached WebformConditionals object for the specified node.
  *
- * @param stdClass $node
+ * @param object $node
  *   The loaded webform node.
  *
  * @returns object
@@ -4002,7 +4002,7 @@ function _webform_filter_values($string, $node = NULL, $submission = NULL, $emai
  *
  * @param $string
  *   The string to have its tokens replaced.
- * @param stdClass $node
+ * @param object $node
  *   If replacing node-level tokens, the node for which tokens will be created.
  * @param $submission
  *   If replacing submission-level tokens, the submission for which tokens will
@@ -4093,7 +4093,7 @@ function webform_replace_tokens_clear($text) {
  *
  * @param string $redirect_url
  *   The redirect URL, with everything other than tokens already URL encoded.
- * @param stdClass $node
+ * @param object $node
  *   If replacing node-level tokens, the node for which tokens will be created.
  * @param $submission
  *   If replacing submission-level tokens, the submission for which tokens will
@@ -4162,7 +4162,7 @@ function _webform_filter_xss($string) {
 /**
  * Utility function to ensure that a webform record exists in the database.
  *
- * @param stdClass $node
+ * @param object $node
  *   The node object to check if a database entry exists.
  *
  * @return
@@ -4188,7 +4188,7 @@ function webform_ensure_record(&$node) {
  * delete rows from the webform table if the node-type is exclusively used for
  * webforms (per the "webform_node_types_primary" variable).
  *
- * @param stdClass $node
+ * @param object $node
  *   The node object to check if a database entry is still required.
  *
  * @return
@@ -4215,7 +4215,7 @@ function webform_check_record(&$node) {
 /**
  * Given a component's form_key and optionally its parent's cid, get its cid(s).
  *
- * @param stdClass $node
+ * @param object $node
  *   A fully loaded webform node object.
  * @param string $form_key
  *   The form key for which to find the cid(s).
@@ -4247,7 +4247,7 @@ function webform_get_cid(&$node, $form_key, $pid = NULL) {
 /**
  * Find the label of a given page based on page breaks.
  *
- * @param stdClass $node
+ * @param object $node
  *   The webform node.
  * @param $form_state
  *   The form's state, if available
@@ -4473,7 +4473,7 @@ function _webform_transliterate($name) {
   // If transliteration is available, use it to convert names to ASCII.
   return function_exists('transliteration_get')
             ? transliteration_get($name, '')
-            : str_replace(array('€', 'ƒ', 'Š', 'Ž', 'š', 'ž', 'Ÿ', '¢', '¥', 'µ', 'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'à', 'á', 'â', 'ã', 'ä', 'å', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', 'Œ',  'œ',  'Æ',  'Ð',  'Þ',  'ß',  'æ',  'ð',  'þ'),
+            : str_replace(array('€', 'ƒ', 'Š', 'Ž', 'š', 'ž', 'Ÿ', '¢', '¥', 'µ', 'À', 'Á', 'Â', 'Ã', 'Ä', 'Å', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ø', 'Ù', 'Ú', 'Û', 'Ü', 'Ý', 'à', 'á', 'â', 'ã', 'ä', 'å', 'ç', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ø', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', 'Œ', 'œ', 'Æ', 'Ð', 'Þ', 'ß', 'æ', 'ð', 'þ'),
                           array('E', 'f', 'S', 'Z', 's', 'z', 'Y', 'c', 'Y', 'u', 'A', 'A', 'A', 'A', 'A', 'A', 'C', 'E', 'E', 'E', 'E', 'I', 'I', 'I', 'I', 'N', 'O', 'O', 'O', 'O', 'O', 'O', 'U', 'U', 'U', 'U', 'Y', 'a', 'a', 'a', 'a', 'a', 'a', 'c', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'n', 'o', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'y', 'y', 'OE', 'oe', 'AE', 'DH', 'TH', 'ss', 'ae', 'dh', 'th'),
                           $name);
 }
@@ -4494,7 +4494,7 @@ function _webform_transliterate($name) {
  * @param $name
  *   The name to be used in the formatted address. If the address contains a
  *   name in 'Some Name <somename@example.com>' format, $name is ignored.
- * @param stdClass $node
+ * @param object $node
  *   The webform node if replacements will be done.
  * @param $submission
  *   The webform submission values if replacements will be done.
@@ -4931,7 +4931,7 @@ function webform_disable_page_cache() {
 /**
  * Set the necessary breadcrumb for the page we are on.
  *
- * @param stdClass $node
+ * @param object $node
  *   The loaded webform node.
  * @param bool|object $submission
  *   The submission if the current page is viewing or dealing with a submission,
@@ -5429,7 +5429,7 @@ function _webform_submission_serial_next_value_used($nid) {
 /**
  * Alter the node before saving a clone.
  *
- * @param stdClass $node
+ * @param object $node
  *   Reference to the fully loaded node object being saved (the clone) that
  *   can be altered as needed.
  * @param array $context
@@ -5506,10 +5506,10 @@ function webform_pre_render_input_vars($element) {
       );
       $warning = array(
         '#markup' => '<div class="messages warning">' .
-          (user_access('administer site configuration')
+        (user_access('administer site configuration')
           ? t('This form contains @count input elements. PHP max_input_vars is @limit and should be increased.', $subs)
           : t('This form may be too long to work properly. Contact the administrator.'))
-          . '</div>',
+        . '</div>',
         '#weight' => -1,
       );
       if ($element['#input_var_waring_parent']) {
@@ -5567,8 +5567,10 @@ function webform_count_input_vars($element) {
   );
   $children = array_intersect_key($element, array_flip(element_children($element)));
   return $children
-          ? array_reduce($children, function($carry, $item) {return $carry + webform_count_input_vars($item);}, 0)
-          : (isset($element['#type']) && isset($input_types[$element['#type']]) ? $input_types[$element['#type']] : 0);
+    ? array_reduce($children, function ($carry, $item) {
+      return $carry + webform_count_input_vars($item);
+    }, 0)
+    : (isset($element['#type']) && isset($input_types[$element['#type']]) ? $input_types[$element['#type']] : 0);
 }
 
 /**
@@ -5583,6 +5585,8 @@ function webform_count_input_vars($element) {
  */
 function webform_count_terminals($a) {
   return is_array($a)
-            ? array_reduce($a, function($carry, $item) {return $carry + webform_count_terminals($item);}, 0)
-            : 1;
+    ? array_reduce($a, function ($carry, $item) {
+      return $carry + webform_count_terminals($item);
+    }, 0)
+    : 1;
 }
