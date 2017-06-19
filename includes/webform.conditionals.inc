@@ -719,7 +719,7 @@ function _webform_conditional_find_start($rules, $origin_rid, $target_delta_leve
 function webform_conditional_element_add($form, &$form_state) {
   $button = $form_state['clicked_button'];
   $parents = $button['#parents'];
-  $action = array_pop($parents);
+  array_pop($parents);
   $rid = array_pop($parents);
 
   // Recurse through the form values until we find the Webform conditional rules

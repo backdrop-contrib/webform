@@ -1887,7 +1887,6 @@ function webform_user_role_delete($role) {
  * Implements hook_form_alter().
  */
 function webform_form_alter(&$form, $form_state, $form_id) {
-  $matches = array();
   if (isset($form['#node']->type) && $form_id == $form['#node']->type . '_node_form' && variable_get('webform_node_' . $form['#node']->type, FALSE)) {
     $node = $form['#node'];
     // Preserve all Webform options currently set on the node.
@@ -2284,8 +2283,6 @@ function webform_block_info() {
  * Implements hook_block_view().
  */
 function webform_block_view($delta = '') {
-  global $user;
-
   // Load the block-specific configuration settings.
   $webform_blocks = webform_variable_get('webform_blocks');
   $settings = isset($webform_blocks[$delta]) ? $webform_blocks[$delta] : array();
@@ -2950,8 +2947,6 @@ function _webform_client_form_add_component($node, $component, $component_value,
  * upon form submission.
  */
 function webform_client_form_prevalidate($form, &$form_state) {
-  global $user;
-
   // Refresh the node in case it changed since the form was build and retrieved from cache.
   $node = $form['#node'] = node_load($form['#node']->nid);
   $finished = $form_state['values']['details']['finished'];

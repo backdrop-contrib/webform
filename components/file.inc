@@ -301,7 +301,6 @@ function theme_webform_edit_file_extensions($variables) {
   $rows = array();
   foreach (element_children($element['types']) as $filtergroup) {
     $row = array();
-    $first_row = count($rows);
     if ($element['types'][$filtergroup]['#type'] == 'checkboxes') {
       $select_link = ' <a href="#" class="webform-select-link webform-select-link-' . $filtergroup . '">(' . t('select') . ')</a>';
       $row[] = $element['types'][$filtergroup]['#title'];

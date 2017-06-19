@@ -283,12 +283,10 @@ function theme_webform_results_table($variables) {
   drupal_add_library('webform', 'admin');
 
   $node = $variables['node'];
-  $components = $variables['components'];
   $submissions = $variables['submissions'];
   $total_count = $variables['total_count'];
   $pager_count = $variables['pager_count'];
 
-  $header = array();
   $rows = array();
   $cell = array();
 
@@ -1844,7 +1842,6 @@ function webform_analysis_components_form_submit($form, $form_state) {
 function theme_webform_results_analysis($variables) {
   $node = $variables['node'];
   $data = $variables['data'];
-  $sids = $variables['sids'];
   $analysis_component = $variables['component'];
 
   $rows = array();

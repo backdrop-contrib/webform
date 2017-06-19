@@ -31,7 +31,6 @@ function webform_components_page($node, $page_number = 1) {
  * Builder module is available.
  */
 function theme_webform_components_page($variables) {
-  $node = $variables['node'];
   $form = $variables['form'];
 
   return drupal_render($form);
@@ -798,7 +797,7 @@ function webform_component_insert(&$component) {
     }
   }
 
-  $query = db_insert('webform_component')
+  db_insert('webform_component')
     ->fields(array(
       'nid' => $component['nid'],
       'cid' => $component['cid'],

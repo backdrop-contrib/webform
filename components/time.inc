@@ -307,8 +307,6 @@ function theme_webform_time($variables) {
  *
  */
 function webform_validate_time($element, $form_state) {
-  $form_key = $element['#webform_component']['form_key'];
-
   // Check if the user filled the required fields.
   if ($element['#required']) {
     foreach (array('hour', 'minute', 'ampm') as $field_type) {

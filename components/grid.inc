@@ -434,8 +434,6 @@ function template_preprocess_webform_display_grid(&$variables) {
  */
 function theme_webform_display_grid($variables) {
   $element = $variables['element'];
-
-  $component = $element['#webform_component'];
   $format = $element['#format'];
 
   if ($format == 'html') {
