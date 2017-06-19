@@ -621,8 +621,6 @@ function webform_email_edit_form_submit($form, &$form_state) {
  * Form for deleting an e-mail setting.
  */
 function webform_email_delete_form($form, $form_state, $node, $email) {
-  $eid = $email['eid'];
-
   $form['node'] = array(
     '#type' => 'value',
     '#value' => $node,

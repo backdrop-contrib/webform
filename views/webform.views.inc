@@ -633,7 +633,6 @@ function _webform_view_find_id($view, $display_id, $type, $options) {
  * Menu callback; Provide a list of Webform nodes for use in autocomplete.
  */
 function webform_views_autocomplete($string = '') {
-  $matches = array();
   if ($string) {
     $or = db_or();
 

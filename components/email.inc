@@ -142,7 +142,6 @@ function _webform_edit_email_validate($element, &$form_state) {
  * Implements _webform_render_component().
  */
 function _webform_render_email($component, $value = NULL, $filter = TRUE, $submission = NULL) {
-  global $user;
   $node = isset($component['nid']) ? node_load($component['nid']) : NULL;
 
   $element = array(
