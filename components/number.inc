@@ -25,6 +25,7 @@ function _webform_defaults_number() {
       'title_display' => 0,
       'description' => '',
       'description_above' => FALSE,
+      'placeholder' => '',
       'attributes' => array(),
       'private' => FALSE,
       'analysis' => FALSE,
@@ -92,6 +93,14 @@ function _webform_edit_number($component) {
     '#description' => t('A minimum and maximum value are required if displaying as a select.'),
     '#weight' => -1,
     '#parents' => array('extra', 'type'),
+  );
+  $form['display']['placeholder'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Placeholder'),
+    '#default_value' => $component['extra']['placeholder'],
+    '#description' => t('The placeholder will be shown in the field until the user starts entering a value.'),
+    '#weight' => 1,
+    '#parents' => array('extra', 'placeholder'),
   );
   $form['display']['field_prefix'] = array(
     '#type' => 'textfield',
@@ -302,6 +311,10 @@ function _webform_render_number($component, $value = NULL, $filter = TRUE, $subm
 
   if ($component['required']) {
     $element['#attributes']['required'] = 'required';
+  }
+
+  if ($component['extra']['placeholder']) {
+    $element['#attributes']['placeholder'] = $component['extra']['placeholder'];
   }
 
   // Set the decimal count to zero for integers.
