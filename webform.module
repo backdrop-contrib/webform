@@ -3707,7 +3707,7 @@ function theme_webform_element($variables) {
 
   // If #children does not contain an element with a matching @id, do not
   // include @for in the label.
-  if (strpos($element['#children'], ' id="' . $variables['element']['#id'] . '"') === FALSE) {
+  if (isset($variables['element']['#id']) && strpos($element['#children'], ' id="' . $variables['element']['#id'] . '"') === FALSE) {
     $variables['element']['#id'] = NULL;
   }
 
