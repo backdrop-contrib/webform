@@ -181,10 +181,11 @@ function webform_configure_form($form, &$form_state, $node) {
     ),
   );
   $user_roles = user_roles();
-  foreach ($user_roles as $rid) {
-    if ($rid == BACKDROP_ANONYMOUS_ROLE || $rid == BACKDROP_AUTHENTICATED_ROLE) {
+  foreach ($user_roles as $machine => $label) {
+    if ($machine == BACKDROP_ANONYMOUS_ROLE || $machine == BACKDROP_AUTHENTICATED_ROLE) {
       continue;
     }
+    $user_roles[$machine] = webform_tt("user:rid:$machine:name", $label);
   }
   $form['role_control']['roles'] = array(
     '#default_value' => $node->webform['roles'],

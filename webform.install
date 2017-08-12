@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  *   Webform module install/schema hooks.
@@ -513,15 +512,15 @@ function webform_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'rid' => array(
-        'description' => 'The role identifier.',
+      'role' => array(
         'type' => 'varchar',
-        'length' => 16,
+        'length' => 64,
+        'description' => 'Primary Key: The name of the role.',
         'not null' => TRUE,
         'default' => 'anonymous',
       ),
     ),
-    'primary key' => array('nid', 'rid'),
+    'primary key' => array('nid', 'role'),
   );
 
   $schema['webform_submissions'] = array(
@@ -1372,4 +1371,27 @@ function webform_update_1600() {
   $config = config('views.view.webform_submissions');
   $config->set('storage', 2);
   $config->save();
+}
+
+/**
+ * Update webform_roles table so it uses the new role machine names.
+ */
+function webform_update_1601() {
+  if (db_field_exists('webform_roles', 'rid') || TRUE) {
+    // Update the webform_roles table so it can accept longer string machine names.
+    db_drop_primary_key('webform_roles');
+    $role_column = array(
+      'type' => 'varchar',
+      'length' => 64,
+      'description' => 'Primary Key: The name of the role.',
+      'not null' => TRUE,
+      'default' => 'anonymous',
+    );
+    db_change_field('webform_roles', 'rid', 'role', $role_column);
+    db_add_primary_key('webform_roles', array('nid', 'role'));
+
+    // Change the machine names for Backdrop.
+    db_query("UPDATE {webform_roles} SET role = 'anonymous' WHERE role = '1'");
+    db_query("UPDATE {webform_roles} SET role = 'authenticated' WHERE role = '2'");
+  }
 }
