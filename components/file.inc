@@ -9,6 +9,11 @@
  * Implements _webform_defaults_component().
  */
 function _webform_defaults_file() {
+  // If private file storage is enabled, make it the default for security
+  // reasons. See: https://www.drupal.org/psa-2016-003
+  $available_schemes = file_get_stream_wrappers(STREAM_WRAPPERS_WRITE_VISIBLE);
+  $scheme = isset($available_schemes['private']) ? 'private' : 'public';
+
   return array(
     'name' => '',
     'form_key' => NULL,
@@ -22,7 +27,7 @@ function _webform_defaults_file() {
         'size' => '2 MB',
       ),
       'rename' => '',
-      'scheme' => 'public',
+      'scheme' => $scheme,
       'directory' => '',
       'progress_indicator' => 'throbber',
       'title_display' => 0,
@@ -149,7 +154,7 @@ function _webform_edit_file($component) {
     '#title' => t('Upload destination'),
     '#options' => $scheme_options,
     '#default_value' => $component['extra']['scheme'],
-    '#description' => t('Private file storage has significantly more overhead than public files, but restricts file access to users who can view submissions.'),
+    '#description' => t('Public files upload destination is dangerous for forms that are available to anonymous and/or untrusted users. For more information, see <a href="@psa">DRUPAL-PSA-2016-003</a>.', array('@psa' => 'https://www.drupal.org/psa-2016-003')),
     '#weight' => 4,
     '#access' => count($scheme_options) > 1,
   );
