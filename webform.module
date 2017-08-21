@@ -1504,7 +1504,7 @@ function webform_node_insert($node) {
 
   // Set the per-role submission access control.
   foreach (array_filter($node->webform['roles']) as $rid) {
-    db_insert('webform_roles')->fields(array('nid' => $node->nid, 'rid' => $rid))->execute();
+    db_insert('webform_roles')->fields(array('nid' => $node->nid, 'role' => $rid))->execute();
   }
 
   // Flush the block cache if creating a block.
@@ -1625,7 +1625,7 @@ function webform_node_update($node) {
   if ($original->webform['roles'] != $node->webform['roles']) {
     db_delete('webform_roles')->condition('nid', $node->nid)->execute();
     foreach (array_filter($node->webform['roles']) as $rid) {
-      db_insert('webform_roles')->fields(array('nid' => $node->nid, 'rid' => $rid))->execute();
+      db_insert('webform_roles')->fields(array('nid' => $node->nid, 'role' => $rid))->execute();
     }
   }
 
@@ -1759,7 +1759,7 @@ function webform_node_load($nodes, $types) {
     }
 
     $nodes[$nid]->webform['roles'] = db_select('webform_roles')
-      ->fields('webform_roles', array('rid'))
+      ->fields('webform_roles', array('role'))
       ->condition('nid', $nid)
       ->execute()
       ->fetchCol();
@@ -1838,7 +1838,7 @@ function webform_node_load($nodes, $types) {
  * Removes references to deleted role from existing webforms.
  */
 function webform_user_role_delete($role) {
-  db_delete('webform_roles')->condition('rid', $role->name)->execute();
+  db_delete('webform_roles')->condition('role', $role->name)->execute();
 }
 
 /**
