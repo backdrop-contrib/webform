@@ -1377,7 +1377,7 @@ function webform_update_1600() {
  * Update webform_roles table so it uses the new role machine names.
  */
 function webform_update_1601() {
-  if (db_field_exists('webform_roles', 'rid') || TRUE) {
+  if (db_field_exists('webform_roles', 'rid')) {
     // Update the webform_roles table so it can accept longer string machine names.
     db_drop_primary_key('webform_roles');
     $role_column = array(
