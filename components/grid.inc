@@ -672,7 +672,7 @@ function _webform_edit_grid_unique_validate($element) {
 }
 
 /**
- *
+ * Theme function to render a grid component.
  */
 function theme_webform_grid($variables) {
   $element = $variables['element'];
@@ -728,26 +728,59 @@ function theme_webform_grid($variables) {
     $rows[] = array(
       'data' => $row,
       'class' => empty($question_element['#grid_question'])
-      ? array('webform-component', 'webform-component-' . str_replace('_', '-', $question_element['#type']), 'webform-component--' . $parents)
+      ? array(
+        'webform-component',
+        'webform-component-' . str_replace('_', '-', $question_element['#type']),
+        'webform-component--' . $parents,
+      )
       : array(),
     );
   }
 
   $option_count = count($header) - 1;
-  return theme('table', array('header' => $header, 'rows' => $rows, 'sticky' => $element['#sticky'], 'attributes' => array('class' => array('webform-grid', 'webform-grid-' . $option_count))));
+  return theme('table', array(
+    'header' => $header,
+    'rows' => $rows,
+    'sticky' => $element['#sticky'],
+    'attributes' => array(
+      'class' => array(
+        'webform-grid',
+        'webform-grid-' . $option_count,
+      ),
+    ),
+  ));
 }
 
 /**
  * Generate a table header suitable for form or html display.
+ *
+ * @param array $element
+ *   The element array.
+ * @param bool $right_titles
+ *   If TRUE, display a right-side title column.
+ *
+ * @return array
+ *   An array of headers.
  */
 function _webform_grid_header($element, $right_titles) {
   $titles = explode('|', $element['#title'], 2);
-  $header = array(array('data' => _webform_grid_header_title($element, $titles[0]), 'class' => array('webform-grid-question')));
+  $header = array(
+    array(
+      'data' => _webform_grid_header_title($element, $titles[0]),
+      'class' => array('webform-grid-question'),
+    ),
+  );
   foreach ($element['#grid_options'] as $option) {
-    $header[] = array('data' => webform_filter_xss($option), 'class' => array('checkbox', 'webform-grid-option'));
+    $header[] = array(
+      'data' => webform_filter_xss($option),
+      'class' => array('checkbox', 'webform-grid-option'),
+    );
   }
   if ($right_titles) {
-    $header[] = array('data' => _webform_grid_header_title($element, isset($titles[1]) ? $titles[1] : ''), 'class' => array('webform-grid-question'));
+    $header[] = array(
+      'data' => _webform_grid_header_title($element, isset($titles[1]) ? $titles[1] : ''),
+      'class' => array('webform-grid-question'),
+    );
   }
   return $header;
 }
