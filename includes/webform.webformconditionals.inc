@@ -9,13 +9,18 @@
  * Performs analysis and topological sorting on the conditionals.
  */
 class WebformConditionals {
-
-  // Define constants for the result of an analysis of the conditionals on
-  // a page for a given set of input values. Determines whether the component
-  // is always hidden, always shown, or may or may not be shown depending upon
-  // other values on the same page. In the last case, the component needs to be
-  // rendered on the page because at least one source component is on the same
-  // page. The field will be hidden with JavaScript.
+  /**
+   * Define constants.
+   *
+   * Define constants for the result of an analysis of the conditionals on a
+   * page for a given set of input values. Determines whether the component is
+   * always hidden, always shown, or may or may not be shown depending upon
+   * other values on the same page. In the last case, the component needs to be
+   * rendered on the page because at least one source component is on the same
+   * page. The field will be hidden with JavaScript.
+   *
+   * @var int
+   */
   const componentHidden = 0;
   const componentShown = 1;
   const componentDependent = 2;
@@ -36,7 +41,7 @@ class WebformConditionals {
   /**
    * Creates and caches a WebformConditional for a given node.
    */
-  static public function factory($node) {
+  public static function factory($node) {
     if (!isset(self::$conditionals[$node->nid])) {
       self::$conditionals[$node->nid] = new WebformConditionals($node);
     }

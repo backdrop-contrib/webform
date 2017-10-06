@@ -1734,10 +1734,12 @@ function theme_webform_analysis_component_basic($variables) {
         $data['table_rows'][] = $other_data;
       }
       else {
-        $data['table_rows'][] = array(array(
-          'colspan' => 2,
-          'data' => $other_data,
-        ));
+        $data['table_rows'][] = array(
+          array(
+            'colspan' => 2,
+            'data' => $other_data,
+          ),
+        );
       }
     }
   }
