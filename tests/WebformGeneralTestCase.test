@@ -4,6 +4,10 @@
  * @file
  * Test general functionality of Webform.
  */
+
+/**
+ *
+ */
 class WebformGeneralTestCase extends WebformTestCase {
 
   /**

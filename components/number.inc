@@ -911,7 +911,7 @@ function webform_modulo($a, $b) {
 /**
  * Compare two floats.
  *
- * See @link http://php.net/manual/en/language.types.float.php @endlink
+ * See @link http://php.net/manual/en/language.types.float.php @endlink.
  *
  * Comparison of floating point numbers for equality is surprisingly difficult,
  * as evidenced by the references below. The simple test in this function works

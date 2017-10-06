@@ -29,7 +29,9 @@ class webform_exporter_excel_xlsx extends webform_exporter {
       // Strip UTF8 characters that are not legal in XML files.
       // See http://www.w3.org/TR/xml/#charsets
       // See http://stackoverflow.com/questions/3466035/how-to-skip-invalid-characters-in-xml-file-using-php
+      // @code
       // Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+      // @endcode
       $value = preg_replace('/[^\x{0009}\x{000a}\x{000d}\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}]+/u', '', $value);
 
       $cell_position = $col . $row;
