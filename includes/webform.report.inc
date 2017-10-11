@@ -1279,9 +1279,6 @@ function webform_webform_results_download_submission_information_data($token, $s
  *   The webform node on which to generate the analysis.
  * @param string $format
  *   The export format being used.
- * @param array $options
- *   A list of options that define the output format. These are generally passed
- *   through from the GUI interface.
  *
  * @return array
  *   Option for creating downloadable version of the webform data.

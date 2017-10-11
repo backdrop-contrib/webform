@@ -2132,14 +2132,8 @@ function _webform_allowed_roles($node, &$user_is_allowed) {
 /**
  * Output the Webform into the node content.
  *
- * @param object $node
- *   The webform node object.
- * @param object $page
- *   If this webform node is being viewed as the main content of the page.
- * @param array $form
- *   The rendered form.
- * @param $enabled
- *   If the form allowed to be completed by the current user.
+ * @param array $variables
+ *   The variables array.
  *
  * @return string
  */
@@ -2153,21 +2147,8 @@ function theme_webform_view($variables) {
 /**
  * Display a message to a user if they are not allowed to fill out a form.
  *
- * @param object $node
- *   The webform node object.
- * @param $page
- *   If this webform node is being viewed as the main content of the page.
- * @param $submission_count
- *   The number of submissions this user has already submitted. Not calculated
- *   for anonymous users.
- * @param $user_limit_exceeded
- *   Boolean value if the submission limit for this user has been exceeded.
- * @param $total_limit_exceeded
- *   Boolean value if the total submission limit has been exceeded.
- * @param $allowed_roles
- *   A list of user roles that are allowed to submit this webform.
- * @param $closed
- *   Boolean value if submissions are closed.
+ * @param array $variables
+ *   The variables array.
  */
 function theme_webform_view_messages($variables) {
   global $user;
@@ -3914,15 +3895,8 @@ function theme_webform_inline_radio_label($variables) {
 /**
  * Theme the headers when sending an email from webform.
  *
- * @param object $node
- *   The complete node object for the webform.
- * @param $submission
- *   The webform submission of the user.
- * @param $email
- *   If you desire to make different e-mail headers depending on the recipient,
- *   you can check the $email['email'] property to output different content.
- *   This will be the ID of the component that is a conditional e-mail
- *   recipient. For the normal e-mails, it will have the value of 'default'.
+ * @param array $variables
+ *   The variables array.
  *
  * @return
  *   An array of headers to be used when sending a webform email. If headers
