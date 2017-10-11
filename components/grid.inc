@@ -324,7 +324,7 @@ function webform_expand_grid($element) {
  * @return array
  *   The merged array.
  */
-function webform_grid_merge_options($existing, $new) {
+function webform_grid_merge_options(array $existing, array $new) {
   $insert = NULL;
   $queue = array();
   foreach ($new as $key => $value) {
@@ -369,7 +369,7 @@ function webform_grid_merge_options($existing, $new) {
  * @return array
  *   The $row_options with any missing options replaced with empty values.
  */
-function webform_grid_remove_options($header, $row_options) {
+function webform_grid_remove_options(array $header, array $row_options) {
   foreach ($header as $key => $value) {
     if (!isset($row_options[$key])) {
       $header[$key] = '';
@@ -762,7 +762,7 @@ function theme_webform_grid($variables) {
  * @return array
  *   An array of headers.
  */
-function _webform_grid_header($element, $right_titles) {
+function _webform_grid_header(array $element, $right_titles) {
   $titles = explode('|', $element['#title'], 2);
   $header = array(
     array(

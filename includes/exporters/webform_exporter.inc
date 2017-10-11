@@ -57,7 +57,7 @@ class webform_exporter {
    * @param int $row_count
    *   The current number of rows in the export file.
    */
-  public function add_row(&$file_handle, $data, $row_count) {
+  public function add_row(&$file_handle, array $data, $row_count) {
   }
 
   /**

@@ -472,7 +472,7 @@ function webform_menu_load($nid) {
  * @return string
  *   The $arg, modified as desired.
  */
-function webform_menu_to_arg($arg, $map, $index) {
+function webform_menu_to_arg($arg, array $map, $index) {
   return function_exists('webform_localization_webform_menu_to_arg')
           ? webform_localization_webform_menu_to_arg($arg, $map, $index)
           : $arg;
@@ -623,7 +623,7 @@ function webform_confirmation_page_access($node) {
  * @return bool
  *   Boolean whether the user has access to a webform submission.
  */
-function webform_submission_access($node, $submission, $op = 'view', $account = NULL) {
+function webform_submission_access($node, $submission, $op = 'view', array $account = NULL) {
   global $user;
   $account = isset($account) ? $account : $user;
 
@@ -2137,7 +2137,7 @@ function _webform_allowed_roles($node, &$user_is_allowed) {
  *
  * @return string
  */
-function theme_webform_view($variables) {
+function theme_webform_view(array $variables) {
   // Only show the form if this user is allowed access.
   if ($variables['webform']['#enabled']) {
     return drupal_render($variables['webform']['#form']);
@@ -2150,7 +2150,7 @@ function theme_webform_view($variables) {
  * @param array $variables
  *   The variables array.
  */
-function theme_webform_view_messages($variables) {
+function theme_webform_view_messages(array $variables) {
   global $user;
 
   $node = $variables['node'];
@@ -3903,7 +3903,7 @@ function theme_webform_inline_radio_label($variables) {
  *   for "From", "To", or "Subject" are set, they will take precedence over
  *   the values set in the webform configuration.
  */
-function theme_webform_mail_headers($variables) {
+function theme_webform_mail_headers(array $variables) {
   $headers = array(
     'X-Mailer' => 'Drupal Webform (PHP/' . phpversion() . ')',
   );
@@ -5065,7 +5065,7 @@ function webform_date_string($array, $type = NULL) {
  * @return string
  *   A date/time format string.
  */
-function webform_date_format($type = NULL, $exclude = array()) {
+function webform_date_format($type = NULL, array $exclude = array()) {
   static $formats = array();
   $id = $type . ':' . implode('', $exclude);
   if (!isset($formats[$id])) {
@@ -5409,7 +5409,7 @@ function _webform_submission_serial_next_value_used($nid) {
  * @see clone_node_save()
  * @see drupal_alter()
  */
-function webform_clone_node_alter(&$node, $context) {
+function webform_clone_node_alter(&$node, array $context) {
   if (isset($node->webform)) {
     $defaults = webform_node_defaults();
     $node->webform['next_serial'] = $defaults['next_serial'];
@@ -5432,7 +5432,7 @@ function webform_clone_node_alter(&$node, $context) {
  *   Omit to not preflight the form, or the array key for the parent of where
  *   the preflight warning should be inserted into the form.
  */
-function webform_input_vars_check(&$form, $form_state, $detect_key, $parent_key = NULL) {
+function webform_input_vars_check(array &$form, array $form_state, $detect_key, $parent_key = NULL) {
   if (isset($parent_key)) {
     $form['#pre_render'] = array('webform_pre_render_input_vars');
     $form['#input_var_waring_parent'] = $parent_key;
@@ -5515,7 +5515,7 @@ function webform_pre_render_input_vars($element) {
  * @return int
  *   The number of elements in the form that will result in $_POST entries.
  */
-function webform_count_input_vars($element) {
+function webform_count_input_vars(array $element) {
   static $input_types = array(
     'checkbox' => 1,
     'date' => 1,

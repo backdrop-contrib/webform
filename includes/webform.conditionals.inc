@@ -664,7 +664,7 @@ function _webform_conditional_expand_value_forms($node) {
  *   The rid of the found rule, or -1 if none. Note that NULL is not used as a
  *   semaphore for "not found" because it casts to 0, which is a valid rule id.
  */
-function _webform_conditional_find_end($rules, $origin_rid, $target_delta_level = 0) {
+function _webform_conditional_find_end(array $rules, $origin_rid, $target_delta_level = 0) {
   $rids = array_keys($rules);
   $offset = array_search($origin_rid, $rids);
   $delta_level = 0;
@@ -819,7 +819,7 @@ function webform_conditional_element_remove($form, &$form_state) {
  * @return array
  *   Array of deleted subconditionals. Empty array if none were deleted.
  */
-function webform_delete_empty_subconditionals(&$conditional) {
+function webform_delete_empty_subconditionals(array &$conditional) {
   $deleted = array();
   do {
     $empty_deleted = FALSE;
@@ -1399,7 +1399,7 @@ function webform_conditional_delete($node, $conditional) {
  * @return array
  *   Array of settings to be send to the browser as javascript settings.
  */
-function webform_conditional_prepare_javascript($node, $submission_data, $page_num) {
+function webform_conditional_prepare_javascript($node, array $submission_data, $page_num) {
   $settings = array(
     'ruleGroups' => array(),
     'sourceMap' => array(),
@@ -1753,7 +1753,7 @@ function webform_conditional_value_datetime($input_values) {
  *   0 if $a = $b
  *   +N if $a is below (>) $b
  */
-function webform_compare_select($a, $b, $options) {
+function webform_compare_select($a, $b, array $options) {
   // Select keys that are integer-like strings are numeric indices in PHP.
   // Convert the array keys to an array of strings.
   $options_array = array_map(function ($i) {

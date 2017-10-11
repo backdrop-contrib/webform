@@ -54,7 +54,7 @@ function webform_submission_data($node, $submitted) {
  * @return object
  *   A new submission object, possibly for preview
  */
-function webform_submission_create($node, $account, $form_state, $is_preview = FALSE, $prototype = NULL) {
+function webform_submission_create($node, $account, array $form_state, $is_preview = FALSE, $prototype = NULL) {
   $data = webform_submission_data($node, $form_state['values']['submitted']);
   if (is_object($prototype)) {
     $submission = clone $prototype;
@@ -609,7 +609,7 @@ function webform_submission_resend_submit($form, &$form_state) {
  *
  * @throws Exception
  */
-function theme_webform_submission_resend($variables) {
+function theme_webform_submission_resend(array $variables) {
   $form = $variables['form'];
 
   $header = array(t('Send'), t('E-mail to'), t('Subject'));

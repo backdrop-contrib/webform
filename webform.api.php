@@ -246,7 +246,7 @@ function hook_webform_submission_actions($node, $submission) {
  * @param array $context
  *   Array of context with indices 'nid' and 'uid'.
  */
-function hook_webform_draft_alter(&$sid, $context) {
+function hook_webform_draft_alter(&$sid, array $context) {
   if ($_GET['newdraft']) {
     $sid = NULL;
   }
@@ -362,7 +362,7 @@ function hook_webform_component_delete($component) {
  *   - components: The list of analyses for each analysis-enabled component
  *     for the node. Each keyed by its component ID.
  */
-function hook_webform_analysis_alter(&$analysis) {
+function hook_webform_analysis_alter(array &$analysis) {
   $node = $analysis['#node'];
 
   // Add an additional piece of information to every component's analysis:
@@ -395,7 +395,7 @@ function hook_webform_analysis_alter(&$analysis) {
  * @see _webform_analysis_component()
  * @see hook_webform_analysis_alter()
  */
-function hook_webform_analysis_component_data_alter(&$data, $node, $component) {
+function hook_webform_analysis_component_data_alter(array &$data, $node, array $component) {
   if ($component['type'] === 'textfield') {
     // Do not display rows that contain a zero value.
     foreach ($data as $row_number => $row_data) {
@@ -766,7 +766,7 @@ function _webform_attachments_component($component, $value) {
  *
  * @see webform_node_defaults()
  */
-function hook_webform_node_defaults_alter(&$defaults) {
+function hook_webform_node_defaults_alter(array &$defaults) {
   $defaults['allow_draft'] = '1';
 }
 
@@ -942,7 +942,7 @@ function _webform_render_component($component, $value = NULL, $filter = TRUE, $s
  *
  * @see _webform_render_component()
  */
-function hook_webform_component_render_alter(&$element, &$component) {
+function hook_webform_component_render_alter(array &$element, array &$component) {
   if ($component['cid'] == 10) {
     $element['#title'] = 'My custom title';
     $element['#default_value'] = 42;
@@ -1003,7 +1003,7 @@ function _webform_display_component($component, $value, $format = 'html', $submi
  *
  * @see _webform_display_component()
  */
-function hook_webform_component_display_alter(&$element, &$component) {
+function hook_webform_component_display_alter(array &$element, array &$component) {
   if ($component['cid'] == 10) {
     $element['#title'] = 'My custom title';
     $element['#default_value'] = 42;
@@ -1026,7 +1026,7 @@ function hook_webform_component_display_alter(&$element, &$component) {
  * @param string $value
  *   The value to be set, as defined in the conditional action.
  */
-function _webform_action_set_component($component, &$element, &$form_state, $value) {
+function _webform_action_set_component(array $component, array &$element, array &$form_state, $value) {
   $element['#value'] = $value;
   form_set_value($element, $value, $form_state);
 }
@@ -1329,7 +1329,7 @@ function _webform_csv_data_component($component, $export_options, $value) {
  * @return array
  *   The modified $fields array.
  */
-function _webform_view_field_component($component, $fields) {
+function _webform_view_field_component(array $component, array $fields) {
   foreach ($fields as &$field) {
     $field['webform_datatype'] = 'number';
   }
@@ -1356,7 +1356,7 @@ function _webform_view_field_component($component, $fields) {
  * @param array $args
  *   The arguments that were passed to the view.
  */
-function hook_webform_view_alter($view, $display_id, $args) {
+function hook_webform_view_alter($view, $display_id, array $args) {
   // Don't show component with cid == 4.
   $fields = $view->get_items('field', $display_id);
   foreach ($fields as $id => $field) {
@@ -1373,7 +1373,7 @@ function hook_webform_view_alter($view, $display_id, $args) {
  * @param array &$systems
  *   An array of mail system class names.
  */
-function hook_webform_html_capable_mail_systems_alter(&$systems) {
+function hook_webform_html_capable_mail_systems_alter(array &$systems) {
   if (module_exists('my_module')) {
     $systems[] = 'MyModuleMailSystem';
   }
@@ -1407,7 +1407,7 @@ function hook_webform_exporters() {
  * @param array &$exporters
  *   A list of all available webform exporters.
  */
-function hook_webform_exporters_alter(&$exporters) {
+function hook_webform_exporters_alter(array &$exporters) {
   $exporters['excel']['handler'] = 'customized_excel_exporter';
   $exporters['excel']['file'] = drupal_get_path('module', 'yourmodule') . '/includes/customized_excel_exporter.inc';
 }

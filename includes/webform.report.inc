@@ -138,7 +138,7 @@ function webform_get_view($node, $view_id) {
  * @return string
  *   Pager.
  */
-function theme_webform_results_per_page($variables) {
+function theme_webform_results_per_page(array $variables) {
   $total_count = $variables['total_count'];
   $pager_count = $variables['pager_count'];
   $output = '';
@@ -992,7 +992,7 @@ function webform_results_export($node, $format = 'delimited', $options = array()
  * @return array
  *   A Batch API array suitable to pass to batch_set().
  */
-function webform_results_export_batch($node, $format = 'delimited', $options = array()) {
+function webform_results_export_batch($node, $format = 'delimited', array $options = array()) {
   $defaults = webform_results_download_default_options($node, $format);
   $options += $defaults;
   $options['range'] += $defaults['range'];
@@ -1023,7 +1023,7 @@ function webform_results_export_batch($node, $format = 'delimited', $options = a
  *   A list of options that define the output format. These are generally passed
  *   through from the GUI interface.
  */
-function webform_results_download_headers($node, $options) {
+function webform_results_download_headers($node, array $options) {
   module_load_include('inc', 'webform', 'includes/webform.components');
   $submission_information = webform_results_download_submission_information($node, $options);
 
@@ -1087,7 +1087,7 @@ function webform_results_download_headers($node, $options) {
  *
  * @deprecated This function is scheduled to be removed in webform 7.x-5.x.
  */
-function webform_results_download_rows($node, $options, $serial_start = 0, &$last_sid = NULL) {
+function webform_results_download_rows($node, array $options, $serial_start = 0, &$last_sid = NULL) {
   // Get all the required submissions for the download.
   $filters['nid'] = $node->nid;
   if (isset($options['sids'])) {
@@ -1126,7 +1126,7 @@ function webform_results_download_rows($node, $options, $serial_start = 0, &$las
  *   $pager_count variables. Note that the current page number is determined
  *   by the super-global $_GET['page'] variable.
  */
-function webform_results_download_rows_process($node, $options, $serial_start, $submissions) {
+function webform_results_download_rows_process($node, array $options, $serial_start, array $submissions) {
   module_load_include('inc', 'webform', 'includes/webform.components');
 
   $submission_information = webform_results_download_submission_information($node, $options);
@@ -1913,7 +1913,7 @@ function webform_download_sids_count($nid, $range_options, $uid = NULL) {
  *
  * @return QueryAlterableInterface
  */
-function webform_download_sids_query($nid, $range_options, $uid = NULL) {
+function webform_download_sids_query($nid, array $range_options, $uid = NULL) {
   $query = db_select('webform_submissions', 'ws')
     ->condition('nid', $nid)
     ->addTag('webform_download_sids');

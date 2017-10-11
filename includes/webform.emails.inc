@@ -102,7 +102,7 @@ function webform_emails_form($form, $form_state, $node) {
  *
  * @throws Exception
  */
-function theme_webform_emails_form($variables) {
+function theme_webform_emails_form(array $variables) {
   $form = $variables['form'];
   $node = $form['#node'];
 
