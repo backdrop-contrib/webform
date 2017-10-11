@@ -834,7 +834,7 @@ function webform_validate_grid($element, $form_state) {
     foreach ($element['#parents'] as $key) {
       $values = isset($values[$key]) ? $values[$key] : $values;
     }
-    // Remove any values that aren't grid question (i.e. nested components)
+    // Remove any values that aren't grid question (i.e. nested components).
     $grid_questions = $element['#grid_questions'];
     $values = array_intersect_key($values, $grid_questions);
     // Remove any unanswered grid questions.

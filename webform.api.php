@@ -298,11 +298,11 @@ function hook_webform_component_load() {
  * automatically add data to the component based on the component form. Using
  * hook_form_alter() will be sufficient in most cases.
  *
- * @see hook_form_alter()
- * @see webform_component_edit_form()
- *
  * @param $component
  *   The Webform component being saved.
+ *
+ * @see hook_form_alter()
+ * @see webform_component_edit_form()
  */
 function hook_webform_component_presave(&$component) {
   $component['extra']['new_option'] = 'foo';
@@ -650,8 +650,6 @@ function hook_webform_submission_access($node, $submission, $op = 'view', $accou
  * Access via this hook is in addition (adds permission) to the standard
  * webform access.
  *
- * @see webform_results_access()
- *
  * @param $node
  *   The Webform node to check access on.
  * @param $account
@@ -659,6 +657,8 @@ function hook_webform_submission_access($node, $submission, $op = 'view', $accou
  *
  * @return bool
  *   TRUE or FALSE if the user can access the webform results.
+ *
+ * @see webform_results_access()
  */
 function hook_webform_results_access($node, $account) {
   // Let editors view results of unpublished webforms.
@@ -676,8 +676,6 @@ function hook_webform_results_access($node, $account) {
  * Access via this hook is in addition (adds permission) to the standard
  * webform access (delete all webform submissions).
  *
- * @see webform_results_clear_access()
- *
  * @param object $node
  *   The Webform node to check access on.
  * @param object $account
@@ -685,6 +683,8 @@ function hook_webform_results_access($node, $account) {
  *
  * @return bool
  *   TRUE or FALSE if the user can access the webform results.
+ *
+ * @see webform_results_clear_access()
  */
 function hook_webform_results_clear_access($node, $account) {
   return user_access('my additional access', $account);
@@ -705,8 +705,6 @@ function hook_webform_results_clear_access($node, $account) {
  * access as this will be the only test. For example, 'return TRUE;' would grant
  * annonymous access to creating webform components, which seldom be desired.
  *
- * @see webform_node_update_access()
- *
  * @param object $node
  *   The Webform node to check access on.
  * @param object $account
@@ -716,6 +714,8 @@ function hook_webform_results_clear_access($node, $account) {
  *   TRUE or FALSE if the user can access the webform results, or NULL if
  *   access should be deferred to other implementations of this hook or
  *   node_access('update') plus user_access('edit webform components').
+ *
+ * @see webform_node_update_access()
  */
 function hook_webform_update_access($node, $account) {
   // Allow anyone who can see webform_editable_by_user nodes and who has

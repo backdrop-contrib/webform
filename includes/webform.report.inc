@@ -1070,8 +1070,6 @@ function webform_results_download_headers($node, $options) {
 /**
  * Returns rows of downloadable webform data.
  *
- * @deprecated This function is scheduled to be removed in webform 7.x-5.x.
- *
  * @param $node
  *   The webform node on which to generate the analysis.
  * @param array $options
@@ -1086,6 +1084,8 @@ function webform_results_download_headers($node, $options) {
  *   An array of rows built according to the provided $serial_start and
  *   $pager_count variables. Note that the current page number is determined
  *   by the super-global $_GET['page'] variable.
+ *
+ * @deprecated This function is scheduled to be removed in webform 7.x-5.x.
  */
 function webform_results_download_rows($node, $options, $serial_start = 0, &$last_sid = NULL) {
   // Get all the required submissions for the download.

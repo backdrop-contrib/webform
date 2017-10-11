@@ -1747,7 +1747,8 @@ function webform_conditional_value_datetime($input_values) {
  * @param array $options
  *   Associative array where the $a and $b are within the keys.
  *
- * @return integer based upon position of $a and $b in $options
+ * @return int
+ *   Based upon position of $a and $b in $options:
  *   -N if $a above (<) $b
  *   0 if $a = $b
  *   +N if $a is below (>) $b
