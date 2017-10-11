@@ -3194,7 +3194,7 @@ function webform_client_form_postvalidate(&$form, &$form_state) {
   $nid = $form_state['values']['details']['nid'];
   $node = node_load($nid);
   if (user_is_logged_in() &&
-      $errors && !key_exists('', $errors) &&
+      $errors && !array_key_exists('', $errors) &&
       $node->webform['auto_save'] &&
       !$form_state['values']['details']['finished'] &&
       !empty($form_state['values']['op'])) {
@@ -5463,7 +5463,7 @@ function webform_input_vars_check(&$form, $form_state, $detect_key, $parent_key 
     $form['#pre_render'] = array('webform_pre_render_input_vars');
     $form['#input_var_waring_parent'] = $parent_key;
   }
-  if (!empty($form_state['input']) && key_exists($detect_key, $form_state['input']) && !key_exists('form_id', $form_state['input'])) {
+  if (!empty($form_state['input']) && array_key_exists($detect_key, $form_state['input']) && !array_key_exists('form_id', $form_state['input'])) {
     // A form was submitted with POST, but the form_id was missing. The most likely cause of this
     // is that the POST was truncated because PHP exceeded its max_input_vars limit.
     $subs = array(
