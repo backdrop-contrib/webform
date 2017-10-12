@@ -774,6 +774,7 @@ function _webform_grid_header(array $element, $right_titles) {
     $header[] = array(
       'data' => webform_filter_xss($option),
       'class' => array('checkbox', 'webform-grid-option'),
+      'scope' => 'col',
     );
   }
   if ($right_titles) {
