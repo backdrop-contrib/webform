@@ -700,7 +700,7 @@ function webform_results_download_range_validate($element, $form_state) {
           form_error($element['end_date'], t('End date range is not in a valid format.'));
         }
         elseif ($start_date !== FALSE && $start_date > $end_date) {
-          form_error($element['end_date'], t('End date range must not be before the Start date..'));
+          form_error($element['end_date'], t('End date range must not be before the Start date.'));
         }
       }
       break;
