@@ -454,8 +454,9 @@ function webform_menu_load($nid) {
 }
 
 /**
- * Menu LOADERNAME_to_arg callback. Determines the arguments used to generate a
- * menu link.
+ * Menu LOADERNAME_to_arg callback.
+ *
+ * Determines the arguments used to generate a menu link.
  *
  * This is implemented only to give the webform_localization modules an
  * opportunity to link to the orignial webform from the localized one. See
@@ -677,8 +678,9 @@ function webform_results_access($node, $account = NULL) {
 }
 
 /**
- * Menu access callback. Ensure a user has both results access and permission
- * to clear submissions.
+ * Menu access callback.
+ *
+ * Ensure a user has both results access and permission to clear submissions.
  */
 function webform_results_clear_access($node, $account = NULL) {
   global $user;
@@ -693,7 +695,8 @@ function webform_results_clear_access($node, $account = NULL) {
  * Menu access callback. Ensure a sure has access to update a webform node.
  *
  * Unlike webform_results_access and webform_results_clear_access, access is
- * completely overridden by the any implementation of hook_webform_update_access.
+ * completely overridden by the any implementation of
+ * hook_webform_update_access.
  *
  * If hook_webform_update_access is implemented by one or more other modules,
  * the results must be unanimously TRUE for access to be granted; otherwise it
@@ -2928,7 +2931,8 @@ function _webform_client_form_add_component($node, $component, $component_value,
  * upon form submission.
  */
 function webform_client_form_prevalidate($form, &$form_state) {
-  // Refresh the node in case it changed since the form was build and retrieved from cache.
+  // Refresh the node in case it changed since the form was build and retrieved
+  // from cache.
   $node = $form['#node'] = node_load($form['#node']->nid);
   $finished = $form_state['values']['details']['finished'];
 

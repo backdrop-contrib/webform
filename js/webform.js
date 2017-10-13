@@ -76,8 +76,8 @@
           // Make sure that the default year fits in the available options.
           year = (year < startYear || year > endYear) ? startYear : year;
 
-          // jQuery UI Datepicker will read the input field and base its date off
-          // of that, even though in our case the input field is a button.
+          // jQuery UI Datepicker will read the input field and base its date
+          // off of that, even though in our case the input field is a button.
           $(input).val(year + '-' + month + '-' + day);
         }
       });
@@ -232,7 +232,8 @@
             var $requiredSpan = $target.find('.form-required, .form-optional').first();
             if (actionResult != $requiredSpan.hasClass('form-required')) {
               var $targetInputElements = $target.find("input:text,textarea,input[type='email'],select,input:radio,input:file");
-              // Rather than hide the required tag, remove it so that other jQuery can respond via Drupal behaviors.
+              // Rather than hide the required tag, remove it so that other
+              // jQuery can respond via Drupal behaviors.
               Drupal.detachBehaviors($requiredSpan);
               $targetInputElements
                 .webformProp('required', actionResult)
@@ -256,9 +257,10 @@
               var multiple = $.map(action['argument'].split(','), $.trim);
               $selects.webformVal(multiple);
               $texts.val([action['argument']]);
-              // A special case is made for markup. It is sanitized with filter_xss_admin on the server.
-              // otherwise text() should be used to avoid an XSS vulnerability. text() however would
-              // preclude the use of tags like <strong> or <a>.
+              // A special case is made for markup. It is sanitized with
+              // filter_xss_admin on the server. otherwise text() should be used
+              // to avoid an XSS vulnerability. text() however would preclude
+              // the use of tags like <strong> or <a>.
               $markups.html(action['argument']);
             }
             else {
@@ -273,20 +275,21 @@
               });
             }
             if (!isLocked) {
-              // If not previously hidden or set, disable the element readonly or readonly-like behavior.
+              // If not previously hidden or set, disable the element readonly
+              // or readonly-like behavior.
               $selects.webformProp('disabled', actionResult);
               $texts.webformProp('readonly', actionResult);
               targetLocked[action['target']] = actionResult ? 'set' : false;
             }
             break;
         }
-      }); // End look on each action for one conditional
+      }); // End look on each action for one conditional.
     }); // End loop on each conditional.
   };
 
   /**
-   * Event handler to prevent propagation of events, typically click for disabling
-   * radio and checkboxes.
+   * Event handler to prevent propagation of events, typically click for
+   * disabling radio and checkboxes.
    */
   Drupal.webform.stopEvent = function () {
     return false;
@@ -534,7 +537,8 @@
   };
 
   /**
-   * Utility function to get a string value from a select/radios/text/etc. field.
+   * Utility function to get a string value from a select/radios/text/etc.
+   * field.
    */
   Drupal.webform.stringValue = function (element, existingValue) {
     var value = [];
@@ -557,8 +561,8 @@
             }
           }
         }
-        // Simple text fields. This check is done last so that the select list in
-        // select-or-other fields comes before the "other" text field.
+        // Simple text fields. This check is done last so that the select list
+        // in select-or-other fields comes before the "other" text field.
         if (!value.length) {
           $element.find('input:not([type=checkbox],[type=radio]),textarea').each(function () {
             value.push(this.value);
@@ -666,8 +670,8 @@
   };
 
   /**
-   * Make a multi-valued val() function for setting checkboxes, radios, and select
-   * elements.
+   * Make a multi-valued val() function for setting checkboxes, radios, and
+   * select elements.
    */
   $.fn.webformVal = function (values) {
     this.each(function () {

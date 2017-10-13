@@ -1967,7 +1967,7 @@ function webform_download_sids_query($nid, array $range_options, $uid = NULL) {
           $end_time += 86399;
         }
         $query->condition($date_field, $end_time, '<=');
-      };
+      }
       $query->orderBy($date_field, 'ASC');
       break;
   }

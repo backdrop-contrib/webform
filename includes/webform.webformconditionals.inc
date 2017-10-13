@@ -208,7 +208,7 @@ class WebformConditionals {
           $nodes[$id]['out'] = array();
         }
 
-        // Check for a cyclic graph (circular dependency)
+        // Check for a cyclic graph (circular dependency).
         foreach ($nodes as $id => $n) {
           if ($n['in'] || $n['out']) {
             $errors[$page_num][] = t('A circular reference involving %name was found.',
@@ -216,9 +216,9 @@ class WebformConditionals {
           }
         }
 
-      } // End finishing previous page
+      } // End finishing previous page.
 
-    } // End component loop
+    } // End component loop.
 
     // Create an empty page map for the preview page.
     $page_map[$page_num + 1] = array();
