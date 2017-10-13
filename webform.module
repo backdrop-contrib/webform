@@ -655,13 +655,27 @@ function webform_submission_access($node, $submission, $op = 'view', array $acco
       return $module_access || $general_access;
 
     case 'edit':
-      return $module_access || ($general_access && (user_access('edit all webform submissions', $account) || (user_access('edit own webform submissions', $account) && $account->uid == $submission->uid)));
-
     case 'delete':
-      return $module_access || ($general_access && (user_access('delete all webform submissions', $account) || (user_access('delete own webform submissions', $account) && $account->uid == $submission->uid)));
+      return $module_access || (
+        $general_access && (
+          user_access($op . ' all webform submissions', $account) || (
+            user_access($op . ' own webform submissions', $account) &&
+            $account->uid == $submission->uid
+          )
+        )
+      );
 
     case 'list':
-      return $module_access || user_access('access all webform results', $account) || (user_access('access own webform submissions', $account) && ($account->uid || isset($_SESSION['webform_submission']))) || (user_access('access own webform results', $account) && $account->uid == $node->uid);
+      return $module_access ||
+        user_access('access all webform results', $account) || (
+          user_access('access own webform submissions', $account) && (
+            $account->uid ||
+            isset($_SESSION['webform_submission'])
+          )
+        ) || (
+          user_access('access own webform results', $account) &&
+          $account->uid == $node->uid
+        );
   }
 }
 
@@ -2962,7 +2976,10 @@ function webform_client_form_prevalidate($form, &$form_state) {
   // is no submission yet (hence isn't being edited) or the user isn't an admin.
   // Another way to consider this is that the form is open when its status is
   // open OR there is a submission and the user is an admin.
-  $closed = empty($node->webform['status']) && (empty($form['#submission']) || !user_access('edit all webform submissions'));
+  $closed = empty($node->webform['status']) && (
+    empty($form['#submission']) ||
+    !user_access('edit all webform submissions')
+  );
 
   // Prevent submission by throwing an error.
   if ((!$allowed_role || $total_limit_exceeded || $user_limit_exceeded || $closed)) {
