@@ -1,11 +1,8 @@
 <?php
 
 /**
- * @file
  * Contains the submission view row style plugin.
- */
-
-/**
+ *
  * Plugin which performs a webform_submission_render on the resulting object.
  *
  * Most of the code on this object is in the theme function.

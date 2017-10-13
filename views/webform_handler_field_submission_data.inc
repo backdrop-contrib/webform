@@ -1,11 +1,8 @@
 <?php
 
 /**
- * @file
  * Views handler to display data value of a webform submission component.
- */
-
-/**
+ *
  * Field handler to show submission data.
  *
  * @ingroup views_field_handlers

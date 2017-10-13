@@ -1,12 +1,7 @@
 <?php
 
 /**
- * @file
  * Base class defining the common methods available to exporters.
- */
-
-/**
- *
  */
 class webform_exporter {
   public $options = array();

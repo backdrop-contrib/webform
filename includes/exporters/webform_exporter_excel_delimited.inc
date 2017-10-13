@@ -1,12 +1,7 @@
 <?php
 
 /**
- * @file
  * The Excel exporter currently is just a tab-delimited export.
- */
-
-/**
- *
  */
 class webform_exporter_excel_delimited extends webform_exporter_delimited {
 

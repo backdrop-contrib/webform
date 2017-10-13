@@ -1,11 +1,8 @@
 <?php
 
 /**
- * @file
  * Definition of webform_handler_filter_submission_data.
- */
-
-/**
+ *
  * Extended version of the string filter handler specialized for Webform values.
  *
  * @ingroup views_filter_handlers

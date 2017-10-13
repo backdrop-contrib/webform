@@ -1,12 +1,7 @@
 <?php
 
 /**
- * @file
  * This exporter creates an XLSX file readable by newer versions of Excel.
- */
-
-/**
- *
  */
 class webform_exporter_excel_xlsx extends webform_exporter {
   /**
