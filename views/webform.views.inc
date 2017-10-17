@@ -527,8 +527,6 @@ function webform_views_plugins() {
       ),
     ),
   );
-
-  return $plugins;
 }
 
 /**

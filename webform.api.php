@@ -626,19 +626,14 @@ function hook_webform_submission_access($node, $submission, $op = 'view', $accou
     case 'view':
       return TRUE;
 
-    break;
     case 'edit':
       return FALSE;
 
-    break;
     case 'delete':
       return TRUE;
 
-    break;
     case 'list':
       return TRUE;
-
-    break;
   }
 }
 
