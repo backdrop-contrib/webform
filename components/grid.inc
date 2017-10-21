@@ -844,7 +844,11 @@ function webform_validate_grid($element, $form_state) {
     });
     // Give required errors for any questions that aren't answered.
     foreach (array_diff_key($grid_questions, $answers) as $question_key => $question) {
-      form_error($element[$question_key], t('!question field within !name is required.', array('!question' => $question, '!name' => $element['#title'])));
+      // If the question is still required (e.g not modified by an after_build
+      // function), give the required error.
+      if (!empty($element[$question_key]['#required'])) {
+        form_error($element[$question_key], t('!question field within !name is required.', array('!question' => $question, '!name' => $element['#title'])));
+      }
     }
   }
 }
