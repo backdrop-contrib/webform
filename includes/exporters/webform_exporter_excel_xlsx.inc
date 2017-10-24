@@ -12,7 +12,7 @@ class webform_exporter_excel_xlsx extends webform_exporter {
   const DATE_REGEX_TIME = '/^(([T \s]?(\d{2}))(:(\d{2}))(:(\d{2}))?)?$/';
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function add_row(&$file_handle, array $data, $row_count) {
     $row = $row_count + 1;
@@ -143,7 +143,7 @@ class webform_exporter_excel_xlsx extends webform_exporter {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function post_process(&$results) {
     // Our download file is currently a single XML sheet file. We need to add
@@ -186,7 +186,7 @@ class webform_exporter_excel_xlsx extends webform_exporter {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function set_headers($filename) {
     drupal_add_http_header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

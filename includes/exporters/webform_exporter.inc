@@ -58,7 +58,7 @@ class webform_exporter {
   /**
    * Provide headers to the page when an export file is being downloaded.
    *
-   * @param $filename
+   * @param string $filename
    *   The name of the file being downloaded, for example, export.xls.
    */
   public function set_headers($filename) {
@@ -81,6 +81,8 @@ class webform_exporter {
    *
    * @param $file_handle
    *   A PHP file handle to the export file.
+   * @param int $row_count
+   * @param int $col_count
    */
   public function eof(&$file_handle, $row_count, $col_count) {
   }
