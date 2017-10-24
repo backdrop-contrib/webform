@@ -24,7 +24,7 @@ class webform_exporter_delimited extends webform_exporter {
   /**
    *
    */
-  public function add_row(&$file_handle, $data, $row_count) {
+  public function add_row(&$file_handle, array $data, $row_count) {
     foreach ($data as $key => $value) {
       // Escape inner quotes and wrap all contents in new quotes.
       $data[$key] = '"' . str_replace('"', '""', $data[$key]) . '"';

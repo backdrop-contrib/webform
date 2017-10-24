@@ -14,7 +14,7 @@ class webform_exporter_excel_xlsx extends webform_exporter {
   /**
    *
    */
-  public function add_row(&$file_handle, $data, $row_count) {
+  public function add_row(&$file_handle, array $data, $row_count) {
     $row = $row_count + 1;
     $col = 'A';
 
