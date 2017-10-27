@@ -898,7 +898,11 @@ function webform_export_batch_size($node) {
  * Returns a temporary export filename.
  */
 function _webform_export_tempname() {
-  return drupal_tempnam(variable_get('webform_export_path', 'temporary://'), 'webform_');
+  $webform_export_path = variable_get('webform_export_path', 'temporary://');
+
+  // If the directory does not exist, create it.
+  file_prepare_directory($webform_export_path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
+  return drupal_tempnam($webform_export_path, 'webform_');
 }
 
 /**
