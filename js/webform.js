@@ -172,8 +172,15 @@
                 : filteredResults.length === $conditionalResults.length;
     }
 
-    // Track what has be set/shown for each target component.
-    var targetLocked = [];
+    // Track what has been set/hidden for each target component's elements.
+    // Hidden elements must be disabled because if they are required and don't
+    // have a value, they will prevent submission due to html5 validation.
+    // Each execution of the conditionals adds a temporary class
+    // webform-disabled-flag so that elements hidden or set can be disabled and
+    // also be prevented from being re-enabled by another conditional (such as a
+    // parent fieldset). After processing conditionals, this temporary class
+    // must be removed in preparation for the next execution of the
+    // conditionals.
 
     $.each(settings.ruleGroups, function (rgid_key, rule_group) {
       var ruleGroup = settings.ruleGroups[rgid_key];
@@ -205,27 +212,26 @@
         var actionResult = action['invert'] ? !conditionalResult : conditionalResult;
         switch (action['action']) {
           case 'show':
-            if (actionResult != Drupal.webform.isVisible($target)) {
-              var $targetElements = actionResult
-                                      ? $target.find('.webform-conditional-disabled').removeClass('webform-conditional-disabled')
-                                      : $target.find(':input').addClass('webform-conditional-disabled');
-              $targetElements.webformProp('disabled', !actionResult);
-              $target.toggleClass('webform-conditional-hidden', !actionResult);
-              // Anything hidden needs to be disabled so that child elements of
-              // fieldsets do not block submission by being required.
-              $target.webformProp('disabled', !actionResult);
-              if (actionResult) {
-                $target.show();
-                $form.find('.chosen-disabled').prev().trigger('chosen:updated.chosen');
-              }
-              else {
-                $target.hide();
-                // Record that the target was hidden.
-                targetLocked[action['target']] = 'hide';
-              }
-              if ($target.is('tr')) {
-                Drupal.webform.restripeTable($target.closest('table').first());
-              }
+            var changed = actionResult != Drupal.webform.isVisible($target);
+            if (actionResult) {
+              $target.find('.webform-conditional-disabled:not(.webform-disabled-flag)')
+                .removeClass('webform-conditional-disabled')
+                .webformProp('disabled', false);
+              $target
+                .removeClass('webform-conditional-hidden')
+                .show();
+              $form.find('.chosen-disabled').prev().trigger('chosen:updated.chosen');
+            }
+            else {
+              $target
+                .hide()
+                .addClass('webform-conditional-hidden')
+                .find(':input')
+                  .addClass('webform-conditional-disabled webform-disabled-flag')
+                  .webformProp('disabled', true);
+            }
+            if (changed && $target.is('tr')) {
+              Drupal.webform.restripeTable($target.closest('table').first());
             }
             break;
 
@@ -250,14 +256,19 @@
             break;
 
           case 'set':
-            var isLocked = targetLocked[action['target']];
             var $texts = $target.find("input:text,textarea,input[type='email']");
             var $selects = $target.find('select,select option,input:radio,input:checkbox');
             var $markups = $target.filter('.webform-component-markup');
             if (actionResult) {
               var multiple = $.map(action['argument'].split(','), $.trim);
-              $selects.webformVal(multiple);
-              $texts.val([action['argument']]);
+              $selects
+                .webformVal(multiple)
+                .webformProp('disabled', true)
+                  .addClass('webform-disabled-flag');
+              $texts
+                .val([action['argument']])
+                .webformProp('readonly', true)
+                .addClass('webform-disabled-flag');
               // A special case is made for markup. It is sanitized with
               // filter_xss_admin on the server. otherwise text() should be used
               // to avoid an XSS vulnerability. text() however would preclude
@@ -265,6 +276,10 @@
               $markups.html(action['argument']);
             }
             else {
+              $selects.not('.webform-disabled-flag')
+                .webformProp('disabled', false);
+              $texts.not('.webform-disabled-flag')
+                .webformProp('readonly', false);
               // Markup not set? Then restore original markup as provided in
               // the attribute data-webform-markup.
               $markups.each(function () {
@@ -275,17 +290,12 @@
                 }
               });
             }
-            if (!isLocked) {
-              // If not previously hidden or set, disable the element readonly
-              // or readonly-like behavior.
-              $selects.webformProp('disabled', actionResult);
-              $texts.webformProp('readonly', actionResult);
-              targetLocked[action['target']] = actionResult ? 'set' : false;
-            }
             break;
         }
       }); // End look on each action for one conditional.
     }); // End loop on each conditional.
+
+    $form.find('.webform-disabled-flag').removeClass('webform-disabled-flag');
   };
 
   /**
