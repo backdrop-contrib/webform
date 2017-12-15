@@ -216,6 +216,7 @@
               $target.webformProp('disabled', !actionResult);
               if (actionResult) {
                 $target.show();
+                $form.find('.chosen-disabled').prev().trigger('chosen:updated.chosen');
               }
               else {
                 $target.hide();
