@@ -3926,7 +3926,7 @@ function theme_webform_inline_radio_label($variables) {
  */
 function theme_webform_mail_headers(array $variables) {
   $headers = array(
-    'X-Mailer' => 'Drupal Webform (PHP/' . phpversion() . ')',
+    'X-Mailer' => 'Drupal Webform' . (ini_get('expose_php') ? ' (PHP/' . phpversion() . ')' : ''),
   );
   return $headers;
 }
