@@ -4411,7 +4411,6 @@ function theme_webform_token_help($variables) {
     return '';
   }
   $groups = $variables['groups'];
-  module_load_include('inc', 'token', 'token.pages');
 
   // Assume dialogs are not supported, show as a fieldset.
   $help = array(
@@ -4434,10 +4433,13 @@ function theme_webform_token_help($variables) {
     $help['help']['#markup'] .= '<p>' . t('A full listing of tokens may be listed here by installing the <a href="http://drupal.org/project/token">Token module</a>.') . '</p>';
     unset($help['token_tree']);
   }
-  elseif (function_exists('token_page_output_tree')) {
-    // Token supports dialogs: display simply as a link.
-    $help = $help['token_tree'];
-    $help['#dialog'] = TRUE;
+  else {
+    module_load_include('inc', 'token', 'token.pages');
+    if (function_exists('token_page_output_tree')) {
+      // Token supports dialogs: display simply as a link.
+      $help = $help['token_tree'];
+      $help['#dialog'] = TRUE;
+    }
   }
 
   return render($help);
