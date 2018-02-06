@@ -2035,7 +2035,9 @@ function webform_node_view($node, $view_mode) {
     // This prevents one anonymous user from generated a disabled webform page
     // for the cache, which would be shown to other anonymous users who have not
     // exceeded the limit.
-    if (($user_limit_exceeded = webform_submission_user_limit_check($node)) && !$cached) {
+    // Cached should be checked first to avoid the expensive limit check on
+    // cached requests.
+    if (!$cached && ($user_limit_exceeded = webform_submission_user_limit_check($node))) {
       $enabled = FALSE;
     }
   }
