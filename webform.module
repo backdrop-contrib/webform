@@ -618,13 +618,13 @@ function webform_confirmation_page_access($node) {
  *   The webform submission object.
  * @param object $op
  *   The operation to perform. Must be one of view, edit, delete, list.
- * @param array $account
+ * @param object $account
  *   Optional. A user object or NULL to use the currently logged-in user.
  *
  * @return bool
  *   Boolean whether the user has access to a webform submission.
  */
-function webform_submission_access($node, $submission, $op = 'view', array $account = NULL) {
+function webform_submission_access($node, $submission, $op = 'view', $account = NULL) {
   global $user;
   $account = isset($account) ? $account : $user;
 
