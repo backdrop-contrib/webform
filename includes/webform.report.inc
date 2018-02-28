@@ -338,7 +338,7 @@ function theme_webform_results_table($variables) {
  * @param $batch_size
  *   The number of submissions to be processed. NULL means all submissions.
  *
- * @return
+ * @return int
  *   The number of submissions processed.
  */
 function webform_results_clear($nid, $batch_size = NULL) {
@@ -1716,6 +1716,7 @@ function template_preprocess_webform_analysis_component(&$variables) {
  *       array of values
  *
  * @return string
+ *   The rendered table.
  */
 function theme_webform_analysis_component_basic($variables) {
   $data = $variables['data'];
@@ -1916,6 +1917,7 @@ function webform_download_sids_count($nid, $range_options, $uid = NULL) {
  *   the submissions.
  *
  * @return QueryAlterableInterface
+ *   The query object.
  */
 function webform_download_sids_query($nid, array $range_options, $uid = NULL) {
   $query = db_select('webform_submissions', 'ws')
@@ -2001,7 +2003,7 @@ function webform_download_sids_query($nid, array $range_options, $uid = NULL) {
  * @param $uid
  *   The user account ID for which to retrieve download information.
  *
- * @return
+ * @return array|false
  *   An array of download information or FALSE if this user has never downloaded
  *   results for this particular node.
  */
@@ -2031,11 +2033,11 @@ function webform_download_last_download_info($nid, $uid = NULL) {
  * @param string $completion_type
  *   The completion type, either "finished", "draft", or "all".
  *
- * @return
+ * @return int
  *   The submission ID that starts the latest sequence of submissions.
  */
 function webform_download_latest_start_sid($nid, $latest_count, $completion_type = 'all') {
-  // TODO: Find a more efficient DBTNG query to retrieve this number.
+  // @todo: Find a more efficient DBTNG query to retrieve this number.
   $query = db_select('webform_submissions', 'ws')
     ->fields('ws', array('sid'))
     ->condition('nid', $nid)

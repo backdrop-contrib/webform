@@ -191,7 +191,7 @@ function _webform_edit_file($component) {
     '#parents' => array('extra', 'progress_indicator'),
   );
 
-  // TODO: Make managed_file respect the "size" parameter.
+  // @todo: Make managed_file respect the "size" parameter.
   /*
   $form['display']['width'] = array(
   '#type' => 'textfield',

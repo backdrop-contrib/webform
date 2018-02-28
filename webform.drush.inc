@@ -52,8 +52,9 @@ function webform_drush_command() {
  * @param bool|int $nid
  *   Node ID of the webform that we want to export.
  *
- * @return
- *   The value returned from drush_set_error().
+ * @return false|null
+ *   The value returned from drush_set_error() or NULL if that function is not
+ *   called.
  */
 function drush_webform_export($nid = FALSE) {
   if (!$nid) {

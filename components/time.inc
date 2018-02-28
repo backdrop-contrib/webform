@@ -497,10 +497,10 @@ function _webform_csv_data_time($component, $export_options, $value) {
  *
  * @param $array
  *   An array of hour, minute, second, and optionally ampm.
- * @param $format
+ * @param string $format
  *   Either 12-hour or 24-hour.
  *
- * @return
+ * @return array
  *   An array with hour, minute, second, and ampm (if using "12-hour").
  */
 function webform_time_convert($array, $format) {

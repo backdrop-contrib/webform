@@ -1804,7 +1804,7 @@ function webform_node_load($nodes, $types) {
   }
 
   // Load the components, emails, and defaults for all webform-enabled nodes.
-  // TODO: Increase efficiency here by pulling in all information all at once
+  // @todo: Increase efficiency here by pulling in all information all at once
   // instead of individual queries.
   foreach ($nodes as $nid => $node) {
     if (!in_array($node->type, $webform_types)) {
@@ -2155,6 +2155,7 @@ function _webform_allowed_roles($node, &$user_is_allowed) {
  *   The variables array.
  *
  * @return string
+ *   The rendered Webform.
  */
 function theme_webform_view(array $variables) {
   // Only show the form if this user is allowed access.
@@ -2614,10 +2615,11 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $r
     // validated page.
     if (!isset($form_state['storage']['page_num']) && $submission && $submission->is_draft && $submission->highest_valid_page) {
       // Find the
-      //    1) previous/next non-empty page, or
-      //    2) the preview page, or
-      //    3) the preview page, forcing its display if the form would unexpectedly submit, or
-      //    4) page 1 even if empty, if no other previous page would be shown.
+      //   1) previous/next non-empty page, or
+      //   2) the preview page, or
+      //   3) the preview page, forcing its display if the form would
+      //      unexpectedly submit, or
+      //   4) page 1 even if empty, if no other previous page would be shown.
       $form_state['webform']['page_num'] = $submission->highest_valid_page;
       do {
         $form_state['webform']['page_num']++;
@@ -2627,8 +2629,8 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $r
         $form_state['webform']['preview'] = TRUE;
         $form_state['webform']['page_count']++;
       }
-      // The form hasn't been submitted (ever) and the preview code will
-      // expect $form_state['values']['submitted'] to be set from a previous
+      // The form hasn't been submitted (ever) and the preview code will expect
+      // $form_state['values']['submitted'] to be set from a previous
       // submission, so provide these values here.
       $form_state['values']['submitted'] = $input_values;
       $form_state['storage']['submitted'] = $input_values;
@@ -2652,9 +2654,10 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $r
       );
     }
 
-    // Check whether a previous submission was truncated. The length of the client form is not
-    // estimated before submission because a) the determination may not be accurate for some
-    // webform components and b) the error will be apparent upon submission.
+    // Check whether a previous submission was truncated. The length of the
+    // client form is not estimated before submission because a) the
+    // determination may not be accurate for some webform components and b) the
+    // error will be apparent upon submission.
     webform_input_vars_check($form, $form_state, 'submitted');
 
     // Recursively add components to the form. The unfiltered version of the
@@ -3294,10 +3297,11 @@ function webform_client_form_pages($form, &$form_state) {
 
     if (isset($forward)) {
       // Find the
-      //    1) previous/next non-empty page, or
-      //    2) the preview page, or
-      //    3) the preview page, forcing its display if the form would unexpectedly submit, or
-      //    4) page 1 even if empty, if no other previous page would be shown.
+      //   1) previous/next non-empty page, or
+      //   2) the preview page, or
+      //   3) the preview page, forcing its display if the form would
+      //      unexpectedly submit, or
+      //   4) page 1 even if empty, if no other previous page would be shown.
       $preview_page_num = $form_state['storage']['page_count'] + (int) !$form_state['webform']['preview'];
       $page_num = $current_page;
       do {
@@ -3921,7 +3925,7 @@ function theme_webform_inline_radio_label($variables) {
  * @param array $variables
  *   The variables array.
  *
- * @return
+ * @return array
  *   An array of headers to be used when sending a webform email. If headers
  *   for "From", "To", or "Subject" are set, they will take precedence over
  *   the values set in the webform configuration.
@@ -4157,7 +4161,7 @@ function _webform_filter_xss($string) {
  * @param object $node
  *   The node object to check if a database entry exists.
  *
- * @return
+ * @return bool
  *   This function should always return TRUE if no errors were encountered,
  *   ensuring that a webform table row has been created. Will return FALSE if
  *   a record does not exist and a new one could not be created.
@@ -4183,7 +4187,7 @@ function webform_ensure_record(&$node) {
  * @param object $node
  *   The node object to check if a database entry is still required.
  *
- * @return
+ * @return bool
  *   Returns TRUE if the webform still has a record in the database. Returns
  *   FALSE if the webform does not have a record or if the previously existing
  *   record was just deleted.
@@ -4886,6 +4890,7 @@ function webform_component_invoke($type, $callback) {
  *   The callback to check.
  *
  * @return bool
+ *   Whether or not the hook is implemented.
  */
 function webform_component_implements($type, $callback) {
   $function = '_webform_' . $callback . '_' . $type;

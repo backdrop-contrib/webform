@@ -89,7 +89,7 @@ function webform_submission_create($node, $account, array $form_state, $is_previ
  * @param $submission
  *   The webform submission object to be saved into the database.
  *
- * @return
+ * @return int
  *   The existing submission SID.
  */
 function webform_submission_update($node, $submission) {
@@ -139,7 +139,7 @@ function webform_submission_update($node, $submission) {
  * @param $submission
  *   The webform submission object to be saved into the database.
  *
- * @return
+ * @return int
  *   The new submission SID.
  */
 function webform_submission_insert($node, $submission) {
@@ -724,6 +724,7 @@ function webform_get_submissions($filters = array(), $header = NULL, $pager_coun
  *   Optional. The number of submissions to include in the results.
  *
  * @return QueryExtendableInterface|SelectQueryInterface
+ *   The query object.
  */
 function webform_get_submissions_query($filters = array(), $header = NULL, $pager_count = 0) {
   if (!is_array($filters)) {
@@ -902,8 +903,8 @@ function webform_get_submissions_load($pager_query) {
  *   Optional; NULL for all, truthy for drafts only, falsy for completed only.
  *   The default is completed submissions only.
  *
- * @return
- *   An integer value of the number of submissions.
+ * @return int
+ *   The number of submissions.
  */
 function webform_get_submission_count($nid, $uid = NULL, $is_draft = 0) {
   $counts = &drupal_static(__FUNCTION__);

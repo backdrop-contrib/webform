@@ -882,10 +882,11 @@ function webform_number_format($value, $decimals = NULL, $point = '.', $separato
  *
  * @param string $value
  *   The string value to be standardized into a numeric string.
- * @param $point
+ * @param string $point
  *   The point separator between the whole number and the decimals.
  *
- * @return mixed|string
+ * @return string
+ *   The converted number.
  */
 function webform_number_standardize($value, $point) {
   // For simplicity, strip everything that's not the decimal point.

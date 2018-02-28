@@ -1043,7 +1043,7 @@ function _webform_action_set_component(array $component, array &$element, array 
  * @param $value
  *   The POST data associated with the user input.
  *
- * @return
+ * @return array
  *   An array of values to be saved into the database. Note that this should be
  *   a numerically keyed array.
  */

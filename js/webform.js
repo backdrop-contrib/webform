@@ -181,7 +181,6 @@
     // parent fieldset). After processing conditionals, this temporary class
     // must be removed in preparation for the next execution of the
     // conditionals.
-
     $.each(settings.ruleGroups, function (rgid_key, rule_group) {
       var ruleGroup = settings.ruleGroups[rgid_key];
 
