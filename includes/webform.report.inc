@@ -1407,7 +1407,7 @@ function webform_results_download_callback($node) {
 /**
  * Batch API callback; Write the opening byte in the export file.
  */
-function webform_results_batch_bof($node, $format = 'delimited', $options = array(), &$context) {
+function webform_results_batch_bof($node, $format = 'delimited', $options = array(), &$context = NULL) {
   module_load_include('inc', 'webform', 'includes/webform.export');
 
   $exporter = webform_export_create_handler($format, $options);
@@ -1422,7 +1422,7 @@ function webform_results_batch_bof($node, $format = 'delimited', $options = arra
 /**
  * Batch API callback; Write the headers of the export to the export file.
  */
-function webform_results_batch_headers($node, $format = 'delimited', $options = array(), &$context) {
+function webform_results_batch_headers($node, $format = 'delimited', $options = array(), &$context = NULL) {
   module_load_include('inc', 'webform', 'includes/webform.export');
 
   $exporter = webform_export_create_handler($format, $options);
@@ -1449,7 +1449,7 @@ function webform_results_batch_headers($node, $format = 'delimited', $options = 
 /**
  * Batch API callback; Write the rows of the export to the export file.
  */
-function webform_results_batch_rows($node, $format = 'delimited', $options = array(), &$context) {
+function webform_results_batch_rows($node, $format = 'delimited', $options = array(), &$context = NULL) {
   module_load_include('inc', 'webform', 'includes/webform.export');
 
   // Initialize the sandbox if this is the first execution of the batch
@@ -1509,7 +1509,7 @@ function webform_results_batch_rows($node, $format = 'delimited', $options = arr
 /**
  * Batch API callback; Write the closing bytes in the export file.
  */
-function webform_results_batch_eof($node, $format = 'delimited', $options = array(), &$context) {
+function webform_results_batch_eof($node, $format = 'delimited', $options = array(), &$context = NULL) {
   module_load_include('inc', 'webform', 'includes/webform.export');
 
   $exporter = webform_export_create_handler($format, $options);
@@ -1530,7 +1530,7 @@ function webform_results_batch_eof($node, $format = 'delimited', $options = arra
 /**
  * Batch API callback; Do any last processing on the finished export.
  */
-function webform_results_batch_post_process($node, $format = 'delimited', $options = array(), &$context) {
+function webform_results_batch_post_process($node, $format = 'delimited', $options = array(), &$context = NULL) {
   module_load_include('inc', 'webform', 'includes/webform.export');
 
   $context['results']['node'] = $node;
