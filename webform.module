@@ -2467,9 +2467,10 @@ function webform_block_save($delta = '', $edit = array()) {
 }
 
 /**
- * Client form generation function. If this is displaying an existing
- * submission, pass in the $submission variable with the contents of the
- * submission to be displayed.
+ * Client form generation function.
+ *
+ * If this is displaying an existing submission, pass in the $submission
+ * variable with the contents of the submission to be displayed.
  *
  * @param $form
  *   The current form array (always empty).
@@ -4452,8 +4453,9 @@ function theme_webform_token_help($variables) {
 }
 
 /**
- * Convert a name into an identifier that is safe for machine names, classes,
- * and other ASCII uses.
+ * Convert a name into an identifier.
+ *
+ * The identifier is safe for machine names, classes, and other ASCII uses.
  */
 function _webform_safe_name($name) {
   $new = trim($name);
@@ -5364,8 +5366,7 @@ function webform_date_views_extra_tables() {
 }
 
 /**
- * Returns the next serial number for a given node and increments the serial
- * number.
+ * Returns the next serial number for a given node and increments it.
  *
  * @param int $nid
  *   The nid of the node.
@@ -5404,8 +5405,9 @@ function _webform_submission_serial_next_value($nid) {
 }
 
 /**
- * Returns the next submission serial number to be used, based on the
- * submissions in the database.
+ * Returns the next submission serial number to be used.
+ *
+ * This is based on the submissions in the database.
  *
  * @param int $nid
  *   The Node ID of the Webform.
@@ -5447,9 +5449,9 @@ function webform_clone_node_alter(&$node, array $context) {
 }
 
 /**
- * Check if the last form submission exceeded the servers max_input_vars
- * limit and optionally preflight the current form to be returned in this
- * request.
+ * Check if the last form submission exceeded the servers max_input_vars limit.
+ *
+ * Optionally preflight the current form to be returned in this request.
  *
  * @param array $form
  *   Reference to the form, which will be changed if $parent_key is set.
@@ -5486,8 +5488,9 @@ function webform_input_vars_check(array &$form, array $form_state, $detect_key, 
 }
 
 /**
- * Checks the number of input form elements on this page to ensure that the
- * PHP max_input_vars limit is not exceeded.
+ * Checks the number of input form elements on this page.
+ *
+ * This ensures that the PHP max_input_vars limit is not exceeded.
  *
  * Install this function as a #pre_render function.
  */
@@ -5573,8 +5576,9 @@ function webform_count_input_vars(array $element) {
 }
 
 /**
- * Counts terminals in an array. Useful for counting how many input_vars were
- * returned in $_POST.
+ * Counts terminals in an array.
+ *
+ * Useful for counting how many input_vars were returned in $_POST.
  *
  * @param $a
  *   Array or array element to be counted

@@ -1747,7 +1747,7 @@ function webform_conditional_value_datetime($input_values) {
  * @param array $options
  *   Associative array where the $a and $b are within the keys.
  *
- * @return int
+ * @return int|null
  *   Based upon position of $a and $b in $options:
  *   -N if $a above (<) $b
  *   0 if $a = $b
@@ -1762,5 +1762,4 @@ function webform_compare_select($a, $b, array $options) {
   $a_position = array_search($a, $options_array, TRUE);
   $b_position = array_search($b, $options_array, TRUE);
   return ($a_position === FALSE || $b_position === FALSE) ? NULL : $a_position - $b_position;
-
 }

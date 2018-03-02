@@ -10,9 +10,11 @@
 class webform_handler_filter_submission_data extends views_handler_filter_string {
 
   /**
-   * This kind of construct makes it relatively easy for a child class
-   * to add or remove functionality by overriding this function and
-   * adding/removing items from this array.
+   * Add to the list of operators.
+   *
+   * This kind of construct makes it relatively easy for a child class to add or
+   * remove functionality by overriding this function and adding/removing items
+   * from this array.
    */
   public function operators() {
     $operators = parent::operators();

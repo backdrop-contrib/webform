@@ -209,6 +209,8 @@ function _webform_edit_file($component) {
 }
 
 /**
+ * Form API validator ensures rename string is empty or contains one token.
+ *
  * A Form API element validate function to ensure that the rename string is
  * either empty or contains at least one token.
  */
@@ -394,6 +396,7 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE, $submis
  *   - element: A render element representing the file.
  *
  * @return string
+ *   The HTML.
  */
 function theme_webform_managed_file($variables) {
   $element = $variables['element'];
@@ -625,8 +628,9 @@ function webform_file_usage_adjust($submission) {
 }
 
 /**
- * Rename any files which are eligible for renaming, if this submission is being
- * submitted for the first time.
+ * Rename any files which are eligible for renaming.
+ *
+ * Renames if this submission is being submitted for the first time.
  */
 function webform_file_rename($node, $submission) {
   if (isset($submission->file_usage)) {

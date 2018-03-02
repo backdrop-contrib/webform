@@ -129,8 +129,9 @@
     var resultStack;
 
     /**
-     * Initializes an execution stack for a conditional group's rules and
-     * sub-conditional rules.
+     * Initializes an execution stack for a conditional group's rules.
+     *
+     * Also initializes sub-conditional rules.
      */
     function executionStackInitialize(andor) {
       stackPointer = -1;
@@ -298,8 +299,9 @@
   };
 
   /**
-   * Event handler to prevent propagation of events, typically click for
-   * disabling radio and checkboxes.
+   * Event handler to prevent propagation of events.
+   *
+   * Typically click for disabling radio and checkboxes.
    */
   Drupal.webform.stopEvent = function () {
     return false;
@@ -537,8 +539,10 @@
   };
 
   /**
-   * Utility to return current visibility. Uses actual visibility, except for
-   * hidden components which use the applied disabled class.
+   * Utility to return current visibility.
+   *
+   * Uses actual visibility, except for hidden components which use the applied
+   * disabled class.
    */
   Drupal.webform.isVisible = function ($element) {
     return $element.hasClass('webform-component-hidden')
@@ -547,8 +551,7 @@
   };
 
   /**
-   * Utility function to get a string value from a select/radios/text/etc.
-   * field.
+   * Function to get a string value from a select/radios/text/etc. field.
    */
   Drupal.webform.stringValue = function (element, existingValue) {
     var value = [];
@@ -680,8 +683,9 @@
   };
 
   /**
-   * Make a multi-valued val() function for setting checkboxes, radios, and
-   * select elements.
+   * Make a multi-valued val() function.
+   *
+   * This is for setting checkboxes, radios, and select elements.
    */
   $.fn.webformVal = function (values) {
     this.each(function () {

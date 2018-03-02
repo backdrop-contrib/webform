@@ -19,8 +19,9 @@ class webform_exporter {
   }
 
   /**
-   * Determines whether a cell is eligible for word-wrapping based upon
-   * position in file and the contents of cell.
+   * Determines whether a cell is eligible for word-wrapping.
+   *
+   * This is based upon position in file and the contents of cell.
    *
    * Return true when the global word-wrapping option is enabled and the cell
    * is anything other than the first column in either of the first two rows.

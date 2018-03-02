@@ -2,6 +2,8 @@
 
 /**
  * @file
+ * Submission handling functions.
+ *
  * This file is loaded when handling submissions, either submitting new,
  * editing, or viewing. It also contains all CRUD functions for submissions.
  *

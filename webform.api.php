@@ -686,6 +686,8 @@ function hook_webform_results_clear_access($node, $account) {
 }
 
 /**
+ * Overrides the node_access and user_access permissions.
+ *
  * Overrides the node_access and user_access permission to access and edit
  * webform components, e-mails, conditions, and form settings.
  *
@@ -1307,8 +1309,7 @@ function _webform_csv_data_component($component, $export_options, $value) {
 }
 
 /**
- * Adjusts the view field(s) that are automatically generated for number
- * components.
+ * Fix the view field(s) that are automatically generated for number components.
  *
  * Provides each component the opportunity to adjust how this component is
  * displayed in a view as a field in a view table. For example, a component may
