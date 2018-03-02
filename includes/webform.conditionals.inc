@@ -1761,6 +1761,6 @@ function webform_compare_select($a, $b, array $options) {
   }, array_keys($options));
   $a_position = array_search($a, $options_array, TRUE);
   $b_position = array_search($b, $options_array, TRUE);
-  return ($a_position === FALSE || $a_position === FALSE) ? NULL : $a_position - $b_position;
+  return ($a_position === FALSE || $b_position === FALSE) ? NULL : $a_position - $b_position;
 
 }
