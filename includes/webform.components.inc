@@ -579,7 +579,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
   );
 
   // Add the fields specific to this component type:
-  $additional_form_elements = (array) webform_component_invoke($component['type'], 'edit', $component);
+  $additional_form_elements = (array) webform_component_invoke($component['type'], 'edit', $component, $form, $form_state);
   if (empty($additional_form_elements)) {
     drupal_set_message(t('The webform component of type @type does not have an edit function defined.', array('@type' => $component['type'])));
   }

@@ -860,17 +860,19 @@ function _webform_defaults_component() {
  * every component type and are not necessary to specify here (although they
  * may be overridden if desired).
  *
- * @param $component
+ * @param array $component
  *   A Webform component array.
+ * @param array $form
+ *   The form array.
+ * @param array $form_state
+ *   The form state array.
  *
  * @return array
  *   An array of form items to be displayed on the edit component page
  */
-function _webform_edit_component($component) {
-  $form = array();
-
+function _webform_edit_component(array $component, array &$form, array &$form_state) {
   // Disabling the description if not wanted.
-  $form['description'] = array();
+  $form['description']['#access'] = FALSE;
 
   // Most options are stored in the "extra" array, which stores any settings
   // unique to a particular component type.
