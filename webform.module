@@ -4222,7 +4222,7 @@ function webform_check_record(&$node) {
  * @return int|int[]
  *   The cid of the component or an array of component ids.
  */
-function webform_get_cid(&$node, $form_key, $pid = NULL) {
+function webform_get_cid($node, $form_key, $pid = NULL) {
   if ($pid === NULL) {
     $cids = array();
     foreach ($node->webform['components'] as $cid => $component) {
