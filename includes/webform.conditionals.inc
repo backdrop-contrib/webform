@@ -901,9 +901,9 @@ function theme_webform_conditional($variables) {
 
       default:
         // Hide labels.
-        $rule['source']['#title_display'] = 'none';
-        $rule['operator']['#title_display'] = 'none';
-        $rule['value']['#title_display'] = 'none';
+        $rule['source']['#title_display'] = 'invisible';
+        $rule['operator']['#title_display'] = 'invisible';
+        $rule['value']['#title_display'] = 'invisible';
 
         $source = '<div class="webform-conditional-source">' . drupal_render($rule['source']) . '</div>';
         $operator = '<div class="webform-conditional-operator">' . drupal_render($rule['operator']) . '</div>';
@@ -926,7 +926,7 @@ function theme_webform_conditional($variables) {
     $output .= '</div>';
 
     if (isset($rule['andor'])) {
-      $rule['andor']['#title_display'] = 'none';
+      $rule['andor']['#title_display'] = 'invisible';
       $output .= '<div class="webform-conditional-andor webform-container-inline">';
       $output .= drupal_render($rule['andor']);
       $output .= '</div>';
@@ -946,10 +946,10 @@ function theme_webform_conditional($variables) {
   // Hide labels.
   foreach (element_children($element['actions']) as $aid) {
     // Hide labels.
-    $element['actions'][$aid]['target']['#title_display'] = 'none';
-    $element['actions'][$aid]['invert']['#title_display'] = 'none';
-    $element['actions'][$aid]['action']['#title_display'] = 'none';
-    $element['actions'][$aid]['argument']['#title_display'] = 'none';
+    $element['actions'][$aid]['target']['#title_display'] = 'invisible';
+    $element['actions'][$aid]['invert']['#title_display'] = 'invisible';
+    $element['actions'][$aid]['action']['#title_display'] = 'invisible';
+    $element['actions'][$aid]['argument']['#title_display'] = 'invisible';
 
     $target = '<div class="webform-conditional-target">' . drupal_render($element['actions'][$aid]['target']) . '</div>';
     $invert = '<div class="webform-conditional-invert">' . drupal_render($element['actions'][$aid]['invert']) . '</div>';
@@ -1299,7 +1299,7 @@ function webform_conditional_form_date($node) {
   static $count = 0;
   $element = array(
     '#title' => NULL,
-    '#title_display' => 'none',
+    '#title_display' => 'invisible',
     '#size' => 24,
     '#attributes' => array('placeholder' => t('@format or valid date', array('@format' => webform_date_format('short')))),
     '#type' => 'textfield',
@@ -1315,7 +1315,7 @@ function webform_conditional_form_time($node) {
   static $count = 0;
   $element = array(
     '#title' => NULL,
-    '#title_display' => 'none',
+    '#title_display' => 'invisible',
     '#size' => 24,
     '#attributes' => array('placeholder' => t('HH:MMam or valid time')),
     '#type' => 'textfield',
