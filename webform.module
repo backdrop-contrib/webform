@@ -4741,7 +4741,7 @@ function webform_components($include_disabled = FALSE, $reset = FALSE) {
     $disabled_components = webform_variable_get('webform_disabled_components');
     $disabled = array();
     if (is_array($disabled_components)) {
-      $disabled = array_flip();
+      $disabled = array_flip($disabled_components);
     }
     foreach (module_implements('webform_component_info') as $module) {
       $module_components = module_invoke($module, 'webform_component_info');
