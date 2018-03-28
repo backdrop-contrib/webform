@@ -4738,7 +4738,10 @@ function webform_components($include_disabled = FALSE, $reset = FALSE) {
 
   if (!isset($components) || $reset) {
     $components = array();
-    $disabled = array_flip(webform_variable_get('webform_disabled_components'));
+    $disabled_components = webform_variable_get('webform_disabled_components');
+    if (is_array($disabled_components)) {
+      $disabled = array_flip();
+    }
     foreach (module_implements('webform_component_info') as $module) {
       $module_components = module_invoke($module, 'webform_component_info');
       foreach ($module_components as $type => $info) {
