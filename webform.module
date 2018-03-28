@@ -4739,6 +4739,7 @@ function webform_components($include_disabled = FALSE, $reset = FALSE) {
   if (!isset($components) || $reset) {
     $components = array();
     $disabled_components = webform_variable_get('webform_disabled_components');
+    $disabled = array();
     if (is_array($disabled_components)) {
       $disabled = array_flip();
     }
