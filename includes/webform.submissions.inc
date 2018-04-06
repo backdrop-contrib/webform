@@ -419,7 +419,6 @@ function webform_submission_delete_form($form, $form_state, $node, $submission) 
   drupal_set_title(webform_submission_title($node, $submission));
 
   // Keep the NID and SID in the same location as the webform_client_form().
-  // This helps mollom identify the same fields when deleting a submission.
   $form['#tree'] = TRUE;
   $form['details']['nid'] = array(
     '#type' => 'value',

@@ -532,7 +532,7 @@ function hook_webform_component_info() {
       // (like a fieldset or tabs). Defaults to FALSE.
       'group' => FALSE,
 
-      // If this component can be used for SPAM analysis, usually with Mollom.
+      // If this component can be used for SPAM analysis.
       'spam_analysis' => FALSE,
 
       // If this component saves a file that can be used as an e-mail
