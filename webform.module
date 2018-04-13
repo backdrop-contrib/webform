@@ -2643,7 +2643,7 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $r
     $page_num = $form_state['webform']['page_num'];
     $preview = $form_state['webform']['preview'];
 
-    if ($page_count > 1) {
+    if ($node->webform['progressbar_include_confirmation'] || $page_count > 1) {
       $page_labels = webform_page_labels($node, $form_state);
       $form['progressbar'] = array(
         '#theme' => 'webform_progressbar',
@@ -3603,7 +3603,7 @@ function template_preprocess_webform_confirmation(&$vars) {
   $vars['progressbar'] = '';
   $page_labels = webform_page_labels($node);
   $page_count = count($page_labels);
-  if ($node->webform['progressbar_include_confirmation'] && $page_count > 2) {
+  if ($node->webform['progressbar_include_confirmation']) {
     $vars['progressbar'] = theme('webform_progressbar', array(
       'node' => $node,
       'page_num' => $page_count,
