@@ -3601,9 +3601,9 @@ function template_preprocess_webform_confirmation(&$vars) {
 
   // Progress bar.
   $vars['progressbar'] = '';
-  $page_labels = webform_page_labels($node);
-  $page_count = count($page_labels);
   if ($node->webform['progressbar_include_confirmation']) {
+    $page_labels = webform_page_labels($node);
+    $page_count = count($page_labels);
     $vars['progressbar'] = theme('webform_progressbar', array(
       'node' => $node,
       'page_num' => $page_count,
