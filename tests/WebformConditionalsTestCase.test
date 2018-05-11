@@ -1,7 +1,6 @@
 <?php
 
 /**
- * @file
  * Webform module conditional tests.
  */
 require_once backdrop_get_path('module', 'webform') . '/tests/WebformTestCase.test';
@@ -55,6 +54,7 @@ class WebformConditionalsTestCase extends WebformTestCase {
    * @param $component
    *   The sample component that should be tested as the source of a conditional
    *   operator.
+   * @param $input_values
    * @param $operator
    *   The operator that will be used to check the source component, such as
    *   "equal" or "starts_with". See _webform_conditional_operator_info().
@@ -68,9 +68,6 @@ class WebformConditionalsTestCase extends WebformTestCase {
    *   If FALSE, validation errors are expected to be triggered. The input
    *   $value will be compared against the "sample values" input provided by
    *   webformComponents().
-   *
-   * @return void
-   *   This function executes its own assert statements to show results.
    */
   private function webformTestConditionalComponent($component, $input_values, $operator, $conditional_values, $should_match) {
     // Create the Webform test node and add a same-page conditional followed

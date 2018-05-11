@@ -1,7 +1,6 @@
 <?php
 
 /**
- * @file
  * Views handler to filter webforms by open or closed status.
  */
 
