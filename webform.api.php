@@ -1412,5 +1412,39 @@ function hook_webform_exporters_alter(array &$exporters) {
 }
 
 /**
+ * Declare conditional types and their operators.
+ *
+ * Each conditional type defined here may then be referenced in
+ * hook_webform_component_info(). For each type this hook also declares a set of
+ * operators that may be applied to a component of this conditional type in
+ * conditionals.
+ *
+ * @return array
+ *   A 2-dimensional array of operator configurations. The configurations are
+ *   keyed first by their conditional type then by operator key. Each operator
+ *   declaration is an array with the following keys:
+ *   - label: Translated label for this operator that is shown in the UI.
+ *   - comparison callback: A callback for server-side evaluation.
+ *   - js comparison callback: A JavaScript callback for client-side evaluation.
+ *     The callback will be looked for in the Drupal.webform object.
+ *   - form callback (optional): A form callback that allows configuring
+ *     additional parameters for this operator. Default:
+ *     'webform_conditional_operator_text'.
+ *
+ * @see hook_webform_component_info()
+ * @see callback_webform_conditional_comparision_operator()
+ * @see callback_webform_conditional_rule_value_form()
+ */
+function hook_webform_conditional_operator_info() {
+  $operators = array();
+  $operators['string']['not_equal'] = array(
+    'label' => t('is not'),
+    'comparison callback' => 'webform_conditional_operator_string_not_equal',
+    'js comparison callback' => 'conditionalOperatorStringNotEqual',
+  );
+  return $operators;
+}
+
+/**
  * @}
  */
