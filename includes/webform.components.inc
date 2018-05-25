@@ -919,6 +919,9 @@ function webform_component_delete($node, $component) {
       // Delete the conditional if this component is the only source / target.
       if (empty($conditional[$field])) {
         webform_conditional_delete($node, $conditional);
+        // Also delete the conditional from the $node so it is not re-created
+        // later on in webform_node_update().
+        unset($node->webform['conditionals'][$conditional['rgid']]);
         // Loop exit.
         break;
       }

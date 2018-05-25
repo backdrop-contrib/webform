@@ -41,6 +41,49 @@ class WebformConditionalsTestCase extends WebformTestCase {
     }
 
     $this->drupalLogout();
+
+    // Test that the whole conditional is deleted when all source components are deleted.
+    // Inital setup: Two components. One source (c1) one target (c2).
+    $node = (object) array(
+      'type' => 'webform',
+      'title' => 'Conditional test',
+    );
+    $default = array(
+      'type' => 'textfield',
+      'pid' => 0,
+    );
+    webform_component_defaults($default);
+    node_object_prepare($node);
+    $node->webform['components'][1] = array(
+      'cid' => 1,
+      'form_key' => 'c1',
+    ) + $default;
+    $node->webform['components'][2] = array(
+      'cid' => 2,
+      'form_key' => 'c2',
+    ) + $default;
+    $node->webform['conditionals'][0] = array(
+      'rgid' => 0,
+      'andor' => NULL,
+      'weight' => -1,
+      'rules' => array(array(
+        'source_type' => 'component',
+        'source' => 1,
+        'operator' => 'not_empty',
+      )),
+      'actions' => array(array(
+        'target_type' => 'component',
+        'target' => 2,
+        'action' => 'show',
+      )),
+    );
+    node_save($node);
+
+    // Delete the source.
+    unset($node->webform['components'][1]);
+    node_save($node);
+
+    $this->assertEqual([], $node->webform['conditionals'], 'The whole conditional is deleted when all source components are deleted.');
   }
 
   /**
