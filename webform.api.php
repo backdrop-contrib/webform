@@ -1458,5 +1458,32 @@ function hook_webform_conditional_operators_alter(array &$operators) {
 }
 
 /**
+ * Evaluate the operator for a given set of values.
+ *
+ * This function will be called two times with potentially different kinds of
+ * values: Once in _webform_client_form_validate() before any of the validate
+ * handlers or the _webform_submit_COMPONENT() callback is called, and once in
+ * webform_client_form_pages() after those handlers have been called.
+ *
+ * @param array $input_values
+ *   The values received from the browser.
+ * @param mixed $rule_value
+ *   The value as configured in the form callback.
+ * @param array $component
+ *   The component for which we are evaluating the operator.
+ *
+ * @return bool
+ *   The operation result.
+ */
+function callback_webfom_conditional_comparison_operator(array $input_values, $rule_value, array $component) {
+  foreach ($input_values as $value) {
+    if (strcasecmp($value, $rule_value)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
  * @}
  */
