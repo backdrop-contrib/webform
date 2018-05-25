@@ -1446,5 +1446,17 @@ function hook_webform_conditional_operator_info() {
 }
 
 /**
+ * Alter the list of operators and conditional types.
+ *
+ * @param array $operators
+ *   A data structure as described in hook_webform_conditional_operator_info().
+ *
+ * @see hook_webform_conditional_operator_info()
+ */
+function hook_webform_conditional_operators_alter(array &$operators) {
+  $operators['string']['not_equal']['label'] = t('not equal');
+}
+
+/**
  * @}
  */
