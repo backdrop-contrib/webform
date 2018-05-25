@@ -83,7 +83,7 @@ class WebformConditionalsTestCase extends WebformTestCase {
     unset($node->webform['components'][1]);
     node_save($node);
 
-    $this->assertEqual([], $node->webform['conditionals'], 'The whole conditional is deleted when all source components are deleted.');
+    $this->assertEqual(array(), $node->webform['conditionals'], 'The whole conditional is deleted when all source components are deleted.');
   }
 
   /**
