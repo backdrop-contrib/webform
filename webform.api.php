@@ -1485,5 +1485,36 @@ function callback_webfom_conditional_comparison_operator(array $input_values, $r
 }
 
 /**
+ * Define a form element that configures your operator.
+ *
+ * @param object $node
+ *   The node for which the conditionals are being configured.
+ *
+ * @return string|string[]
+ *   Either a single rendered form element or a rendered form element per
+ *   component (keyed by cid). Make sure that none of the rendered strings
+ *   contains any HTML IDs as the form element will be rendered multiple times.
+ *   The JavaScript will take care of adding the appropriate name attributes.
+ *
+ * @see _webform_conditional_expand_value_forms()
+ */
+function callback_webform_conditional_rule_value_form($node) {
+  $forms = [];
+  foreach ($node->webform['components'] as $cid => $component) {
+    if (webform_component_property($component['type'], 'conditional_type') == 'newsletter') {
+      $element = [
+        '#type' => 'select',
+        '#options' => [
+          'yes' => t('Opt-in'),
+          'no' => t('No opt-in'),
+        ],
+      ];
+      $forms[$cid] = drupal_render($element);
+    }
+  }
+  return $forms;
+}
+
+/**
  * @}
  */
