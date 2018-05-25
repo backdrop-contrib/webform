@@ -759,7 +759,8 @@ function _webform_attachments_component($component, $value) {
  * Alter default settings for a newly created webform node.
  *
  * @param array $defaults
- *   Default settings for a newly created webform node as defined by webform_node_defaults().
+ *   Default settings for a newly created webform node as defined by
+ *   webform_node_defaults().
  *
  * @see webform_node_defaults()
  */
@@ -932,7 +933,7 @@ function _webform_render_component($component, $value = NULL, $filter = TRUE, $s
 }
 
 /**
- * Allow modules to modify a webform component that is going to be rendered in a form.
+ * Allow modules to modify a webform component that will be rendered in a form.
  *
  * @param array $element
  *   The display element as returned by _webform_render_component().
