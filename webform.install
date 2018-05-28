@@ -1394,3 +1394,23 @@ function webform_update_1601() {
     db_query("UPDATE {webform_roles} SET role = 'authenticated' WHERE role = '2'");
   }
 }
+
+/**
+ * Update webform_webforms View so it uses dropdown buttons.
+ */
+function webform_update_1602() {
+  // The numbering is a bit messed up now but will stay on 16xx.
+  // Should have stayed at 14xx to match 1.x-4.x.
+
+  // See if the webform_webforms view has been modified on this site.
+  $config = config('views.view.webform_webforms');
+
+  // Only update if view isn't overridden
+  if ($config->get('storage') != VIEWS_STORAGE_OVERRIDE) {
+    $path = backdrop_get_path('module', 'webform') . '/config/';
+    $contents = file_get_contents($path . 'views.view.webform_webforms.json');
+    $data = json_decode($contents, true);
+    $config->setData($data);
+    $config->save();
+  }
+}
