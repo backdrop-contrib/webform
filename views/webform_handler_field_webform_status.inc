@@ -1,7 +1,6 @@
 <?php
 
 /**
- * @file
  * Views handler to display the open or closed status of a webform.
  */
 

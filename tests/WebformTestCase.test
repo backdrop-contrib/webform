@@ -1,7 +1,6 @@
 <?php
 
 /**
- * @file
  * Webform module tests.
  */
 
@@ -16,7 +15,7 @@ abstract class WebformTestCase extends BackdropWebTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp($added_modules = array()) {
+  public function setUp($added_modules = array()) {
     $modules = array('webform');
     parent::setUp(array_merge($modules, $added_modules));
 
@@ -80,7 +79,7 @@ abstract class WebformTestCase extends BackdropWebTestCase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  public function tearDown() {
     // Delete the webform admin and any created nodes.
     foreach ($this->webform_users as $account) {
       $uid = $account->uid;
@@ -100,7 +99,7 @@ abstract class WebformTestCase extends BackdropWebTestCase {
   /**
    *
    */
-  protected function webformReset() {
+  public function webformReset() {
     $this->_webform_node = NULL;
     $this->_webform_components = NULL;
   }
@@ -117,7 +116,7 @@ abstract class WebformTestCase extends BackdropWebTestCase {
    * @return array
    *   An array of each component settings.
    */
-  protected function webformComponents() {
+  public function webformComponents() {
     if (isset($this->_webform_components)) {
       return $this->_webform_components;
     }
@@ -988,10 +987,10 @@ abstract class WebformTestCase extends BackdropWebTestCase {
     return $this->_webform_components;
   }
 
- /**
-  *
-  */
-  protected function webformForm() {
+  /**
+   *
+   */
+  public function webformForm() {
     if (isset($this->_webform_node)) {
       return $this->_webform_node;
     }
@@ -1034,7 +1033,7 @@ abstract class WebformTestCase extends BackdropWebTestCase {
    *   An array of input values keyed by the component form key. If none
    *   are specified, the defaults will be pulled from webformComponents().
    */
-  protected function webformPost($input_values = NULL) {
+  public function webformPost($input_values = NULL) {
     $edit = array();
 
     if (empty($input_values)) {
@@ -1063,7 +1062,7 @@ abstract class WebformTestCase extends BackdropWebTestCase {
   /**
    * Utility function to print out the current page being tested.
    */
-  protected function webformPrintPage() {
+  public function webformPrintPage() {
     $this->verbose($this->backdropGetContent());
   }
 

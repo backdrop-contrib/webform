@@ -1,7 +1,6 @@
 <?php
 
 /**
- * @file
  * Webform module component tests.
  */
 require_once backdrop_get_path('module', 'webform') . '/tests/WebformTestCase.test';
@@ -185,6 +184,9 @@ class WebformComponentsTestCase extends WebformTestCase {
     // Create and visit a new Webform test node.
     $node = $this->webformForm();
     $this->backdropGet('node/' . $node->nid);
+
+    // Check th elements have the scope attribute.
+    $this->assertRaw('<th class="checkbox webform-grid-option" scope="col">', 'Grid <code>th</code> elements have @scope of "col".');
 
     // Check that each label @for points to an element.
     $labels = $this->xpath('//label/@for');
