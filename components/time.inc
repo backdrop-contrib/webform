@@ -188,7 +188,7 @@ function webform_expand_time($element) {
   else {
     $default_values = array(
       'hour' => '',
-      'minute' => '0',
+      'minute' => '',
       'second' => '',
     );
   }
