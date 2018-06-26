@@ -861,10 +861,12 @@ function webform_update_dependencies() {
   $dependencies['webform'][7320] = array(
     'system' => 7059,
   );
-  // Ensure rules tables and fields exist before trying to use it.
-  $dependencies['webform'][7420] = array(
-    'rules' => 7213,
-  );
+  if (module_exists('rules')) {
+    // Ensure rules tables and fields exist before trying to use it.
+    $dependencies['webform'][7420] = array(
+      'rules' => 7213,
+    );
+  }
   return $dependencies;
 }
 
