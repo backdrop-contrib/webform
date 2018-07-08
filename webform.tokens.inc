@@ -151,7 +151,7 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
 
       case 'user':
         $account = user_load($submission->uid);
-        $name = format_username($account);
+        $name = user_format_name($account);
         $replacements[$original] = $sanitize ? check_plain($name) : $name;
         break;
 
