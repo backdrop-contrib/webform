@@ -824,6 +824,15 @@ function webform_uninstall() {
 }
 
 /**
+ * Implements hook_enable().
+ * Create a config entry for mail system selection.
+ * Initialise to use default mail system.
+ */
+function webform_enable() {
+  config_set('system.mail','webform','DefaultMailSystem');
+}
+
+/**
  * Set the minimum upgrade version.
  *
  * Ensure you've upgraded to the 7.x-4.x version of webform in Drupal 7 before
@@ -1413,4 +1422,12 @@ function webform_update_1602() {
     $config->setData($data);
     $config->save();
   }
+}
+
+/**
+ * Update webform so that it has a config entry for mail system selection.
+ * Initialise to use default mail system.
+ */
+function webform_update_1603() {
+  config_set('system.mail','webform','DefaultMailSystem');
 }
