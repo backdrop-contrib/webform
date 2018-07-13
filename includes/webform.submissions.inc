@@ -383,14 +383,18 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
         $mail_params['plain'] = !$email['html'];
         $mail_params['plaintext'] = $email['html'] ? NULL : $email['message'];
         $mail_params['headers'] = $email['headers'];
+        
+        // Set a parameter $key to indicate  mail class plain or html.
+        $key = 'plain';
         if ($email['html']) {
           // MIME Mail requires this header or it will filter all text.
           $mail_params['headers']['Content-Type'] = 'text/html; charset=UTF-8';
+          $key = 'html';
         }
       }
 
       // Mail the submission.
-      $message = backdrop_mail('webform', 'submission', $address, $language, $mail_params, $email['from']);
+      $message = backdrop_mail('webform', $key, $address, $language, $mail_params, $email['from']);
       if ($message['result']) {
         $send_count += $send_increment;
       }
