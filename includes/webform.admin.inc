@@ -291,6 +291,12 @@ function webform_admin_settings_submit($form, &$form_state) {
     }
   }
   $config->save();
+  
+  // Add a config setting to system.mail if html mail is set
+  // and mimemail module is installed.
+  if ($form_state['values']['webform_email_html_capable'] && module_exists(mimemail) ){
+    config_set('system.mail', 'webform_html', 'MimeMailSystem');
+  }
   backdrop_set_message(t('The configuration options have been saved.'));
 }
 
