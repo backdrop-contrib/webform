@@ -3099,10 +3099,12 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
     if (isset($elements['#needs_validation'])) {
       // Make sure a value is passed when the field is required.
       // A simple call to empty() will not cut it here as some fields, like
-      // checkboxes, can return a valid value of '0'. Instead, check the
-      // length if it's a string, and the item count if it's an array. For
+      // checkboxes, can return a valid value of 0. Instead, check the
+      // length if it's a string, and if it's an array whether it is empty. For
       // radios, FALSE means that no value was submitted, so check that too.
-      if ($elements['#required'] && (!count($elements['#value']) || (is_string($elements['#value']) && strlen(trim($elements['#value'])) == 0) || $elements['#value'] === FALSE)) {
+      $value_is_empty_string = is_string($elements['#value']) && strlen(trim($elements['#value'])) === 0;
+      $value_is_empty_array = is_array($elements['#value']) && !$elements['#value'];
+      if ($elements['#required'] && ($value_is_empty_string || $value_is_empty_array || $elements['#value'] === FALSE || $elements['#value'] === NULL)) {
         form_error($elements, t('!name field is required.', array('!name' => $elements['#title'])));
       }
 
