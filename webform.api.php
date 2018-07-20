@@ -446,6 +446,7 @@ function hook_webform_csv_data_alter(&$data, $component, $submission) {
  *     - conditional
  *     - spam_analysis
  *     - group
+ *     - private
  *
  *   Note that most of these features do not indicate the default state, but
  *   determine if the component can have this property at all. Setting
@@ -542,6 +543,12 @@ function hook_webform_component_info() {
       // If this component reflects a time range and should use labels such as
       // "Before" and "After" when exposed as filters in Views module.
       'views_range' => FALSE,
+
+      // Set this to FALSE if this component cannot be used as a private
+      // component. If this is not FALSE, in your implementation of
+      // _webform_defaults_COMPONENT(), set ['extra']['private'] property to
+      // TRUE or FALSE.
+      'private' => FALSE,
     ),
 
     // Specify the conditional behaviour of this component.
