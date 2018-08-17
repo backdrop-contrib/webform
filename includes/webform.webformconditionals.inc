@@ -437,11 +437,11 @@ class WebformConditionals {
               // in webform.conditionals.inc.
               switch ($conditional_type) {
                 case 'numeric':
-                  module_load_include('inc', 'webform', 'components/number');
+                  webform_component_include('number');
                   break;
 
                 case 'select':
-                  module_load_include('inc', 'webform', 'components/select');
+                  webform_component_include($conditional_type);
                   break;
               }
 
