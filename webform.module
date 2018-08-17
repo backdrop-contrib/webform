@@ -3758,24 +3758,34 @@ function theme_webform_element($variables) {
     case 'inline':
       $output .= $description[$above];
       $description[$above] = '';
-      // FALL THRU.
     case 'before':
     case 'invisible':
-      $output .= ' ' . theme('form_element_label', $variables);
-      $output .= ' ' . $description[$above] . $prefix . $element['#children'] . $suffix . "\n";
+    case 'after':
+      $title = ' ' . theme('form_element_label', $variables);
+      break;
+  }
+
+  $children = ' ' . $description[$above] . $prefix . $element['#children'] . $suffix;
+  switch ($element['#title_display']) {
+    case 'inline':
+    case 'before':
+    case 'invisible':
+      $output .= $title;
+      $output .= $children;
       break;
 
     case 'after':
-      $output .= ' ' . $description[$above] . $prefix . $element['#children'] . $suffix;
-      $output .= ' ' . theme('form_element_label', $variables) . "\n";
+      $output .= $children;
+      $output .= $title;
       break;
 
     case 'none':
     case 'attribute':
       // Output no label and no required marker, only the children.
-      $output .= ' ' . $description[$above] . $prefix . $element['#children'] . $suffix . "\n";
+      $output .= $children;
       break;
   }
+  $output .= "\n";
 
   $output .= $description[!$above];
   $output .= "</div>\n";
