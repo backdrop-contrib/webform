@@ -686,7 +686,8 @@ function webform_results_download_range_validate($element, $form_state) {
     case 'range_date':
       // Download Start-end range of submissions.
       // Start submission time.
-      $start_date = strtotime($element['start_date']['#value']);
+      $format = webform_date_format('short');
+      $start_date = DateTime::createFromFormat($format, $element['start_date']['#value']);
       if ($element['start_date']['#value'] == '') {
         form_error($element['start_date'], t('Start date range is required.'));
       }
@@ -694,7 +695,7 @@ function webform_results_download_range_validate($element, $form_state) {
         form_error($element['start_date'], t('Start date range is not in a valid format.'));
       }
       // End submission time.
-      $end_date = strtotime($element['end_date']['#value']);
+      $end_date = DateTime::createFromFormat($format, $element['end_date']['#value']);
       if ($element['end_date']['#value'] != '') {
         if ($end_date === FALSE) {
           form_error($element['end_date'], t('End date range is not in a valid format.'));
@@ -1965,14 +1966,15 @@ function webform_download_sids_query($nid, array $range_options, $uid = NULL) {
 
     case 'range_date':
       $date_field = $range_options['completion_type'] == 'finished' ? 'ws.completed' : 'ws.submitted';
-      $query->condition($date_field, strtotime($range_options['start_date']), '>=');
-      if ($range_options['end_date'] != '' && ($end_time = strtotime($range_options['end_date'])) !== FALSE) {
-        if ($end_time == strtotime('midnight', $end_time)) {
-          // Full day specified
-          // 86400 is a full day of seconds.
-          $end_time += 86399;
-        }
-        $query->condition($date_field, $end_time, '<=');
+      $format = webform_date_format('short');
+      $start_date = DateTime::createFromFormat($format, $range_options['start_date']);
+      $start_date->setTime(0, 0, 0);
+      $query->condition($date_field, $start_date->getTimestamp(), '>=');
+      $end_time = DateTime::createFromFormat($format, $range_options['end_date']);
+      if ($range_options['end_date'] != '' && ($end_time !== FALSE)) {
+        // Check for the full day's submissions.
+        $end_time->setTime(23, 59, 59);
+        $query->condition($date_field, $end_time->getTimestamp(), '<=');
       }
       $query->orderBy($date_field, 'ASC');
       break;
