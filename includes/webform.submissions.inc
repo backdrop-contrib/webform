@@ -275,17 +275,14 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
       $email['from'] = webform_format_email_address($email['from_address'], $email['from_name'], $node, $submission, TRUE, TRUE, NULL, $mapping);
     }
 
-    // If requested and not already set, set Reply-To to the From and re-format From address.
+    // If "Use Reply-To header" is set in Webform settings and the Reply-To
+    // header is not already set, set Reply-To to the From and set From address
+    // to webform_default_from_name and webform_default_from_address.
     if (webform_variable_get('webform_email_replyto') &&
         empty($email['headers']['Reply-To']) &&
         ($default_from_name = webform_variable_get('webform_default_from_name')) &&
         ($default_from_address = webform_variable_get('webform_default_from_address')) &&
-        ($default_from_parts = explode('@', $default_from_address)) &&
-        count($default_from_parts) == 2 &&
-        $default_from_parts[1] &&
-        stripos($email['from'], '@' . $default_from_parts[1]) === FALSE) {
-      // Message is not already being sent from the domain of the default
-      // webform from address.
+        $email['from'] !== $default_from_name) {
       $email['headers']['Reply-To'] = $email['from'];
       $email['from'] = $default_from_address;
       if (webform_variable_get('webform_email_address_format') == 'long') {
