@@ -343,50 +343,50 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
       $addresses_final = array(implode(', ', $addresses_final));
     }
 
-    // Mail the webform results.
-    foreach ($addresses_final as $address) {
+    // Prepare the variables used by drupal_mail().
 
-      $language = $user->uid ? user_preferred_language($user) : language_default();
-      $mail_params = array(
-        'message' => $email['message'],
-        'subject' => $email['subject'],
-        'headers' => $email['headers'],
-        'node' => $node,
-        'submission' => $submission,
-        'email' => $email,
-      );
+    $language = $user->uid ? user_preferred_language($user) : language_default();
+    $mail_params = array(
+      'message' => $email['message'],
+      'subject' => $email['subject'],
+      'headers' => $email['headers'],
+      'node' => $node,
+      'submission' => $submission,
+      'email' => $email,
+    );
 
-      if (webform_variable_get('webform_email_html_capable')) {
-        // Load attachments for the e-mail.
-        $attachments = array();
-        if ($email['attachments']) {
-          webform_component_include('file');
-          foreach ($node->webform['components'] as $component) {
-            if (webform_component_feature($component['type'], 'attachment') && !empty($submission->data[$component['cid']][0])) {
-              if (webform_component_implements($component['type'], 'attachments')) {
-                $files = webform_component_invoke($component['type'], 'attachments', $component, $submission->data[$component['cid']]);
-                if ($files) {
-                  $attachments = array_merge($attachments, $files);
-                }
+    if (webform_variable_get('webform_email_html_capable')) {
+      // Load attachments for the e-mail.
+      $attachments = array();
+      if ($email['attachments']) {
+        webform_component_include('file');
+        foreach ($node->webform['components'] as $component) {
+          if (webform_component_feature($component['type'], 'attachment') && !empty($submission->data[$component['cid']][0])) {
+            if (webform_component_implements($component['type'], 'attachments')) {
+              $files = webform_component_invoke($component['type'], 'attachments', $component, $submission->data[$component['cid']]);
+              if ($files) {
+                $attachments = array_merge($attachments, $files);
               }
             }
           }
         }
-
-        // Add the attachments to the mail parameters.
-        $mail_params['attachments'] = $attachments;
-
-        // Set all other properties for HTML e-mail handling.
-        $mail_params['plain'] = !$email['html'];
-        $mail_params['plaintext'] = $email['html'] ? NULL : $email['message'];
-        $mail_params['headers'] = $email['headers'];
-        if ($email['html']) {
-          // MIME Mail requires this header or it will filter all text.
-          $mail_params['headers']['Content-Type'] = 'text/html; charset=UTF-8';
-        }
       }
 
-      // Mail the submission.
+      // Add the attachments to the mail parameters.
+      $mail_params['attachments'] = $attachments;
+
+      // Set all other properties for HTML e-mail handling.
+      $mail_params['plain'] = !$email['html'];
+      $mail_params['plaintext'] = $email['html'] ? NULL : $email['message'];
+      $mail_params['headers'] = $email['headers'];
+      if ($email['html']) {
+        // MIME Mail requires this header or it will filter all text.
+        $mail_params['headers']['Content-Type'] = 'text/html; charset=UTF-8';
+      }
+    }
+
+    // Mail the webform results.
+    foreach ($addresses_final as $address) {
       $message = drupal_mail('webform', 'submission', $address, $language, $mail_params, $email['from']);
       if ($message['result']) {
         $send_count += $send_increment;
