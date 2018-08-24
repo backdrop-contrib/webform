@@ -233,13 +233,13 @@ function webform_email_edit_form($form, $form_state, $node, $email = array(), $c
       case 'from_address':
         $default_value = webform_replace_tokens(webform_variable_get('webform_default_from_address'), $node);
         $title = t('E-mail from address');
-        $description = t('Any email, select, or hidden form element may be selected as the sender\'s e-mail address.');
+        $description = t("Any email, select, or hidden form element may be selected as the sender's e-mail address.");
         break;
 
       case 'from_name':
         $default_value = webform_replace_tokens(webform_variable_get('webform_default_from_name'), $node);
         $title = t('E-mail from name');
-        $description = t('Any textfield, select, or hidden form element may be selected as the sender\'s name for e-mails.');
+        $description = t("Any textfield, select, or hidden form element may be selected as the sender's name for e-mails.");
         break;
     }
 
@@ -740,8 +740,8 @@ function webform_email_clone($email) {
  *   other fields from the e-mail form.
  *
  * @return false|int
- *   On success SAVED_NEW or SAVED_UPDATED, depending on the operation performed,
- *   false on failure.
+ *   On success SAVED_NEW or SAVED_UPDATED, depending on the operation
+ *   performed, FALSE on failure.
  */
 function webform_email_update($email) {
   $email['excluded_components'] = implode(',', $email['excluded_components']);

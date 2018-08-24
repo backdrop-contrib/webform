@@ -8,7 +8,7 @@
 class webform_handler_field_form_body extends views_handler_field {
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function construct() {
     parent::construct();
@@ -16,7 +16,7 @@ class webform_handler_field_form_body extends views_handler_field {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function option_definition() {
     $options = parent::option_definition();

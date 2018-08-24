@@ -463,7 +463,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
           'inline' => t('Inline'),
           'none' => t('None'),
         ),
-        '#description' => t('Determines the placement of the component\'s label.'),
+        '#description' => t("Determines the placement of the component's label."),
       );
     }
     else {
@@ -855,7 +855,7 @@ function webform_component_update($component) {
 }
 
 /**
- *
+ * Delete a Webform component.
  */
 function webform_component_delete($node, $component) {
   // Check if a delete function is available for this component. If so,

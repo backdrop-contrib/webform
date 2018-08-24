@@ -271,7 +271,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
  * @param $email
  *   The e-mail settings to be used. This will have some of its values adjusted.
  *
- * @return array
+ * @return array|null
  *   An array of the information about the email needed by drupal_mail().
  */
 function _webform_submission_prepare_mail($node, $submission, &$email) {
@@ -380,7 +380,6 @@ function _webform_submission_prepare_mail($node, $submission, &$email) {
   }
 
   // Prepare the variables used by drupal_mail().
-
   $language = $user->uid ? user_preferred_language($user) : language_default();
   $mail_params = array(
     'message' => $email['message'],
@@ -464,7 +463,7 @@ function webform_submission_delete_form($form, $form_state, $node, $submission) 
 }
 
 /**
- *
+ * Form submit handler.
  */
 function webform_submission_delete_form_submit($form, &$form_state) {
   $node = node_load($form_state['values']['details']['nid']);
@@ -982,7 +981,7 @@ function webform_get_submission($nid, $sid) {
 }
 
 /**
- *
+ * Verify that an email is not attempting to send any spam.
  */
 function _webform_submission_spam_check($to, $subject, $from, $headers = array()) {
   $headers = implode('\n', (array) $headers);

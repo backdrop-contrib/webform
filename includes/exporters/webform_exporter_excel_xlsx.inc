@@ -178,7 +178,8 @@ class webform_exporter_excel_xlsx extends webform_exporter {
       // Switch the results file name to the new zip (xlsx) file.
       unlink($file_uri);
       if (!@rename($zip_uri, $file_uri)) {
-        // The file could not be renamed, probably due to different stream wrappers during drush wfx execution.
+        // The file could not be renamed, probably due to different stream
+        // wrappers during drush wfx execution.
         copy($zip_uri, $file_uri);
         unlink($zip_uri);
       }

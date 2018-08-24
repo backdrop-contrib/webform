@@ -221,7 +221,7 @@ function webform_conditionals_form_validate($form, &$form_state) {
           $component_type = $node->webform['components'][$action['target']['#value']]['type'];
           if (!webform_conditional_action_able($component_type, $action['action']['#value'])) {
             form_set_error('conditionals][' . $conditional_key . '][actions][' . $action_key . '][action',
-              t('A component of type %type can\'t be %action. (%target)',
+              t("A component of type %type can't be %action. (%target)",
               array(
                 '%action' => $action['action']['#options'][$action['action']['#value']],
                 '%type' => $component_options[$component_type],
@@ -546,10 +546,10 @@ function _webform_conditional_action_expand($element, $aid, $action) {
     ),
     'invert' => array(
       '#type' => 'select',
-      '#title' => t('Is/Isn\'t'),
+      '#title' => t("Is/Isn't"),
       '#options' => array(
         '0' => t('is'),
-        '1' => t('isn\'t'),
+        '1' => t("isn't"),
       ),
       '#default_value' => $action['invert'],
     ),

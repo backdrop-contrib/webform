@@ -113,7 +113,7 @@ function webform_results_submissions($node, $user_filter, $pager_count) {
  * @param object $node
  *   Loaded webform node.
  * @param string $view_id
- *   machine_id of the view, such as webform_results or webform_submissions.
+ *   The machine_id of the view, such as webform_results or webform_submissions.
  *
  * @return object|null
  *   The loaded view.
@@ -251,7 +251,7 @@ function webform_results_table($node, $pager_count = 0) {
 }
 
 /**
- *
+ * Theme function for the Webform results table header.
  */
 function theme_webform_results_table_header($variables) {
   return array(
@@ -369,7 +369,7 @@ function webform_results_clear_form($form, $form_state, $node) {
 }
 
 /**
- *
+ * Form submit handler.
  */
 function webform_results_clear_form_submit($form, &$form_state) {
   $nid = $form_state['values']['nid'];
@@ -1560,10 +1560,10 @@ function webform_results_batch_results($node, $format, $options, &$context) {
   );
 
   if (isset($_SESSION)) {
-    // UI exection. Defer resetting last-downloaded sid until download page.
-    // Set a session variable containing the information referencing the exported
-    // file. A cookie is also set to allow the browser to ensure the redirect
-    // to the file only happens one time.
+    // UI exection. Defer resetting last-downloaded sid until download page. Set
+    // a session variable containing the information referencing the exported
+    // file. A cookie is also set to allow the browser to ensure the redirect to
+    // the file only happens one time.
     $_SESSION['webform_export_info'] = $export_info;
     $params = session_get_cookie_params();
     setcookie('webform_export_info', '1', REQUEST_TIME + 120, $params['path'], $params['domain'], $params['secure'], FALSE);

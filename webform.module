@@ -2444,7 +2444,7 @@ function webform_block_configure($delta = '') {
       1 => t('Display the confirmation page in the block on the same page (no redirect)'),
     ),
     '#default_value' => $settings['confirmation_block'],
-    '#description' => t('This setting overrides the webform\'s configuration and redirection location settings when the webform is submitted via this block.'),
+    '#description' => t("This setting overrides the webform's configuration and redirection location settings when the webform is submitted via this block."),
   );
   return $form;
 }
@@ -2615,12 +2615,12 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $r
     // For resuming a previous draft, find the next page after the last
     // validated page.
     if (!isset($form_state['storage']['page_num']) && $submission && $submission->is_draft && $submission->highest_valid_page) {
-      // Find the
-      //   1) previous/next non-empty page, or
-      //   2) the preview page, or
-      //   3) the preview page, forcing its display if the form would
-      //      unexpectedly submit, or
-      //   4) page 1 even if empty, if no other previous page would be shown.
+      // Find the:
+      // 1. previous/next non-empty page, or
+      // 2. the preview page, or
+      // 3. the preview page, forcing its display if the form would unexpectedly
+      //    submit, or
+      // 4. page 1 even if empty, if no other previous page would be shown.
       $form_state['webform']['page_num'] = $submission->highest_valid_page;
       do {
         $form_state['webform']['page_num']++;
@@ -3043,14 +3043,14 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
     $cid = $elements['#webform_component']['cid'];
     $page_num = $form_state['values']['details']['page_num'];
     // Webform-specific enhancements:
-    // 1) Only validate the field if it was used in this submission.
+    // 1. Only validate the field if it was used in this submission.
     //    This both skips validation on the field and sets the value of the
     //    field to NULL, preventing any dangerous input. Short-circuit
     //    validation for a hidden component (hidden by rules dependent upon
     //    component on previous pages), or a component this is dependent upon
     //    values on the current page, but is hidden based upon their current
     //    values.
-    // 2) Only validate if the field has not been set by conditionals.
+    // 2. Only validate if the field has not been set by conditionals.
     //    The user will be unable to fix the validation without surmising the
     //    logic and changing the trigger for the conditional. Also, it isn't
     //    possible to set $element['#value'] without component-specific
@@ -3299,12 +3299,12 @@ function webform_client_form_pages($form, &$form_state) {
     $current_page = $form_state['storage']['page_num'];
 
     if (isset($forward)) {
-      // Find the
-      //   1) previous/next non-empty page, or
-      //   2) the preview page, or
-      //   3) the preview page, forcing its display if the form would
-      //      unexpectedly submit, or
-      //   4) page 1 even if empty, if no other previous page would be shown.
+      // Find the:
+      // 1. previous/next non-empty page, or
+      // 2. the preview page, or
+      // 3. the preview page, forcing its display if the form would unexpectedly
+      //    submit, or
+      // 4. page 1 even if empty, if no other previous page would be shown.
       $preview_page_num = $form_state['storage']['page_count'] + (int) !$form_state['webform']['preview'];
       $page_num = $current_page;
       do {
@@ -5184,12 +5184,12 @@ function webform_strtodate($format, $string, $timezone_name = NULL, $reference_t
       @$timezone = new DateTimeZone($timezone_name);
       if (isset($reference_timestamp)) {
         // A reference for relative dates has been provided.
-        // 1) Convert the reference timestamp (in UTC) to a DateTime.
-        // 2) Set to time zone to the user or system timezone, recreating
-        //    the reference time in the appropriate time zone.
-        // 3) Set the time to midnight because when a non-referenced relative
+        // 1. Convert the reference timestamp (in UTC) to a DateTime.
+        // 2. Set to time zone to the user or system timezone, recreating the
+        //    reference time in the appropriate time zone.
+        // 3. Set the time to midnight because when a non-referenced relative
         //    date is created without a time, it is created at midnight (0:00).
-        // 4) Adjust to the specified relative (or absolute) time.
+        // 4. Adjust to the specified relative (or absolute) time.
         @$datetime = new DateTime('@' . $reference_timestamp);
         @$datetime->setTimezone($timezone)
           ->setTime(0, 0, 0)

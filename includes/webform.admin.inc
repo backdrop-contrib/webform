@@ -312,7 +312,8 @@ function theme_webform_admin_settings($variables) {
  * Menu callback for admin/content/webform. Displays all webforms on the site.
  */
 function webform_admin_content() {
-  // Determine whether views or hard-coded tables should be used for the webforms table.
+  // Determine whether views or hard-coded tables should be used for the
+  // webforms table.
   if (!webform_variable_get('webform_table')) {
     $view = views_get_view('webform_webforms');
     return $view->preview('default');

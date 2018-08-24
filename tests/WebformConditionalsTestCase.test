@@ -42,8 +42,8 @@ class WebformConditionalsTestCase extends WebformTestCase {
 
     $this->drupalLogout();
 
-    // Test that the whole conditional is deleted when all source components are deleted.
-    // Inital setup: Two components. One source (c1) one target (c2).
+    // Test that the whole conditional is deleted when all source components are
+    // deleted. Inital setup: Two components. One source (c1) one target (c2).
     $node = (object) array(
       'type' => 'webform',
       'title' => 'Conditional test',
@@ -70,12 +70,14 @@ class WebformConditionalsTestCase extends WebformTestCase {
         'source_type' => 'component',
         'source' => 1,
         'operator' => 'not_empty',
-      )),
+      ),
+      ),
       'actions' => array(array(
         'target_type' => 'component',
         'target' => 2,
         'action' => 'show',
-      )),
+      ),
+      ),
     );
     node_save($node);
 

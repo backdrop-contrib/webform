@@ -64,15 +64,13 @@ function webform_token_info() {
   );
   $info['tokens']['submission']['values'] = array(
     'name' => t('Webform submission values'),
-    'description' => '<div>' . t('Webform tokens from submitted data. Replace the "?" with the "form key", including any parent form keys separated by colons. You can append:') . '</div>' .
-    '<ul>' .
+    'description' => '<div>' . t('Webform tokens from submitted data. Replace the "?" with the "form key", including any parent form keys separated by colons. You can append:') . '</div><ul>' .
     '<li>' . t('the question key for just that one question (grid components).') . '</li>' .
     '<li>' . t('the option key for just that one option (grid and select components).') . '</li>' .
     '<li>' . t('<code>@token</code> for the value without the label (the default).', array('@token' => ':nolabel')) . '</li>' .
     '<li>' . t('<code>@token</code> for just the label.', array('@token' => ':label')) . '</li>' .
     '<li>' . t('<code>@token</code> for both the label and value together.', array('@token' => ':withlabel')) . '</li>' .
-    '<li>' . t('<code>@token</code> for just the key in a key|label pair (grid and select components).', array('@token' => ':key')) . '</li>' .
-    '</ul>',
+    '<li>' . t('<code>@token</code> for just the key in a key|label pair (grid and select components).', array('@token' => ':key')) . '</li></ul>',
     'dynamic' => TRUE,
   );
 
