@@ -359,7 +359,7 @@ function _webform_submission_prepare_mail($node, $submission, &$email) {
   $addresses_final = array_filter($addresses, 'webform_valid_email_address');
 
   if (!$addresses_final) {
-    continue;
+    return;
   }
 
   // Verify that this submission is not attempting to send any spam hacks.
