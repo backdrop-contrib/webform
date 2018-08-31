@@ -342,9 +342,11 @@ function theme_webform_conditional_group_row($variables) {
  * Form API #process function to expand a webform conditional element.
  */
 function _webform_conditional_expand($element) {
+  $default_operator = 'and';
+
   $element['#tree'] = TRUE;
   $element['#default_value'] += array(
-    'andor' => 'and',
+    'andor' => $default_operator,
   );
 
   $wrapper_id = drupal_clean_css_identifier(implode('-', $element['#parents'])) . '-ajax';
@@ -382,7 +384,7 @@ function _webform_conditional_expand($element) {
           'remove' => _webform_conditional_remove_expand($element, $rid),
         );
         $andor_stack[++$level] = array(
-          'value' => $conditional['operator'],
+          'value' => isset($conditional['operator']) ? $conditional['operator'] : $default_operator,
           'parents' => array_merge($element['#parents'], array('rules', $rid, 'operator')),
           'rid' => $rid,
           'first' => TRUE,
