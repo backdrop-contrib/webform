@@ -636,7 +636,7 @@ function webform_submission_access($node, $submission, $op = 'view', $account = 
 
   // If access is granted via a token, then allow subsequent submission access
   // for anonymous users.
-  if (!$user->uid && $token_access) {
+  if (!$account->uid && $token_access) {
     $_SESSION['webform_submission'][$submission->sid] = $node->nid;
   }
 
