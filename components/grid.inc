@@ -82,7 +82,7 @@ function _webform_edit_grid($component) {
     ),
   );
 
-  if (module_exists('options_element')) {
+  if (function_exists('options_element_info') || function_exists('options_element_element_info')) {
     $form['options'] = array(
       '#type' => 'fieldset',
       '#title' => t('Options'),

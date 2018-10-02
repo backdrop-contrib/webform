@@ -112,7 +112,7 @@ function _webform_edit_select($component) {
     );
   }
 
-  if (module_exists('options_element')) {
+  if (function_exists('options_element_info') || function_exists('options_element_element_info')) {
     $options = _webform_select_options($component, FALSE, FALSE);
 
     $form['items'] = array(
@@ -900,7 +900,7 @@ function webform_select_options_ajax($source_name = '') {
   }
 
   $return = array(
-    'elementId' => module_exists('options_element') ? 'edit-items-options-options-field-widget' : 'edit-extra-items',
+    'elementId' => (function_exists('options_element_info') || function_exists('options_element_element_info')) ? 'edit-items-options-options-field-widget' : 'edit-extra-items',
     'options' => $options,
   );
 
