@@ -10,7 +10,7 @@
 class webform_handler_field_webform_status extends views_handler_field_boolean {
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
@@ -18,7 +18,7 @@ class webform_handler_field_webform_status extends views_handler_field_boolean {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function option_definition() {
     $options = parent::option_definition();

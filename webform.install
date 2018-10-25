@@ -791,9 +791,9 @@ function webform_uninstall() {
   file_unmanaged_delete_recursive($filepath);
 
   // Delete the content type "webform" if:
-  //   a) there are no existing nodes of type webform and
-  //   b) no additional fields have been defined for node type webform, beyond
-  //      the default body field.
+  // 1. there are no existing nodes of type webform and
+  // 2. no additional fields have been defined for node type webform, beyond the
+  //    default body field.
   $query = new EntityFieldQuery();
   $results = $query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'webform')

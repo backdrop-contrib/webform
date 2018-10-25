@@ -130,7 +130,7 @@ function _webform_edit_time_validate($form, &$form_state) {
   foreach (array('start_time', 'end_time') as $field) {
     $time[$field] = FALSE;
     if (trim($form_state['values']['extra'][$field]) && ($time[$field] = strtotime('1-1-1970 UTC ' . $form_state['values']['extra'][$field])) === FALSE) {
-      form_set_error("extra][$field", t('The @field isn\'t a valid time.', array('@field' => $form['validation'][$field]['#title'])));
+      form_set_error("extra][$field", t("The @field isn't a valid time.", array('@field' => $form['validation'][$field]['#title'])));
     }
   }
 }
@@ -188,7 +188,7 @@ function webform_expand_time($element) {
   else {
     $default_values = array(
       'hour' => '',
-      'minute' => '0',
+      'minute' => '',
       'second' => '',
     );
   }

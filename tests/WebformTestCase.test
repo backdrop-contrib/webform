@@ -97,7 +97,7 @@ abstract class WebformTestCase extends BackdropWebTestCase {
   }
 
   /**
-   *
+   * Reset the form.
    */
   public function webformReset() {
     $this->_webform_node = NULL;
@@ -111,7 +111,8 @@ abstract class WebformTestCase extends BackdropWebTestCase {
    *   - A default configuration for the component.
    *   - Values to try setting via POST
    *   - Values that should match the database storage when set via POST
-   *   - Values that should match the database storage when using the default values.
+   *   - Values that should match the database storage when using the default
+   *     values.
    *
    * @return array
    *   An array of each component settings.
@@ -988,7 +989,7 @@ abstract class WebformTestCase extends BackdropWebTestCase {
   }
 
   /**
-   *
+   * Create a sample Webform node.
    */
   public function webformForm() {
     if (isset($this->_webform_node)) {

@@ -446,6 +446,7 @@ function hook_webform_csv_data_alter(&$data, $component, $submission) {
  *     - conditional
  *     - spam_analysis
  *     - group
+ *     - private
  *
  *   Note that most of these features do not indicate the default state, but
  *   determine if the component can have this property at all. Setting
@@ -542,6 +543,12 @@ function hook_webform_component_info() {
       // If this component reflects a time range and should use labels such as
       // "Before" and "After" when exposed as filters in Views module.
       'views_range' => FALSE,
+
+      // Set this to FALSE if this component cannot be used as a private
+      // component. If this is not FALSE, in your implementation of
+      // _webform_defaults_COMPONENT(), set ['extra']['private'] property to
+      // TRUE or FALSE.
+      'private' => FALSE,
     ),
 
     // Specify the conditional behaviour of this component.
@@ -759,7 +766,8 @@ function _webform_attachments_component($component, $value) {
  * Alter default settings for a newly created webform node.
  *
  * @param array $defaults
- *   Default settings for a newly created webform node as defined by webform_node_defaults().
+ *   Default settings for a newly created webform node as defined by
+ *   webform_node_defaults().
  *
  * @see webform_node_defaults()
  */
@@ -932,7 +940,7 @@ function _webform_render_component($component, $value = NULL, $filter = TRUE, $s
 }
 
 /**
- * Allow modules to modify a webform component that is going to be rendered in a form.
+ * Allow modules to modify a webform component that will be rendered in a form.
  *
  * @param array $element
  *   The display element as returned by _webform_render_component().
@@ -1408,6 +1416,110 @@ function hook_webform_exporters() {
 function hook_webform_exporters_alter(array &$exporters) {
   $exporters['excel']['handler'] = 'customized_excel_exporter';
   $exporters['excel']['file'] = backdrop_get_path('module', 'yourmodule') . '/includes/customized_excel_exporter.inc';
+}
+
+/**
+ * Declare conditional types and their operators.
+ *
+ * Each conditional type defined here may then be referenced in
+ * hook_webform_component_info(). For each type this hook also declares a set of
+ * operators that may be applied to a component of this conditional type in
+ * conditionals.
+ *
+ * @return array
+ *   A 2-dimensional array of operator configurations. The configurations are
+ *   keyed first by their conditional type then by operator key. Each operator
+ *   declaration is an array with the following keys:
+ *   - label: Translated label for this operator that is shown in the UI.
+ *   - comparison callback: A callback for server-side evaluation.
+ *   - js comparison callback: A JavaScript callback for client-side evaluation.
+ *     The callback will be looked for in the Drupal.webform object.
+ *   - form callback (optional): A form callback that allows configuring
+ *     additional parameters for this operator. Default:
+ *     'webform_conditional_operator_text'.
+ *
+ * @see hook_webform_component_info()
+ * @see callback_webform_conditional_comparision_operator()
+ * @see callback_webform_conditional_rule_value_form()
+ */
+function hook_webform_conditional_operator_info() {
+  $operators = array();
+  $operators['string']['not_equal'] = array(
+    'label' => t('is not'),
+    'comparison callback' => 'webform_conditional_operator_string_not_equal',
+    'js comparison callback' => 'conditionalOperatorStringNotEqual',
+  );
+  return $operators;
+}
+
+/**
+ * Alter the list of operators and conditional types.
+ *
+ * @param array $operators
+ *   A data structure as described in hook_webform_conditional_operator_info().
+ *
+ * @see hook_webform_conditional_operator_info()
+ */
+function hook_webform_conditional_operators_alter(array &$operators) {
+  $operators['string']['not_equal']['label'] = t('not equal');
+}
+
+/**
+ * Evaluate the operator for a given set of values.
+ *
+ * This function will be called two times with potentially different kinds of
+ * values: Once in _webform_client_form_validate() before any of the validate
+ * handlers or the _webform_submit_COMPONENT() callback is called, and once in
+ * webform_client_form_pages() after those handlers have been called.
+ *
+ * @param array $input_values
+ *   The values received from the browser.
+ * @param mixed $rule_value
+ *   The value as configured in the form callback.
+ * @param array $component
+ *   The component for which we are evaluating the operator.
+ *
+ * @return bool
+ *   The operation result.
+ */
+function callback_webfom_conditional_comparison_operator(array $input_values, $rule_value, array $component) {
+  foreach ($input_values as $value) {
+    if (strcasecmp($value, $rule_value)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+/**
+ * Define a form element that configures your operator.
+ *
+ * @param object $node
+ *   The node for which the conditionals are being configured.
+ *
+ * @return string|string[]
+ *   Either a single rendered form element or a rendered form element per
+ *   component (keyed by cid). Make sure that none of the rendered strings
+ *   contains any HTML IDs as the form element will be rendered multiple times.
+ *   The JavaScript will take care of adding the appropriate name attributes.
+ *
+ * @see _webform_conditional_expand_value_forms()
+ */
+function callback_webform_conditional_rule_value_form($node) {
+  $forms = [];
+  foreach ($node->webform['components'] as $cid => $component) {
+    if (webform_component_property($component['type'], 'conditional_type') == 'newsletter') {
+      $element = [
+        '#type' => 'select',
+        '#options' => [
+          'yes' => t('Opt-in'),
+          'no' => t('No opt-in'),
+        ],
+      ];
+      $forms[$cid] = drupal_render($element);
+    }
+  }
+  return $forms;
 }
 
 /**

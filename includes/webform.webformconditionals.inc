@@ -152,7 +152,7 @@ class WebformConditionals {
                   ));
               }
               elseif ($source_component['page_num'] == $page_num && $component['type'] == 'pagebreak') {
-                $errors[$page_num][] = t('The page break %to can\'t be controlled by %from on the same page.',
+                $errors[$page_num][] = t("The page break %to can't be controlled by %from on the same page.",
                   array(
                     '%from' => $source_component['name'],
                     '%to' => $component['name'],
@@ -437,11 +437,11 @@ class WebformConditionals {
               // in webform.conditionals.inc.
               switch ($conditional_type) {
                 case 'numeric':
-                  module_load_include('inc', 'webform', 'components/number');
+                  webform_component_include('number');
                   break;
 
                 case 'select':
-                  module_load_include('inc', 'webform', 'components/select');
+                  webform_component_include($conditional_type);
                   break;
               }
 

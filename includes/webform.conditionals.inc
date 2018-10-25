@@ -34,9 +34,9 @@ function webform_conditionals_form($form, &$form_state, $node) {
   // Drop PHP reference.
   unset($conditional);
 
-  // Check the current topological sort order for the conditionals and report any errors,
-  // but only for actual form submissions and not for ajax-related form builds, such as
-  // adding or removing a condition or conditional group.
+  // Check the current topological sort order for the conditionals and report
+  // any errors, but only for actual form submissions and not for ajax-related
+  // form builds, such as adding or removing a condition or conditional group.
   if (empty($form_state['triggering_element']['#ajax'])) {
     $node->webform['conditionals'] = $conditionals;
     webform_get_conditional_sorter($node)->reportErrors($conditionals);
@@ -143,10 +143,11 @@ function webform_conditionals_form($form, &$form_state, $node) {
     '#submit' => array('webform_conditionals_form_submit'),
   );
 
-  // Estimate if the form is too long for PHP max_input_vars and detect whether a previous submission was truncated.
-  // The estimate will be accurate because the form elements for this page are well known. Ajax use of this
-  // page will not generate user-visible errors, so a preflight may be the only indication to the user that
-  // the page is too long.
+  // Estimate if the form is too long for PHP max_input_vars and detect whether
+  // a previous submission was truncated. The estimate will be accurate because
+  // the form elements for this page are well known. Ajax use of this page will
+  // not generate user-visible errors, so a preflight may be the only indication
+  // to the user that the page is too long.
   webform_input_vars_check($form, $form_state, 'conditionals', '');
   return $form;
 }
@@ -221,7 +222,7 @@ function webform_conditionals_form_validate($form, &$form_state) {
           $component_type = $node->webform['components'][$action['target']['#value']]['type'];
           if (!webform_conditional_action_able($component_type, $action['action']['#value'])) {
             form_set_error('conditionals][' . $conditional_key . '][actions][' . $action_key . '][action',
-              t('A component of type %type can\'t be %action. (%target)',
+              t("A component of type %type can't be %action. (%target)",
               array(
                 '%action' => $action['action']['#options'][$action['action']['#value']],
                 '%type' => $component_options[$component_type],
@@ -341,9 +342,11 @@ function theme_webform_conditional_group_row($variables) {
  * Form API #process function to expand a webform conditional element.
  */
 function _webform_conditional_expand($element) {
+  $default_operator = 'and';
+
   $element['#tree'] = TRUE;
   $element['#default_value'] += array(
-    'andor' => 'and',
+    'andor' => $default_operator,
   );
 
   $wrapper_id = backdrop_clean_css_identifier(implode('-', $element['#parents'])) . '-ajax';
@@ -381,7 +384,7 @@ function _webform_conditional_expand($element) {
           'remove' => _webform_conditional_remove_expand($element, $rid),
         );
         $andor_stack[++$level] = array(
-          'value' => $conditional['operator'],
+          'value' => isset($conditional['operator']) ? $conditional['operator'] : $default_operator,
           'parents' => array_merge($element['#parents'], array('rules', $rid, 'operator')),
           'rid' => $rid,
           'first' => TRUE,
@@ -463,8 +466,7 @@ function _webform_conditional_add_expand($element, $rid, $subconditional) {
     '#value' => $subconditional ? t('(+)') : t('+'),
     '#submit' => array('webform_conditional_element_add'),
     '#subconditional' => $subconditional,
-    '#name' => implode('_', $element['#parents']) . '_rules_' . $rid .
-    ($subconditional ? '_add_subconditional' : '_add'),
+    '#name' => implode('_', $element['#parents']) . '_rules_' . $rid . ($subconditional ? '_add_subconditional' : '_add'),
     '#attributes' => array('class' => array('webform-conditional-rule-add')),
     '#ajax' => array(
       'progress' => 'none',
@@ -546,10 +548,10 @@ function _webform_conditional_action_expand($element, $aid, $action) {
     ),
     'invert' => array(
       '#type' => 'select',
-      '#title' => t('Is/Isn\'t'),
+      '#title' => t("Is/Isn't"),
       '#options' => array(
         '0' => t('is'),
-        '1' => t('isn\'t'),
+        '1' => t("isn't"),
       ),
       '#default_value' => $action['invert'],
     ),
@@ -618,11 +620,11 @@ function _webform_conditional_action_expand($element, $aid, $action) {
  *     );
  * @endcode
  *   - forms[$form_key]: A string representing an HTML form for an operator.
- *   - forms[$form_key][$source]: Or instead of a single form for all components,
- *     if each component requires its own form, key each component by its source
- *     value (currently always the component ID).
+ *   - forms[$form_key][$source]: Or instead of a single form for all
+ *     components, if each component requires its own form, key each component
+ *     by its source value (currently always the component ID).
  *
- * @param $node
+ * @param object $node
  *   The Webform node for which these forms are being generated.
  */
 function _webform_conditional_expand_value_forms($node) {
@@ -1439,8 +1441,9 @@ function webform_conditional_prepare_javascript($node, array $submission_data, $
           $source_parents = webform_component_parent_keys($node, $source_component);
           $source_id = 'webform-component--' . str_replace('_', '-', implode('--', $source_parents));
 
-          // If this source has a value set, add that as a setting.
-          // NULL or array(NULL) should be sent as an empty array to simplify the jQuery.
+          // If this source has a value set, add that as a setting. NULL or
+          // array(NULL) should be sent as an empty array to simplify the
+          // jQuery.
           if (isset($submission_data[$source_component['cid']])) {
             $source_value = $submission_data[$source_component['cid']];
             $source_value = is_array($source_value) ? $source_value : array($source_value);
