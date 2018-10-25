@@ -463,7 +463,7 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
           'inline' => t('Inline'),
           'none' => t('None'),
         ),
-        '#description' => t('Determines the placement of the component\'s label.'),
+        '#description' => t("Determines the placement of the component's label."),
       );
     }
     else {
@@ -855,7 +855,7 @@ function webform_component_update($component) {
 }
 
 /**
- *
+ * Delete a Webform component.
  */
 function webform_component_delete($node, $component) {
   // Check if a delete function is available for this component. If so,
@@ -919,6 +919,9 @@ function webform_component_delete($node, $component) {
       // Delete the conditional if this component is the only source / target.
       if (empty($conditional[$field])) {
         webform_conditional_delete($node, $conditional);
+        // Also delete the conditional from the $node so it is not re-created
+        // later on in webform_node_update().
+        unset($node->webform['conditionals'][$conditional['rgid']]);
         // Loop exit.
         break;
       }

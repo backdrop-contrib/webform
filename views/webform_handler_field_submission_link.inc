@@ -9,7 +9,7 @@ class webform_handler_field_submission_link extends views_handler_field {
   public $link_type;
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function construct() {
     // We need to set this property before calling the construct() chain
@@ -31,7 +31,7 @@ class webform_handler_field_submission_link extends views_handler_field {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function option_definition() {
     $options = parent::option_definition();
@@ -42,7 +42,7 @@ class webform_handler_field_submission_link extends views_handler_field {
   }
 
   /**
-   *
+   * {@inheritdoc}
    */
   public function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
