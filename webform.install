@@ -1414,3 +1414,10 @@ function webform_update_1602() {
     $config->save();
   }
 }
+
+/**
+ * Rebuild CSS with improvements to progress bar design.
+ */
+function webform_update_1603() {
+  backdrop_clear_css_cache();
+}
