@@ -758,7 +758,7 @@ function webform_conditional_element_add($form, &$form_state) {
                     );
 
   if (empty($button['#subconditional'])) {
-    $new[0] = $parent_values[$rid]['source_type'] == 'component' ? $parent_values[$rid] : $default_rule;
+    $new[0] = (isset($parent_values[$rid]['source_type']) && $parent_values[$rid]['source_type'] == 'component') ? $parent_values[$rid] : $default_rule;
   }
   else {
     // The default andor operator is opposite of current subconditional's
