@@ -2359,3 +2359,23 @@ function webform_update_7430() {
 
   return t('Webform emails may now be disabled.');
 }
+
+/**
+ * Preserve progress bar as not active for one-page webforms.
+ */
+function webform_update_7431() {
+  // Get a list of all Webforms containing a pagebreak.
+  $multipage_webform_nids = db_select('webform_component');
+  $multipage_webform_nids->distinct();
+  $multipage_webform_nids->addField('webform_component', 'nid');
+  $multipage_webform_nids->condition('type', 'pagebreak');
+
+  // Remove confirmation page from the progress bar for single-page Webforms.
+  $updated_count = db_update('webform')
+    ->fields(array('progressbar_include_confirmation' => 0))
+    ->condition('preview', 0)
+    ->condition('nid', $multipage_webform_nids, 'NOT IN')
+    ->execute();
+
+  return t("Disabled progress bar for @count single-page webforms.", array('@count' => $updated_count));
+}
