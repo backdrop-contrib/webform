@@ -191,21 +191,6 @@ function _webform_edit_file($component) {
     '#parents' => array('extra', 'progress_indicator'),
   );
 
-  // @todo: Make managed_file respect the "size" parameter.
-  /*
-  $form['display']['width'] = array(
-  '#type' => 'textfield',
-  '#title' => t('Width'),
-  '#default_value' => $component['extra']['width'],
-  '#description' => t('Width of the file field.') . ' ' .
-    t('Leaving blank will use the default size.'),
-  '#size' => 5,
-  '#maxlength' => 10,
-  '#weight' => 4,
-  '#parents' => array('extra', 'width')
-  );
-   */
-
   return $form;
 }
 
@@ -392,7 +377,7 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE, $submis
  * wrapper around the element with the element's id, thereby creating 2 elements
  * with the same id.
  *
- * @param $variables
+ * @param array $variables
  *   An associative array containing:
  *   - element: A render element representing the file.
  *
@@ -647,13 +632,13 @@ function webform_file_rename($node, $submission) {
 /**
  * Renames the uploaded file name using tokens.
  *
- * @param $node
+ * @param object $node
  *   The webform node object.
- * @param $submission
+ * @param object $submission
  *   The webform submission object.
- * @param $component
+ * @param array $component
  *   Component settings array for which fid is going to be processed.
- * @param $fid
+ * @param int $fid
  *   A file id to be processed.
  */
 function webform_file_process_rename($node, $submission, $component, $fid) {

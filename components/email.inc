@@ -245,9 +245,9 @@ function theme_webform_email($variables) {
  * Validates the entered values from email components on the client-side form.
  * Calls a form_set_error if the e-mail is not valid.
  *
- * @param $form_element
+ * @param array $form_element
  *   The e-mail form element.
- * @param $form_state
+ * @param array $form_state
  *   The full form state for the webform.
  */
 function _webform_validate_email($form_element, &$form_state) {
