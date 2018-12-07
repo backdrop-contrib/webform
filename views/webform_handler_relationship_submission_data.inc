@@ -59,10 +59,11 @@ class webform_handler_relationship_submission_data extends views_handler_relatio
     parent::options_submit($form, $form_state);
     _webform_views_options_submit($form, $form_state);
     $options =& $form_state['values']['options'];
-    $options['webform_form_key'] = $options['webform_join_by_form_key'] == 'form_key' && ($node = node_load($options['webform_nid'])) 
-                                        ? $node->webform['components'][$options['webform_cid']]['form_key'] 
+    $options['webform_form_key'] = $options['webform_join_by_form_key'] == 'form_key' && ($node = node_load($options['webform_nid']))
+                                        ? $node->webform['components'][$options['webform_cid']]['form_key']
                                         : NULL;
-    unset($options);    // Drop PHP reference.
+    // Drop PHP reference.
+    unset($options);
   }
 
   /**
@@ -72,37 +73,53 @@ class webform_handler_relationship_submission_data extends views_handler_relatio
    */
   public function query() {
     // When defining extra clauses, the 'table' key can be used to specify the
-    // alias of another table. If NULL is specified, then the field is not 
+    // alias of another table. If NULL is specified, then the field is not
     // qualified with a table. Therefore, do NOT specify "'table' => NULL".
-
     switch ($this->options['webform_join_by']) {
-      case 'form_key' :
+      case 'form_key':
         $form_key = $this->options['webform_form_key'];
         $join_type = $this->options['required'] ? 'INNER' : 'LEFT';
-    
+
         $this->ensure_my_table();
         $join = new views_join();
-        $join->construct('webform_component',         // The table to be joined.
-                        $this->table,                // The left table (i.e. this table, webform_submission).
-                        'nid',                       // The left field (i.e. the webform node id).
-                        'nid',                       // The field (i.e. webform_components.nid).
-                        array(                       // Extra array of additional conditions.
-                          array(
-                              'field' => 'form_key',  // Extra join of form_key
-                              'value' => $form_key,   // ...    = $form_key (operator '=' is default)
-                          ),
-                        ),
-                        $join_type);                 // Join type is the same as this relationship's join type.
-        $alias = $this->query->add_relationship("webform_component_{$form_key}",  // Requested alias for new reliationship.
-                                                $join,                            // Addition join to be added to this relatinship.
-                                                $this->table_alias,               // Base table (i.e. drivingevals_submission)
-                                                $this->relationship);             // Add the view to this relationship.
+
+        $join->construct(
+          // The table to be joined.
+          'webform_component',
+          // The left table (i.e. this table, webform_submission).
+          $this->table,
+          // The left field (i.e. the webform node id).
+          'nid',
+          // The field (i.e. webform_components.nid).
+          'nid',
+          // Extra array of additional conditions.
+          array(
+            array(
+              // Extra join of form_key.
+              'field' => 'form_key',
+              // ...    = $form_key (operator '=' is default)
+              'value' => $form_key,
+            ),
+          ),
+          // Join type is the same as this relationship's join type.
+          $join_type);
+
+        $alias = $this->query->add_relationship(
+          // Requested alias for new reliationship.
+          'webform_component_' . $form_key,
+          // Addition join to be added to this relatinship.
+          $join,
+          // Base table (i.e. drivingevals_submission)
+          $this->table_alias,
+          // Add the view to this relationship.
+          $this->relationship);
 
         // The actual alias for this relationship's join is not known yet. Becasue
         // of name conflicts, it may have a number appended to the end. %alias is
         // substitued when the query is build with the actual alias name.
         $this->definition['extra'][] = "%alias.cid = {$alias}.cid";
         break;
+
       case 'nid_cid':
         $this->definition['extra'][] = array(
           'field' => "nid",
