@@ -87,6 +87,13 @@
         $(this).focus();
         event.preventDefault();
       });
+
+      // Clear date on backspace or delete.
+      $calendar.keyup(function (e) {
+        if (e.keyCode == 8 || e.keyCode == 46) {
+          $.datepicker._clearDate(this);
+        }
+      });
     });
   };
 
