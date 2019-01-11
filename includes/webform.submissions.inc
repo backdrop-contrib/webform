@@ -948,7 +948,7 @@ function webform_get_submission_count($nid, $uid = NULL, $is_draft = 0) {
     if ($uid === 0) {
       $submissions = isset($_SESSION['webform_submission']) ? $_SESSION['webform_submission'] : NULL;
       if ($submissions) {
-        $query->condition('ws.sid', $submissions, 'IN');
+        $query->condition('ws.sid', array_keys($submissions), 'IN');
       }
       else {
         // Intentionally never match anything if the anonymous user has no
