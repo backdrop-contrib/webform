@@ -255,6 +255,13 @@ function webform_admin_settings() {
     '#description' => t('When mapping emails addresses to a select component, limit the choice to components with less than the amount of options indicated. This is to avoid flooding the email settings form.'),
   );
 
+  $form['advanced']['webform_fieldset_wrap'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use fieldsets for grouped components'),
+    '#default_value' => webform_variable_get('webform_fieldset_wrap'),
+    '#description' => t('Components containing multiple fields, such as checkboxes and radio buttons, will be wrapped in fieldsets. This improves the accessibility of webforms and helps them conform to web standards, but may require updates to the CSS of the active theme.'),
+  );
+
   $form = system_settings_form($form);
   $form['#theme'] = 'webform_admin_settings';
   array_unshift($form['#submit'], 'webform_admin_settings_submit');

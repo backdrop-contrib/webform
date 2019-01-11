@@ -796,6 +796,7 @@ function webform_uninstall() {
   variable_del('webform_default_format');
   variable_del('webform_format_override');
   variable_del('webform_email_select_max');
+  variable_del('webform_fieldset_wrap');
   variable_del('webform_node_types_primary');
   variable_del('webform_date_type');
   variable_del('webform_export_format');

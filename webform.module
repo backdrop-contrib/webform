@@ -3754,6 +3754,23 @@ function theme_webform_element($variables) {
     $variables['element']['#id'] = NULL;
   }
 
+  // Determine whether or not this element has form control children. If so and
+  // if webform_fieldset_wrap is TRUE, wrap them in a fieldset and use legend
+  // instead of label.
+  $has_element_children = FALSE;
+  if (webform_variable_get('webform_fieldset_wrap')) {
+    foreach (array_keys($element) as $key) {
+      if (substr($key, 0, 1) !== '#') {
+        $has_element_children = TRUE;
+        break;
+      }
+    }
+  }
+
+  if ($has_element_children) {
+    $output .= '<fieldset class="fieldset-invisible">';
+  }
+
   switch ($element['#title_display']) {
     case 'inline':
       $output .= $description[$above];
@@ -3761,7 +3778,18 @@ function theme_webform_element($variables) {
     case 'before':
     case 'invisible':
     case 'after':
-      $title = ' ' . theme('form_element_label', $variables);
+      if ($has_element_children) {
+        $title = '<legend>' . $element['#title'];
+
+        if ($element['#required']) {
+          $title .= ' ' . theme('form_required_marker', $variables);
+        }
+
+        $title .= '</legend>';
+      }
+      else {
+        $title = ' ' . theme('form_element_label', $variables);
+      }
       break;
   }
 
@@ -3788,6 +3816,11 @@ function theme_webform_element($variables) {
   $output .= "\n";
 
   $output .= $description[!$above];
+
+  if ($has_element_children) {
+    $output .= '</fieldset>';
+  }
+
   $output .= "</div>\n";
 
   return $output;
@@ -4413,6 +4446,10 @@ function webform_variable_get($variable) {
 
     case 'webform_disabled_components':
       $result = variable_get('webform_disabled_components', array());
+      break;
+
+    case 'webform_fieldset_wrap':
+      $result = variable_get('webform_fieldset_wrap', FALSE);
       break;
   }
   return $result;
