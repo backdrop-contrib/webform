@@ -1425,7 +1425,7 @@ function webform_update_1603() {
 /**
  * Preserve progress bar as not active for one-page webforms.
  */
-function webform_update_7431() {
+function webform_update_1604() {
   // Get a list of all Webforms containing a pagebreak.
   $multipage_webform_nids = db_select('webform_component');
   $multipage_webform_nids->distinct();
