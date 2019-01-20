@@ -22,6 +22,7 @@ function webform_configure_form($form, &$form_state, $node) {
 
   $form['#submit'] = array(
     'webform_configure_form_submit',
+    'webform_configure_form_submit_save',
   );
 
   $form['nid'] = array(
@@ -523,6 +524,17 @@ function webform_configure_form_submit($form, &$form_state) {
     $next_serial = $next_min;
   }
   $node->webform['next_serial'] = $next_serial;
+}
+
+/**
+ * Submit handler for webform_configure_form() that saves the node.
+ *
+ * This is separate from webform_configure_form_submit() to allow other modules
+ * to add properties if needed into the $form['#node'] object before save.
+ */
+function webform_configure_form_submit_save($form, &$form_state) {
+  node_save($form['#node']);
+  backdrop_set_message(t('The form settings have been updated.'));
 }
 
 /**
