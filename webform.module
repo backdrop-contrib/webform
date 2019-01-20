@@ -2390,7 +2390,7 @@ function webform_block_configure($delta = '') {
     '#title' => t('View mode'),
     '#default_value' => $settings['display'],
     '#options' => $view_modes,
-    '#description' => t('The view mode determines how much of the webform to show within the block. You may <a href="!view_modes">customize different view modes</a> (other than the "Form only" mode) or even create new custom view modes if either the <a href="http://drupal.org/project/entity_view_mode">Entity view modes</a> or <a href="http://drupal.org/project/ds">Display Suite</a> modules are installed.', array('!view_modes' => url('admin/structure/types/manage/' . $node->type . '/display'))),
+    '#description' => t('The view mode determines how much of the webform to show within the block. You may <a href="!view_modes">customize different view modes</a> (other than the "Form only" mode) or even create new custom view modes.', array('!view_modes' => url('admin/structure/types/manage/' . $node->type . '/display'))),
   );
 
   $form['pages_block'] = array(

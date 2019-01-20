@@ -1433,7 +1433,7 @@ function hook_webform_exporters_alter(array &$exporters) {
  *   - label: Translated label for this operator that is shown in the UI.
  *   - comparison callback: A callback for server-side evaluation.
  *   - js comparison callback: A JavaScript callback for client-side evaluation.
- *     The callback will be looked for in the Drupal.webform object.
+ *     The callback will be looked for in the Backdrop.webform object.
  *   - form callback (optional): A form callback that allows configuring
  *     additional parameters for this operator. Default:
  *     'webform_conditional_operator_text'.
@@ -1516,7 +1516,7 @@ function callback_webform_conditional_rule_value_form($node) {
           'no' => t('No opt-in'),
         ],
       ];
-      $forms[$cid] = drupal_render($element);
+      $forms[$cid] = backdrop_render($element);
     }
   }
   return $forms;

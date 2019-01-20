@@ -251,7 +251,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
 
     // Mail the webform results.
     foreach ($addresses_final as $address) {
-      $message = drupal_mail('webform', 'submission', $address, $language, $mail_params, $email['from']);
+      $message = backdrop_mail('webform', 'submission', $address, $language, $mail_params, $email['from']);
       if ($message['result']) {
         $send_count += $send_increment;
       }
@@ -272,7 +272,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
  *   The e-mail settings to be used. This will have some of its values adjusted.
  *
  * @return array|null
- *   An array of the information about the email needed by drupal_mail().
+ *   An array of the information about the email needed by backdrop_mail().
  */
 function _webform_submission_prepare_mail($node, $submission, &$email) {
   global $user;
@@ -367,7 +367,7 @@ function _webform_submission_prepare_mail($node, $submission, &$email) {
     if (_webform_submission_spam_check($address, $email['subject'], $email['from'], $email['headers'])) {
       watchdog('webform', 'Possible spam attempt from @remote !message',
         array('@remote' => ip_address(), '!message' => "<br />\n" . nl2br(htmlentities($email['message']))));
-      drupal_set_message(t('Illegal information. Data not submitted.'), 'error');
+      backdrop_set_message(t('Illegal information. Data not submitted.'), 'error');
       return;
     }
   }
@@ -379,7 +379,7 @@ function _webform_submission_prepare_mail($node, $submission, &$email) {
     $addresses_final = array(implode(', ', $addresses_final));
   }
 
-  // Prepare the variables used by drupal_mail().
+  // Prepare the variables used by backdrop_mail().
   $language = $user->uid ? user_preferred_language($user) : language_default();
   $mail_params = array(
     'message' => $email['message'],

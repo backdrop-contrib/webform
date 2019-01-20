@@ -139,7 +139,7 @@ function _webform_edit_date_validate($form, &$form_state) {
   // Reduce checkbox values to simple non-associative array of values.
   form_set_value($form['extra']['exclude'], array_filter(array_values($form_state['values']['extra']['exclude'])), $form_state);
 
-  // Note that Drupal 7 doesn't support setting errors no checkboxes due to
+  // Note that Backdrop doesn't support setting errors on checkboxes due to
   // browser issues. See: https://www.drupal.org/node/222380
   if (count($form_state['values']['extra']['exclude']) == 3) {
     form_set_error('extra][exclude', 'The day, month and year can\'t all be hidden.');
