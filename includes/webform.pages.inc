@@ -170,7 +170,7 @@ function webform_configure_form($form, &$form_state, $node) {
     '#title' => t('Submission access'),
     '#collapsible' => TRUE,
     '#collapsed' => FALSE,
-    '#description' => t('These permissions affect which roles can submit this webform. It does not prevent access to the webform page. If needing to prevent access to the webform page entirely, use a content access module such as <a href="http://drupal.org/project/taxonomy_access">Taxonomy Access</a> or <a href="http://drupal.org/project/node_privacy_byrole">Node Privacy by Role</a>.'),
+    '#description' => t('These permissions affect which roles can submit this webform. It does not prevent access to the webform page. If needing to prevent access to the webform page entirely, use a content access module such as <a href="https://backdropcms.org/project/content_view_access">Content View Access</a>.'),
     '#access' => webform_variable_get('webform_submission_access_control'),
     '#weight' => 10,
     '#states' => array(
@@ -535,29 +535,6 @@ function webform_configure_form_submit($form, &$form_state) {
 function webform_configure_form_submit_save($form, &$form_state) {
   node_save($form['#node']);
   backdrop_set_message(t('The form settings have been updated.'));
-
-  $node = &$form['#node'];
-  if (!$node->webform['block'] && function_exists('block_load') &&
-      ($block = block_load('webform', 'client-block-' . $node->nid)) &&
-      !empty($block->bid)) {
-    // An existing block for this not-currently-available block was already configured.
-    // See https://www.drupal.org/node/2365825
-    // The core block module contains a bug which causes it to not remove blocks
-    // which are no longer available in code. Therefore, to prevent the block from
-    // being processed, it must be removed manually here.
-    // Remove the block for all themes.
-    db_delete('block')
-      ->condition('module', 'webform')
-      ->condition('delta', $block->delta)
-      ->execute();
-    // Remove any roles associated with the block.
-    db_delete('block_role')
-      ->condition('module', 'webform')
-      ->condition('delta', $block->delta)
-      ->execute();
-    backdrop_set_message(t('The block %info was deleted.', array('%info' => t('Webform: !title', array('!title' => $node->title)))));
-    cache_clear_all();
-  }
 }
 
 /**
