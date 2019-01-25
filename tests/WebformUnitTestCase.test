@@ -48,6 +48,10 @@ class WebformUnitTestCase extends DrupalUnitTestCase {
     $sample = ['"John One" <test1@example.com>', '"John One" <test2@example.com>'];
     $this->assertIdentical($test, $sample, 'webform_format_email_address() repeats first name when more emails than names provided.');
 
+    $test = webform_format_email_address('test1@example.com, test2@example.com', 'John One', NULL, NULL, TRUE, FALSE);
+    $sample = ['"John One" <test1@example.com>', '"John One" <test2@example.com>'];
+    $this->assertIdentical($test, $sample, 'webform_format_email_address() accepts multiple emails as comma-separated string.');
+
     $node = (object) [
       'webform' => [
         'components' => [

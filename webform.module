@@ -4623,6 +4623,7 @@ function webform_format_email_address($address, $name, $node = NULL, $submission
   }
 
   foreach ($address as $key => $individual_address) {
+    $individual_address = trim($individual_address);
     $individual_address = webform_replace_tokens($individual_address, $node, $submission);
     $email_parts = webform_parse_email_address($individual_address);
     if ($format == 'long' && !empty($name[$key]) && !strlen($email_parts['name'])) {
