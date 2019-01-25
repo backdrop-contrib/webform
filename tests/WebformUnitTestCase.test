@@ -1,0 +1,26 @@
+<?php
+
+/**
+ * Webform module unit tests.
+ */
+class WebformUnitTestCase extends DrupalUnitTestCase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return array(
+      'name' => t('Webform unit tests'),
+      'description' => t('Unit tests for Webform functions.'),
+      'group' => t('Webform'),
+    );
+  }
+
+  /**
+   * The tests.
+   */
+  public function test() {
+    $this->pass('Webform unit tests ran.');
+  }
+
+}

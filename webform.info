@@ -38,3 +38,4 @@ files[] = tests/WebformGeneralTestCase.test
 files[] = tests/WebformPermissionsTestCase.test
 files[] = tests/WebformSubmissionTestCase.test
 files[] = tests/WebformTestCase.test
+files[] = tests/WebformUnitTestCase.test
