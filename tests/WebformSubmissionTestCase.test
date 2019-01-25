@@ -29,7 +29,6 @@ class WebformSubmissionTestCase extends WebformTestCase {
     $this->drupalLogout();
 
     // Test webform_get_submission_count().
-
     $this->webformSubmissionExecute('sample');
 
     $count = webform_get_submission_count($this->webformForm()->nid);

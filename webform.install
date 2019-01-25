@@ -645,7 +645,8 @@ function webform_schema() {
     'indexes' => array(
       'nid' => array('nid'),
       'sid_nid' => array('sid', 'nid'),
-      // For all but MS SQL Server databases, 64-character index is created on the data column after the schema is installed.
+      // For all but MS SQL Server databases, 64-character index is created on
+      // the data column after the schema is installed.
     ),
   );
 
@@ -2061,12 +2062,14 @@ function webform_update_7417() {
  * causes no problem, this update removes the schema module's warning.
  */
 function webform_update_7418() {
-  // While there should never be any NULL values in the extra field, change them to '' to be safe.
+  // While there should never be any NULL values in the extra field, change them
+  // to '' to be safe.
   db_update('webform_emails')
     ->fields(array('extra' => ''))
     ->isNull('extra')
     ->execute();
-  // Pass a complete field specification to db_change_field for cross-database compatiblity.
+  // Pass a complete field specification to db_change_field for cross-database
+  // compatiblity.
   $spec = array(
     'description' => 'A serialized array of additional options for the e-mail configuration, including excluded components and value mapping for the TO and FROM addresses for select lists.',
     'type' => 'text',
@@ -2119,7 +2122,10 @@ function webform_update_7422() {
 }
 
 /**
- * Convert conditionals to be able to support multiple actions per conditional. Backup your database before proceeding. WARNING: Sites with many, many conditionals should execute this update via drush to avoid a PHP timeout.
+ * Convert conditionals to be able to support multiple actions per conditional.
+ *
+ * Backup your database before proceeding. WARNING: Sites with many, many
+ * conditionals should execute this update via drush to avoid a PHP timeout.
  */
 function webform_update_7423() {
   // Create webform_condtional_actions table.
@@ -2184,9 +2190,11 @@ function webform_update_7423() {
     db_create_table('webform_conditional_actions', $schema['webform_conditional_actions']);
   }
 
-  // In a site with many, many conditionals, the db_insert may timeout. Start a transaction to ensure atomic action.
+  // In a site with many, many conditionals, the db_insert may timeout. Start a
+  // transaction to ensure atomic action.
   $tx = db_transaction();
-  // Copy target information from existing webform_conditional table to new webfrom_condtional_actions table.
+  // Copy target information from existing webform_conditional table to new
+  // webfrom_condtional_actions table.
   $select = db_select('webform_conditional', 'c')
     ->fields('c', array('nid', 'rgid', 'action', 'target_type', 'target'))
     ->orderBy('nid')->orderBy('rgid');
@@ -2205,7 +2213,8 @@ function webform_update_7423() {
     }
   }
 
-  // Rebuild the registry because this point release contains a new class: WebformConditionals.
+  // Rebuild the registry because this point release contains a new class:
+  // WebformConditionals.
   registry_rebuild();
 
   return t('Webform database tables were successfully adjusted to allow more than one action for each conditional.');
@@ -2255,7 +2264,9 @@ function webform_update_7426() {
 }
 
 /**
- * Add database columns for submission completed and modified timestamps. Sites with many submissions may wish to use drush to execute this update.
+ * Add database columns for submission completed and modified timestamps.
+ *
+ * Sites with many submissions may wish to use drush to execute this update.
  */
 function webform_update_7427() {
   // Create new timestamp columns.
@@ -2279,7 +2290,8 @@ function webform_update_7427() {
     }
   }
 
-  // In a site with many submissions, the db_update may timeout. Start a transaction to ensure atomic action.
+  // In a site with many submissions, the db_update may timeout. Start a
+  // transaction to ensure atomic action.
   $tx = db_transaction();
   // Copy submitted to completed for non-draft submissions.
   db_update('webform_submissions')
@@ -2323,7 +2335,9 @@ function webform_update_7428() {
 }
 
 /**
- * Add a column to the submission table to store the page on which to resume a draft. Sites with many, many submissions may wish to execute this update with 'drush updatedb'.
+ * Add a column to the submission table to store the page on which to resume a
+ * draft. Sites with many, many submissions may wish to execute this update with
+ * 'drush updatedb'.
  */
 function webform_update_7429() {
   // Add highest_valid_page column to webform_submissions.

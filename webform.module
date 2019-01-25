@@ -3271,7 +3271,8 @@ function webform_client_form_pages($form, &$form_state) {
   // Merge any stored submission data for multistep forms.
   $original_values = is_array($form_state['values']['submitted']) ? $form_state['values']['submitted'] : array();
   if (isset($form_state['storage']['submitted'])) {
-    // Array + operator keeps all elements of left operand and discards any duplicate elements in right operand.
+    // Array + operator keeps all elements of left operand and discards any
+    // duplicate elements in right operand.
     $original_values += $form_state['storage']['submitted'];
   }
 
@@ -4155,8 +4156,9 @@ function webform_replace_url_tokens($redirect_url, $node = NULL, $submission = N
     }
   }
   $parsed_redirect_url['fragment'] = webform_replace_tokens($parsed_redirect_url['fragment'], $node, $submission);
-  // Determine whether the path is internal or external. Paths which contain the site's
-  // base url are still considered internal. #webform_external is private to webform.
+  // Determine whether the path is internal or external. Paths which contain the
+  // site's base url are still considered internal. #webform_external is private
+  // to webform.
   $parsed_redirect_url['#webform_external'] = url_is_external($parsed_redirect_url['path']);
   foreach (array(NULL, TRUE, FALSE) as $https) {
     if (stripos($parsed_redirect_url['path'], url('', array('absolute' => TRUE, 'https' => $https))) === 0) {
@@ -5004,7 +5006,8 @@ function webform_set_breadcrumb($node, $submission = NULL) {
   if ($submission) {
     $breadcrumb = menu_get_active_breadcrumb();
 
-    // Append the node title (or its menu name), in case it isn't in the path already.
+    // Append the node title (or its menu name), in case it isn't in the path
+    // already.
     $active_trail = menu_get_active_trail();
     $last_active = end($active_trail);
     $breadcrumb[] = $last_active['href'] === $node_path && !empty($last_active['in_active_trail'])
@@ -5157,14 +5160,14 @@ function webform_date_format($type = NULL, array $exclude = array()) {
 
     // Date/Time formatting characters
     // WHAT           REQUIRED (at least 1) OPTIONAL (allowed but insufficient)
-    // ---------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Day-of-week                          DlNw
     // Day            dj                    Stz
     // Month          FmMn
     // Year           oYy                   L
     //
     //                NOT ALLOWED
-    // --------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Time           aABgGhHisueIOPTZ
     // Special        /.,-: <space>
     //
@@ -5429,8 +5432,9 @@ function webform_input_vars_check(array &$form, array $form_state, $detect_key, 
     $form['#input_var_waring_parent'] = $parent_key;
   }
   if (!empty($form_state['input']) && array_key_exists($detect_key, $form_state['input']) && !array_key_exists('form_id', $form_state['input'])) {
-    // A form was submitted with POST, but the form_id was missing. The most likely cause of this
-    // is that the POST was truncated because PHP exceeded its max_input_vars limit.
+    // A form was submitted with POST, but the form_id was missing. The most
+    // likely cause of this is that the POST was truncated because PHP exceeded
+    // its max_input_vars limit.
     $subs = array(
       '@count' => webform_count_terminals($_POST),
       '@limit' => (int) ini_get('max_input_vars'),
@@ -5457,8 +5461,8 @@ function webform_pre_render_input_vars($element) {
   // Determine the limit on input vars for this server configuration.
   $limit = ini_get('max_input_vars');
   if ($limit) {
-    // Estimate the number of input vars needed to see if the PHP limit has been exceeded.
-    // Additional input_vars: op.
+    // Estimate the number of input vars needed to see if the PHP limit has been
+    // exceeded. Additional input_vars: op.
     $count = 1 + webform_count_input_vars($element);
     if ($count > $limit * 0.95) {
       $subs = array(
