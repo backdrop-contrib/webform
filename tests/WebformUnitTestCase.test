@@ -20,6 +20,8 @@ class WebformUnitTestCase extends DrupalUnitTestCase {
    * The tests.
    */
   public function test() {
+    require_once __DIR__ . '/../webform.module';
+
     $test = webform_format_email_address('test@example.com', 'John Smith');
     $sample = '"John Smith" <test@example.com>';
     $this->assertIdentical($test, $sample, 'webform_format_email_address() returns string for single name and email address.');
