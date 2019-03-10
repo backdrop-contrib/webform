@@ -348,6 +348,9 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE, $submis
     '#required' => $component['required'],
     '#default_value' => isset($value[0]) ? $value[0] : NULL,
     '#attributes' => $component['extra']['attributes'],
+    '#attached' => array(
+      'library' => array('system', 'backdrop.form'),
+    ),
     '#upload_validators' => array(
       'file_validate_size' => array($max_filesize),
       'file_validate_extensions' => array(implode(' ', $component['extra']['filtering']['types'])),
