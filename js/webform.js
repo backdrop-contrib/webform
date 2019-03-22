@@ -84,8 +84,18 @@
 
       // Prevent the calendar button from submitting the form.
       $calendar.click(function (event) {
-        $(this).focus();
-        event.preventDefault();
+        // This event is triggered also when pressing enter when the focus is on
+        // previous webform components, but we only want to do something when
+        // we are on the calendar component. By checking the event client x/y
+        // position we known if it was the user clicking. For keyboard navigators
+        // simply the focus handles the date picker so we don't have to do
+        // anything special for them.
+        if (event.clientX !== 0 && event.clientY !== 0) {
+          // Focus is only necessary for Safari. But it has no impact on other
+          // browsers.
+          $(this).focus();
+          event.preventDefault();
+        }
       });
 
       // Clear date on backspace or delete.
