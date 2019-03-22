@@ -20,7 +20,7 @@ function webform_admin_settings() {
   );
 
   // Add each component to the form:
-  $form['components'] = array('#tree' => TRUE);
+  $form['components'] += array('#tree' => TRUE);
   $component_types = webform_components(TRUE);
   foreach ($component_types as $key => $component) {
     $form['components'][$key] = array(
