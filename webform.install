@@ -2335,6 +2335,8 @@ function webform_update_7428() {
 }
 
 /**
+ * Add column highest_valid_page to webform_submissions table.
+ *
  * Add a column to the submission table to store the page on which to resume a
  * draft. Sites with many, many submissions may wish to execute this update with
  * 'drush updatedb'.
