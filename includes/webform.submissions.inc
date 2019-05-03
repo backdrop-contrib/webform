@@ -95,6 +95,7 @@ function webform_submission_create($node, $account, array $form_state, $is_previ
  *   The existing submission SID.
  */
 function webform_submission_update($node, $submission) {
+  $transaction = db_transaction();
   // Allow other modules to modify the submission before saving.
   foreach (module_implements('webform_submission_presave') as $module) {
     $function = $module . '_webform_submission_presave';
@@ -145,6 +146,7 @@ function webform_submission_update($node, $submission) {
  *   The new submission SID.
  */
 function webform_submission_insert($node, $submission) {
+  $transaction = db_transaction();
   // The submission ID may already be set if being called as an update.
   if (!isset($submission->sid) && (!isset($submission->is_new) || $submission->is_new == FALSE)) {
     // Allow other modules to modify the submission before saving.
@@ -191,6 +193,7 @@ function webform_submission_insert($node, $submission) {
  *   The webform submission object to be deleted from the database.
  */
 function webform_submission_delete($node, $submission) {
+  $transaction = db_transaction();
   // Iterate through all components and let each do cleanup if necessary.
   foreach ($node->webform['components'] as $cid => $component) {
     if (isset($submission->data[$cid])) {
