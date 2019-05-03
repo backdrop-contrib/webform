@@ -5344,7 +5344,7 @@ function _webform_submission_serial_next_value($nid) {
   // a transaction. The return value of db_transaction() must be assigned or the
   // transaction will commit immediately. The transaction will commit when $txn
   // goes out-of-scope.
-  $txn = db_transaction();
+  $transaction = db_transaction();
 
   // Get the next_serial value.
   $next_serial = db_select('webform', 'w')
