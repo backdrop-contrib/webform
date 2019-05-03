@@ -663,7 +663,24 @@ function theme_webform_submission_resend(array $variables) {
 }
 
 /**
- * Print a Webform submission for display on a page or in an e-mail.
+ * Prepare a Webform submission for display on a page or in an e-mail.
+ *
+ * @param object $node
+ *   The node object.
+ * @param object $submission
+ *   The submission object.
+ * @param array $email
+ *   The email configuration array.
+ * @param string $format
+ *   The format the form should be displayed as. May be one of the following:
+ *   - form: Show as an editable form.
+ *   - html: Show as HTML results.
+ *   - text: Show as plain text.
+ * @param array $excluded_components
+ *   An array of components to exclude as cid.
+ *
+ * @return array
+ *   A renderable array of the submission.
  */
 function webform_submission_render($node, $submission, $email, $format, $excluded_components = NULL) {
   $component_tree = array();
