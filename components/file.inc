@@ -491,7 +491,7 @@ function _webform_delete_file($component, $value) {
   // Delete an individual submission file.
   if (!empty($value[0]) && ($file = webform_get_file($value[0]))) {
     file_usage_delete($file, 'webform');
-    file_delete($file);
+    file_delete($file->fid);
   }
 }
 
@@ -622,7 +622,7 @@ function webform_file_usage_adjust($submission) {
     $files = file_load_multiple($submission->file_usage['deleted_fids']);
     foreach ($files as $file) {
       file_usage_delete($file, 'webform', 'submission', $submission->sid);
-      file_delete($file);
+      file_delete($file->fid);
     }
   }
 }
