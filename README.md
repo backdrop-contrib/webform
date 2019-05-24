@@ -1,18 +1,15 @@
-Description
------------
+# Webform
+
+## Description
+
 This module adds a webform content type to your Drupal site.
 A webform can be a questionnaire, contact or request form. These can be used
 by visitor to make contact or to enable a more complex survey than polls
 provide. Submissions from a webform are saved in a database table and
 can optionally be mailed to e-mail addresses upon submission.
 
-Requirements
-------------
-Drupal 7.x
-See https://www.drupal.org/project/webform for additional requirements.
+## Installation
 
-Installation
-------------
 1. Copy the entire webform directory the Drupal sites/all/modules directory.
 
 2. Login as an administrator. Enable the module in the "Administer" -> "Modules"
@@ -22,8 +19,8 @@ Installation
 
 4. Create a webform node at node/add/webform.
 
-Upgrading from previous versions
---------------------------------
+## Upgrading from previous versions
+
 Note that you must be running the latest 3.x version of Webform (for either
 Drupal 6 or Drupal 7) before upgrading to Webform 4.x.
 
@@ -46,7 +43,7 @@ https://drupal.org/node/1609324.
 
 4. Run update.php (at http://www.example.com/update.php).
 
-Support
--------
+## Support
+
 Please use the issue queue for filing bugs with this module at
 http://drupal.org/project/issues/webform

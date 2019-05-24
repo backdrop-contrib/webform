@@ -1,12 +1,14 @@
-Overview
---------
+# Theming Webform
+
+## Overview
+
 Webform supports theming similar to the CCK or Views modules. Any webform may be
 themed on the server side, though doing so may require a reasonable amount of
 knowledge about the Drupal Form API. More information about the Form API may be
 found at: http://api.drupal.org/api/file/developer/topics/forms_api.html
 
-Theme submission e-mails
------------------------
+## Theme submission e-mails
+
 The default e-mails sent by webform are fairly basic. If you like, you may
 customize the display of e-mails sent by each individual webform.
 
@@ -29,9 +31,9 @@ customize the display of e-mails sent by each individual webform.
 
 - To get a better idea of what variables are available to you, you can include
   the print_r function in your email. Simply include the line:
-
+  ```
   <?php print_r($submission) ?>
-
+  ```
   to get a listing of all the available fields you can use in your mail.
 
 - Advanced Webform e-mail Theming: Theming the e-mail headers may also be done
@@ -39,8 +41,7 @@ customize the display of e-mails sent by each individual webform.
   Just copy the code out of webform.module and change as necessary in your
   template.php file. This allows you to customize the e-mail headers.
 
-Theme the confirmation page
----------------------------
+## Theme the confirmation page
 
 After a user submits a webform, they are directed to a page that contains the
 confirmation message set in the webform node settings (assuming the form doesn't
@@ -55,19 +56,17 @@ the confirmation page of a single node or all webforms on your site.
 - Open the new file and change it's contents to the your liking. Here's an
   example that inserts some additional HTML around the confirmation message and
   gives links to edit the submission.
-
+  ```
   <?php /* Begin sample webform confirmation page */ ?>
-
   <div class="confirmation-message">
     <?php print $confirmation_message ?>
   </div>
-
   <ul>
     <li><a href="<?php print url('node/' . $node->nid . '/submission/' . $sid)?>">View your submission</a></li>
     <li><a href="<?php print url('node/' . $node->nid . '/submission/' . $sid . '/edit')?>">Edit your submission</a></li>
   </ul>
-
   <?php /* End sample webform confirmation page */ ?>
+  ```
 
 - You may edit the webform-confirmation.tpl.php file in your theme directory,
   this will affect all the webform mails sent by your entire site. Or, if you
@@ -77,8 +76,7 @@ the confirmation page of a single node or all webforms on your site.
 
 - Visit admin/settings/performance and click the "Clear cached data" button.
 
-Theme display of an entire webform
-----------------------------------
+## Theme display of an entire webform
 
 Theming a webform can be useful for rearranging elements or customizing the
 appearance of multiple components at once. This tutorial assumes usage
@@ -100,8 +98,7 @@ of the phptemplate engine.
   you have good reason to do so (like you're forwarding your webform to a custom
   PHP or PERL script).
 
-Theme display of a webform submission display
----------------------------------------------
+## Theme display of a webform submission display
 
 Theming the display of a webform submission works the same way as theming a
 webform form. Webform uses Drupal "renderable" style arrays for the display of
