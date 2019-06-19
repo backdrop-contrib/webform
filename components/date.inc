@@ -430,7 +430,7 @@ function webform_validate_date($element, $form_state) {
     }
 
     // Ensure date is made up of integers.
-    foreach (array('year', 'month', 'day') as $date_part) {
+    foreach ($date_parts as $date_part) {
       $element[$date_part]['#value'] = (int) $element[$date_part]['#value'];
     }
 
