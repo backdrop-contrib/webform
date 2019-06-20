@@ -4031,9 +4031,11 @@ function webform_get_conditional_sorter($node) {
 }
 
 /**
- * This function is deprecated! Use webform_replace_tokens() instead.
+ * Wrapper for webform_replace_tokens().
  *
- * @deprecated
+ * @deprecated in webform:7.x-4.0 and is removed from webform:7.x-5.0. Use
+ * webform_replace_tokens().
+ * @see https://www.drupal.org/project/webform/issues/2038199
  */
 function _webform_filter_values($string, $node = NULL, $submission = NULL, $email = NULL, $strict = TRUE) {
   $output = webform_replace_tokens($string, $node, $submission, $email, $strict);
@@ -4177,9 +4179,11 @@ function webform_filter_descriptions($string, $node = NULL, $submission = NULL) 
 }
 
 /**
- * Deprecated! Use webform_filter_descriptions() instead.
+ * Duplicates webform_filter_descriptions().
  *
- * @deprecated
+ * @deprecated in webform:7.x-4.0 and is removed from webform:7.x-5.0. Use
+ * webform_filter_descriptions().
+ * @see https://www.drupal.org/project/webform/issues/2038199
  */
 function _webform_filter_descriptions($string, $node = NULL, $submission = NULL) {
   return webform_filter_descriptions($string, $node, $submission);
@@ -4195,9 +4199,11 @@ function webform_filter_xss($string) {
 }
 
 /**
- * Deprecated! Use webform_filter_xss() instead!
+ * Duplicates webform_filter_xss().
  *
- * @deprecated
+ * @deprecated in webform:7.x-4.0 and is removed from webform:7.x-5.0. Use
+ * webform_filter_xss().
+ * @see https://www.drupal.org/project/webform/issues/2038199
  */
 function _webform_filter_xss($string) {
   return webform_filter_xss($string);
