@@ -258,7 +258,7 @@
           case 'require':
             var $requiredSpan = $target.find('.form-required, .form-optional').first();
             if (actionResult != $requiredSpan.hasClass('form-required')) {
-              var $targetInputElements = $target.find("input:text,textarea,input[type='email'],select,input:radio,input:file");
+              var $targetInputElements = $target.find("input:text,textarea,input[type='email'],select,input:radio,input:checkbox,input:file");
               // Rather than hide the required tag, remove it so that other
               // jQuery can respond via Drupal behaviors.
               Drupal.detachBehaviors($requiredSpan);
