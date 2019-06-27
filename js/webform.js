@@ -129,6 +129,9 @@
    */
   Drupal.webform.conditionalCheck = function (e) {
     var $triggerElement = $(e.target).closest('.webform-component');
+    if (!$triggerElement.length) {
+      return;
+    }
     var $form = $triggerElement.closest('form');
     var triggerElementKey = $triggerElement.attr('class').match(/webform-component--[^ ]+/)[0];
     var settings = e.data.settings;
