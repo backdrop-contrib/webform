@@ -1,12 +1,14 @@
 Overview
---------
+========
+
 Webform supports theming similar to the CCK or Views modules. Any webform
 may be themed on the server side, though doing so may require a reasonable
 amount of knowledge about the Backdrop Form API. More information about the Form
-API may be found at https://api.backdropcms.org/form_api
+API may be found at <https://api.backdropcms.org/form_api>
 
 Theme submission e-mails
------------------------
+------------------------
+
 The default e-mails sent by webform are fairly basic. If you like, you may
 customize the display of e-mails sent by each individual webform.
 
@@ -30,7 +32,9 @@ customize the display of e-mails sent by each individual webform.
 - To get a better idea of what variables are available to you, you can include
   the print_r function in your email. Simply include the line:
 
+  ```php
   <?php print_r($submission) ?>
+  ```
 
   to get a listing of all the available fields you can use in your mail.
 
@@ -56,18 +60,17 @@ the confirmation page of a single node or all webforms on your site.
   example that inserts some additional HTML around the confirmation message and
   gives links to edit the submission.
 
+  ```php
   <?php /* Begin sample webform confirmation page */ ?>
-
   <div class="confirmation-message">
     <?php print $confirmation_message ?>
   </div>
-
   <ul>
     <li><a href="<?php print url('node/' . $node->nid . '/submission/' . $sid)?>">View your submission</a></li>
     <li><a href="<?php print url('node/' . $node->nid . '/submission/' . $sid . '/edit')?>">Edit your submission</a></li>
   </ul>
-
   <?php /* End sample webform confirmation page */ ?>
+  ```
 
 - You may edit the webform-confirmation.tpl.php file in your theme directory,
   this will affect all the webform mails sent by your entire site. Or, if you

@@ -150,8 +150,9 @@ function _webform_edit_date_validate($form, &$form_state) {
 
   // Validate that the start and end dates are valid. Don't validate the default
   // date because with token substitution, it might not be valid at component
-  // definition time. Also note that validation was introduced in 7.x-4.8 and
-  // previously-defined webform may have invalid start and end dates.
+  // definition time. Also note that validation was introduced in 1.x-1.2.0
+  // (7.x-4.8) and previously-defined webform may have invalid start and end
+  // dates.
   foreach (array('start_date', 'end_date') as $field) {
     if (trim($form_state['values']['extra'][$field]) && !($date[$field] = webform_strtodate('c', $form_state['values']['extra'][$field]))) {
       form_set_error("extra][$field", t('The @field could not be interpreted in <a href="http://www.gnu.org/software/tar/manual/html_chapter/Date-input-formats.html">GNU Date Input Format</a>.',
@@ -407,21 +408,21 @@ function theme_webform_date($variables) {
  * Element validation for Webform date fields.
  */
 function webform_validate_date($element, $form_state) {
-  $field_types = array('day', 'month', 'year');
+  $date_parts = array('day', 'month', 'year');
 
   // Determine if the user has specified a date. Hidden parts of the date will
   // be submitted automatically.
-  foreach ($field_types as $field_type) {
-    if (!in_array($field_type, $element['#exclude']) && $element[$field_type]['#value'] !== '') {
+  foreach ($date_parts as $date_part) {
+    if (!in_array($date_part, $element['#exclude']) && $element[$date_part]['#value'] !== '') {
       $field_found = TRUE;
     }
   }
 
   if (isset($field_found)) {
     // Check that each part of the date has been filled in.
-    foreach ($field_types as $field_type) {
-      if (empty($element[$field_type]['#value'])) {
-        form_error($element[$field_type], t('!part in !name is missing.', array('!name' => $element['#title'], '!part' => $element[$field_type]['#title'])));
+    foreach ($date_parts as $date_part) {
+      if (empty($element[$date_part]['#value'])) {
+        form_error($element[$date_part], t('!part in !name is missing.', array('!name' => $element['#title'], '!part' => $element[$date_part]['#title'])));
         $missing_fields = TRUE;
       }
     }
@@ -430,7 +431,7 @@ function webform_validate_date($element, $form_state) {
     }
 
     // Ensure date is made up of integers.
-    foreach (array('year', 'month', 'day') as $date_part) {
+    foreach ($date_parts as $date_part) {
       $element[$date_part]['#value'] = (int) $element[$date_part]['#value'];
     }
 
@@ -444,8 +445,9 @@ function webform_validate_date($element, $form_state) {
     $timestamp = strtotime($element['year']['#value'] . '-' . $element['month']['#value'] . '-' . $element['day']['#value']);
     $format = webform_date_format('short');
 
-    // Flip start and end if needed. Prior to 7.x-4.8, it was possible to save
-    // a date component with the end date earlier than the start date.
+    // Flip start and end if needed. Prior to 1.x-1.2.0 (7.x-4.8), it was
+    // possible to save a date component with the end date earlier than the
+    // start date.
     $date1 = strtotime($element['#start_date']);
     $date2 = strtotime($element['#end_date']);
     if ($date1 !== FALSE && $date2 !== FALSE) {

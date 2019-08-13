@@ -27,3 +27,9 @@ name = Webform Submission
 description = Submits a sample webform and checks the database integrity.
 group = Webform
 file = WebformSubmissionTestCase.test
+
+[WebformUnitTestCase]
+name =  Webform unit tests
+description = Unit tests for Webform functions.
+group = Webform
+file = WebformUnitTestCase.test
