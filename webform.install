@@ -644,7 +644,8 @@ function webform_schema() {
     'indexes' => array(
       'nid' => array('nid'),
       'sid_nid' => array('sid', 'nid'),
-      // For all but MS SQL Server databases, 64-character index is created on the data column after the schema is installed.
+      // For all but MS SQL Server databases, 64-character index is created on
+      // the data column after the schema is installed.
     ),
   );
 
@@ -1440,4 +1441,13 @@ function webform_update_1604() {
     ->execute();
 
   return t("Disabled progress bar for @count single-page webforms.", array('@count' => $updated_count));
+}
+
+/**
+ * Add default setting for new config variable webform_fieldset_wrap.
+ */
+function webform_update_1605() {
+  $config = config('webform.settings');
+  $config->set('webform_fieldset_wrap', FALSE);
+  $config->save();
 }
