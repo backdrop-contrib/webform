@@ -243,6 +243,9 @@ function webform_conditionals_form_validate($form, &$form_state) {
             t('The subject of the conditional cannot be the same as the component that is changed (%target).',
             array('%target' => $components[$source_cid]['name'])));
         }
+        if ($source_cid && $components[$source_cid]['type'] === 'date' && strtotime($rule['value']['#value']) === FALSE) {
+          form_set_error('conditionals][' . $conditional_key . '][rules][' . $rule_key . '][value', t('The conditional comparison value must be a valid date.'));
+        }
       }
     }
   }
