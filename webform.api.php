@@ -876,9 +876,9 @@ function _webform_defaults_component() {
  *   The form state array.
  *
  * @return array
- *   An array of form items to be displayed on the edit component page
+ *   Return $form with whatever changes are desired.
  */
-function _webform_edit_component(array $component, array &$form, array &$form_state) {
+function _webform_edit_component(array $component, array $form, array $form_state) {
   // Disabling the description if not wanted.
   $form['description']['#access'] = FALSE;
 
