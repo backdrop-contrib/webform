@@ -305,7 +305,7 @@ function _webform_render_number($component, $value = NULL, $filter = TRUE, $subm
     '#point' => $component['extra']['point'],
     '#separator' => $component['extra']['separator'],
     '#decimals' => $component['extra']['decimals'],
-    '#translatable' => array('title', 'description', 'field_prefix', 'field_suffix'),
+    '#translatable' => array('title', 'description', 'field_prefix', 'field_suffix', 'placeholder'),
   );
 
   if ($component['required']) {
@@ -404,7 +404,7 @@ function _webform_display_number($component, $value, $format = 'html', $submissi
     '#field_suffix' => $empty ? '' : $component['extra']['field_suffix'],
     '#format' => $format,
     '#value' => $empty ? '' : _webform_number_format($component, $value[0]),
-    '#translatable' => array('title'),
+    '#translatable' => array('title', 'placeholder'),
   );
 }
 
