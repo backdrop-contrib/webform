@@ -792,10 +792,7 @@ function _webform_grid_header(array $element, $right_titles) {
 function _webform_grid_header_title($element, $title) {
   $header_title = '';
   if ($element['#title_display'] == 'internal') {
-    $variables = array('element' => $element);
-    $variables['element']['#title_display'] = 'before';
-    $variables['element']['#title'] = $title;
-    $header_title = theme('form_element_label', $variables);
+    $header_title = $title;
   }
   return $header_title;
 }
