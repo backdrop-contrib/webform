@@ -453,16 +453,17 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
     '#weight' => 8,
   );
   if (webform_component_feature($component['type'], 'title_display')) {
-    if (webform_component_feature($component['type'], 'title_inline')) {
+    $inline_option = webform_component_feature($component['type'], 'title_inline') ? array('inline' => t('Inline')) : array();
+    $internal_option = webform_component_feature($component['type'], 'title_internal') ? array('internal' => t('Inside the component')) : array();
+    if ($inline_option || $internal_option) {
       $form['display']['title_display'] = array(
         '#type' => 'select',
         '#title' => t('Label display'),
         '#default_value' => !empty($component['extra']['title_display']) ? $component['extra']['title_display'] : 'before',
-        '#options' => array(
-          'before' => t('Above'),
-          'inline' => t('Inline'),
-          'none' => t('None'),
-        ),
+        '#options' => array('before' => t('Above')) +
+                      $inline_option +
+                      $internal_option +
+                      array('none' => t('None')),
         '#description' => t("Determines the placement of the component's label."),
       );
     }
@@ -998,6 +999,7 @@ function webform_component_feature($type, $feature) {
     'title' => TRUE,
     'title_display' => TRUE,
     'title_inline' => TRUE,
+    'title_internal' => FALSE,
     'conditional' => TRUE,
     'conditional_action_set' => FALSE,
     'spam_analysis' => FALSE,
