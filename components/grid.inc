@@ -768,6 +768,7 @@ function _webform_grid_header(array $element, $right_titles) {
     array(
       'data' => _webform_grid_header_title($element, $titles[0]),
       'class' => array('webform-grid-question'),
+      'scope' => 'col',
     ),
   );
   foreach ($element['#grid_options'] as $option) {
@@ -781,6 +782,7 @@ function _webform_grid_header(array $element, $right_titles) {
     $header[] = array(
       'data' => _webform_grid_header_title($element, isset($titles[1]) ? $titles[1] : ''),
       'class' => array('webform-grid-question'),
+      'scope' => 'col',
     );
   }
   return $header;
