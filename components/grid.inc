@@ -780,7 +780,7 @@ function _webform_grid_header(array $element, $right_titles) {
     );
   }
   if ($right_titles) {
-    $title_right = isset($titles[1]) ? $titles[1] : '';
+    $title_right = isset($titles[1]) ? $titles[1] : $title_left;
     $header[] = array(
       'data' => _webform_grid_header_title($element, $title_right),
       'class' => array('webform-grid-question'),

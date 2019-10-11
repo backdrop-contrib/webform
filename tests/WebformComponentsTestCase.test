@@ -191,11 +191,12 @@ class WebformComponentsTestCase extends WebformTestCase {
     }
 
     // Test grid headers.
-    $grid_headers = $this->xpath('//th[1][@class="webform-grid-question"]');
-    $this->assertIdentical(count($grid_headers), 2, 'There are two table headers with class "webform-grid-question".');
-    $grid_headers = $this->xpath('//th[1][@class="webform-grid-question"]/text()');
-    $this->assertIdentical(count($grid_headers), 1, 'There is one non-empty table header with class "webform-grid-question".');
-    $this->assertIdentical((string) $grid_headers[0], 'Grid Keyed', 'The value of the non-empty header is "Grid Keyed".');
+    $grid_headers = $this->xpath('//th[@class="webform-grid-question"]');
+    $this->assertIdentical(count($grid_headers), 3, 'There are three table headers with class "webform-grid-question".');
+    $grid_headers = $this->xpath('//th[@class="webform-grid-question"]/text()');
+    $this->assertIdentical(count($grid_headers), 2, 'There are two non-empty table headers with class "webform-grid-question".');
+    $this->assertIdentical((string) $grid_headers[0], 'Grid Keyed', 'The value of the left non-empty header is "Grid Keyed".');
+    $this->assertIdentical((string) $grid_headers[1], 'Grid Keyed', 'The value of the right non-empty header is the same as the left.');
   }
 
 }
