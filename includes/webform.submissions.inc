@@ -331,6 +331,7 @@ function _webform_submission_prepare_mail($node, $submission, &$email) {
                         '!name' => strlen($email_parts['name']) ? $email_parts['name'] : $email_parts['address'],
                         '!site_name' => $default_from_name,
                       ));
+      $from_name = str_replace('"', "'", $from_name);
       $from_name = implode(' ', array_map('mime_header_encode', explode(' ', $from_name)));
       $email['from'] = '"' . $from_name . '" <' . $email['from'] . '>';
     }

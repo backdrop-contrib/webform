@@ -55,10 +55,10 @@ class WebformSubmissionTestCase extends WebformTestCase {
     );
     variable_set('webform_email_replyto', TRUE);
     variable_set('webform_email_address_format', 'long');
-    variable_set('webform_default_from_name', 'Default From Name');
+    variable_set('webform_default_from_name', 'Default "From" Name');
     variable_set('webform_default_from_address', 'default-from@example.com');
     $prepared_email = _webform_submission_prepare_mail($node, $submission, $email);
-    $this->assertIdentical($prepared_email['mail_params']['email']['from'], '"from@example.com via Default From Name" <default-from@example.com>', 'From address is correctly set in _webform_submission_prepare_mail().');
+    $this->assertIdentical($prepared_email['mail_params']['email']['from'], '"from@example.com via Default \'From\' Name" <default-from@example.com>', 'From address is correctly set in _webform_submission_prepare_mail().');
   }
 
   /**
