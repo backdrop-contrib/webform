@@ -10,6 +10,13 @@ input.webform-calendar {
 html.js input.webform-calendar {
   display: inline;
 }
+.webform-component label {
+  display: block;
+}
+.webform-component label.option {
+  display: inline;
+  font-weight: normal;
+}
 .webform-container-inline label {
   display: inline;
   margin-right: 1em;
