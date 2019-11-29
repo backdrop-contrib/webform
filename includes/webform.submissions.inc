@@ -231,18 +231,20 @@ function webform_submission_delete($node, $submission) {
  * @param $emails
  *   (optional) An array of specific e-mail settings to be used. If omitted, all
  *   e-mails in $node->webform['emails'] will be sent.
+ * @param bool $send_disabled
+ *   (optional) When TRUE, send all emails, even those that are disabled.
  *
  * @return int
  *   Number of mail sent.
  */
-function webform_submission_send_mail($node, $submission, $emails = NULL) {
+function webform_submission_send_mail($node, $submission, $emails = NULL, $send_disabled = FALSE) {
   // Get the list of e-mails we'll be sending.
   $emails = isset($emails) ? $emails : $node->webform['emails'];
 
   // Create a themed message for mailing.
   $send_count = 0;
   foreach ($emails as $eid => $email) {
-    if (!$email['status']) {
+    if (!$send_disabled && !$email['status']) {
       continue;
     }
     $mail = _webform_submission_prepare_mail($node, $submission, $email);
@@ -616,7 +618,7 @@ function webform_submission_resend_submit($form, &$form_state) {
       $emails[] = $form['#node']->webform['emails'][$eid];
     }
   }
-  $sent_count = webform_submission_send_mail($node, $submission, $emails);
+  $sent_count = webform_submission_send_mail($node, $submission, $emails, TRUE);
   if ($sent_count) {
     drupal_set_message(format_plural($sent_count,
       'Successfully re-sent submission #@sid to 1 recipient.',
