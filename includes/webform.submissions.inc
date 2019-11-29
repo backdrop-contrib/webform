@@ -242,6 +242,9 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
   // Create a themed message for mailing.
   $send_count = 0;
   foreach ($emails as $eid => $email) {
+    if (!$email['status']) {
+      continue;
+    }
     $mail = _webform_submission_prepare_mail($node, $submission, $email);
     if (!$mail) {
       continue;
@@ -279,11 +282,6 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
  */
 function _webform_submission_prepare_mail($node, $submission, &$email) {
   global $user;
-
-  // Don't process disabled emails.
-  if (!$email['status']) {
-    return;
-  }
 
   // Set the HTML property based on availablity of MIME Mail.
   $email['html'] = ($email['html'] && webform_variable_get('webform_email_html_capable'));
