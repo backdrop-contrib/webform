@@ -3988,30 +3988,37 @@ function theme_webform_mail_headers(array $variables) {
  * Check if current user has a draft of this webform, and return the sid.
  */
 function _webform_fetch_draft_sid($nid, $uid) {
+  $q = db_select('webform_submissions')
+    ->fields('webform_submissions', array('sid'))
+    ->condition('nid', $nid)
+    ->condition('uid', $uid)
+    ->condition('is_draft', 1)
+    ->orderBy('submitted', 'DESC');
+
   // Detect whether a webform draft is being edited. If so, that is the one that
   // should be returned.
-  if (isset($_POST['form_id']) && stripos($_POST['form_id'], 'webform_client_form_') === 0 &&
-      !empty($_POST['details']['sid']) && empty($_POST['details']['finished'])) {
-    // A draft is already being edited.
-    $sid = $_POST['details']['sid'];
+  $is_webform = isset($_POST['form_id']) && stripos($_POST['form_id'], 'webform_client_form_') === 0;
+  $sid_provided = !empty($_POST['details']['sid']) && is_string($_POST['details']['sid']);
+  $not_finished = empty($_POST['details']['finished']);
+  if ($is_webform && $sid_provided && $not_finished) {
+    // Validate that the sid from $_POST belongs to the current user.
+    $q->condition('sid', $_POST['details']['sid']);
+    $existing_sid = TRUE;
   }
-  else {
-    $sid = db_select('webform_submissions')
-      ->fields('webform_submissions', array('sid'))
-      ->condition('nid', $nid)
-      ->condition('uid', $uid)
-      ->condition('is_draft', 1)
-      ->orderBy('submitted', 'DESC')
-      ->execute()
-      ->fetchField();
 
-    if ($sid) {
-      $context = array(
-        'nid' => $nid,
-        'uid' => $uid,
-      );
-      drupal_alter('webform_draft', $sid, $context);
-    }
+  // Retrieve exisiting draft sid.
+  $sid = $q
+    ->execute()
+    ->fetchField();
+
+  // Allow modules to alter the initial choice of sid when there might be more
+  // than one.
+  if ($sid && empty($existing_sid)) {
+    $context = array(
+      'nid' => $nid,
+      'uid' => $uid,
+    );
+    drupal_alter('webform_draft', $sid, $context);
   }
   return $sid;
 }
