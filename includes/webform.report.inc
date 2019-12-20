@@ -1921,7 +1921,7 @@ function webform_download_sids_count($nid, $range_options, $uid = NULL) {
  */
 function webform_download_sids_query($nid, array $range_options, $uid = NULL) {
   $query = db_select('webform_submissions', 'ws')
-    ->condition('nid', $nid)
+    ->condition('ws.nid', $nid)
     ->addTag('webform_download_sids');
 
   switch ($range_options['range_type']) {
@@ -1987,6 +1987,9 @@ function webform_download_sids_query($nid, array $range_options, $uid = NULL) {
   if (isset($range_options['batch_number']) && !empty($range_options['batch_size'])) {
     $query->range($range_options['batch_number'] * $range_options['batch_size'], $range_options['batch_size']);
   }
+
+  drupal_alter('webform_download_sids_query', $query);
+
   return $query;
 }
 
