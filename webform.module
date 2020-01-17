@@ -1245,6 +1245,7 @@ function webform_webform_component_info() {
         'conditional' => FALSE,
         'default_value' => FALSE,
         'attachment' => TRUE,
+        'file_usage' => TRUE,
       ),
       'file' => 'components/file.inc',
     );
@@ -1331,7 +1332,7 @@ function webform_webform_submission_presave($node, &$submission) {
   $renameable = array();
 
   foreach ($node->webform['components'] as $cid => $component) {
-    if ($component['type'] == 'file') {
+    if (webform_component_feature($component['type'], 'file_usage')) {
       $has_file_components = TRUE;
       if (!empty($submission->data[$cid])) {
         foreach ($submission->data[$cid] as $key => $value) {
@@ -1354,7 +1355,7 @@ function webform_webform_submission_presave($node, &$submission) {
       $old_submission = webform_get_submission($node->nid, $submission->sid);
 
       foreach ($node->webform['components'] as $cid => $component) {
-        if ($component['type'] == 'file') {
+        if (webform_component_feature($component['type'], 'file_usage')) {
           if (!empty($old_submission->data[$cid])) {
             $old_fids = array_merge($old_fids, $old_submission->data[$cid]);
           }
