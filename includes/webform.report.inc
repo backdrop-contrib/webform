@@ -1831,6 +1831,9 @@ function webform_analysis_components_form($form, &$form_state, $node) {
  */
 function webform_analysis_components_form_submit($form, $form_state) {
   $node = $form['#node'];
+  // Get a fresh copy of the node so that we are only saving these changes.
+  // Otherwise, changes to the Webform on another tab will be overwritten.
+  $node = node_load($node->nid, NULL, TRUE);
   foreach ($form_state['values']['components'] as $cid => $enabled) {
     $node->webform['components'][$cid]['extra']['analysis'] = (bool) $enabled;
   }
