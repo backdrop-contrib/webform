@@ -533,6 +533,7 @@ function webform_configure_form_submit($form, &$form_state) {
  * to add properties if needed into the $form['#node'] object before save.
  */
 function webform_configure_form_submit_save($form, &$form_state) {
+  $transaction = db_transaction();
   node_save($form['#node']);
   drupal_set_message(t('The form settings have been updated.'));
 
