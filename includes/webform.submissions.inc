@@ -231,17 +231,22 @@ function webform_submission_delete($node, $submission) {
  * @param $emails
  *   (optional) An array of specific e-mail settings to be used. If omitted, all
  *   e-mails in $node->webform['emails'] will be sent.
+ * @param bool $send_disabled
+ *   (optional) When TRUE, send all emails, even those that are disabled.
  *
  * @return int
  *   Number of mail sent.
  */
-function webform_submission_send_mail($node, $submission, $emails = NULL) {
+function webform_submission_send_mail($node, $submission, $emails = NULL, $send_disabled = FALSE) {
   // Get the list of e-mails we'll be sending.
   $emails = isset($emails) ? $emails : $node->webform['emails'];
 
   // Create a themed message for mailing.
   $send_count = 0;
   foreach ($emails as $eid => $email) {
+    if (!$send_disabled && !$email['status']) {
+      continue;
+    }
     $mail = _webform_submission_prepare_mail($node, $submission, $email);
     if (!$mail) {
       continue;
@@ -279,11 +284,6 @@ function webform_submission_send_mail($node, $submission, $emails = NULL) {
  */
 function _webform_submission_prepare_mail($node, $submission, &$email) {
   global $user;
-
-  // Don't process disabled emails.
-  if (!$email['status']) {
-    return;
-  }
 
   // Set the HTML property based on availablity of MIME Mail.
   $email['html'] = ($email['html'] && webform_variable_get('webform_email_html_capable'));
@@ -331,6 +331,7 @@ function _webform_submission_prepare_mail($node, $submission, &$email) {
                         '!name' => strlen($email_parts['name']) ? $email_parts['name'] : $email_parts['address'],
                         '!site_name' => $default_from_name,
                       ));
+      $from_name = str_replace('"', "'", $from_name);
       $from_name = implode(' ', array_map('mime_header_encode', explode(' ', $from_name)));
       $email['from'] = '"' . $from_name . '" <' . $email['from'] . '>';
     }
@@ -617,7 +618,7 @@ function webform_submission_resend_submit($form, &$form_state) {
       $emails[] = $form['#node']->webform['emails'][$eid];
     }
   }
-  $sent_count = webform_submission_send_mail($node, $submission, $emails);
+  $sent_count = webform_submission_send_mail($node, $submission, $emails, TRUE);
   if ($sent_count) {
     backdrop_set_message(format_plural($sent_count,
       'Successfully re-sent submission #@sid to 1 recipient.',

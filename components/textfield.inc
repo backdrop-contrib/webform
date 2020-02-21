@@ -163,6 +163,7 @@ function _webform_render_textfield($component, $value = NULL, $filter = TRUE, $s
       'description',
       'field_prefix',
       'field_suffix',
+      'placeholder',
     ),
   );
 
@@ -220,7 +221,7 @@ function _webform_display_textfield($component, $value, $format = 'html', $submi
     '#field_suffix' => $component['extra']['field_suffix'],
     '#format' => $format,
     '#value' => isset($value[0]) ? $value[0] : '',
-    '#translatable' => array('title', 'field_prefix', 'field_suffix'),
+    '#translatable' => array('title', 'field_prefix', 'field_suffix', 'placeholder'),
   );
 }
 

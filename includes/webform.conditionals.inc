@@ -233,11 +233,18 @@ function webform_conditionals_form_validate($form, &$form_state) {
         }
       }
       foreach ($conditional['rules'] as $rule_key => $rule) {
+        if (!is_numeric($rule_key)) {
+          continue;
+        }
+        $source_cid = isset($rule['source']['#value']) ? $rule['source']['#value'] : NULL;
         // Validate component rules, but not conditional_start/end rules.
-        if (is_numeric($rule_key) && $rule['source_type']['#value'] == 'component' && isset($targets[$rule['source']['#value']])) {
+        if ($source_cid && $rule['source_type']['#value'] == 'component' && isset($targets[$source_cid])) {
           form_set_error('conditionals][' . $conditional_key . '][rules][' . $rule_key . '][source',
             t('The subject of the conditional cannot be the same as the component that is changed (%target).',
-            array('%target' => $components[$rule['source']['#value']]['name'])));
+            array('%target' => $components[$source_cid]['name'])));
+        }
+        if ($source_cid && $components[$source_cid]['type'] === 'date' && strtotime($rule['value']['#value']) === FALSE) {
+          form_set_error('conditionals][' . $conditional_key . '][rules][' . $rule_key . '][value', t('The conditional comparison value must be a valid date.'));
         }
       }
     }
