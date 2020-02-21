@@ -821,6 +821,26 @@ function hook_webform_results_download_submission_information_data($token, $subm
 }
 
 /**
+ * Alter the query that will produce the list of submission IDs to be
+ * downloaded.
+ *
+ * @param object $query
+ *   The query object that is being built up to provide the list of submission
+ *   IDs.
+ *
+ * @see webform_download_sids_query()
+ */
+function hook_webform_download_sids_query_alter(&$query) {
+  global $user;
+
+  // check if component value matches a node ID and author of that node.
+  $query->join('webform_submitted_data', 'wsd', 'ws.sid = wsd.sid');
+  $query->condition('wsd.cid', 2);
+  $query->join('node', 'n', 'wsd.data = n.nid');
+  $query->condition('n.uid', $user->uid);
+}
+
+/**
  * @}
  */
 
@@ -876,9 +896,9 @@ function _webform_defaults_component() {
  *   The form state array.
  *
  * @return array
- *   An array of form items to be displayed on the edit component page
+ *   Return $form with whatever changes are desired.
  */
-function _webform_edit_component(array $component, array &$form, array &$form_state) {
+function _webform_edit_component(array $component, array $form, array $form_state) {
   // Disabling the description if not wanted.
   $form['description']['#access'] = FALSE;
 
