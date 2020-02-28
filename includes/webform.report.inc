@@ -283,6 +283,7 @@ function theme_webform_results_table($variables) {
   drupal_add_library('webform', 'admin');
 
   $node = $variables['node'];
+  $components = $variables['components'];
   $submissions = $variables['submissions'];
   $total_count = $variables['total_count'];
   $pager_count = $variables['pager_count'];
@@ -304,7 +305,7 @@ function theme_webform_results_table($variables) {
     $component_headers = array();
 
     // Generate a cell for each component.
-    foreach ($node->webform['components'] as $component) {
+    foreach ($components as $component) {
       $data = isset($submission->data[$component['cid']]) ? $submission->data[$component['cid']] : NULL;
       $submission_output = webform_component_invoke($component['type'], 'table', $component, $data);
       if ($submission_output !== NULL) {
