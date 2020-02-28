@@ -155,7 +155,7 @@ class webform_exporter_excel_xlsx extends webform_exporter {
     $zip_filepath = drupal_realpath($zip_uri);
     $file_filepath = drupal_realpath($file_uri);
     $zip = new ZipArchive();
-    if ($zip->open($zip_filepath, ZipArchive::CREATE) === TRUE) {
+    if ($zip->open($zip_filepath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
       // Create a bare-bones Office Open XML format directory structure. This is
       // based on the sample simple XLSX file at
       // http://blogs.msdn.com/b/chrisrae/archive/2011/08/18/creating-a-simple-xlsx-from-scratch-using-the-open-xml-sdk.aspx
