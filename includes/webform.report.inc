@@ -265,21 +265,18 @@ function theme_webform_results_table_header($variables) {
 /**
  * Theme the results table displaying all the submissions for a particular node.
  *
- * @param $node
- *   The node whose results are being displayed.
- * @param $components
- *   An associative array of the components for this webform.
- * @param $submissions
- *   An array of all submissions for this webform.
- * @param $total_count
- *   The total number of submissions to this webform.
- * @param $pager_count
- *   The number of results to be shown per page.
+ * @param array $variables
+ *   An array with keys:
+ *    - node: The node whose results are being displayed.
+ *    - components: An associative array of the components for this webform.
+ *    - submissions: An array of all submissions for this webform.
+ *    - total_count: The total number of submissions to this webform.
+ *    - pager_count: The number of results to be shown per page.
  *
  * @return string
  *   HTML string with result data.
  */
-function theme_webform_results_table($variables) {
+function theme_webform_results_table(array $variables) {
   drupal_add_library('webform', 'admin');
 
   $node = $variables['node'];
