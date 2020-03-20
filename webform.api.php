@@ -782,12 +782,28 @@ function hook_webform_node_defaults_alter(array &$defaults) {
  *   Keys and titles for default submission information.
  *
  * @see hook_webform_results_download_submission_information_data()
+ * @see hook_webform_results_download_submission_information_info_alter()
  */
 function hook_webform_results_download_submission_information_info() {
   return array(
     'field_key_1' => t('Field Title 1'),
     'field_key_2' => t('Field Title 2'),
   );
+}
+
+/**
+ * Alter fields in submission data downloads.
+ *
+ * @param array $submission_information
+ *   Keys and titles for default submission information.
+ *
+ * @see hook_webform_results_download_submission_information_info()
+ */
+function hook_webform_results_download_submission_information_info_alter(array &$submission_information) {
+  // Unset a property to remove it from submission data downloads.
+  if (isset($submission_information['webform_ip_address'])) {
+    unset($submission_information['webform_ip_address']);
+  }
 }
 
 /**
