@@ -13,9 +13,9 @@
 /**
  * Given an array of submitted values, flatten it into data for a submission.
  *
- * @param $node
+ * @param object $node
  *   The node object containing the current webform.
- * @param $submitted
+ * @param array $submitted
  *   The submitted user values from the webform.
  *
  * @return array
