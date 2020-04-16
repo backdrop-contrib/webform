@@ -89,6 +89,8 @@ class WebformUnitTestCase extends DrupalUnitTestCase {
           ['type' => 'textarea'],
           ['type' => 'textfield'],
           ['type' => 'time'],
+          ['type' => 'fieldset'],
+          ['type' => 'markup'],
           ['type' => 'pagebreak'],
         ],
       ],
@@ -103,6 +105,8 @@ class WebformUnitTestCase extends DrupalUnitTestCase {
       'textarea',
       'textfield',
       'time',
+      'fieldset',
+      'markup',
       'pagebreak',
     ];
     require_once __DIR__ . '/../includes/webform.submissions.inc';

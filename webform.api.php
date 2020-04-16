@@ -492,7 +492,9 @@ function hook_webform_component_info() {
       // This component includes an analysis callback. Defaults to TRUE.
       'analysis' => TRUE,
 
-      // Add content to CSV downloads. Defaults to TRUE.
+      // Add content to CSV downloads. Defaults to TRUE. When FALSE, submission
+      // data will never be saved. This is for components like fieldset, markup,
+      // and pagebreak which do not collect data.
       'csv' => TRUE,
 
       // This component supports default values. Defaults to TRUE.

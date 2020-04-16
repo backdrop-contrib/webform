@@ -22,11 +22,13 @@
  *   An array suitable for use in the 'data' property of a $submission object.
  */
 function webform_submission_data($node, $submitted) {
+  require_once __DIR__ . '/webform.components.inc';
+
   $data = array();
 
   foreach ($submitted as $cid => $values) {
-    // Don't save pseudo-fields or pagebreaks as submitted data.
-    if (!isset($node->webform['components'][$cid]) || $node->webform['components'][$cid]['type'] == 'pagebreak') {
+    // Don't save pseudo-fields or components that do not collect data.
+    if (!isset($node->webform['components'][$cid]) || !webform_component_feature($node->webform['components'][$cid]['type'], 'csv')) {
       continue;
     }
 
