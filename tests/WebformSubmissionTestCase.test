@@ -29,6 +29,8 @@ class WebformSubmissionTestCase extends WebformTestCase {
     $this->drupalLogout();
 
     // Test webform_get_submission_count().
+    // Counting the anonymous submission doesn't work because
+    // $_SESSION['webform_submission'] is not populated in testing.
     $this->webformSubmissionExecute('sample');
 
     $count = webform_get_submission_count($this->webformForm()->nid);
@@ -36,9 +38,6 @@ class WebformSubmissionTestCase extends WebformTestCase {
 
     $count = webform_get_submission_count($this->webformForm()->nid, $loggedInUser->uid);
     $this->assertIdentical((int) $count, 1, 'webform_get_submission_count() counts 1 submission from loggedInUser.');
-
-    // Counting the anonymous submission doesn't work because
-    // $_SESSION['webform_submission'] is not populated in testing.
 
     // Test _webform_submission_prepare_mail().
     $node = node_load($this->webformForm()->nid);
