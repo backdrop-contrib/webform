@@ -45,16 +45,22 @@ class webform_exporter_delimited extends webform_exporter {
 
     // Convert tabs.
     if ($this->delimiter == "\t") {
-      $extension = 'tsv';
       $content_type = 'text/tab-separated-values';
     }
     else {
-      $extension = 'csv';
       $content_type = 'text/csv';
     }
 
     drupal_add_http_header('Content-Type', $content_type);
-    drupal_add_http_header('Content-Disposition', "attachment; filename=$filename.$extension");
+    drupal_add_http_header('Content-Disposition', 'attachment; filename=' . $this->get_filename($filename));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function get_filename($filename) {
+    $extension = ($this->delimiter === "\t") ? 'tsv' : 'csv';
+    return $filename . '.' . $extension;
   }
 
 }

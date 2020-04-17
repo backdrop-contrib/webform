@@ -191,9 +191,16 @@ class webform_exporter_excel_xlsx extends webform_exporter {
    */
   public function set_headers($filename) {
     drupal_add_http_header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    drupal_add_http_header('Content-Disposition', "attachment; filename=$filename.xlsx");
+    drupal_add_http_header('Content-Disposition', 'attachment; filename=' . $this->get_filename($filename));
     drupal_add_http_header('Pragma', 'public');
     drupal_add_http_header('Cache-Control', 'max-age=0');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function get_filename($filename) {
+    return $filename . '.xlsx';
   }
 
   /**

@@ -69,6 +69,19 @@ class webform_exporter {
   }
 
   /**
+   * Get full filename of the export file, including the extension.
+   *
+   * @param string $filename
+   *   The base filename of the export file.
+   *
+   * @return string
+   *   The full filename of the export file, including the extension.
+   */
+  public function get_filename($filename) {
+    return $filename;
+  }
+
+  /**
    * Write the start of the export file.
    *
    * @param $file_handle
