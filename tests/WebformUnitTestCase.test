@@ -75,54 +75,6 @@ class WebformUnitTestCase extends DrupalUnitTestCase {
     $test = webform_format_email_address(1, 2, $node, $submission);
     $sample = '"John Smith" <test@example.com>';
     $this->assertIdentical($test, $sample, 'webform_format_email_address() takes name and email from submission values.');
-
-    // Test webform_submission_data().
-    $node = (object) [
-      'webform' => [
-        'components' => [
-          ['type' => 'date'],
-          ['type' => 'email'],
-          ['type' => 'grid'],
-          ['type' => 'hidden'],
-          ['type' => 'number'],
-          ['type' => 'select'],
-          ['type' => 'textarea'],
-          ['type' => 'textfield'],
-          ['type' => 'time'],
-          ['type' => 'fieldset'],
-          ['type' => 'markup'],
-          ['type' => 'pagebreak'],
-        ],
-      ],
-    ];
-    $submitted = [
-      'date',
-      'email',
-      ['value' => 'grid'],
-      'hidden',
-      'number',
-      'select',
-      'textarea',
-      'textfield',
-      'time',
-      'fieldset',
-      'markup',
-      'pagebreak',
-    ];
-    require_once __DIR__ . '/../includes/webform.submissions.inc';
-    $test_data = webform_submission_data($node, $submitted);
-    $sample_data = [
-      ['date'],
-      ['email'],
-      ['value' => 'grid'],
-      ['hidden'],
-      ['number'],
-      ['select'],
-      ['textarea'],
-      ['textfield'],
-      ['time'],
-    ];
-    $this->assertIdentical($test_data, $sample_data, 'webform_submission_data() generates correct data array.');
   }
 
 }

@@ -152,6 +152,59 @@ class WebformSubmissionTestCase extends WebformTestCase {
   }
 
   /**
+   * Test webform_submission_data() function.
+   *
+   * Do not save components that do not collect data, for example, markup.
+   */
+  public function testPlainComponentsSubmission() {
+    $node = (object) [
+      'webform' => [
+        'components' => [
+          ['type' => 'date'],
+          ['type' => 'email'],
+          ['type' => 'grid'],
+          ['type' => 'hidden'],
+          ['type' => 'number'],
+          ['type' => 'select'],
+          ['type' => 'textarea'],
+          ['type' => 'textfield'],
+          ['type' => 'time'],
+          ['type' => 'fieldset'],
+          ['type' => 'markup'],
+          ['type' => 'pagebreak'],
+        ],
+      ],
+    ];
+    $submitted = [
+      'date',
+      'email',
+      ['value' => 'grid'],
+      'hidden',
+      'number',
+      'select',
+      'textarea',
+      'textfield',
+      'time',
+      'fieldset',
+      'markup',
+      'pagebreak',
+    ];
+    $test_data = webform_submission_data($node, $submitted);
+    $sample_data = [
+      ['date'],
+      ['email'],
+      ['value' => 'grid'],
+      ['hidden'],
+      ['number'],
+      ['select'],
+      ['textarea'],
+      ['textfield'],
+      ['time'],
+    ];
+    $this->assertIdentical($test_data, $sample_data, 'webform_submission_data() generates correct data array.');
+  }
+
+  /**
    * Execute the submission test.
    *
    * @param string $value_type
