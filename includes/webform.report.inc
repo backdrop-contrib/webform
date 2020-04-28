@@ -1967,15 +1967,20 @@ function webform_download_sids_query($nid, array $range_options, $uid = NULL) {
     case 'range_date':
       $date_field = $range_options['completion_type'] == 'finished' ? 'ws.completed' : 'ws.submitted';
       $format = webform_date_format('short');
+
       $start_date = DateTime::createFromFormat($format, $range_options['start_date']);
       $start_date->setTime(0, 0, 0);
-      $query->condition($date_field, $start_date->getTimestamp(), '>=');
+      $start_date = $start_date->getTimestamp();
+      $query->condition($date_field, $start_date, '>=');
+
       $end_time = DateTime::createFromFormat($format, $range_options['end_date']);
-      if ($range_options['end_date'] != '' && ($end_time !== FALSE)) {
+      if ($end_time) {
         // Check for the full day's submissions.
         $end_time->setTime(23, 59, 59);
-        $query->condition($date_field, $end_time->getTimestamp(), '<=');
+        $end_time = $end_time->getTimestamp();
+        $query->condition($date_field, $end_time, '<=');
       }
+
       $query->orderBy($date_field, 'ASC');
       break;
   }
