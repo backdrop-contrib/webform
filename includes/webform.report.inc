@@ -1371,18 +1371,36 @@ function webform_results_download($node, $export_info) {
  */
 function webform_results_export_success($node, $export_info) {
   if (!in_array($export_info['options']['range']['range_type'], array('range', 'range_serial', 'range_date')) && !empty($export_info['last_sid'])) {
-    // Insert a new record or update an existing record.
-    db_merge('webform_last_download')
-      ->key(array(
-        'nid' => $node->nid,
-        'uid' => $GLOBALS['user']->uid,
-      ))
-      ->fields(array(
-        'sid' => $export_info['last_sid'],
-        'requested' => REQUEST_TIME,
-      ))
-      ->execute();
+    webform_update_webform_last_download($node, $GLOBALS['user']->uid, $export_info['last_sid'], REQUEST_TIME);
   }
+}
+
+/**
+ * Insert or update a download record in table {webform_last_download}.
+ *
+ * @param object $node
+ *   The Webform node of the record to update.
+ * @param int $uid
+ *   The user ID of the record to update.
+ * @param int $sid
+ *   The last downloaded submission number.
+ * @param int $requested
+ *   Timestamp of last download request.
+ *
+ * @return int
+ *   MergeQuery::STATUS_INSERT or ::STATUS_UPDATE.
+ */
+function webform_update_webform_last_download(stdClass $node, $uid, $sid, $requested) {
+  return db_merge('webform_last_download')
+    ->key(array(
+      'nid' => $node->nid,
+      'uid' => $uid,
+    ))
+    ->fields(array(
+      'sid' => $sid,
+      'requested' => $requested,
+    ))
+    ->execute();
 }
 
 /**
