@@ -61,6 +61,67 @@ class WebformSubmissionTestCase extends WebformTestCase {
   }
 
   /**
+   * Test that the correct submissions are offered for download.
+   */
+  public function testWebformSubmissionDownload() {
+    $this->drupalLogin($this->webform_users['userAccess']);
+    $this->webformReset();
+
+    // Create Webform which allows drafts and submit a draft.
+    $webform_settings = array(
+      'allow_draft' => '1',
+    );
+    $this->webformSubmissionExecute('sample', TRUE, $webform_settings);
+
+    $nid = $this->webformForm()->nid;
+
+    // This submit should complete the draft.
+    $this->webformSubmissionExecute('sample');
+    // Create another draft.
+    $this->webformSubmissionExecute('sample', TRUE);
+
+    // Create finished and draft submission as another user.
+    $this->drupalLogin($this->webform_users['editor']);
+    $this->webformSubmissionExecute('sample');
+    $this->webformSubmissionExecute('sample', TRUE);
+
+    // Create finished submission as anonymous.
+    $this->drupalLogout();
+    $this->webformSubmissionExecute('sample');
+    $this->drupalLogin($this->webform_users['editor']);
+
+    // Test webform_download_sids().
+    $sids = webform_download_sids($nid, array('range_type' => 'new', 'completion_type' => 'finished'), (int) $this->webform_users['editor']->uid);
+    $this->assertIdentical($sids, array('1', '3', '5'), 'webform_download_sids() shows correct finished submissions.');
+    $sids = webform_download_sids($nid, array('range_type' => 'new', 'completion_type' => 'draft'), (int) $this->webform_users['editor']->uid);
+    $this->assertIdentical($sids, array('2', '4'), 'webform_download_sids() shows correct draft submissions.');
+
+    // The timestamp of the Webform results download simulated by the call to
+    // webform_update_webform_last_download() needs to be after the timestamps
+    // of the submissions made above. This ensures that the call to time() will
+    // be after the submission timestamps.
+    sleep(1);
+
+    // Record that submissions so-far have been downloaded.
+    // Parameter $sid is not used, so it's value doesn't matter.
+    webform_update_webform_last_download($this->webformForm(), (int) $this->webform_users['editor']->uid, 0, time());
+
+    // Following the simulated download, there are none to download.
+    $sids = webform_download_sids($nid, array('range_type' => 'new', 'completion_type' => 'finished'), (int) $this->webform_users['editor']->uid);
+    $this->assertIdentical($sids, array(), 'webform_download_sids() shows correct finished submissions.');
+    $sids = webform_download_sids($nid, array('range_type' => 'new', 'completion_type' => 'draft'), (int) $this->webform_users['editor']->uid);
+    $this->assertIdentical($sids, array(), 'webform_download_sids() shows correct draft submissions.');
+
+    // Finish the draft, add a new draft, and re-check submission lists.
+    $this->webformSubmissionExecute('sample');
+    $this->webformSubmissionExecute('sample', TRUE);
+    $sids = webform_download_sids($nid, array('range_type' => 'new', 'completion_type' => 'finished'), (int) $this->webform_users['editor']->uid);
+    $this->assertIdentical($sids, array('4'), 'webform_download_sids() shows correct finished submissions.');
+    $sids = webform_download_sids($nid, array('range_type' => 'new', 'completion_type' => 'draft'), (int) $this->webform_users['editor']->uid);
+    $this->assertIdentical($sids, array('6'), 'webform_download_sids() shows correct draft submissions.');
+  }
+
+  /**
    * Test a submission that uses default values, and check database integrity.
    */
   public function testWebformSubmissionDefault() {
