@@ -736,7 +736,10 @@ function webform_results_download_range_after_build($element, &$form_state) {
   $element['#webform_download_info']['serial'] = $last_download ? $last_download['serial'] : NULL;
   $element['#webform_download_info']['requested'] = $last_download ? $last_download['requested'] : $node->created;
   $element['#webform_download_info']['total'] = webform_get_submission_count($node->nid, NULL, NULL);
-  $element['#webform_download_info']['new'] = webform_download_sids_count($node->nid, array('range_type' => 'new'));
+  $element['#webform_download_info']['new'] = webform_download_sids_count($node->nid, array('range_type' => 'new', 'completion_type' => 'finished'));
+  if ($node->webform['allow_draft'] || $node->webform['auto_save']) {
+    $element['#webform_download_info']['new_draft'] = webform_download_sids_count($node->nid, array('range_type' => 'new', 'completion_type' => 'draft'));
+  }
 
   return $element;
 }
@@ -758,10 +761,26 @@ function theme_webform_results_download_range($variables) {
   $format = webform_date_format('short');
   $requested_date = format_date($download_info['requested'], 'custom', $format);
   $element['range_type']['new']['#theme_wrappers'] = array('webform_inline_radio');
-  $element['range_type']['new']['#title'] .= ' (' . t('@count new since @date', array('@count' => $download_info['new'], '@date' => $requested_date)) . ')';
+  if (isset($download_info['new_draft'])) {
+    $args = array(
+      '@new_draft' => $download_info['new_draft'],
+      '@new' => $download_info['new'],
+      '@date' => $requested_date,
+    );
+    $element['range_type']['new']['#title'] .= ' (' . t('@new_draft new drafts, @new new finished since @date', $args) . ')';
+    $total_count = $download_info['new_draft'] + $download_info['new'];
+  }
+  else {
+    $args = array(
+      '@count' => $download_info['new'],
+      '@date' => $requested_date,
+    );
+    $element['range_type']['new']['#title'] .= ' (' . t('@count new since @date', $args) . ')';
+    $total_count = $download_info['new'];
+  }
 
   // Disable option if there are no new submissions.
-  if ($download_info['new'] == 0) {
+  if ($total_count == 0) {
     $element['range_type']['new']['#attributes']['disabled'] = 'disabled';
   }
 
@@ -1934,15 +1953,6 @@ function webform_download_sids_query($nid, array $range_options, $uid = NULL) {
       $query->orderBy('ws.sid', 'ASC');
       break;
 
-    case 'new':
-      // All Since Last Download.
-      $download_info = webform_download_last_download_info($nid, $uid);
-      $last_sid = $download_info ? $download_info['sid'] : 0;
-      $query
-        ->condition('ws.sid', $last_sid, '>')
-        ->orderBy('ws.sid', 'ASC');
-      break;
-
     case 'latest':
       // Last x Submissions.
       $start_sid = webform_download_latest_start_sid($nid, $range_options['latest'], $range_options['completion_type']);
@@ -1967,21 +1977,37 @@ function webform_download_sids_query($nid, array $range_options, $uid = NULL) {
       $query->orderBy('ws.serial', 'ASC');
       break;
 
+    case 'new':
+      // All since last download. This is the same as 'range_date' except that
+      // the start date is the date of the last download.
+      $download_info = webform_download_last_download_info($nid, $uid);
+      $start_date = (int) $download_info ? $download_info['requested'] : 0;
+      $end_time = NULL;
+      // Fall through.
     case 'range_date':
-      $date_field = $range_options['completion_type'] == 'finished' ? 'ws.completed' : 'ws.submitted';
-      $format = webform_date_format('short');
+      // If the submission is completed, use the completed date, otherwise, the
+      // submitted date.
+      $date_field = 'COALESCE(NULLIF(ws.completed, 0), ws.submitted)';
+      // This is required because SQLite uses dynamic typing.
+      if (db_driver() === 'sqlite') {
+        $date_field = 'CAST(' . $date_field . ' AS INTEGER)';
+      }
 
-      $start_date = DateTime::createFromFormat($format, $range_options['start_date']);
-      $start_date->setTime(0, 0, 0);
-      $start_date = $start_date->getTimestamp();
-      $query->condition($date_field, $start_date, '>=');
+      if (!isset($start_date)) {
+        $format = webform_date_format('short');
+        $start_date = DateTime::createFromFormat($format, $range_options['start_date']);
+        $start_date->setTime(0, 0, 0);
+        $start_date = $start_date->getTimestamp();
 
-      $end_time = DateTime::createFromFormat($format, $range_options['end_date']);
+        $end_time = DateTime::createFromFormat($format, $range_options['end_date']);
+      }
+      $query->where($date_field . ' >= :start_date', array(':start_date' => $start_date));
+
       if ($end_time) {
         // Check for the full day's submissions.
         $end_time->setTime(23, 59, 59);
         $end_time = $end_time->getTimestamp();
-        $query->condition($date_field, $end_time, '<=');
+        $query->where($date_field . ' <= :end_time', array(':end_time' => $end_time));
       }
 
       $query->orderBy($date_field, 'ASC');
