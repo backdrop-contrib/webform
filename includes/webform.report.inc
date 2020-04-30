@@ -1900,11 +1900,19 @@ function theme_webform_results_analysis($variables) {
 /**
  * Given a set of range options, retrieve a set of SIDs for a webform node.
  *
- * @deprecated in webform:7.x-4.8 and is removed from webform:7.x-5.0. Use
- * webform_download_sids_query().
- * @see https://www.drupal.org/project/webform/issues/2465291
+ * @param int $nid
+ *   The node id of the webform.
+ * @param array $range_options
+ *   Associate array of range options.
+ * @param int $uid
+ *   The user id of the user whose last download information should be used,
+ *   or the current user if NULL. This is unrelated to which user submitted
+ *   the submissions.
+ *
+ * @return array
+ *   An array of submission IDs.
  */
-function webform_download_sids($nid, $range_options, $uid = NULL) {
+function webform_download_sids($nid, array $range_options, $uid = NULL) {
   return webform_download_sids_query($nid, $range_options, $uid)
     ->fields('ws', array('sid'))
     ->execute()
