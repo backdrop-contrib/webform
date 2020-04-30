@@ -208,13 +208,17 @@ class WebformSubmissionTestCase extends WebformTestCase {
    *
    * @param string $value_type
    *   The values to be submitted to the webform. Either "sample" or "default".
+   * @param bool $save_draft
+   *   Whether to save a draft or a final submission.
+   * @param array $webform_settings
+   *   Settings to use for this form. Any unspecific settings will be default.
    */
-  public function webformSubmissionExecute($value_type = 'sample') {
+  public function webformSubmissionExecute($value_type = 'sample', $save_draft = FALSE, array $webform_settings = array()) {
     $path = drupal_get_path('module', 'webform');
     module_load_include('inc', 'webform', 'includes/webform.submissions');
 
     // Create a new Webform test node.
-    $node = $this->webformForm();
+    $node = $this->webformForm($webform_settings);
     $submission_values = $value_type == 'sample' ? $this->webformPost() : array();
 
     // Visit the node page with the "foo=bar" query, to test
@@ -223,7 +227,12 @@ class WebformSubmissionTestCase extends WebformTestCase {
     $this->assertText($node->title, t('Webform node created and accessible at !url', array('!url' => 'node/' . $node->nid)), t('Webform'));
 
     // Submit our test data.
-    $this->drupalPost(NULL, $submission_values, 'Submit', array(), array(), 'webform-client-form-' . $node->nid);
+    $this->drupalPost(NULL, $submission_values, $save_draft ? 'Save Draft' : 'Submit', array(), array(), 'webform-client-form-' . $node->nid);
+
+    if ($save_draft) {
+      $this->assertText(t('Submission saved. You may return to this form later and it will restore the current values.'), t('Save draft message displayed.'), t('Webform'));
+      return;
+    }
 
     // Confirm that the submission has been created.
     $this->assertText($node->webform['confirmation'], t('Confirmation message "@confirmation" received.', array('@confirmation' => $node->webform['confirmation'])), t('Webform'));
