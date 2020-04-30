@@ -1894,9 +1894,12 @@ function webform_download_sids($nid, $range_options, $uid = NULL) {
 
 /**
  * Retrieves a count the number of matching submissions.
+ *
+ * @return int
+ *   The number number of matching submissions.
  */
 function webform_download_sids_count($nid, $range_options, $uid = NULL) {
-  return webform_download_sids_query($nid, $range_options, $uid)
+  return (int) webform_download_sids_query($nid, $range_options, $uid)
     ->countQuery()
     ->execute()
     ->fetchField();
