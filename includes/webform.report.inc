@@ -1069,10 +1069,6 @@ function webform_results_download_headers($node, array $options) {
 /**
  * Returns rows of downloadable webform data.
  *
- * @deprecated in webform:7.x-4.8 and is removed from webform:7.x-5.0. See
- * webform_results_download_rows_process().
- * @see https://www.drupal.org/project/webform/issues/2465291
- *
  * @param $node
  *   The webform node on which to generate the analysis.
  * @param array $options
@@ -1087,6 +1083,10 @@ function webform_results_download_headers($node, array $options) {
  *   An array of rows built according to the provided $serial_start and
  *   $pager_count variables. Note that the current page number is determined
  *   by the super-global $_GET['page'] variable.
+ *
+ * @deprecated in webform:7.x-4.8 and is removed from webform:7.x-5.0. See
+ * webform_results_download_rows_process().
+ * @see https://www.drupal.org/project/webform/issues/2465291
  */
 function webform_results_download_rows($node, array $options, $serial_start = 0, &$last_sid = NULL) {
   // Get all the required submissions for the download.
