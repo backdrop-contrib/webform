@@ -122,6 +122,41 @@ class WebformSubmissionTestCase extends WebformTestCase {
   }
 
   /**
+   * Test Webform submission utility functions.
+   *
+   * Test webform_update_webform_last_download() and
+   * webform_download_last_download_info().
+   */
+  public function testWebformSubmissionFunctions() {
+    $node = (object) array('nid' => 1);
+    $uid = 1;
+
+    $result = webform_update_webform_last_download($node, $uid, 10, 1000);
+    $this->assertIdentical($result, MergeQuery::STATUS_INSERT, 'webform_update_webform_last_download() reports successful insert.');
+    $result = webform_download_last_download_info($node->nid, $uid);
+    $test = array(
+      'nid' => '1',
+      'uid' => '1',
+      'sid' => '10',
+      'requested' => '1000',
+      'serial' => NULL,
+    );
+    $this->assertIdentical($result, $test, 'webform_download_last_download_info() returned correct result.');
+
+    $result = webform_update_webform_last_download($node, $uid, 20, 2000);
+    $this->assertIdentical($result, MergeQuery::STATUS_UPDATE, 'webform_update_webform_last_download() reports successful update.');
+    $result = webform_download_last_download_info($node->nid, $uid);
+    $test = array(
+      'nid' => '1',
+      'uid' => '1',
+      'sid' => '20',
+      'requested' => '2000',
+      'serial' => NULL,
+    );
+    $this->assertIdentical($result, $test, 'webform_download_last_download_info() returned correct result.');
+  }
+
+  /**
    * Test a submission that uses default values, and check database integrity.
    */
   public function testWebformSubmissionDefault() {
