@@ -996,6 +996,7 @@ function webform_component_feature($type, $feature) {
     'email_address' => FALSE,
     'email_name' => FALSE,
     'required' => TRUE,
+    'stores_data' => TRUE,
     'title' => TRUE,
     'title_display' => TRUE,
     'title_inline' => TRUE,

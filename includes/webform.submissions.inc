@@ -28,7 +28,7 @@ function webform_submission_data($node, $submitted) {
 
   foreach ($submitted as $cid => $values) {
     // Don't save pseudo-fields or components that do not collect data.
-    if (!isset($node->webform['components'][$cid]) || !webform_component_feature($node->webform['components'][$cid]['type'], 'csv')) {
+    if (!isset($node->webform['components'][$cid]) || !webform_component_feature($node->webform['components'][$cid]['type'], 'stores_data')) {
       continue;
     }
 
