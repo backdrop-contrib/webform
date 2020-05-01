@@ -1327,6 +1327,7 @@ function webform_webform_submission_actions($node, $submission) {
  * have been edited if necessary.
  */
 function webform_webform_submission_presave($node, &$submission) {
+  module_load_include('inc', 'webform', 'includes/webform.components');
   // Check if there are any file components in this submission and if any of
   // them currently contain files.
   $has_file_components = FALSE;
