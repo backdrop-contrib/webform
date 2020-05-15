@@ -29,18 +29,18 @@ function webform_token_info() {
     'description' => t('The security token used to gain access to this webform submission.'),
   );
   $info['tokens']['submission']['date'] = array(
-    'name' => t('Date submitted'),
-    'description' => t('The date the webform was first save as draft or completed.'),
+    'name' => t('Date created'),
+    'description' => t('The date the webform submission was first saved, either as a draft or completed.'),
     'type' => 'date',
   );
   $info['tokens']['submission']['completed_date'] = array(
     'name' => t('Date completed'),
-    'description' => t('The date the webform was first completed (not draft).'),
+    'description' => t('The date the webform submission was completed (no longer a draft).'),
     'type' => 'date',
   );
   $info['tokens']['submission']['modified_date'] = array(
     'name' => t('Date modified'),
-    'description' => t('The date the webform was last saved (draft or completed).'),
+    'description' => t('The date the webform submission was last saved, either as a draft or completed.'),
     'type' => 'date',
   );
   $info['tokens']['submission']['ip-address'] = array(
