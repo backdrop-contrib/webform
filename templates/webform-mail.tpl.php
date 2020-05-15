@@ -21,7 +21,7 @@
  * different users when using the "default" e-mail template.
  */
 ?>
-<?php print ($email['html'] ? '<p>' : '') . t('Submitted on [submission:date:long]') . ($email['html'] ? '</p>' : ''); ?>
+<?php print ($email['html'] ? '<p>' : '') . t('Submitted on [submission:completed_date:long]') . ($email['html'] ? '</p>' : ''); ?>
 
 <?php if ($user->uid): ?>
 <?php print ($email['html'] ? '<p>' : '') . t('Submitted by user: [submission:user]') . ($email['html'] ? '</p>' : ''); ?>
