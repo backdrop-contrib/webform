@@ -13,6 +13,12 @@ Results can be exported into Excel or other spreadsheet applications. Webform
 also provides some basic statistical review and has an extensive API for
 expanding its features.
 
+Backdrop Webform is based on Drupal 7 Webform.  For additional examples of
+webform configuration, see the documentation and videos on the Internet for 
+Drupal 7 Webform.  Note that Drupal 8 Webform continues the 'Webform' name
+and serves the same general purpose, but is a different product with 
+different features and configuration.
+
 Installation
 ------------
 
