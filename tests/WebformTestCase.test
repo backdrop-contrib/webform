@@ -854,7 +854,7 @@ abstract class WebformTestCase extends BackdropWebTestCase {
         ),
         'error values' => array(
           '1.5' => t('!name field value of @value must be an integer.', array('!name' => 'Integer', '@value' => '1.5')),
-          '101' => t('!name field value must be less than @max.', array('!name' => 'Integer', '@max' => '100')),
+          '101' => t('!name field value must be less than or equal to @max.', array('!name' => 'Integer', '@max' => '100')),
         ),
       ),
       'integer_range' => array(
@@ -918,7 +918,7 @@ abstract class WebformTestCase extends BackdropWebTestCase {
           'empty' => TRUE,
         ),
         'error values' => array(
-          '-1' => t('!name field value must be greater than @min.', array('!name' => 'Decimal positive', '@min' => '0')),
+          '-1' => t('!name field value must be greater than or equal to @min.', array('!name' => 'Decimal positive', '@min' => '0')),
         ),
       ),
       'decimal_range' => array(
@@ -991,8 +991,11 @@ abstract class WebformTestCase extends BackdropWebTestCase {
 
   /**
    * Create a sample Webform node.
+   *
+   * @param array $webform_settings
+   *   Settings to use for this form. Any unspecified settings will be default.
    */
-  public function webformForm() {
+  public function webformForm(array $webform_settings = array()) {
     if (isset($this->_webform_node)) {
       return $this->_webform_node;
     }
@@ -1010,7 +1013,7 @@ abstract class WebformTestCase extends BackdropWebTestCase {
       'title' => 'Test Webform',
       'log' => '',
       'format' => '1',
-      'webform' => array(
+      'webform' => $webform_settings + array(
         'confirmation' => 'Thanks!',
       ) + webform_node_defaults(),
     );

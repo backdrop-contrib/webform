@@ -260,6 +260,9 @@ function webform_conditionals_form_validate($form, &$form_state) {
  */
 function webform_conditionals_form_submit($form, &$form_state) {
   $node = $form['#node'];
+  // Get a fresh copy of the node so that we are only saving these changes.
+  // Otherwise, changes to the Webform on another tab will be overwritten.
+  $node = node_load($node->nid, NULL, TRUE);
 
   // Remove the new conditional placeholder.
   unset($form_state['values']['conditionals']['new']);

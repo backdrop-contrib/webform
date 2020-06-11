@@ -52,9 +52,16 @@ class webform_exporter_excel_delimited extends webform_exporter_delimited {
    */
   public function set_headers($filename) {
     backdrop_add_http_header('Content-Type', 'application/x-msexcel');
-    backdrop_add_http_header('Content-Disposition', "attachment; filename=$filename.xls");
+    backdrop_add_http_header('Content-Disposition', 'attachment; filename=' . $this->get_filename($filename));
     backdrop_add_http_header('Pragma', 'public');
     backdrop_add_http_header('Cache-Control', 'max-age=0');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function get_filename($filename) {
+    return $filename . '.xls';
   }
 
 }
