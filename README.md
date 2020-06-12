@@ -13,12 +13,6 @@ Results can be exported into Excel or other spreadsheet applications. Webform
 also provides some basic statistical review and has an extensive API for
 expanding its features.
 
-Backdrop Webform is based on Drupal 7 Webform.  For additional examples of
-webform configuration, see the documentation and videos on the Internet for 
-Drupal 7 Webform.  Note that Drupal 8 Webform continues the 'Webform' name
-and serves the same general purpose, but is a different product with 
-different features and configuration.
-
 Installation
 ------------
 
@@ -48,6 +42,16 @@ Open one issue for each problem/request; don't bundle several issues into one
 submission. Please search the queue and read the handbook pages to avoid
 duplicate issues.
 
+Background
+----------
+
+Backdrop Webform is based on the Webform module for Drupal 7--starting at
+version 7.x-4.4. For additional examples of Webform configuration, the
+existing documentation and videos the Drupal 7 verison will likely be useful
+for the Backdrop version as well. Note that Webform for Drupal 8 continues the
+'Webform' name and serves the same general purpose, but is a different product
+with different features and configuration.
+
 License
 -------
 
@@ -63,11 +67,9 @@ Maintainers
 Credits
 -------
 
-Ported to Backdrop by biolithic <https://github.com/biolithic>.
-
-This module is based on the Webform module for Drupal--starting at version
-7.x-4.4--originally written and maintained by a large number of contributors,
-including:
+Ported to Backdrop from Drupal 7 by biolithic <https://github.com/biolithic>. 
+The Drupal 7 version originally written and maintained by a large number of
+contributors, including:
 
 - quicksketch <https://www.drupal.org/u/quicksketch>
 - fenstrat <https://www.drupal.org/u/fenstrat>
