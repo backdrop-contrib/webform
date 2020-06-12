@@ -515,6 +515,11 @@ function hook_webform_component_info() {
       // This component may be toggled as required or not. Defaults to TRUE.
       'required' => TRUE,
 
+      // Store data in database. Defaults to TRUE. When FALSE, submission data
+      // will never be saved. This is for components like fieldset, markup, and
+      // pagebreak which do not collect data.
+      'stores_data' => TRUE,
+
       // This component supports a title attribute. Defaults to TRUE.
       'title' => FALSE,
 
@@ -782,12 +787,28 @@ function hook_webform_node_defaults_alter(array &$defaults) {
  *   Keys and titles for default submission information.
  *
  * @see hook_webform_results_download_submission_information_data()
+ * @see hook_webform_results_download_submission_information_info_alter()
  */
 function hook_webform_results_download_submission_information_info() {
   return array(
     'field_key_1' => t('Field Title 1'),
     'field_key_2' => t('Field Title 2'),
   );
+}
+
+/**
+ * Alter fields in submission data downloads.
+ *
+ * @param array $submission_information
+ *   Keys and titles for default submission information.
+ *
+ * @see hook_webform_results_download_submission_information_info()
+ */
+function hook_webform_results_download_submission_information_info_alter(array &$submission_information) {
+  // Unset a property to remove it from submission data downloads.
+  if (isset($submission_information['webform_ip_address'])) {
+    unset($submission_information['webform_ip_address']);
+  }
 }
 
 /**
@@ -833,7 +854,7 @@ function hook_webform_results_download_submission_information_data($token, $subm
 function hook_webform_download_sids_query_alter(&$query) {
   global $user;
 
-  // check if component value matches a node ID and author of that node.
+  // Check if component value matches a node ID and author of that node.
   $query->join('webform_submitted_data', 'wsd', 'ws.sid = wsd.sid');
   $query->condition('wsd.cid', 2);
   $query->join('node', 'n', 'wsd.data = n.nid');

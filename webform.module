@@ -1069,6 +1069,7 @@ function webform_webform_component_info() {
         'required' => FALSE,
         'conditional' => FALSE,
         'group' => TRUE,
+        'stores_data' => FALSE,
         'title_inline' => FALSE,
         'wrapper_classes' => FALSE,
       ),
@@ -1114,6 +1115,7 @@ function webform_webform_component_info() {
         'email' => FALSE,
         'required' => FALSE,
         'conditional' => FALSE,
+        'stores_data' => FALSE,
         'title_display' => FALSE,
         'private' => FALSE,
         'wrapper_classes' => FALSE,
@@ -1142,6 +1144,7 @@ function webform_webform_component_info() {
         'description' => FALSE,
         'private' => FALSE,
         'required' => FALSE,
+        'stores_data' => FALSE,
         'title_display' => FALSE,
         'wrapper_classes' => FALSE,
         'css_classes' => FALSE,
@@ -1280,6 +1283,7 @@ function webform_webform_submission_actions($node, $submission) {
  * have been edited if necessary.
  */
 function webform_webform_submission_presave($node, &$submission) {
+  module_load_include('inc', 'webform', 'includes/webform.components');
   // Check if there are any file components in this submission and if any of
   // them currently contain files.
   $has_file_components = FALSE;
@@ -5355,6 +5359,9 @@ function webform_date_views_extra_tables() {
 /**
  * Returns the next serial number for a given node and increments it.
  *
+ * Return the serial number to be used in the next submission and saves the
+ * number after that as the subsequent serial number.
+ *
  * @param int $nid
  *   The nid of the node.
  *
@@ -5366,11 +5373,11 @@ function _webform_submission_serial_next_value($nid) {
   // the SELECT and the UPDATE, ensuring that multiple Webform submissions
   // at the same time do not have duplicate numbers. FOR UPDATE must be inside
   // a transaction. The return value of db_transaction() must be assigned or the
-  // transaction will commit immediately. The transaction will commit when $txn
-  // goes out-of-scope.
+  // transaction will commit immediately. The transaction will commit when
+  // $transaction goes out-of-scope.
   $transaction = db_transaction();
 
-  // Get the next_serial value.
+  // Get the value stored in this webform as the next_serial value.
   $next_serial = db_select('webform', 'w')
     // Only add FOR UPDATE when incrementing.
     ->forUpdate()
@@ -5379,10 +5386,10 @@ function _webform_submission_serial_next_value($nid) {
     ->execute()
     ->fetchField();
 
-  // $next_serial must be greater than any existing serial number.
+  // The value must be greater than $next_serial and any existing serial number.
   $next_serial = max($next_serial, _webform_submission_serial_next_value_used($nid));
 
-  // Increment the next_value.
+  // Store the value after $next_value for use in the subsequent submission.
   db_update('webform')
     ->fields(array('next_serial' => $next_serial + 1))
     ->condition('nid', $nid)

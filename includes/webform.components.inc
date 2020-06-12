@@ -461,9 +461,9 @@ function webform_component_edit_form($form, $form_state, $node, $component, $clo
         '#title' => t('Label display'),
         '#default_value' => !empty($component['extra']['title_display']) ? $component['extra']['title_display'] : 'before',
         '#options' => array('before' => t('Above')) +
-                      $inline_option +
-                      $internal_option +
-                      array('none' => t('None')),
+          $inline_option +
+          $internal_option +
+          array('none' => t('None')),
         '#description' => t("Determines the placement of the component's label."),
       );
     }
@@ -996,6 +996,7 @@ function webform_component_feature($type, $feature) {
     'email_address' => FALSE,
     'email_name' => FALSE,
     'required' => TRUE,
+    'stores_data' => TRUE,
     'title' => TRUE,
     'title_display' => TRUE,
     'title_inline' => TRUE,
