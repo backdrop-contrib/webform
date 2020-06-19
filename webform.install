@@ -813,6 +813,7 @@ function webform_uninstall() {
   variable_del('webform_token_access');
   variable_del('webform_update_batch_size');
   variable_del('webform_disabled_components');
+  variable_del('webform_export_use_progressive_batch');
 
   foreach (node_type_get_names() as $type => $name) {
     variable_del('webform_node_' . $type);

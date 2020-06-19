@@ -4413,6 +4413,10 @@ function webform_variable_get($variable) {
       $result = variable_get('webform_date_type', 'medium');
       break;
 
+    case 'webform_export_use_progressive_batch':
+      $result = variable_get('webform_export_use_progressive_batch', TRUE);
+      break;
+
     case 'webform_export_format':
       module_load_include('inc', 'webform', 'includes/webform.export');
       $options = webform_export_list();

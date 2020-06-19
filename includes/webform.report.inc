@@ -880,6 +880,13 @@ function webform_results_download_form_submit(&$form, &$form_state) {
   // Set up a batch to export the results.
   $batch = webform_results_export_batch($node, $format, $options);
   batch_set($batch);
+
+  // Disable progressive batch process.
+  if (!webform_variable_get('webform_export_use_progressive_batch')) {
+    $batch =& batch_get();
+    $batch['progressive'] = FALSE;
+    batch_process();
+  }
 }
 
 /**
