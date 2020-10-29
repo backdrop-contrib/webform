@@ -3286,7 +3286,7 @@ function webform_client_form_pages($form, &$form_state) {
     }
 
     // The form is done if the page number is greater than the page count.
-    $form_state['webform_completed'] = $form_state['storage']['page_num'] > $form_state['storage']['page_count'];
+    $form_state['webform_completed'] = $form_state['storage']['page_num'] >= $form_state['storage']['page_count'];
   }
 
   // Inform the submit handlers that a draft will be saved.
