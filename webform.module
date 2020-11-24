@@ -3198,8 +3198,8 @@ function webform_client_form_postvalidate(&$form, &$form_state) {
       // form definition function, which will honor the new sid.
       $form_state['no_cache'] = TRUE;
       if (!empty($form_state['values']['form_build_id'])) {
-        cache_clear_all('form_' . $form_state['values']['form_build_id'], 'cache_form');
-        cache_clear_all('form_state_' . $form_state['values']['form_build_id'], 'cache_form');
+        tempstore_clear('form', $form_state['values']['form_build_id']);
+        tempstore_clear('form_state', $form_state['values']['form_build_id']);
       }
     }
   }
