@@ -258,10 +258,11 @@ function webform_submission_send_mail($node, $submission, $emails = NULL, $send_
     $send_increment = $mail['send_increment'];
     $language = $mail['language'];
     $mail_params = $mail['mail_params'];
+    $from = isset($email['reply-to']) ? $email['reply-to'] : $email['from'];
 
     // Mail the webform results.
     foreach ($addresses_final as $address) {
-      $message = backdrop_mail('webform', 'submission', $address, $language, $mail_params, $email['from']);
+      $message = backdrop_mail('webform', 'submission', $address, $language, $mail_params, $from);
       if ($message['result']) {
         $send_count += $send_increment;
       }
