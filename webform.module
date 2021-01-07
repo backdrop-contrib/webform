@@ -2264,8 +2264,8 @@ function webform_block_view($delta = '') {
   // Load node in current language.
   if (module_exists('translation')) {
     global $language;
-    if (($translations = translation_node_get_translations($nid)) && (isset($translations[$language->language]))) {
-      $nid = $translations[$language->language]->nid;
+    if (($translations = translation_node_get_translations($nid)) && (isset($translations[$language->langcode]))) {
+      $nid = $translations[$language->langcode]->nid;
     }
   }
 
