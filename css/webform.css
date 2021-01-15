@@ -32,6 +32,14 @@ html.js input.webform-calendar {
   display: block;
   float: left;
 }
+.webform-component .field-prefix {
+  display: inline;
+  padding: 0 0.5em 0 0;
+}
+.webform-component .field-suffix {
+  display: inline;
+  padding: 0 0 0 0.5em;
+}
 .webform-container-inline div.ajax-progress-bar div {
   display: inherit;
 }
