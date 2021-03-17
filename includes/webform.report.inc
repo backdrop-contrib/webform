@@ -2109,7 +2109,7 @@ function webform_download_last_download_info($nid, $uid = NULL) {
  *   The submission ID that starts the latest sequence of submissions.
  */
 function webform_download_latest_start_sid($nid, $latest_count, $completion_type = 'all') {
-  // @todo: Find a more efficient DBTNG query to retrieve this number.
+  // @todo Find a more efficient DBTNG query to retrieve this number.
   $query = db_select('webform_submissions', 'ws')
     ->fields('ws', array('sid'))
     ->condition('nid', $nid)

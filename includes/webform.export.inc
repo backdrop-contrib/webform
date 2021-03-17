@@ -102,7 +102,7 @@ function webform_export_create_handler($format, $options) {
     $handler = new $definition['handler']($options);
   }
   else {
-    // @todo: Create a default broken exporter.
+    // @todo Create a default broken exporter.
     $handler = new webform_exporter_broken($options);
   }
 

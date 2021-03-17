@@ -1809,7 +1809,7 @@ function webform_node_load($nodes, $types) {
   }
 
   // Load the components, emails, and defaults for all webform-enabled nodes.
-  // @todo: Increase efficiency here by pulling in all information all at once
+  // @todo Increase efficiency here by pulling in all information all at once
   // instead of individual queries.
   foreach ($nodes as $nid => $node) {
     if (!in_array($node->type, $webform_types)) {

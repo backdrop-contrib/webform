@@ -1285,7 +1285,7 @@ function webform_conditional_form_select($node) {
   webform_component_include('select');
   foreach ($node->webform['components'] as $cid => $component) {
     if (webform_component_property($component['type'], 'conditional_type') == 'select') {
-      // @todo: Use a pluggable mechanism for retrieving select list values.
+      // @todo Use a pluggable mechanism for retrieving select list values.
       $options = _webform_select_options($component);
       $element = array(
         '#type' => 'select',
