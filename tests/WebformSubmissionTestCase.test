@@ -336,7 +336,7 @@ class WebformSubmissionTestCase extends WebformTestCase {
     // Get the SID of the new submission.
     $matches = array();
     preg_match('/sid=([0-9]+)/', $this->getUrl(), $matches);
-    $sid = $matches[1];
+    $sid = isset($matches[1]) ? $matches[1] : NULL;
 
     // Pull in the database submission and check the values.
     drupal_static_reset('webform_get_submission');
@@ -345,7 +345,7 @@ class WebformSubmissionTestCase extends WebformTestCase {
     $component_info = $this->webformComponents();
     foreach ($node->webform['components'] as $cid => $component) {
       $stable_value = $value_type == 'sample' ? $component_info[$component['form_key']]['database values'] : $component_info[$component['form_key']]['database default values'];
-      $actual_value = $actual_submission->data[$cid];
+      $actual_value = isset($actual_submission->data[$cid]) ? $actual_submission->data[$cid] : NULL;
       $result = $this->assertEqual($stable_value, $actual_value, t('Component @form_key data integrity check when using @type values.', array('@form_key' => $component['form_key'], '@type' => $value_type)), t('Webform'));
       if (!$result || $result === 'fail') {
         $this->fail(t("Expected !expected\n\nRecieved !recieved", array('!expected' => print_r($stable_value, TRUE), '!recieved' => print_r($actual_value, TRUE))), t('Webform'));
