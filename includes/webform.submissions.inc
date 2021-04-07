@@ -362,7 +362,7 @@ function _webform_submission_prepare_mail($node, $submission, &$email) {
   }
 
   // Generate the list of addresses that this e-mail will be sent to.
-  $addresses_final = array_filter($addresses, 'webform_valid_email_address');
+  $addresses_final = array_filter($addresses, 'webform_valid_email_address_filter');
 
   if (!$addresses_final) {
     return;

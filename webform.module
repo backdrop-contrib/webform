@@ -4738,6 +4738,17 @@ function webform_valid_email_address(&$emails, $allow_tokens = FALSE, $format = 
 }
 
 /**
+ * Wrapper for webform_valid_email_address(). Counts valid email addresses.
+ *
+ * This takes all parameters by value, allowing it it to be used as a filter.
+ *
+ * @see webform_valid_email_address()
+ */
+function webform_valid_email_address_filter($emails, $allow_tokens = FALSE, $format = NULL) {
+  return webform_valid_email_address($emails, $allow_tokens, $format);
+}
+
+/**
  * Parses an e-mail address into name and address.
  *
  * @param string $email
