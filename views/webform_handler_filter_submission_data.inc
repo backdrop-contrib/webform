@@ -81,7 +81,7 @@ class webform_handler_filter_submission_data extends views_handler_filter_string
    * Provide a simple textfield for equality.
    */
   public function value_form(&$form, &$form_state) {
-    // @todo: Adjust the exposed filter form based on component form.
+    // @todo Adjust the exposed filter form based on component form.
     return parent::value_form($form, $form_state);
   }
 

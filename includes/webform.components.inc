@@ -159,7 +159,7 @@ function template_preprocess_webform_components_form(&$variables) {
 
   $form['components']['#attached']['library'][] = array('webform', 'admin');
 
-  // @todo: Attach these. See http://drupal.org/node/732022.
+  // @todo Attach these. See http://drupal.org/node/732022.
   backdrop_add_tabledrag('webform-components', 'order', 'sibling', 'webform-weight');
   backdrop_add_tabledrag('webform-components', 'match', 'parent', 'webform-pid', 'webform-pid', 'webform-cid');
 

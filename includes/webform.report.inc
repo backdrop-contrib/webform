@@ -277,7 +277,7 @@ function theme_webform_results_table_header($variables) {
  *   HTML string with result data.
  */
 function theme_webform_results_table(array $variables) {
-  backdrop_add_library('webform', 'admin');
+  drupal_add_library('webform', 'admin');
 
   $node = $variables['node'];
   $components = $variables['components'];
@@ -880,6 +880,13 @@ function webform_results_download_form_submit(&$form, &$form_state) {
   // Set up a batch to export the results.
   $batch = webform_results_export_batch($node, $format, $options);
   batch_set($batch);
+
+  // Disable progressive batch process.
+  if (!webform_variable_get('webform_export_use_progressive_batch')) {
+    $batch =& batch_get();
+    $batch['progressive'] = FALSE;
+    batch_process();
+  }
 }
 
 /**
@@ -2111,7 +2118,7 @@ function webform_download_last_download_info($nid, $uid = NULL) {
  *   The submission ID that starts the latest sequence of submissions.
  */
 function webform_download_latest_start_sid($nid, $latest_count, $completion_type = 'all') {
-  // @todo: Find a more efficient DBTNG query to retrieve this number.
+  // @todo Find a more efficient DBTNG query to retrieve this number.
   $query = db_select('webform_submissions', 'ws')
     ->fields('ws', array('sid'))
     ->condition('nid', $nid)
