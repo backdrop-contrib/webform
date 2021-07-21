@@ -192,6 +192,13 @@ function webform_admin_settings() {
     '#description' => t('Choose the format for the display of date components. Only the date portion of the format is used. Reporting and export use the short format.'),
   );
 
+  $form['advanced']['webform_export_use_progressive_batch'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable progressive batch export'),
+    '#default_value' => webform_variable_get('webform_export_use_progressive_batch'),
+    '#description' => t('This is checked by default. Uncheck if you are experiencing failed export downloads in a load-balanced environment.'),
+  );
+
   $form['advanced']['webform_export_format'] = array(
     '#type' => 'radios',
     '#title' => t('Default export format'),

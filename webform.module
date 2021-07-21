@@ -1759,7 +1759,7 @@ function webform_node_load($nodes, $types) {
   }
 
   // Load the components, emails, and defaults for all webform-enabled nodes.
-  // @todo: Increase efficiency here by pulling in all information all at once
+  // @todo Increase efficiency here by pulling in all information all at once
   // instead of individual queries.
   foreach ($nodes as $nid => $node) {
     if (!in_array($node->type, $webform_types)) {
@@ -4373,6 +4373,10 @@ function webform_variable_get($variable) {
       $result = config_get('webform.settings', 'webform_date_type');
       break;
 
+    case 'webform_export_use_progressive_batch':
+      $result = config_get('webform.settings', 'webform_export_use_progressive_batch');
+      break;
+
     case 'webform_export_format':
       module_load_include('inc', 'webform', 'includes/webform.export');
       $options = webform_export_list();
@@ -4660,6 +4664,17 @@ function webform_valid_email_address(&$emails, $allow_tokens = FALSE, $format = 
   }
   $emails = implode(', ', $email_array);
   return $count;
+}
+
+/**
+ * Wrapper for webform_valid_email_address(). Counts valid email addresses.
+ *
+ * This takes all parameters by value, allowing it it to be used as a filter.
+ *
+ * @see webform_valid_email_address()
+ */
+function webform_valid_email_address_filter($emails, $allow_tokens = FALSE, $format = NULL) {
+  return webform_valid_email_address($emails, $allow_tokens, $format);
 }
 
 /**

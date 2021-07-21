@@ -23,6 +23,7 @@
     "webform_format_override": "0",
     "webform_email_select_max": "50",
     "webform_node_types_primary": ["webform"],
+    "webform_export_use_progressive_batch": true,
     "webform_export_format": "excel",
     "webform_csv_delimiter": "\t",
     "webform_csv_line_ending": "\n",

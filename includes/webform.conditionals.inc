@@ -533,6 +533,7 @@ function _webform_conditional_rule_expand($element, $rid, $conditional, $level, 
       '#title' => t('Value'),
       '#size' => 20,
       '#default_value' => $conditional['value'],
+      '#maxlength' => 1024,
     ),
     'add_subconditional' => _webform_conditional_add_expand($element, $rid, TRUE),
     'add' => _webform_conditional_add_expand($element, $rid, FALSE),
@@ -1285,7 +1286,7 @@ function webform_conditional_form_select($node) {
   webform_component_include('select');
   foreach ($node->webform['components'] as $cid => $component) {
     if (webform_component_property($component['type'], 'conditional_type') == 'select') {
-      // @todo: Use a pluggable mechanism for retrieving select list values.
+      // @todo Use a pluggable mechanism for retrieving select list values.
       $options = _webform_select_options($component);
       $element = array(
         '#type' => 'select',

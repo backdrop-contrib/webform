@@ -782,7 +782,7 @@ function _webform_number_select_options($component) {
     $options[$f . ''] = $f . '';
   }
 
-  // @todo: HTML5 browsers apparently do not include the max value if it does
+  // @todo HTML5 browsers apparently do not include the max value if it does
   // not line up with step. Restore this if needed in the future.
   // Add end limit if it's been skipped due to step.
   // @code
@@ -903,6 +903,13 @@ function webform_number_standardize($value, $point) {
  * See https://drupal.org/node/1601968.
  */
 function webform_modulo($a, $b) {
+  // Ensure values are either int or float.
+  if (!is_numeric($a) || !is_numeric($b)) {
+    return 0.0;
+  }
+  $a = +$a;
+  $b = +$b;
+
   $modulo = $a - $b * (($b < 0) ? ceil($a / $b) : floor($a / $b));
   if (webform_compare_floats($modulo, 0.0) == 0 || webform_compare_floats($modulo, $b) == 0) {
     $modulo = 0.0;

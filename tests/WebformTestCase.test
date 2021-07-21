@@ -507,7 +507,7 @@ abstract class WebformTestCase extends BackdropWebTestCase {
           'pid' => '0',
           'weight' => '-10',
         ),
-        // @todo: I'd like to test a value, but SimpleTest can't set multiple values.
+        // @todo I'd like to test a value, but SimpleTest can't set multiple values.
         'sample values' => NULL,
         'database values' => array('one', 'two'),
         'database default values' => array('one', 'two'),
