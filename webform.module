@@ -4374,7 +4374,7 @@ function webform_variable_get($variable) {
       break;
 
     case 'webform_export_use_progressive_batch':
-      $result = variable_get('webform_export_use_progressive_batch', TRUE);
+      $result = config_get('webform.settings', 'webform_export_use_progressive_batch');
       break;
 
     case 'webform_export_format':
