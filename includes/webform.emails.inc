@@ -232,14 +232,14 @@ function webform_email_edit_form($form, $form_state, $node, $email = array(), $c
 
       case 'from_address':
         $default_value = webform_replace_tokens(webform_variable_get('webform_default_from_address'), $node);
-        $title = t('E-mail from address');
-        $description = t("Any email, select, or hidden form element may be selected as the sender's e-mail address.");
+        $title = t('E-mail Reply-to address');
+        $description = t("Any email, select, or hidden form element may be selected as the sender's Reply-to e-mail address.");
         break;
 
       case 'from_name':
         $default_value = webform_replace_tokens(webform_variable_get('webform_default_from_name'), $node);
-        $title = t('E-mail from name');
-        $description = t("Any textfield, select, or hidden form element may be selected as the sender's name for e-mails.");
+        $title = t('E-mail Reply-to name');
+        $description = t("Any textfield, select, or hidden form element may be selected as the sender's Reply-to name for e-mails.");
         break;
     }
 

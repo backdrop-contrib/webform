@@ -1462,3 +1462,12 @@ function webform_update_1606() {
 
   update_variable_del('webform_export_use_progressive_batch');
 }
+
+/**
+ * Remove webform_email_replyto setting since core always sets Reply-to header.
+ */
+function webform_update_1607() {
+  $config = config('webform.settings');
+  $config->clear('webform_email_replyto');
+  $config->save();
+}

@@ -261,7 +261,7 @@ function webform_submission_send_mail($node, $submission, $emails = NULL, $send_
 
     // Mail the webform results.
     foreach ($addresses_final as $address) {
-      $message = backdrop_mail('webform', 'submission', $address, $language, $mail_params, $email['from']);
+      $message = backdrop_mail('webform', 'submission', $address, $language, $mail_params, $email['reply-to']);
       if ($message['result']) {
         $send_count += $send_increment;
       }
@@ -316,11 +316,10 @@ function _webform_submission_prepare_mail($node, $submission, &$email) {
     $email['from'] = webform_format_email_address($email['from_address'], $email['from_name'], $node, $submission, TRUE, TRUE, NULL, $mapping);
   }
 
-  // If "Use Reply-To header" is set in Webform settings and the Reply-To
-  // header is not already set, set Reply-To to the From and set From address
-  // to webform_default_from_name and webform_default_from_address.
-  if (webform_variable_get('webform_email_replyto') &&
-      empty($email['headers']['Reply-To']) && empty($email['headers']['Reply-to']) &&
+  // If the Reply-To header is not already set, set Reply-To to the From and
+  // set From address to webform_default_from_name and
+  // webform_default_from_address.
+  if (empty($email['headers']['Reply-To']) && empty($email['headers']['Reply-to']) &&
       ($default_from_name = webform_variable_get('webform_default_from_name')) &&
       ($default_from_address = webform_variable_get('webform_default_from_address')) &&
       $email['from'] !== $default_from_name) {

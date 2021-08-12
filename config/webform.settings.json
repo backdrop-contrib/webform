@@ -17,7 +17,6 @@
     "webform_default_from_name": "",
     "webform_default_from_address": "",
     "webform_default_subject": "Form submission from: [node:title]",
-    "webform_email_replyto": 1,
     "webform_email_html_capable": 0,
     "webform_default_format": "0",
     "webform_format_override": "0",
