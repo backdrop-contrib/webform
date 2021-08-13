@@ -342,7 +342,6 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE, $submis
 
   $element = array(
     '#type' => 'managed_file',
-    '#process' => array('file_managed_file_process'),
     '#theme' => 'webform_managed_file',
     '#title' => $filter ? webform_filter_xss($component['name']) : $component['name'],
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
