@@ -350,6 +350,9 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE, $submis
     '#attributes' => $component['extra']['attributes'],
     '#attached' => array(
       'library' => array('system', 'backdrop.form'),
+      'js' => array(
+        backdrop_get_path('module', 'file') . '/js/file.js',
+      ),
     ),
     '#upload_validators' => array(
       'file_validate_size' => array($max_filesize),
