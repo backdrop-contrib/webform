@@ -2221,6 +2221,9 @@ function webform_mail($key, &$message, $params) {
   $message['headers'] = array_merge($message['headers'], $params['headers']);
   $message['subject'] = $params['subject'];
   $message['body'][] = $params['message'];
+
+  // Ensure the From address matches Webform's global default.
+  $message['from'] = $message['headers']['From'] = $params['email']['from'];
 }
 
 /**

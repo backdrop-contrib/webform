@@ -41,16 +41,16 @@ function webform_admin_settings() {
 
   $form['email']['webform_default_from_address'] = array(
     '#type' => 'textfield',
-    '#title' => t('Reply-to address'),
+    '#title' => t('From address'),
     '#default_value' => webform_variable_get('webform_default_from_address'),
-    '#description' => t('The default Reply-to address for emailed webform results; often the e-mail address of the maintainer of your forms.'),
+    '#description' => t('The default sender address for emailed webform results. It should match either the website domain or the domain used with the mailing service.'),
   );
 
   $form['email']['webform_default_from_name'] = array(
     '#type' => 'textfield',
-    '#title' => t('Reply-to name'),
+    '#title' => t('From name'),
     '#default_value' => webform_variable_get('webform_default_from_name'),
-    '#description' => t('The default sender name which is used along with the default Reply-to address.'),
+    '#description' => t('The default sender name which is used along with the default from address.'),
   );
 
   $form['email']['webform_default_subject'] = array(
