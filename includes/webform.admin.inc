@@ -43,7 +43,7 @@ function webform_admin_settings() {
     '#type' => 'textfield',
     '#title' => t('From address'),
     '#default_value' => webform_variable_get('webform_default_from_address'),
-    '#description' => t('The default sender address for emailed webform results; often the e-mail address of the maintainer of your forms.'),
+    '#description' => t('The default sender address for emailed webform results. It should match the sending domain, either the website domain or the domain used with the mailing service.'),
   );
 
   $form['email']['webform_default_from_name'] = array(
@@ -58,13 +58,6 @@ function webform_admin_settings() {
     '#title' => t('Default subject'),
     '#default_value' => webform_variable_get('webform_default_subject'),
     '#description' => t('The default subject line of any e-mailed results.'),
-  );
-
-  $form['email']['webform_email_replyto'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Use Reply-To header'),
-    '#default_value' => webform_variable_get('webform_email_replyto'),
-    '#description' => t('If the default from name and address are set above, send all e-mail from the default address set the "Reply-To" header to the actual sender. This helps prevent e-mail from being flagged as spam.'),
   );
 
   $form['email']['webform_email_html_capable'] = array(

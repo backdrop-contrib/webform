@@ -2221,6 +2221,9 @@ function webform_mail($key, &$message, $params) {
   $message['headers'] = array_merge($message['headers'], $params['headers']);
   $message['subject'] = $params['subject'];
   $message['body'][] = $params['message'];
+
+  // Ensure the From address matches Webform's global default.
+  $message['from'] = $message['headers']['From'] = $params['email']['from'];
 }
 
 /**
@@ -4339,10 +4342,6 @@ function webform_variable_get($variable) {
 
     case 'webform_default_subject':
       $result = config_get('webform.settings', 'webform_default_subject');
-      break;
-
-    case 'webform_email_replyto':
-      $result = config_get('webform.settings', 'webform_email_replyto');
       break;
 
     case 'webform_email_html_capable':

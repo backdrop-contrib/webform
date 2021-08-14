@@ -46,7 +46,6 @@ class WebformSubmissionTestCase extends WebformTestCase {
       'subject' => 'Test Subject',
       'email' => 'to@example.com',
     );
-    config_set('webform.settings', 'webform_email_replyto', TRUE);
     config_set('webform.settings', 'webform_email_address_format', 'long');
     config_set('webform.settings', 'webform_default_from_name', 'Default "From" Name');
     config_set('webform.settings', 'webform_default_from_address', 'default-from@example.com');
