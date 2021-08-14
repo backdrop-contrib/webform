@@ -43,7 +43,7 @@ function webform_admin_settings() {
     '#type' => 'textfield',
     '#title' => t('From address'),
     '#default_value' => webform_variable_get('webform_default_from_address'),
-    '#description' => t('The default sender address for emailed webform results. It should match either the website domain or the domain used with the mailing service.'),
+    '#description' => t('The default sender address for emailed webform results. It should match the sending domain, either the website domain or the domain used with the mailing service.'),
   );
 
   $form['email']['webform_default_from_name'] = array(
