@@ -52,6 +52,17 @@ for the Backdrop version as well. Note that Webform for Drupal 8 continues the
 'Webform' name and serves the same general purpose, but is a different product
 with different features and configuration.
 
+Future
+------
+
+The Backdrop version of Webform will continne to track Webform 7.x as long as 
+it gets updates. There are no plans to track the 8.x version of Webform, 
+however we will consider merging requests that incorporate new features in the 
+Drupal 8.x/9.x branches of Webform as they are submitted. 
+
+If you would like to see a new feature in Webform, open an issue in the issue
+queue for discussion. 
+
 License
 -------
 
