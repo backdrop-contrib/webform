@@ -14,7 +14,7 @@
  *     array of values.
  */
 ?>
-<div class="<?php print $classes; ?>">
+<div class="<?php print implode(' ', $classes); ?>">
   <div class="webform-analysis-component-inner">
     <h3><?php print check_plain($component['name']); ?></h3>
     <?php print backdrop_render_children($component_analysis); ?>
