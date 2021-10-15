@@ -319,9 +319,12 @@ function _webform_submission_prepare_mail($node, $submission, &$email) {
   // If the Reply-To header is not already set, set Reply-To to the From and
   // set From address to webform_default_from_name and
   // webform_default_from_address.
+  $default_from_name = !empty(webform_variable_get('webform_default_from_name')) ? webform_variable_get('webform_default_from_name'): config_get('system.core', 'site_name');
+  $default_from_address = !empty(webform_variable_get('webform_default_from_address')) ? webform_variable_get('webform_default_from_address') : config_get('system.core', 'site_mail');
+
   if (empty($email['headers']['Reply-To']) && empty($email['headers']['Reply-to']) &&
-      ($default_from_name = webform_variable_get('webform_default_from_name')) &&
-      ($default_from_address = webform_variable_get('webform_default_from_address')) &&
+      ($default_from_name) &&
+      ($default_from_address) &&
       $email['from'] !== $default_from_name) {
     $email['reply-to'] = $email['from'];
     $email['from'] = $default_from_address;
