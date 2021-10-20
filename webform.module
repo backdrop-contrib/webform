@@ -1016,6 +1016,11 @@ function webform_element_info() {
     '#theme' => 'webform_email',
     '#size' => 60,
   );
+  $elements['webform_link'] = array(
+    '#input' => TRUE,
+    '#theme' => 'webform_link',
+    '#size' => 60,
+  );
   $elements['webform_number'] = array(
     '#input' => TRUE,
     '#theme' => 'webform_number',
@@ -1101,6 +1106,25 @@ function webform_webform_component_info() {
         'private' => FALSE,
         'wrapper_classes' => FALSE,
         'css_classes' => FALSE,
+        'conditional_action_set' => TRUE,
+      ),
+    ),
+    'link' => array(
+      'label' => t('Link'),
+      'description' => t('A special textfield that accepts URLs.'),
+      'file' => 'components/link.inc',
+      'features' => array(
+        'email' => TRUE,
+        'email_address' => FALSE,
+        'email_name' => FALSE,
+        'required' => TRUE,
+        'title_display' => TRUE,
+        'title_inline' => TRUE,
+        'conditional' => TRUE,
+        'group' => FALSE,
+        'spam_analysis' => FALSE,
+        'attachment' => FALSE,
+        'placeholder' => TRUE,
         'conditional_action_set' => TRUE,
       ),
     ),
@@ -5574,6 +5598,7 @@ function webform_count_input_vars(array $element) {
     'hidden' => 1,
     'value' => 1,
     'webform_email' => 1,
+    'webform_link' => 1,
     'webform_number' => 1,
   );
   $children = array_intersect_key($element, array_flip(element_children($element)));
