@@ -182,8 +182,7 @@ function theme_webform_link($variables) {
  */
 function theme_webform_display_link($variables) {
   $element = $variables['element'];
-  $element['#value'] = empty($element['#value']) ? ' ' : $element['#value'];
-  return $element['#format'] == 'html' ? check_plain($element['#value']) : $element['#value'];
+  return empty($element['#value']) ? ' ' : $element['#value'];
 }
 
 /**
@@ -191,6 +190,50 @@ function theme_webform_display_link($variables) {
  */
 function _webform_table_link($component, $value) {
   return l($value[0], $value[0]);
+}
+
+/**
+ * Implements _webform_analysis_component().
+ */
+function _webform_analysis_link($component, $sids = array(), $single = FALSE, $join = NULL) {
+  $query = db_select('webform_submitted_data', 'wsd', array('fetch' => PDO::FETCH_ASSOC))
+    ->fields('wsd', array('no', 'data'))
+    ->condition('wsd.nid', $component['nid'])
+    ->condition('wsd.cid', $component['cid']);
+
+  if (count($sids)) {
+    $query->condition('wsd.sid', $sids, 'IN');
+  }
+
+  if ($join) {
+    $query->innerJoin($join, 'ws2_', 'wsd.sid = ws2_.sid');
+  }
+
+  $nonblanks = 0;
+  $submissions = 0;
+  $wordcount = 0;
+
+  $result = $query->execute();
+  foreach ($result as $data) {
+    if (backdrop_strlen(trim($data['data'])) > 0) {
+      $nonblanks++;
+      $wordcount += str_word_count(trim($data['data']));
+    }
+    $submissions++;
+  }
+
+  $rows[0] = array(t('Left Blank'), ($submissions - $nonblanks));
+  $rows[1] = array(t('User entered value'), $nonblanks);
+
+  $other[0] = array(
+    t('Average submission length in words (ex blanks)'),
+    ($nonblanks != 0 ? number_format($wordcount / $nonblanks, 2) : '0')
+  );
+
+  return array(
+    'table_rows' => $rows,
+    'other_data' => $other,
+  );
 }
 
 /**
