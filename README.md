@@ -52,6 +52,16 @@ for the Backdrop version as well. Note that Webform for Drupal 8 continues the
 'Webform' name and serves the same general purpose, but is a different product
 with different features and configuration.
 
+Versions
+--------
+
+In Oct 2017 we bumped the version number from 1.x-1.6.2 to 1.x-4.16.0 to 
+syncronize with the version numbers for the Drupal version of this module. 
+Despite appearances this was a minor update and users should be able to upgrade
+from 1.6.2 to the most recent release without any problem. There is no reason 
+for anyone to use the 1.x-1.6.2 today. We recommend that you always start with 
+and upgrade to the most recent release. 
+
 Future
 ------
 
