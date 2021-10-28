@@ -864,7 +864,7 @@ function webform_update_1000() {
 
   $config->set('webform_export_wordwrap', update_variable_get('webform_export_wordwrap', 0));
   $config->set('webform_excel_legacy_exporter', update_variable_get('webform_excel_legacy_exporter', 0));
-  $config->set('webform_progressbar_style', update_variable_get('webform_progressbar_style', array('progressbar_bar', 'progressbar_pagebreak_labels', 'progressbar_include_confirmation')));
+  $config->set('webform_progressbar_style', update_variable_get('webform_progressbar_style', array('progressbar_pagebreak_labels', 'progressbar_include_confirmation')));
   $config->set('webform_progressbar_label_first', update_variable_get('webform_progressbar_label_first', t('Start')));
   $config->set('webform_progressbar_label_confirmation', update_variable_get('webform_progressbar_label_confirmation', t('Complete')));
 
