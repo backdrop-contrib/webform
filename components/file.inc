@@ -347,7 +347,7 @@ function _webform_render_file($component, $value = NULL, $filter = TRUE, $submis
     '#title_display' => $component['extra']['title_display'] ? $component['extra']['title_display'] : 'before',
     '#required' => $component['required'],
     '#default_value' => isset($value[0]) ? $value[0] : NULL,
-    '#attributes' => $component['extra']['attributes'],
+    '#attributes' => $component['extra']['attributes'] ?: array(),
     '#upload_validators' => array(
       'file_validate_size' => array($max_filesize),
       'file_validate_extensions' => array(implode(' ', $component['extra']['filtering']['types'])),
