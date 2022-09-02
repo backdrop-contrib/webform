@@ -368,11 +368,22 @@ function webform_email_edit_form($form, $form_state, $node, $email = array(), $c
     '#access' => webform_variable_get('webform_email_html_capable') && !webform_variable_get('webform_format_override'),
   );
 
+  module_load_include('inc', 'webform', 'includes/webform.admin');
+  $defaults = form_state_defaults();
+  $webform_admin_settings_form = backdrop_retrieve_form('webform_admin_settings', $defaults);
+  $webform_settings_path = 'admin/config/content/webform';
+  $webform_menu = webform_menu();
   $form['template']['attachments'] = array(
     '#type' => 'checkbox',
     '#title' => t('Include files as attachments'),
     '#default_value' => $email['attachments'],
-    '#access' => webform_variable_get('webform_email_html_capable'),
+    '#disabled' => !webform_variable_get('webform_email_html_capable'),
+    '#description' => t('For this option to be available, the "%option" option needs to be enabled in the <a target="_blank" href="@webform_settings#edit-email">@page_title</a> page (in the "%section" section).', array(
+      '%option' => $webform_admin_settings_form['email']['webform_email_html_capable']['#title'],
+      '@webform_settings' => '/' .  $webform_settings_path,
+      '@page_title' => $webform_menu[$webform_settings_path]['title'],
+      '%section' => $webform_admin_settings_form['email']['#title'],
+    )),
   );
 
   $form['template']['components'] = array(
