@@ -1471,3 +1471,34 @@ function webform_update_1607() {
   $config->clear('webform_email_replyto');
   $config->save();
 }
+
+/**
+ * Update setting: Add all allowed html tags listed in help text for label text
+ */
+function webform_update_1608() {
+  $tags = array(
+    "a",
+    "b",
+    "big",
+    "code",
+    "del",
+    "em",
+    "i",
+    "ins",
+    "pre",
+    "q",
+    "small",
+    "span",
+    "strong",
+    "sub",
+    "sup",
+    "tt",
+    "ol",
+    "ul",
+    "li",
+    "p",
+    "br",
+    "img"
+  );
+  config_set('webform.settings', 'webform_allowed_tags', $tags);
+}
