@@ -781,14 +781,10 @@ function _webform_number_select_options($component) {
     $options[$f . ''] = $f . '';
   }
 
-  // @todo HTML5 browsers apparently do not include the max value if it does
-  // not line up with step. Restore this if needed in the future.
   // Add end limit if it's been skipped due to step.
-  // @code
-  // if (end($options) != $max) {
-  //   $options[$f] = $max;
-  // }
-  // @endcode
+  if (end($options) != $max) {
+    $options[$f] = $max;
+  }
   if ($flipped) {
     $options = array_reverse($options, TRUE);
   }
