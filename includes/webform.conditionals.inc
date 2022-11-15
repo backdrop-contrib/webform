@@ -276,7 +276,7 @@ function webform_conditionals_form_submit($form, &$form_state) {
  * AJAX callback to render out adding a new condition.
  */
 function webform_conditionals_ajax($form, $form_state) {
-  $rgids = element_children($form['conditionals']);
+  $rgids = array_filter(element_children($form['conditionals']), 'is_numeric');
   $new_rgid = max($rgids);
   $form['conditionals'][$new_rgid]['#ajax_added'] = TRUE;
 
