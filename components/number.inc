@@ -763,10 +763,9 @@ function _webform_edit_number_validate($element, &$form_state) {
  */
 function _webform_number_select_options($component) {
   $options = array();
-  $step = abs($component['extra']['step']);
 
   // Step is optional and defaults to 1.
-  $step = empty($step) ? 1 : $step;
+  $step = abs($component['extra']['step'] ?: 1);
 
   // Generate list in correct direction.
   $min = $component['extra']['min'];
