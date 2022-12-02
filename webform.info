@@ -4,9 +4,9 @@ core = 7.x
 package = Webform
 configure = admin/config/content/webform
 php = 5.3
-dependencies[] = ctools
-dependencies[] = views
-test_dependencies[] = token
+dependencies[] = ctools:ctools
+dependencies[] = views:views
+test_dependencies[] = token:token
 
 ; Files that contain classes:
 files[] = includes/webform.webformconditionals.inc
