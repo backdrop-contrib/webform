@@ -266,7 +266,7 @@
                 .webformProp('required', actionResult)
                 .toggleClass('required', actionResult);
               if (actionResult) {
-                $requiredSpan.replaceWith('<span class="form-required" title="' + Backdrop.t('This field is required.') + '">*</span>');
+                $requiredSpan.replaceWith('<abbr class="form-required" title="' + Backdrop.t('This field is required.') + '">*</abbr>');
               }
               else {
                 $requiredSpan.replaceWith('<span class="form-optional"></span>');
