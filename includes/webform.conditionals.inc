@@ -1543,7 +1543,8 @@ function webform_conditional_prepare_time_js($rule_value) {
 function webform_conditional_operator_string_equal($input_values, $rule_value) {
   foreach ($input_values as $value) {
     // Checkbox values come in as 0 integers for unchecked boxes.
-    $value = ($value === 0) ? '' : $value;
+    // Radio values come in as NULL if none of the options are selected.
+    $value = in_array($value, [0, NULL], TRUE) ? '' : $value;
     if (strcasecmp($value, $rule_value) === 0) {
       return TRUE;
     }
