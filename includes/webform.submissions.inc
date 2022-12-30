@@ -567,7 +567,7 @@ function webform_submission_resend($form, $form_state, $node, $submission) {
 
     $mapping = isset($email['extra']['email_mapping']) ? $email['extra']['email_mapping'] : NULL;
     $addresses = webform_format_email_address($email['email'], NULL, $node, $submission, FALSE, FALSE, NULL, $mapping);
-    $addresses_valid = array_map('webform_valid_email_address', $addresses);
+    $addresses_valid = array_map('webform_valid_email_address_filter', $addresses);
     $valid_email = count($addresses) == array_sum($addresses_valid);
 
     $form['resend'][$eid] = array(
