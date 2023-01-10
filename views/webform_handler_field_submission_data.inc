@@ -48,7 +48,7 @@ class webform_handler_field_submission_data extends views_handler_field {
     $form['custom_label']['#default_value'] = $this->options['custom_label'];
     $form['label']['#states'] = array(
       'visible' => array(
-        ':input[name*="options[custom_label]"]' => array('value' => 'custom'),
+        ':input[name="options[custom_label]"]' => array('value' => 'custom'),
       ),
     );
 
