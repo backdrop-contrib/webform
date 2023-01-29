@@ -295,7 +295,7 @@ function _webform_render_number($component, $value = NULL, $filter = TRUE, $subm
     '#field_prefix' => empty($component['extra']['field_prefix']) ? NULL : ($filter ? webform_filter_xss($component['extra']['field_prefix']) : $component['extra']['field_prefix']),
     '#field_suffix' => empty($component['extra']['field_suffix']) ? NULL : ($filter ? webform_filter_xss($component['extra']['field_suffix']) : $component['extra']['field_suffix']),
     '#description' => $filter ? webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
-    '#attributes' => $component['extra']['attributes'],
+    '#attributes' => $component['extra']['attributes'] ?: array(),
     '#element_validate' => array('_webform_validate_number'),
     '#theme_wrappers' => array('webform_element'),
     '#min' => $component['extra']['min'],
@@ -763,10 +763,9 @@ function _webform_edit_number_validate($element, &$form_state) {
  */
 function _webform_number_select_options($component) {
   $options = array();
-  $step = abs($component['extra']['step']);
 
   // Step is optional and defaults to 1.
-  $step = empty($step) ? 1 : $step;
+  $step = abs($component['extra']['step'] ?: 1);
 
   // Generate list in correct direction.
   $min = $component['extra']['min'];
@@ -782,14 +781,10 @@ function _webform_number_select_options($component) {
     $options[$f . ''] = $f . '';
   }
 
-  // @todo HTML5 browsers apparently do not include the max value if it does
-  // not line up with step. Restore this if needed in the future.
   // Add end limit if it's been skipped due to step.
-  // @code
-  // if (end($options) != $max) {
-  //   $options[$f] = $max;
-  // }
-  // @endcode
+  if (end($options) != $max) {
+    $options[$f] = $max;
+  }
   if ($flipped) {
     $options = array_reverse($options, TRUE);
   }

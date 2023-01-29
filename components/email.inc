@@ -152,7 +152,7 @@ function _webform_render_email($component, $value = NULL, $filter = TRUE, $submi
     '#required' => $component['required'],
     '#weight' => $component['weight'],
     '#description' => $filter ? webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
-    '#attributes' => $component['extra']['attributes'],
+    '#attributes' => $component['extra']['attributes'] ?: array(),
     '#element_validate'  => array('_webform_validate_email'),
     '#theme_wrappers' => array('webform_element'),
     '#translatable' => array('title', 'description', 'placeholder'),
