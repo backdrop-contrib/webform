@@ -277,7 +277,7 @@ function theme_webform_results_table_header($variables) {
  *   HTML string with result data.
  */
 function theme_webform_results_table(array $variables) {
-  drupal_add_library('webform', 'admin');
+  backdrop_add_library('webform', 'admin');
 
   $node = $variables['node'];
   $components = $variables['components'];
