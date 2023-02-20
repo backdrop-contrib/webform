@@ -9,7 +9,7 @@
  */
 class webform_exporter {
   public $options = array();
-  public $export_wordrap;
+  public $export_wordwrap;
 
   /**
    * Constructor for webform_exporter classes.

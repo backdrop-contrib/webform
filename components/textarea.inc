@@ -119,7 +119,7 @@ function _webform_render_textarea($component, $value = NULL, $filter = TRUE, $su
     '#description' => $filter ? webform_filter_descriptions($component['extra']['description'], $node) : $component['extra']['description'],
     '#rows' => !empty($component['extra']['rows']) ? $component['extra']['rows'] : 5,
     '#cols' => !empty($component['extra']['cols']) ? $component['extra']['cols'] : 60,
-    '#attributes' => $component['extra']['attributes'],
+    '#attributes' => $component['extra']['attributes'] ?: array(),
     // MUST be FALSE to disable.
     '#resizable' => (bool) $component['extra']['resizable'],
     '#theme_wrappers' => array('webform_element'),
