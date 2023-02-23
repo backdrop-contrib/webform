@@ -250,6 +250,13 @@ function webform_admin_settings() {
     '#description' => t('Tokens can be used to reveal sensitive information. Allow tokens if Webform creators are trusted.'),
   );
 
+  $form['advanced']['webform_allowed_tags'] = array(
+    '#type' => 'textfield',
+    '#title' => t("Allowed HTML tags in labels"),
+    '#default_value' => implode(' ', webform_variable_get('webform_allowed_tags')),
+    '#description' => t('Space separated list of the HTML tags allowed in component labels, descriptions, and also the individual labels of select list items. For example, <code>a em strong code img</code>. JavaScript event attributes, JavaScript URLs, and CSS are always stripped.'),
+  );
+
   $form['advanced']['webform_email_select_max'] = array(
     '#type' => 'textfield',
     '#title' => t("Select email mapping limit"),
@@ -293,6 +300,8 @@ function webform_admin_settings_submit($form, &$form_state) {
 
   // Trim out empty options in the progress bar options.
   $form_state['values']['webform_progressbar_style'] = array_keys(array_filter($form_state['values']['webform_progressbar_style']));
+  // Save allowed tags as an array.
+  $form_state['values']['webform_allowed_tags'] = explode(' ', $form_state['values']['webform_allowed_tags']);
   $config = config('webform.settings');
   foreach ($form_state['values'] as $key => $value) {
     if (substr($key, 0, 8) === 'webform_') {
