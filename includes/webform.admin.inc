@@ -254,7 +254,7 @@ function webform_admin_settings() {
     '#type' => 'textfield',
     '#title' => t("Allowed HTML tags in labels"),
     '#default_value' => implode(' ', webform_variable_get('webform_allowed_tags')),
-    '#description' => t('List of the HTML tags allowed in component labels, descriptions, and also the individual labels of select list items. For example, <code>a em strong code img</code>. JavaScript event attributes, JavaScript URLs, and CSS are always stripped.'),
+    '#description' => t('Space separated list of the HTML tags allowed in component labels, descriptions, and also the individual labels of select list items. For example, <code>a em strong code img</code>. JavaScript event attributes, JavaScript URLs, and CSS are always stripped.'),
   );
 
   $form['advanced']['webform_email_select_max'] = array(
