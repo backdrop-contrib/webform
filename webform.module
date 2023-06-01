@@ -2180,7 +2180,7 @@ function theme_webform_view_messages(array $variables) {
   }
 
   // If the user has exceeded the limit of submissions, explain the limit.
-  elseif ($user_limit_exceeded && !$cached) {
+  elseif ($user_limit_exceeded) {
     if ($node->webform['submit_interval'] == -1 && $node->webform['submit_limit'] > 1) {
       $message = t('You have submitted this form the maximum number of times (@count).', array('@count' => $node->webform['submit_limit']));
     }
@@ -2191,7 +2191,7 @@ function theme_webform_view_messages(array $variables) {
       $message = t('You may not submit another entry at this time.');
     }
   }
-  elseif ($total_limit_exceeded && !$cached) {
+  elseif ($total_limit_exceeded) {
     if ($node->webform['total_submit_interval'] == -1 && $node->webform['total_submit_limit'] > 1) {
       $message = t('This form has received the maximum number of entries.');
     }
