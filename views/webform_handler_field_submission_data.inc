@@ -46,7 +46,11 @@ class webform_handler_field_submission_data extends views_handler_field {
       'none' => t('No label'),
     );
     $form['custom_label']['#default_value'] = $this->options['custom_label'];
-    $form['label']['#dependency'] = array('radio:options[custom_label]' => array('custom'));
+    $form['label']['#states'] = array(
+      'visible' => array(
+        ':input[name="options[custom_label]"]' => array('value' => 'custom'),
+      ),
+    );
 
     if (!$this->webform_expand) {
       $nid = (int) $this->options['webform_nid'];

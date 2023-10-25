@@ -2204,7 +2204,7 @@ function theme_webform_view_messages(array $variables) {
   }
 
   // If the user has exceeded the limit of submissions, explain the limit.
-  elseif ($user_limit_exceeded && !$cached) {
+  elseif ($user_limit_exceeded) {
     if ($node->webform['submit_interval'] == -1 && $node->webform['submit_limit'] > 1) {
       $message = t('You have submitted this form the maximum number of times (@count).', array('@count' => $node->webform['submit_limit']));
     }
@@ -2215,7 +2215,7 @@ function theme_webform_view_messages(array $variables) {
       $message = t('You may not submit another entry at this time.');
     }
   }
-  elseif ($total_limit_exceeded && !$cached) {
+  elseif ($total_limit_exceeded) {
     if ($node->webform['total_submit_interval'] == -1 && $node->webform['total_submit_limit'] > 1) {
       $message = t('This form has received the maximum number of entries.');
     }
@@ -2512,7 +2512,7 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $r
   // Bind arguments to $form to make them available in theming and form_alter.
   $form['#node'] = $node;
   $form['#submission'] = $submission;
-  $form['#is_draft'] = $submission && $submission->is_draft;
+  $form['#is_draft'] = $submission && !($finished);
   $form['#filter'] = $filter;
 
   // Add a theme function for this form.
@@ -2606,7 +2606,7 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $r
 
     // For resuming a previous draft, find the next page after the last
     // validated page.
-    if (!isset($form_state['storage']['page_num']) && $submission && $submission->is_draft && $submission->highest_valid_page) {
+    if (!isset($form_state['storage']['page_num']) && $submission && !($finished) && $submission->highest_valid_page) {
       // Find the:
       // 1. previous/next non-empty page, or
       // 2. the preview page, or
@@ -2724,7 +2724,7 @@ function webform_client_form($form, &$form_state, $node, $submission = FALSE, $r
     );
 
     // Add the draft button.
-    if ($node->webform['allow_draft'] && (empty($submission) || $submission->is_draft) && $user->uid != 0) {
+    if ($node->webform['allow_draft'] && (empty($submission) || !($finished)) && $user->uid != 0) {
       $form['actions']['draft'] = array(
         '#type' => 'submit',
         '#value' => t('Save Draft'),
