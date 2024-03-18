@@ -114,7 +114,7 @@
       $form.each(function (index, currentForm) {
         var $currentForm = $(currentForm);
         $currentForm.addClass('webform-conditional-processed');
-        $currentForm.on('change', {'settings': settings}, Backdrop.webform.conditionalCheck);
+        $currentForm.on("change", {'settings': settings}, Backdrop.webform.conditionalCheck);
 
         // Trigger all the elements that cause conditionals on this form.
         Backdrop.webform.doConditions($currentForm, settings);

@@ -129,7 +129,7 @@
     // saves a lot of processing when new conditions are added/removed.
     $context.find('#webform-conditionals-ajax:not(.webform-conditional-processed)')
       .addClass('webform-conditional-processed')
-      .on('change', function (e) {
+      .on("change", function (e) {
 
         var $target = $(e.target);
         if ($target.is('.webform-conditional-source select')) {
@@ -150,11 +150,11 @@
       });
 
     // Add event handlers to delete the entire row if the last rule or action is removed.
-    $context.find('.webform-conditional-rule-remove:not(.webform-conditional-processed)').on('click', function () {
+    $context.find('.webform-conditional-rule-remove:not(.webform-conditional-processed)').on("click", function () {
       this.webformRemoveClass = '.webform-conditional-rule-remove';
       window.setTimeout($.proxy(Backdrop.webform.conditionalRemove, this), 100);
     }).addClass('webform-conditional-processed');
-    $context.find('.webform-conditional-action-remove:not(.webform-conditional-processed)').on('click', function () {
+    $context.find('.webform-conditional-action-remove:not(.webform-conditional-processed)').on("click", function () {
       this.webformRemoveClass = '.webform-conditional-action-remove';
       window.setTimeout($.proxy(Backdrop.webform.conditionalRemove, this), 100);
     }).addClass('webform-conditional-processed');
@@ -323,7 +323,7 @@
    */
   Backdrop.webform.radioLabelAutoClick = function (context) {
     $('label').once('webform-label').on("click", function () {
-      $(this).prev('input:radio').trigger( "change" );
+      $(this).prev('input:radio').trigger("change");
     });
   };
 
