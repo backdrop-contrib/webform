@@ -175,12 +175,7 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
     // Get the full submission renderable without $excluded_components so that
     // individually referenced values are available.
     $submission_renderable = webform_submission_render($node, $submission, $email, $format, $markup_components);
-    $available_modifiers = array(
-      'label',
-      'withlabel',
-      'nolabel',
-      'key',
-    );
+    $modifier_info = webform_get_token_modifiers();
 
     foreach ($node->webform['components'] as $cid => $component) {
       // Build the list of parents for this component.
@@ -234,7 +229,6 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
           }
         }
 
-        $modifier_info = module_invoke_all('webform_token_modifiers_info');
         if (strcmp($name, $matched_token) === 0) {
           // Default behavior if there is no explicit modifier.
           $modifier = 'nolabel';
@@ -246,8 +240,8 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
           if ($info['modifier'] != $modifier) {
             continue;
           }
-          $type = $info['type'];
-          if ($type != 'all' && $type != $display_element['#webform_component']['type']) {
+          $component = $info['component'];
+          if ($component != 'all' && $component != $display_element['#webform_component']['type']) {
             continue;
           }
           $replacements[$original] = $info['callback']($modifier, $display_element);
@@ -286,6 +280,15 @@ function webform_tokens($type, $tokens, array $data = array(), array $options = 
 
 /**
  * Provides default webform token modifier behavior.
+ *
+ * @param string $modifier
+ *   The modifier that is being used.
+ * @param string $display_element
+ *   The renderable element of the component being modified.
+ *
+ * @return string
+ *   The rendered string of the component.
+ *
  */
 function webform_token_modifier_defaults($modifier, $display_element) {
   switch ($modifier) {
@@ -306,5 +309,5 @@ function webform_token_modifier_defaults($modifier, $display_element) {
       }
       return implode(' ', $values);
   }
-  return t('BAD MODIFIER');
+  return '';
 }

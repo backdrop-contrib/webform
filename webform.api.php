@@ -1474,16 +1474,18 @@ function hook_webform_exporters_alter(array &$exporters) {
  *     - string $modifier: the modifier that was used.
  *     - array $display_element: the renderable element of the component.
  *     It should returns the rendered string of the component. Note that one can
- *     use the same function to handle multiple modifiers.
+ *     use the same function to handle multiple modifiers. Rendering should
+ *     sanitize any user input data that is displayed.
  *
  * @see webform_tokens()
+ * @see webform_get_token_modifiers()
  * @see webform_token_modifiers_defaults()
  */
 function hook_webform_token_modifiers_info() {
   return array(
     array(
-      'type' => 'all',
       'modifier' => 'backwardlabel',
+      'component' => 'all',
       'callback' => 'webform_token_backwardlabel_callback',
     ),
   );
