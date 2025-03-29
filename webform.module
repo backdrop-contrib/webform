@@ -1416,6 +1416,34 @@ function webform_webform_submission_render_alter(&$renderable) {
 }
 
 /**
+ * Implements hook_webform_token_modifiers_info().
+ */
+function webform_webform_token_modifiers_info() {
+  return array(
+    array(
+      'modifier' => 'label',
+      'component' => 'all',
+      'callback' => 'webform_token_modifier_defaults',
+    ),
+    array(
+      'modifier' => 'withlabel',
+      'component' => 'all',
+      'callback' => 'webform_token_modifier_defaults',
+    ),
+    array(
+      'modifier' => 'nolabel',
+      'component' => 'all',
+      'callback' => 'webform_token_modifier_defaults',
+    ),
+    array(
+      'modifier' => 'key',
+      'component' => 'select',
+      'callback' => 'webform_token_modifier_defaults',
+    ),
+  );
+}
+
+/**
  * Implements hook_file_download().
  *
  * Only allow users with view webform submissions to download files.
@@ -4027,6 +4055,25 @@ function _webform_fetch_draft_sid($nid, $uid) {
  */
 function webform_get_conditional_sorter($node) {
   return WebformConditionals::factory($node);
+}
+
+/**
+ * Assembles the token modifiers.
+ *
+ * @return
+ *   The list of all token modifiers that can be used in webform output.
+ *
+ * @see webform_tokens()
+ * @see hook_webform_token_modifiers()
+ * @see webform_webform_token_modifiers_info()
+ */
+function webform_get_token_modifiers() {
+  $token_modifiers = &backdrop_static(__FUNCTION__);
+  if (!isset($token_modifiers)) {
+    $token_modifiers = module_invoke_all('webform_token_modifiers_info');
+    backdrop_alter('webform_token_modifiers_info', $token_modifiers);
+  }
+  return $token_modifiers;
 }
 
 /**
