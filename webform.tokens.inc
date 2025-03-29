@@ -302,10 +302,12 @@ function webform_token_modifier_defaults($modifier, $display_element) {
       $display_element['#theme_wrappers'] = array();
       return render($display_element);
 
-    case 'key':
+    case 'key': // Only used for select elements
       $values = array();
-      foreach ($display_element['#value'] as $value) {
-        $values[] = webform_filter_xss($value);
+      if (is_array($display_element['#value'])) {
+        foreach ($display_element['#value'] as $value) {
+          $values[] = webform_filter_xss($value);
+        }
       }
       return implode(' ', $values);
   }
