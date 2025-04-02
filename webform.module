@@ -1452,7 +1452,7 @@ function webform_file_download($uri) {
   module_load_include('inc', 'webform', 'includes/webform.submissions');
 
   // Determine whether this file was a webform upload.
-  $row = db_query("SELECT fu.id as sid, f.fid FROM {file_managed} f LEFT JOIN {file_usage} fu ON f.fid = fu.fid AND fu.module = :webform AND fu.type = :submission WHERE f.uri = :uri", array('uri' => $uri, ':webform' => 'webform', ':submission' => 'submission'))->fetchObject();
+  $row = db_query("SELECT fu.id as sid, f.fid FROM {file_managed} f LEFT JOIN {file_usage} fu ON f.fid = fu.fid AND fu.module = :webform AND fu.type = :submission WHERE f.uri = :uri", array(':uri' => $uri, ':webform' => 'webform', ':submission' => 'submission'))->fetchObject();
   if ($row) {
     $file = file_load($row->fid);
   }
