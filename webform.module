@@ -1736,6 +1736,7 @@ function webform_node_defaults() {
   $defaults = array(
     'confirmation' => '',
     'confirmation_format' => NULL,
+    'back_to_form_link' => '1',
     'redirect_url' => '<confirmation>',
     'block' => '0',
     'allow_draft' => '0',
@@ -3616,6 +3617,9 @@ function template_preprocess_webform_confirmation(&$vars) {
   module_load_include('inc', 'webform', 'includes/webform.submissions');
   $submission = webform_get_submission($node->nid, $vars['sid']);
   $vars['confirmation_message'] = webform_replace_tokens($confirmation, $node, $submission, NULL, $node->webform['confirmation_format']);
+
+  // Setting to show or hide the 'Go back to the form' link.
+  $vars['back_to_form_link'] = $node->webform['back_to_form_link'] ?? FALSE;
 
   // URL back to form (or same page for in-block confirmations).
   $vars['url'] = empty($node->webform_block)
