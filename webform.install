@@ -1502,5 +1502,5 @@ function webform_update_1609() {
     );
     db_add_field('webform', 'back_to_form_link', $spec);
   }
-  return t('Webforms will now have the option to disable the display of the "Go back to the form" link below the confirmation message. If you have overriden <code>webform-confirmation.tpl.php</code> in your theme, you will need to manually update your theme for this setting to apply.');
+  return t('Webforms will now have the option to disable the display of the "Go back to the form" link below the confirmation message. If you have overridden <code>webform-confirmation.tpl.php</code> in your theme, you will need to manually update your theme for this setting to apply.');
 }
