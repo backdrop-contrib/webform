@@ -50,13 +50,6 @@ function webform_configure_form($form, &$form_state, $node) {
     '#parents' => array('confirmation'),
   );
 
-  $form['submission']['back_to_form_link'] = array(
-    '#type' => 'checkbox',
-    '#title' => t("Include 'Go back to the form' link below the confirmation message"),
-    '#default_value' => $node->webform['back_to_form_link'] ?? 1,
-    '#description' => t("By default a 'Go back to the form' link is included below the confirmation message. Disable if you wish to hide this link."),
-  );
-
   // Redirection settings.
   if (strpos($node->webform['redirect_url'], '<') === 0) {
     $redirect = trim($node->webform['redirect_url'], '<>');
@@ -351,6 +344,12 @@ function webform_configure_form($form, &$form_state, $node) {
     '#default_value' => $node->webform['auto_save'],
     '#description' => t('Automatically save partial submissions when users click the "Next" or "Previous" buttons in a multipage form or when validation errors prevent form submission.'),
   );
+  $form['advanced']['back_to_form_link'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Include "Go back to the form" link below the confirmation message'),
+    '#default_value' => $node->webform['back_to_form_link'],
+    '#description' => t('By default a "Go back to the form" link is included below the confirmation message. Uncheck if you wish to hide this link.'),
+  );
   $form['advanced']['submit_notice'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show the notification about previous submissions'),
@@ -448,9 +447,6 @@ function webform_configure_form_submit($form, &$form_state) {
   $node->webform['confirmation'] = $form_state['values']['confirmation']['value'];
   $node->webform['confirmation_format'] = $form_state['values']['confirmation']['format'];
 
-  // Save whether to display the 'Go back to the form' link.
-  $node->webform['back_to_form_link'] = $form_state['values']['back_to_form_link'];
-
   // Save the redirect URL.
   $node->webform['redirect_url'] = $form_state['values']['redirect_url'];
 
@@ -516,6 +512,9 @@ function webform_configure_form_submit($form, &$form_state) {
 
   // Set submit notice.
   $node->webform['submit_notice'] = $form_state['values']['submit_notice'];
+
+  // Set whether to display the 'Go back to the form' link.
+  $node->webform['back_to_form_link'] = $form_state['values']['back_to_form_link'];
 
   // Set confidential.
   $node->webform['confidential'] = $form_state['values']['confidential'];
