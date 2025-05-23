@@ -37,13 +37,6 @@ function webform_schema() {
         'length' => 255,
         'not null' => FALSE,
       ),
-      'back_to_form_link' => array(
-        'description' => 'Boolean value of whether to display the go back to form link.',
-        'type' => 'int',
-        'size' => 'tiny',
-        'not null' => TRUE,
-        'default' => 1,
-      ),
       'redirect_url' => array(
         'description' => 'The URL a user is redirected to after submitting a form.',
         'type' => 'varchar',
@@ -80,6 +73,13 @@ function webform_schema() {
       ),
       'submit_notice' => array(
         'description' => 'Boolean value for whether to show or hide the previous submissions notification.',
+        'type' => 'int',
+        'size' => 'tiny',
+        'not null' => TRUE,
+        'default' => 1,
+      ),
+      'back_to_form_link' => array(
+        'description' => 'Boolean value for whether to show or hide the "Go back to the form" link.',
         'type' => 'int',
         'size' => 'tiny',
         'not null' => TRUE,
@@ -1494,7 +1494,7 @@ function webform_update_1609() {
 
   if (!db_field_exists('webform', 'back_to_form_link')) {
     $spec = array(
-      'description' => 'Boolean value of whether to display the go back to form link.',
+      'description' => 'Boolean value for whether to show or hide the "Go back to the form" link.',
       'type' => 'int',
       'size' => 'tiny',
       'not null' => TRUE,
@@ -1502,5 +1502,6 @@ function webform_update_1609() {
     );
     db_add_field('webform', 'back_to_form_link', $spec);
   }
-  return t("Webforms will now have the option to disable the display of the 'Go back to the form' link below the confirmation message. If you have overriden 'webform-confirmation.tpl.php' in your theme, you will need to manually update your theme for this setting to apply.");
+  return t('Webforms will now have the option to disable the display of the "Go back to the form" link below the confirmation message. If you have overriden <em>webform-confi
+rmation.tpl.php</em> in your theme, you will need to manually update your theme for this setting to apply.');
 }
