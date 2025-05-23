@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Customize confirmation screen after successful submission.
@@ -22,14 +23,14 @@
 <?php print $progressbar; ?>
 
 <div class="webform-confirmation">
-  <?php if ($confirmation_message) : ?>
+  <?php if ($confirmation_message): ?>
     <?php print $confirmation_message; ?>
-  <?php else : ?>
+  <?php else: ?>
     <p><?php print t('Thank you, your submission has been received.'); ?></p>
   <?php endif; ?>
 </div>
 
-<?php if ($back_to_form_link) : ?>
+<?php if ($back_to_form_link): ?>
   <div class="links">
     <a href="<?php print $url; ?>"><?php print t('Go back to the form'); ?></a>
   </div>
