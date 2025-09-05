@@ -850,7 +850,6 @@ function webform_update_1000() {
   // migrate variables
   $config->set('webform_install_create_content_type', update_variable_get('webform_install_create_content_type', TRUE));
   $config->set('webform_install_add_body_field', update_variable_get('webform_install_add_body_field', FALSE));
-  $config->set('webform_node_webform', update_variable_get('webform_node_webform',TRUE));
   $config->set('webform_blocks', update_variable_get('webform_blocks', array()));
   $config->set('webform_tracking_mode', update_variable_get('webform_tracking_mode', 'cookie'));
   $config->set('webform_allowed_tags', update_variable_get('webform_allowed_tags', array('a', 'em', 'strong', 'code', 'img')));
@@ -883,12 +882,16 @@ function webform_update_1000() {
   $config->set('webform_export_batch_size', update_variable_get('webform_export_batch_size', ''));
   $config->set('webform_export_path', update_variable_get('webform_export_path', 'temporary://'));
 
+  foreach (node_type_get_names() as $type => $name) {
+    $config->set('webform_node_' . $type, update_variable_get('webform_node_' . $type,TRUE));
+    update_variable_del('webform_node_' . $type);
+  }
+
   $config->save();
 
   // Delete variables.
   update_variable_del('webform_install_create_content_type');
   update_variable_del('webform_install_add_body_field');
-  update_variable_del('webform_node_webform');
   update_variable_del('webform_blocks');
 
   update_variable_del('webform_tracking_mode');
