@@ -564,8 +564,14 @@ function theme_webform_display_file($variables) {
   $element = $variables['element'];
 
   $file = $element['#value'];
-  $url = !empty($file) ? webform_file_url($file->uri) : t('no upload');
-  return !empty($file) ? ($element['#format'] == 'text' ? $url : l($file->filename, $url)) : ' ';
+  if (empty($file)) {
+    return ' ';
+  }
+  $url = webform_file_url($file->uri);
+  if ($element['#format'] == 'text') {
+    return $url;
+  }
+  return l($file->filename, $url, array('attributes' => webform_file_link_attributes($file)));
 }
 
 /**
@@ -635,7 +641,8 @@ function _webform_table_file($component, $value) {
   $output = '';
   $file = webform_get_file($value[0]);
   if (!empty($file->fid)) {
-    $output = '<a href="' . webform_file_url($file->uri) . '">' . check_plain(webform_file_name($file->uri)) . '</a>';
+    $attributes = backdrop_attributes(webform_file_link_attributes($file));
+    $output = '<a href="' . webform_file_url($file->uri) . '"' . $attributes . '>' . check_plain(webform_file_name($file->uri)) . '</a>';
     $output .= ' (' . (int) ($file->filesize / 1024) . ' KB)';
   }
   return $output;
@@ -681,6 +688,50 @@ function webform_file_url($uri) {
     $file_url = file_create_url($uri);
   }
   return isset($file_url) ? $file_url : '';
+}
+
+/**
+ * Returns the MIME types that a link should force the browser to download.
+ *
+ * Browsers display these types inline rather than saving them, which is rarely
+ * what is wanted for an uploaded attachment, and in the case of HTML lets a
+ * submitted file run in the site's own origin.
+ *
+ * @return array
+ *   An array of lowercase MIME type strings.
+ */
+function webform_file_download_mime_types() {
+  $mime_types = settings_get('webform_file_download_mime_types', array(
+    'application/atom',
+    'application/pdf',
+    'application/xml',
+    'text/html',
+    'text/xml',
+  ));
+
+  return array_map('backdrop_strtolower', $mime_types);
+}
+
+/**
+ * Helper function to build the attributes for a link to an uploaded file.
+ *
+ * @param object $file
+ *   The file the link points at.
+ *
+ * @return array
+ *   An array of attributes suitable for l() or backdrop_attributes(). Files of a
+ *   MIME type the browser would display inline carry the HTML5 download
+ *   attribute so that they are saved instead.
+ */
+function webform_file_link_attributes($file) {
+  $attributes = array();
+
+  $filemime = isset($file->filemime) ? backdrop_strtolower($file->filemime) : '';
+  if ($filemime !== '' && in_array($filemime, webform_file_download_mime_types(), TRUE)) {
+    $attributes['download'] = !empty($file->filename) ? $file->filename : webform_file_name($file->uri);
+  }
+
+  return $attributes;
 }
 
 /**
