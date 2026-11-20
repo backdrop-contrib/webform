@@ -17,7 +17,7 @@ function _webform_defaults_number() {
     'value' => '',
     'required' => 0,
     'extra' => array(
-      'type' => 'textfield',
+      'type' => 'number',
       'field_prefix' => '',
       'field_suffix' => '',
       'disabled' => 0,
@@ -85,7 +85,7 @@ function _webform_edit_number($component) {
     '#type' => 'radios',
     '#title' => t('Element type'),
     '#options' => array(
-      'textfield' => t('Text field'),
+      'number' => t('Number field'),
       'select' => t('Select list'),
     ),
     '#default_value' => $component['extra']['type'],
@@ -246,12 +246,7 @@ function theme_webform_number($variables) {
   // This IF statement is mostly in place to allow our tests to set type="text"
   // because SimpleTest does not support type="number".
   if (!isset($element['#attributes']['type'])) {
-    // HTML5 number fields are no long used pending better browser support.
-    // See issues #2290029, #2202905.
-    // @code
-    // $element['#attributes']['type'] = 'number';
-    // @endcode
-    $element['#attributes']['type'] = 'text';
+    $element['#attributes']['type'] = 'number';
   }
 
   // Step property *must* be a full number with 0 prefix if a decimal.
@@ -334,8 +329,8 @@ function _webform_render_number($component, $value = NULL, $filter = TRUE, $subm
     $element['#step'] = sprintf('%1.' . $decimals . 'F', $element['#step']);
   }
 
-  if ($component['extra']['type'] == 'textfield') {
-    // Render as textfield.
+  if ($component['extra']['type'] == 'number') {
+    // Render as number field.
     $element['#type'] = 'webform_number';
 
     // Set the size property based on #max, to ensure consistent behavior for
