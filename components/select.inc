@@ -136,7 +136,7 @@ function _webform_edit_select($component) {
       '#key_type' => 'mixed',
       '#key_type_toggle' => t('Customize keys (Advanced)'),
       '#key_type_toggled' => $component['extra']['custom_keys'],
-      '#default_value_pattern' => '^%.+\[.+\]$',
+      '#default_value_pattern' => '|^\[.*\]$',
       '#weight' => 1,
     );
 

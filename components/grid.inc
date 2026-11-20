@@ -100,7 +100,7 @@ function _webform_edit_grid($component) {
       '#key_type' => 'mixed',
       '#key_type_toggle' => t('Customize option keys (Advanced)'),
       '#key_type_toggled' => $component['extra']['custom_option_keys'],
-      '#default_value_pattern' => '^%.+\[.+\]$',
+      '#default_value_pattern' => '|^\[.*\]$',
       '#description' => t('<strong>Options to select across the top</strong>, such as "Poor" through "Excellent". Indicate the default to the left of the desired item. Use of only alphanumeric characters and underscores is recommended in keys.') . ' ' . theme('webform_token_help'),
     );
 
