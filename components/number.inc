@@ -763,12 +763,12 @@ function _webform_number_select_options($component) {
   $step = abs($component['extra']['step'] ?: 1);
 
   // Generate list in correct direction.
-  $min = $component['extra']['min'];
-  $max = $component['extra']['max'];
+  $min = (int) $component['extra']['min'];
+  $max = (int) $component['extra']['max'];
   $flipped = FALSE;
   if ($max < $min) {
-    $min = $component['extra']['max'];
-    $max = $component['extra']['min'];
+    $min = (int) $component['extra']['max'];
+    $max = (int) $component['extra']['min'];
     $flipped = TRUE;
   }
 
