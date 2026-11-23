@@ -141,12 +141,12 @@ class WebformConditionalsTestCase extends WebformTestCase {
     // Then add a page break and another textfield on the second page.
     $components[] = array(
       'type' => 'pagebreak',
-      'form_key' => 'pagebreak_' . $this->randomName(),
+      'form_key' => 'pagebreak_' . (string) $this->randomName(),
       'pid' => 0,
       'name' => 'Page break',
       'weight' => '200',
     );
-    $textfield['form_key'] = $this->randomName();
+    $textfield['form_key'] = (string) $this->randomName();
     $textfield['weight'] = '201';
     $components[] = $textfield;
 
