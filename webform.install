@@ -1507,3 +1507,35 @@ function webform_update_1609() {
   }
   return t('Webforms will now have the option to disable the display of the "Go back to the form" link below the confirmation message. If you have overridden <code>webform-confirmation.tpl.php</code> in your theme, you will need to manually update your theme for this setting to apply.');
 }
+
+/**
+ * Convert number component to use HTML number element.
+ */
+function webform_update_1610() {
+  // Get a list of all number components.
+  $query = db_select('webform_component', 'wc')
+    ->fields('wc', array('cid', 'extra'))
+    ->condition('type', 'number');
+
+  $updated_count = 0;
+  foreach ($query->execute() as $component) {
+    $extra = unserialize($component->extra);
+    if ($extra['type'] == 'textfield') {
+      $extra['type'] = 'number';
+      $success = (bool) db_update('webform_component')
+        ->fields(array('extra' => serialize($extra)))
+        ->condition('cid', $component->cid)
+        ->execute();
+      if ($success) {
+        $updated_count++;
+      }
+    }
+  }
+
+  return format_plural(
+    $updated_count,
+    'Converted @count number component from textfield to HTML number element.',
+    'Converted @count number components from textfield to HTML number element.',
+    array('@count' => $updated_count),
+  );
+}

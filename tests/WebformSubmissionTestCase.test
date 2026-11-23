@@ -328,7 +328,7 @@ class WebformSubmissionTestCase extends WebformTestCase {
 
     // Get the SID of the new submission.
     $matches = array();
-    preg_match('/sid=([0-9]+)/', $this->getUrl(), $matches);
+    preg_match('/sid=([0-9]+)/', (string) $this->getUrl(), $matches);
     $sid = isset($matches[1]) ? $matches[1] : NULL;
 
     // Pull in the database submission and check the values.
@@ -372,7 +372,7 @@ class WebformSubmissionTestCase extends WebformTestCase {
           // not save.
           $this->assertRaw($error_message, t('Validation message properly thrown: "%message".', array('%message' => $error_message)), t('Webform'));
 
-          $this->assertFalse(preg_match('/sid=([0-9]+)/', $this->getUrl()), t('Submission not saved.'));
+          $this->assertFalse(preg_match('/sid=([0-9]+)/', (string) $this->getUrl()), t('Submission not saved.'));
         }
       }
     }
